@@ -59,6 +59,20 @@ fallbacks in the font stack, so the kit degrades rather than breaks if you do no
 
 ## Framework
 
-React 18.3+ / 19. Components are plain functional components consuming `--vela-*` tokens.
-There is no CSS-in-JS runtime, no Tailwind requirement, and no icon-library dependency —
-the token layer is plain CSS custom properties and works in any framework.
+**This package:** React 18.3+ / 19. Plain functional components consuming `--vela-*` tokens.
+No CSS-in-JS runtime, no Tailwind requirement, no icon-library dependency.
+
+**Any other framework:** the token layer and the specs port unchanged; the components do not.
+
+```bash
+npm install @omkarux/vela   # then import only the tokens
+```
+```ts
+import '@omkarux/vela/tokens.css'
+```
+
+That gives an Angular, Vue, Svelte or server-rendered app the full two-layer palette, both themes,
+the spacing and sizing scales and the type ramp — with no React in the dependency tree. Build the
+components against your own framework's idioms and hold them to `guidelines/`, which is written to
+be implementation-independent. On Angular, the closed prop sets become union input types with
+`strictTemplates` enabled; that buys most of what the discriminated unions buy in React.

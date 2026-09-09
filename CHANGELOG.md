@@ -3,6 +3,23 @@
 All notable changes to this project are documented here.
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] — 2026-09-10
+
+### Added
+- **Guidance for using the system on a stack that isn't React.** `guidelines/setup.md` and the
+  README now state plainly which layers travel and which don't: the tokens and the specs port
+  unchanged, the components do not. `npm i @omkarux/vela` followed by importing only
+  `tokens.css` gives an Angular, Vue, Svelte or server-rendered app the full palette, both
+  themes and the whole scale with no React in its dependency tree.
+- `llms.txt` now tells a coding agent the specs are implementation-independent, so an agent
+  generating Angular follows every rule here and translates only the syntax.
+
+### Changed
+- Stopped describing this as a "React component kit" in the README, the npm description and
+  `llms.txt`. It was accurate about the package and misleading about the method — React is the
+  boundary of *this implementation*, not of the approach, and conflating the two undersells the
+  contract, which is the part that actually ports.
+
 ## [0.3.1] — 2026-09-10
 
 ### Fixed

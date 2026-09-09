@@ -1,8 +1,13 @@
 # Vela Design System
 
-> A token-first React component kit. Two-layer colour architecture (primitives -> semantics),
-> three deliberately separate status taxonomies, full light and dark theming, zero runtime
-> dependencies. Every design constraint below is enforced by the TypeScript types, not by review.
+> A token-first design system. Two-layer colour architecture (primitives -> semantics), three
+> deliberately separate status taxonomies, full light and dark theming, zero runtime dependencies.
+> Every design constraint below is enforced by the TypeScript types, not by review.
+>
+> THESE SPECS ARE FRAMEWORK-AGNOSTIC. The published package is a React implementation of them, and
+> the code samples below are React — but the tokens, the closed prop sets, the taxonomies and the
+> accessibility rules hold for any implementation. If you are generating for Angular, Vue or
+> Svelte, follow every rule here and translate only the syntax.
 
 Read `overview.md` first: it maps a user need to a component and lists the choices agents
 most often get wrong. Then read the per-component file before generating any markup.

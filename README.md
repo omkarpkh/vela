@@ -1,7 +1,8 @@
 # Vela
 
-A token-first React component kit. Six components, two themes, zero runtime dependencies —
-and every design rule in the documentation is enforced by the TypeScript compiler.
+A token-first design system. The tokens and the component specs are framework-agnostic;
+this repository is a **React implementation** of them. Six components, two themes, zero runtime
+dependencies — and every design rule in the documentation is enforced by the TypeScript compiler.
 
 ```bash
 npm install @omkarux/vela
@@ -99,6 +100,26 @@ npm test           # 116 tests
 npm run contrast   # WCAG report for both themes
 npm run verify     # typecheck + tests + build + pack-and-consume gate
 ```
+
+## Using it on another stack
+
+Worth being precise about what travels and what doesn't:
+
+| Layer | Ports? |
+|---|---|
+| **Tokens** (`dist/tokens.css`) | **Entirely.** Plain CSS custom properties — Angular, Vue, Svelte, Rails, plain HTML. From the same source you could emit Swift, Kotlin or XML for native. |
+| **The contract** (`guidelines/`) | **Entirely.** Intent, closed prop sets, token bindings, accessibility, anti-patterns. Only the code samples are React-shaped. |
+| **Components** (`dist/index.js`) | **No.** One implementation per framework, by definition. |
+| **The contrast audit** (`npm run contrast`) | **Entirely.** It parses CSS and knows nothing about React. |
+
+So on Angular you would take `tokens.css` and `guidelines/` unchanged, and write the components
+against your own idioms — standalone components, signals, `ControlValueAccessor` for form controls.
+The closed prop sets become union input types with `strictTemplates` enabled, which buys most of
+what the discriminated unions buy here.
+
+This is not a limitation to work around. If an organisation runs more than one framework, no
+framework's components can be the source of truth for the others — **the only thing that can be
+shared is the contract**, which is the argument this repository exists to make.
 
 ## Scope
 
