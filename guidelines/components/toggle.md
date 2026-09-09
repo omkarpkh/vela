@@ -45,6 +45,20 @@ two components allowed to use it.
 - The visible label is wired via `aria-labelledby` and is itself clickable.
 - Motion respects `prefers-reduced-motion`.
 
+## Figma mapping
+
+Library file: **Vela Design System** → page `Toggle`. Four variants: `State` (off/on) x `Size`
+(regular/tiny), plus a `Label text` text property.
+
+| Figma property | Code prop |
+|---|---|
+| `State` | `checked` / `defaultChecked` |
+| `Size` | `size` |
+| `Label text` | `label` |
+
+Track and knob geometry (34x20 / 26x15, knob 16 / 11) is **literal in both Figma and CSS** —
+it is not tokenised. That is a known gap, recorded rather than hidden.
+
 ## Anti-patterns
 
 - ❌ A Toggle behind a Save button → that is a Checkbox.

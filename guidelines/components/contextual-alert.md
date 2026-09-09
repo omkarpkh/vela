@@ -49,6 +49,20 @@ Never mix a severity background with a risk text colour.
 - Live-region politeness is derived from severity, as above.
 - The dismiss control is a real button with an accessible name.
 
+## Figma mapping
+
+Library file: **Vela Design System** → page `Contextual Alert`. Six variants, one per severity,
+plus a `Dismissible` boolean.
+
+| Figma property | Code prop |
+|---|---|
+| `Severity` | `severity` |
+| `Dismissible` | `onDismiss` — presence of the handler, not a flag |
+
+The Figma icons are **placeholder glyphs** (circle / triangle / octagon). Production swaps in the
+real icons from `src/lib/icons.tsx`. The live-region politeness (`role="alert"` for major and
+critical, `role="status"` otherwise) is derived from severity in code and has no Figma expression.
+
 ## Anti-patterns
 
 - ❌ `severity="high"` or `"error"` → not in the taxonomy (will not compile).

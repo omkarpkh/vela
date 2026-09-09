@@ -61,6 +61,23 @@ This is the reason Tabs is more than a styled list:
   Home/End jump to the ends. Disabled tabs are skipped, and the list wraps.
 - The panel is focusable so keyboard users land in the content after activating a tab.
 
+## Figma mapping
+
+Library file: **Vela Design System** → page `Tabs`. The component set is a single **Tab**, not the
+whole tablist: six variants, `State` (3) x `Size` (2), plus a `Count` boolean. Compose a tablist
+by placing Tab instances in a row.
+
+| Figma property | Code equivalent |
+|---|---|
+| `State=selected` | the active `value` on `<Tabs>` |
+| `State=disabled` | `disabled` on `<Tabs.Trigger>` |
+| `Size` | `size` on `<Tabs>` |
+| `Count` (boolean) | `count` on `<Tabs.Trigger>` |
+
+**The keyboard behaviour has no Figma expression.** Roving tabindex, arrow navigation, Home/End,
+and skipping disabled tabs exist only in code — which is exactly why the Figma library is not the
+source of truth for this component. The spec is.
+
 ## Anti-patterns
 
 - ❌ Tabs for the same dataset in a different view → View Switcher.

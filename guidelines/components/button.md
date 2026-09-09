@@ -88,6 +88,25 @@ Label weight is **Regular 400 at every size**.
   button remains focusable while ignoring clicks. Swapping the label for a spinner would
   strip the control's accessible name mid-request; disabling it would drop focus.
 
+## Figma mapping
+
+Library file: **Vela Design System** → page `Button`. The component set is 24 variants:
+`Variant` (3) x `Appearance` (2) x `Size` (4), plus an `Icon` boolean property.
+
+| Figma property | Code prop | Notes |
+|---|---|---|
+| `Variant` | `variant` | primary / standard / destructive |
+| `Appearance` | `appearance` | filled / hollow |
+| `Size` | `size` | tiny / regular / large / huge |
+| `Icon` (boolean) | `icon` | Toggles the left icon layer. Boolean, not a variant axis — it changes visibility, not colour. |
+
+**`disabled` has no Figma axis, on purpose.** It is a *state*, not a variant — the Props table
+above says so, and adding it would push the matrix past 30 combinations for no gain.
+
+**`appearance="text-link"` is a separate component set**, not a third value of `Appearance`.
+That mirrors the type: `ButtonProps` is a discriminated union, and text-link is its own member
+with a narrower `size` and `icon?: never`. One union member, one component set.
+
 ## Anti-patterns
 
 - ❌ Two primary filled buttons on one page.

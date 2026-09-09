@@ -57,6 +57,21 @@ These are the **input family** heights and do not match Button's ramp. See
 - Error state sets `aria-invalid` and the message is announced via `role="alert"`.
 - The `*` is `aria-hidden`; `required` carries the semantics.
 
+## Figma mapping
+
+Library file: **Vela Design System** → page `Input`. Twelve variants: `Size` (3) x `State` (4).
+
+| Figma property | Code prop |
+|---|---|
+| `Size` | `size` |
+| `State=default` | — |
+| `State=focus` | `:focus-visible`, not a prop |
+| `State=error` | `error` — a **message string**, not a boolean |
+| `State=disabled` | `disabled` |
+
+The Figma variants show the label, field and message rows together because the code component
+renders all three; a field mocked without its label will not match what ships.
+
 ## Anti-patterns
 
 - ❌ Placeholder as the label.

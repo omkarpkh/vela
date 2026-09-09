@@ -3,6 +3,28 @@
 All notable changes to this project are documented here.
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] — 2026-09-10
+
+### Added
+- **A `## Figma mapping` section in every component spec.** The contract now works in both
+  directions: each spec states which Figma variant property corresponds to which code prop, and —
+  more usefully — which behaviour has **no Figma expression at all** (Tabs' roving tabindex,
+  Contextual Alert's live-region politeness, Button's `disabled` state).
+- `llms.txt` now points at the companion Figma library and states the relationship plainly: the
+  library is *compiled from* this contract, not the source of it.
+
+### Companion Figma library
+`Vela Design System` — 223 variables across 4 collections mirroring the CSS architecture 1:1
+(Primitives / Color with Light+Dark / Sizing / Typography), 15 text styles, and 6 component sets
+totalling 62 variants. Every variable carries its `var(--vela-*)` name as Dev Mode code syntax.
+
+Three token gaps the Figma build surfaced, recorded rather than hidden:
+- Toggle track and knob geometry is literal in both CSS and Figma, not tokenised.
+- Status Indicator dot diameters (10px / 8px) are likewise literal.
+- Code Connect could not be wired: it requires an Organization or Enterprise Figma plan. The
+  component API is written into each component's Figma description instead, which surfaces in
+  Inspect on any plan.
+
 ## [0.2.0] — 2026-09-09
 
 ### Changed

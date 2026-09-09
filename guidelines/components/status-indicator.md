@@ -39,6 +39,19 @@ components allowed to.
 In light mode `warning` binds `yellow-700` and `medium` binds `orange-600` rather than the
 500s, so both clear 3:1 against the page. See `foundations/color.md`.
 
+## Figma mapping
+
+Library file: **Vela Design System** → page `Status Indicator`. Ten variants: `Status` (5) x
+`Size` (2), plus a `Label` boolean.
+
+| Figma property | Code prop |
+|---|---|
+| `Status` | `status` |
+| `Size` | `size` |
+| `Label` (boolean) | `label` — hiding it in Figma means the code must supply the `aria-label` fallback |
+
+Dot diameters (10px / 8px) are **literal in both Figma and CSS**, not tokenised. Known gap.
+
 ## Anti-patterns
 
 - ❌ `status="critical"` → that is severity (will not compile).
