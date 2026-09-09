@@ -5,6 +5,14 @@
   "type": "module",
   "license": "MIT",
   "author": "Omkar Khadamkar",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/omkarpkh/vela.git"
+  },
+  "homepage": "https://github.com/omkarpkh/vela#readme",
+  "bugs": {
+    "url": "https://github.com/omkarpkh/vela/issues"
+  },
   "sideEffects": [
     "**/*.css"
   ],
