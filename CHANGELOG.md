@@ -3,6 +3,26 @@
 All notable changes to this project are documented here.
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] — 2026-09-09
+
+### Changed
+- **Re-hued the entire primitive palette** — 52 raw values replaced. Vela now runs a deep
+  sea-teal brand (`--vela-primary-500: #0a6c7d`) on a cool slate neutral ramp.
+
+  Nothing else moved. Not one semantic mapping, not one component file, not one test. That is
+  the property the two-layer architecture exists to provide, and this release is the proof:
+  a complete visual re-skin is a diff confined to the primitive block.
+
+  All 76 contrast pairs passed on the first run of the new palette in both themes.
+
+### Fixed
+- Corrected the asserted-pair count in the docs from 78 to 76 (38 pairs × 2 themes).
+
+### Note on versioning
+Every colour in the system changed, so this is a minor bump rather than a patch even though no
+API changed — under 0.x, a visual break is still a break. Consumers pinned to `0.1.x` keep the
+old palette.
+
 ## [0.1.0] — 2026-09-09
 
 Initial release.
@@ -21,7 +41,7 @@ Initial release.
 - **`guidelines/`** shipped inside the package — per-component specifications with closed
   prop tables, token bindings, hard constraints and anti-patterns, plus `llms.txt` as an
   agent entry point.
-- **Contrast audit** (`npm run contrast`) covering 78 pairs across both themes, backed by
+- **Contrast audit** (`npm run contrast`) covering 76 pairs across both themes, backed by
   tests so a regression fails CI.
 - **Publish gate** (`npm run verify`) that packs the tarball, installs it into a throwaway
   app, and asserts both that valid usage typechecks and that eight documented rule

@@ -28,7 +28,7 @@ import { Button, ContextualAlert, Tabs } from '@omkarux/vela'
 | **Themes** | Light + dark. OS preference by default, `data-theme` to override |
 | **Dependencies** | None. `react` / `react-dom` are peers (18.3 or 19) |
 | **Format** | ESM, `preserveModules` for tree-shaking, full `.d.ts` |
-| **Tests** | 116, including 78 asserted contrast pairs across both themes |
+| **Tests** | 116, including 76 asserted contrast pairs across both themes |
 | **Packed size** | 26.7 kB, 43 files |
 
 ## The three ideas worth stealing

@@ -44,7 +44,7 @@ export function App() {
         <div>
           <h1 className="vela-h2">Vela</h1>
           <p className="vela-meta">
-            @omkarux/vela · 6 components · 78 contrast pairs asserted in both themes
+            @omkarux/vela · 6 components · 76 contrast pairs asserted in both themes
           </p>
         </div>
         <div className="demo-themes" role="group" aria-label="Theme">

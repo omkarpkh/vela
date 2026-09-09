@@ -1,6 +1,6 @@
 {
   "name": "@omkarux/vela",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A token-first React component kit: two-layer color architecture, separate severity and risk taxonomies, full light and dark theming, zero runtime dependencies.",
   "type": "module",
   "license": "MIT",

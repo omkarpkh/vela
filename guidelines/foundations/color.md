@@ -6,13 +6,13 @@ theming; binding one directly defeats that and breaks dark mode.
 
 - ✅ `color: var(--vela-text-default)` — survives re-skinning
 - ⚠️ `color: var(--vela-grey-700)` — primitive; only when no semantic covers the role
-- ❌ `color: #26292b` — never raw hex
+- ❌ `color: #191d1f` — never raw hex
 
 ## Primitives (reference only)
 
 Families: `grey` (50–950), `primary` (300–600), `blue` (100–950), `green` (100–950),
 `red` (100–950), `critical` (100–950), `yellow` (100–950), `orange` (100–950),
-plus `--vela-black` (#26292b, not pure black) and `--vela-white`.
+plus `--vela-black` (#191d1f, not pure black) and `--vela-white`.
 
 ## Three separate status taxonomies — keep them apart
 
@@ -46,11 +46,16 @@ Every foreground/background pair the kit ships is asserted against WCAG 2.1 AA i
 
 Consequences you will notice, all deliberate:
 
-- `--vela-btn-destructive-bg` is `red-700`, not `red-500`. Red-500 on white is 3.93:1 and
-  fails AA for the button label. Do not "fix" it back to the signal colour.
-- `--vela-text-de-emphasized` is `grey-600`, not `grey-500` (grey-500 on white is 3.04:1).
-- `--vela-text-severity-success` is `green-800`, not `green-700`.
-- Status dots use `yellow-700` and `orange-600`, not the 500s, so they clear 3:1 on white.
+- `--vela-btn-destructive-bg` is `red-700` (6.57:1), **not** `red-500`. Red-500 behind a white
+  label is 4.08:1 and fails AA. Do not "fix" it back to the signal colour.
+- `--vela-text-de-emphasized` is `grey-600` (4.90:1), not `grey-500` (3.47:1).
+- `--vela-text-severity-success` is `green-800` (6.68:1). `green-700` would technically pass at
+  4.87:1; green-800 is kept for headroom, so a future palette tweak cannot silently cross the
+  line. That is a judgement call, not a compliance requirement — recorded here as one.
+- Status dots use `yellow-700` (4.07:1) and `orange-600` (3.80:1), not the 500s, which sit at
+  2.59:1 and 2.78:1 on white.
+- Tightest shipped pair: the input border at 3.29:1 against a 3:1 minimum. Anything you add
+  below that is a regression.
 
 If you add a pair, add it to `PAIRS` in `scripts/contrast-core.mjs`. An unasserted pair is
 an unverified claim.

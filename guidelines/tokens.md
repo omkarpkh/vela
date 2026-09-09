@@ -62,7 +62,7 @@ and every typography size / line-height.
 .thing { color: var(--vela-grey-700); }
 
 /* ❌ raw hex — invisible to theming, fails in dark mode */
-.thing { color: #51575c; }
+.thing { color: #49555a; }
 
 /* ❌ crossing taxonomies — there is no "high" severity */
 .thing { background: var(--vela-bg-severity-high); }

@@ -10,65 +10,65 @@
   color-scheme: light;
 
   /* ---- Primitives: neutral ---- */
-  --vela-black: #26292b;
+  --vela-black: #191d1f;
   --vela-white: #ffffff;
-  --vela-grey-50: #f9f9f9;
-  --vela-grey-100: #f5f5f5;
-  --vela-grey-200: #e4e6e7;
-  --vela-grey-300: #d4d4d5;
-  --vela-grey-400: #b3b8bc;
-  --vela-grey-500: #8d959a;
-  --vela-grey-600: #6e767b;   /* AA-safe de-emphasized text on white */
-  --vela-grey-700: #51575c;
-  --vela-grey-800: #3c3e40;
-  --vela-grey-850: #2b2e30;
-  --vela-grey-900: #1f2224;
-  --vela-grey-950: #16181a;
+  --vela-grey-50: #f7f9f9;
+  --vela-grey-100: #eef2f2;
+  --vela-grey-200: #dde3e4;
+  --vela-grey-300: #c8d0d2;
+  --vela-grey-400: #a3aeb1;
+  --vela-grey-500: #7f8c90;
+  --vela-grey-600: #667377;   /* AA-safe de-emphasized text on white */
+  --vela-grey-700: #49555a;
+  --vela-grey-800: #333d41;
+  --vela-grey-850: #262e31;
+  --vela-grey-900: #1b2225;
+  --vela-grey-950: #11171a;
 
   /* ---- Primitives: brand / blue ---- */
-  --vela-primary-300: #8aa6fb;
-  --vela-primary-400: #5b82f7;
-  --vela-primary-500: #3664f4;
-  --vela-primary-600: #2849b2;
-  --vela-blue-100: #e8edfe;
-  --vela-blue-150: #d0dbfd;
-  --vela-blue-300: #8aa6fb;
-  --vela-blue-500: #2e7ffd;
-  --vela-blue-700: #4d5d8d;
-  --vela-blue-950: #101a33;
+  --vela-primary-300: #5fb8c9;
+  --vela-primary-400: #2f9db3;
+  --vela-primary-500: #0a6c7d;
+  --vela-primary-600: #075462;
+  --vela-blue-100: #e6eefb;
+  --vela-blue-150: #cfdff7;
+  --vela-blue-300: #85aae8;
+  --vela-blue-500: #3d7fd6;
+  --vela-blue-700: #35558a;
+  --vela-blue-950: #0e1a2e;
 
   /* ---- Primitives: red / critical ---- */
-  --vela-red-100: #fbe3e3;
-  --vela-red-300: #ef8786;
-  --vela-red-500: #e74645;
-  --vela-red-700: #b93837;
-  --vela-red-950: #2b1315;
-  --vela-critical-100: #f1d2d2;
-  --vela-critical-300: #d06b6b;
-  --vela-critical-500: #b71c1c;
-  --vela-critical-700: #871515;
-  --vela-critical-950: #2e1010;
+  --vela-red-100: #fce8e6;
+  --vela-red-300: #f0918c;
+  --vela-red-500: #dd4b3e;
+  --vela-red-700: #ab3125;
+  --vela-red-950: #2a1310;
+  --vela-critical-100: #f2d6d4;
+  --vela-critical-300: #cc6f68;
+  --vela-critical-500: #a81c14;
+  --vela-critical-700: #7d150f;
+  --vela-critical-950: #2b100e;
 
   /* ---- Primitives: yellow / orange / green ---- */
-  --vela-yellow-100: #fdf0cf;
-  --vela-yellow-300: #fbd578;
-  --vela-yellow-500: #facd60;
-  --vela-yellow-600: #d7ab00;
-  --vela-yellow-700: #a38a00;
-  --vela-yellow-800: #826b32;
-  --vela-yellow-950: #2a2110;
-  --vela-orange-100: #fde5cc;
-  --vela-orange-300: #f8aa59;
-  --vela-orange-500: #f57c00;
-  --vela-orange-600: #d16a00; /* AA-safe status dot on white */
-  --vela-orange-700: #a45300;
-  --vela-orange-950: #2b1a0c;
-  --vela-green-100: #def0e1;
-  --vela-green-300: #92ce9d;
-  --vela-green-500: #58b368;
-  --vela-green-700: #248000;
-  --vela-green-800: #1c6600;  /* AA-safe success text on green-100 */
-  --vela-green-950: #10261a;
+  --vela-yellow-100: #fdf1d3;
+  --vela-yellow-300: #f7d382;
+  --vela-yellow-500: #f0c14e;
+  --vela-yellow-600: #c99a10;
+  --vela-yellow-700: #9a7a0c;
+  --vela-yellow-800: #7a6224;
+  --vela-yellow-950: #26200e;
+  --vela-orange-100: #fde7d0;
+  --vela-orange-300: #f5ad63;
+  --vela-orange-500: #ea7f1a;
+  --vela-orange-600: #c86a0d; /* AA-safe status dot on white */
+  --vela-orange-700: #9c5408;
+  --vela-orange-950: #281a0b;
+  --vela-green-100: #dcefe0;
+  --vela-green-300: #86c795;
+  --vela-green-500: #4aa863;
+  --vela-green-700: #1f7340;
+  --vela-green-800: #175c33;  /* AA-safe success text on green-100 */
+  --vela-green-950: #0d2318;
 
   /* ---- Semantic: surface ---- */
   --vela-bg-global: var(--vela-white);
@@ -120,8 +120,8 @@
 
 
   /* ---- Semantic: destructive button ----
-     NOTE: red-500 on white is 3.93:1 and fails WCAG AA for normal text.
-     Destructive filled therefore binds red-700 (5.73:1). This is a
+     NOTE: red-500 on white is 4.08:1 and fails WCAG AA for normal text.
+     Destructive filled therefore binds red-700 (6.57:1). This is a
      deliberate divergence from a naive "use the signal color" mapping. */
   --vela-btn-destructive-bg: var(--vela-red-700);
   --vela-btn-destructive-hover-bg: var(--vela-critical-500);
