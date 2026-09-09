@@ -1,7 +1,11 @@
 name: CI
 
 on:
-  push: { branches: [main] }
+  push:
+    branches: [main]
+    # Tags must be listed explicitly. Without this the publish job below is
+    # unreachable — a tag push matches no trigger, so the workflow never starts.
+    tags: ['v*']
   pull_request:
 
 jobs:
@@ -22,15 +26,17 @@ jobs:
       # published types reject the documented rule violations.
       - run: node scripts/verify-pack.mjs
 
-  # Publishing uses npm Trusted Publishing (OIDC) — no NPM_TOKEN secret exists.
-  # npm attaches a provenance attestation automatically on this path.
+  # Publishing uses npm Trusted Publishing (OIDC). No NPM_TOKEN secret exists,
+  # and none should be created: as of Aug 2026 granular access tokens cannot
+  # publish at all. npm attaches a provenance attestation automatically on this
+  # path, tying the tarball to this commit and this workflow file.
   publish:
     if: startsWith(github.ref, 'refs/tags/v')
     needs: verify
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write
+      id-token: write        # lets GitHub mint the OIDC token npm exchanges
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -38,5 +44,14 @@ jobs:
           node-version: '22'
           registry-url: 'https://registry.npmjs.org'
           cache: npm
+
+      # Trusted publishing needs npm >= 11.5.1. Node 22 ships npm 10.x, so the
+      # upgrade is required — without it the publish falls back to looking for a
+      # token and fails with ENEEDAUTH.
+      - name: Ensure npm supports trusted publishing
+        run: |
+          npm install -g npm@latest
+          npm --version
+
       - run: npm ci
       - run: npm publish --access public
