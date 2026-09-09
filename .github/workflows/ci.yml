@@ -61,4 +61,18 @@ jobs:
       # ran in the `verify` job this one depends on; running it again here
       # repeats minutes of work and puts a second failure surface inside the
       # publish step itself — which is exactly what broke the first tagged release.
-      - run: npm publish --access public --ignore-scripts
+      # Tagging a historical commit, or re-running a release, should be a no-op
+      # rather than a red X. npm has no --if-not-exists, so check first.
+      - name: Is this version already on the registry?
+        id: published
+        run: |
+          V=$(node -p "require('./package.json').version")
+          if npm view "@omkarux/vela@$V" version >/dev/null 2>&1; then
+            echo "Already published: $V — skipping."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - if: steps.published.outputs.skip == 'false'
+        run: npm publish --access public --ignore-scripts
