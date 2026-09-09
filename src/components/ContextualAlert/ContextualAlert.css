@@ -1,0 +1,31 @@
+/* -------------------------------------------------------- ContextualAlert -- */
+.vela-alert {
+  display: flex; align-items: flex-start; gap: var(--vela-space-10);
+  padding: var(--vela-space-10) var(--vela-space-15);
+  border: 1px solid; border-radius: var(--vela-radius-4);
+  font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height);
+}
+.vela-alert__icon  { flex: none; width: var(--vela-icon-16); height: var(--vela-icon-16); margin-top: 2px; }
+.vela-alert__body  { flex: 1 1 auto; min-width: 0; }
+.vela-alert__title { font-weight: var(--vela-font-weight-semibold); display: block; }
+.vela-alert__dismiss {
+  flex: none; background: none; border: none; padding: 2px; margin: -2px -4px -2px 0;
+  color: inherit; cursor: pointer; border-radius: var(--vela-radius-3);
+  width: var(--vela-icon-20); height: var(--vela-icon-20);
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.vela-alert__dismiss:hover { background: rgb(0 0 0 / 0.06); }
+
+.vela-alert--success  { background: var(--vela-bg-severity-success);  border-color: var(--vela-border-severity-success);  color: var(--vela-text-severity-success); }
+.vela-alert--info     { background: var(--vela-bg-severity-info);     border-color: var(--vela-border-severity-info);     color: var(--vela-text-severity-info); }
+.vela-alert--warning  { background: var(--vela-bg-severity-warning);  border-color: var(--vela-border-severity-warning);  color: var(--vela-text-severity-warning); }
+.vela-alert--minor    { background: var(--vela-bg-severity-minor);    border-color: var(--vela-border-severity-minor);    color: var(--vela-text-severity-minor); }
+.vela-alert--major    { background: var(--vela-bg-severity-major);    border-color: var(--vela-border-severity-major);    color: var(--vela-text-severity-major); }
+.vela-alert--critical { background: var(--vela-bg-severity-critical); border-color: var(--vela-border-severity-critical); color: var(--vela-text-severity-critical); }
+
+.vela-alert--success  .vela-alert__icon { color: var(--vela-icon-severity-success); }
+.vela-alert--info     .vela-alert__icon { color: var(--vela-icon-severity-info); }
+.vela-alert--warning  .vela-alert__icon { color: var(--vela-icon-severity-warning); }
+.vela-alert--minor    .vela-alert__icon { color: var(--vela-icon-severity-minor); }
+.vela-alert--major    .vela-alert__icon { color: var(--vela-icon-severity-major); }
+.vela-alert--critical .vela-alert__icon { color: var(--vela-icon-severity-critical); }

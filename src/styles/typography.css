@@ -1,0 +1,16 @@
+/* ============================================================================
+   Typography utilities. Use the class that matches the ROLE, rather than
+   setting font properties by hand — that is what keeps the scale intact.
+   ============================================================================ */
+
+.vela-h1 { font-family: var(--vela-font-family-primary); font-size: var(--vela-text-h1-size); font-weight: var(--vela-text-h1-weight); line-height: var(--vela-text-h1-line-height); color: var(--vela-text-heading); margin: 0; }
+.vela-h2 { font-family: var(--vela-font-family-primary); font-size: var(--vela-text-h2-size); font-weight: var(--vela-text-h2-weight); line-height: var(--vela-text-h2-line-height); color: var(--vela-text-heading); margin: 0; }
+.vela-h3 { font-family: var(--vela-font-family-primary); font-size: var(--vela-text-h3-size); font-weight: var(--vela-text-h3-weight); line-height: var(--vela-text-h3-line-height); color: var(--vela-text-heading); margin: 0; }
+.vela-h4 { font-family: var(--vela-font-family-primary); font-size: var(--vela-text-h4-size); font-weight: var(--vela-text-h4-weight); line-height: var(--vela-text-h4-line-height); color: var(--vela-text-heading); margin: 0; }
+.vela-h5 { font-family: var(--vela-font-family-primary); font-size: var(--vela-text-h5-size); font-weight: var(--vela-text-h5-weight); line-height: var(--vela-text-h5-line-height); color: var(--vela-text-heading); margin: 0; }
+.vela-h6 { font-family: var(--vela-font-family-primary); font-size: var(--vela-text-h6-size); font-weight: var(--vela-text-h6-weight); line-height: var(--vela-text-h6-line-height); color: var(--vela-text-heading); margin: 0; }
+
+.vela-body { font-size: var(--vela-text-body-size); font-weight: var(--vela-text-body-weight); line-height: var(--vela-text-body-line-height); }
+.vela-meta { font-size: var(--vela-text-meta-size); font-weight: var(--vela-text-meta-weight); line-height: var(--vela-text-meta-line-height); letter-spacing: var(--vela-text-meta-tracking); color: var(--vela-text-de-emphasized); }
+.vela-link { color: var(--vela-text-link); font-weight: var(--vela-font-weight-semibold); text-decoration: none; }
+.vela-link:hover { text-decoration: underline; }

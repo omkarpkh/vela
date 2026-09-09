@@ -1,0 +1,33 @@
+# Vela Design System
+
+> A token-first React component kit. Two-layer colour architecture (primitives -> semantics),
+> three deliberately separate status taxonomies, full light and dark theming, zero runtime
+> dependencies. Every design constraint below is enforced by the TypeScript types, not by review.
+
+Read `overview.md` first: it maps a user need to a component and lists the choices agents
+most often get wrong. Then read the per-component file before generating any markup.
+
+## Hard rules (apply everywhere)
+- Bind SEMANTIC tokens (`var(--vela-text-default)`). Never a primitive (`--vela-grey-700`), never raw hex.
+- Numeric tokens already carry their unit. Use `var(--vela-space-10)`, never `calc(var(--vela-space-10) * 1px)`.
+- Prop sets are CLOSED. If a value is not in the component's Props table, it does not exist.
+- Never invent a component. If nothing fits, say so and name the closest match.
+- Severity, Risk and Status are three different taxonomies. Never cross them.
+
+## Docs
+- [Component catalogue and disambiguations](overview.md)
+- [Install and theming](setup.md)
+- [Token naming and lookup](tokens.md)
+- [Colour](foundations/color.md)
+- [Spacing](foundations/spacing.md)
+- [Sizing](foundations/sizing.md)
+- [Radius](foundations/radius.md)
+- [Typography](foundations/typography.md)
+
+## Components
+- [Button](components/button.md)
+- [Toggle](components/toggle.md)
+- [Input](components/input.md)
+- [Contextual Alert](components/contextual-alert.md)
+- [Status Indicator](components/status-indicator.md)
+- [Tabs](components/tabs.md)

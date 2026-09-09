@@ -1,0 +1,152 @@
+  /* ============================================================================
+     DARK THEME
+     Note what is NOT here: primitives. Not one raw hex is redefined below.
+     Dark mode is achieved entirely by re-pointing semantic tokens onto a
+     different part of the same scale. That is the return on the two-layer
+     architecture — and the reason components never bind primitives directly.
+     Contrast ratios are asserted in src/styles/contrast.test.ts.
+     ============================================================================ */
+  color-scheme: dark;
+
+  /* ---- Surface ---- */
+  --vela-bg-global: var(--vela-grey-950);
+  --vela-bg-container: var(--vela-grey-900);
+  --vela-bg-raised: var(--vela-grey-850);
+  --vela-bg-hover: var(--vela-grey-850);
+  --vela-bg-tooltip: var(--vela-grey-700);
+  --vela-bg-inactive: var(--vela-grey-900);
+  --vela-bg-selected: var(--vela-blue-950);
+  --vela-primary-tint: var(--vela-blue-950);
+  --vela-primary-active-bg: var(--vela-primary-500);
+
+  /* ---- Border ---- */
+  --vela-border-default: var(--vela-grey-600);
+  --vela-border-subtle: var(--vela-grey-850);
+  --vela-border-active: var(--vela-primary-400);
+  --vela-border-inactive: var(--vela-grey-850);
+  --vela-border-action: var(--vela-grey-500);
+
+  /* ---- Text ---- */
+  --vela-text-default: var(--vela-grey-300);
+  --vela-text-heading: var(--vela-grey-50);
+  --vela-text-de-emphasized: var(--vela-grey-500);
+  --vela-text-inactive: var(--vela-grey-700);
+  --vela-text-link: var(--vela-primary-400);
+  --vela-text-on-brand: var(--vela-white);
+  --vela-text-on-tint: var(--vela-grey-300);
+  --vela-text-error: var(--vela-red-300);
+
+  /* ---- Icon ---- */
+  --vela-icon-default: var(--vela-grey-500);
+  --vela-icon-strong: var(--vela-grey-300);
+  --vela-icon-selected: var(--vela-primary-400);
+  --vela-icon-disabled: var(--vela-grey-700);
+  --vela-icon-on-brand: var(--vela-white);
+
+  /* ---- Button ---- */
+  --vela-btn-primary-bg: var(--vela-primary-500);
+  --vela-btn-primary-hover-bg: var(--vela-primary-400);
+  --vela-btn-primary-border: var(--vela-primary-500);
+  --vela-btn-primary-text: var(--vela-white);
+  --vela-btn-standard-bg: var(--vela-grey-850);
+  --vela-btn-standard-hover-bg: var(--vela-grey-800);
+  --vela-btn-standard-text: var(--vela-grey-300);
+  --vela-btn-hollow-primary-text: var(--vela-primary-300);
+  --vela-btn-hollow-primary-border: var(--vela-primary-400);
+  --vela-btn-disabled-bg: var(--vela-grey-850);
+  --vela-btn-disabled-text: var(--vela-grey-700);
+
+
+  --vela-btn-destructive-bg: var(--vela-red-700);
+  --vela-btn-destructive-hover-bg: var(--vela-red-500);
+  --vela-btn-destructive-text: var(--vela-white);
+  --vela-btn-destructive-hollow-text: var(--vela-red-300);
+  --vela-btn-standard-border: var(--vela-grey-500);
+  --vela-btn-hollow-hover-bg: var(--vela-primary-tint);
+
+  /* ---- Form control ---- */
+  --vela-control-bg: var(--vela-grey-900);
+  --vela-control-border: var(--vela-grey-600);
+  --vela-control-border-hover: var(--vela-grey-500);
+  --vela-control-border-active: var(--vela-primary-400);
+  --vela-control-border-error: var(--vela-red-500);
+  --vela-control-bg-disabled: var(--vela-grey-900);
+  --vela-control-placeholder: var(--vela-grey-500);
+  --vela-toggle-off-bg: var(--vela-grey-700);
+  --vela-toggle-on-bg: var(--vela-primary-500);
+  --vela-toggle-knob: var(--vela-white);
+
+  /* ---- Severity (6) ---- */
+  --vela-bg-severity-success: var(--vela-green-950);
+  --vela-border-severity-success: var(--vela-green-700);
+  --vela-signal-severity-success: var(--vela-green-500);
+  --vela-icon-severity-success: var(--vela-green-300);
+  --vela-text-severity-success: var(--vela-green-300);
+  --vela-border-severity-success-indicator: var(--vela-green-500);
+
+  --vela-bg-severity-info: var(--vela-blue-950);
+  --vela-border-severity-info: var(--vela-blue-700);
+  --vela-signal-severity-info: var(--vela-blue-500);
+  --vela-icon-severity-info: var(--vela-blue-300);
+  --vela-text-severity-info: var(--vela-blue-300);
+  --vela-border-severity-info-indicator: var(--vela-blue-500);
+
+  --vela-bg-severity-warning: var(--vela-yellow-950);
+  --vela-border-severity-warning: var(--vela-yellow-700);
+  --vela-signal-severity-warning: var(--vela-yellow-500);
+  --vela-icon-severity-warning: var(--vela-yellow-300);
+  --vela-text-severity-warning: var(--vela-yellow-300);
+  --vela-border-severity-warning-indicator: var(--vela-yellow-500);
+
+  --vela-bg-severity-minor: var(--vela-orange-950);
+  --vela-border-severity-minor: var(--vela-orange-700);
+  --vela-signal-severity-minor: var(--vela-orange-500);
+  --vela-icon-severity-minor: var(--vela-orange-300);
+  --vela-text-severity-minor: var(--vela-orange-300);
+  --vela-border-severity-minor-indicator: var(--vela-orange-500);
+
+  --vela-bg-severity-major: var(--vela-red-950);
+  --vela-border-severity-major: var(--vela-red-700);
+  --vela-signal-severity-major: var(--vela-red-500);
+  --vela-icon-severity-major: var(--vela-red-300);
+  --vela-text-severity-major: var(--vela-red-300);
+  --vela-border-severity-major-indicator: var(--vela-red-500);
+
+  --vela-bg-severity-critical: var(--vela-critical-950);
+  --vela-border-severity-critical: var(--vela-critical-500);
+  --vela-signal-severity-critical: var(--vela-critical-300);
+  --vela-icon-severity-critical: var(--vela-critical-300);
+  --vela-text-severity-critical: var(--vela-critical-300);
+  --vela-border-severity-critical-indicator: var(--vela-critical-300);
+
+  /* ---- Risk (3) ---- */
+  --vela-bg-risk-low: var(--vela-green-950);
+  --vela-border-risk-low: var(--vela-green-700);
+  --vela-signal-risk-low: var(--vela-green-500);
+  --vela-icon-risk-low: var(--vela-green-300);
+  --vela-text-risk-low: var(--vela-green-300);
+  --vela-border-risk-low-indicator: var(--vela-green-500);
+
+  --vela-bg-risk-medium: var(--vela-yellow-950);
+  --vela-border-risk-medium: var(--vela-yellow-700);
+  --vela-signal-risk-medium: var(--vela-yellow-500);
+  --vela-icon-risk-medium: var(--vela-yellow-300);
+  --vela-text-risk-medium: var(--vela-yellow-300);
+  --vela-border-risk-medium-indicator: var(--vela-yellow-500);
+
+  --vela-bg-risk-high: var(--vela-red-950);
+  --vela-border-risk-high: var(--vela-red-700);
+  --vela-signal-risk-high: var(--vela-red-500);
+  --vela-icon-risk-high: var(--vela-red-300);
+  --vela-text-risk-high: var(--vela-red-300);
+  --vela-border-risk-high-indicator: var(--vela-red-500);
+
+  /* ---- Status (5 dots) ---- */
+  --vela-signal-status-unknown: var(--vela-grey-500);
+  --vela-signal-status-healthy: var(--vela-green-500);
+  --vela-signal-status-warning: var(--vela-yellow-500);
+  --vela-signal-status-medium: var(--vela-orange-500);
+  --vela-signal-status-unhealthy: var(--vela-red-500);
+
+  /* ---- Focus ---- */
+  --vela-focus-ring-color: var(--vela-primary-400);

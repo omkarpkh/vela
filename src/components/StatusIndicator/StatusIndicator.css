@@ -1,0 +1,15 @@
+/* ------------------------------------------------------- StatusIndicator -- */
+.vela-status { display: inline-flex; align-items: center; gap: var(--vela-space-5); }
+.vela-status__dot {
+  flex: none;
+  width: 10px; height: 10px;
+  border-radius: var(--vela-radius-full);   /* the ONLY component that uses radius-full */
+}
+.vela-status--small .vela-status__dot { width: 8px; height: 8px; }
+.vela-status__label { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
+
+.vela-status--unknown   .vela-status__dot { background: var(--vela-signal-status-unknown); }
+.vela-status--healthy   .vela-status__dot { background: var(--vela-signal-status-healthy); }
+.vela-status--warning   .vela-status__dot { background: var(--vela-signal-status-warning); }
+.vela-status--medium    .vela-status__dot { background: var(--vela-signal-status-medium); }
+.vela-status--unhealthy .vela-status__dot { background: var(--vela-signal-status-unhealthy); }

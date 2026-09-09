@@ -1,0 +1,73 @@
+/* ---------------------------------------------------------------- Button -- */
+.vela-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--vela-space-5);
+  width: auto;                       /* hugs content — never fix a button width */
+  border-radius: var(--vela-radius-4);
+  border: 1px solid transparent;
+  font-family: var(--vela-font-family-primary);
+  font-weight: var(--vela-font-weight-regular);
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color var(--vela-duration-fast) var(--vela-ease-standard),
+              border-color var(--vela-duration-fast) var(--vela-ease-standard),
+              color var(--vela-duration-fast) var(--vela-ease-standard);
+}
+
+/* -- sizes -- */
+.vela-btn--tiny    { height: var(--vela-control-height-24); padding: 0 var(--vela-space-10); font-size: var(--vela-text-button-tiny-size);    line-height: var(--vela-text-button-tiny-line-height); }
+.vela-btn--regular { height: var(--vela-control-height-35); padding: 0 var(--vela-space-15); font-size: var(--vela-text-button-regular-size); line-height: var(--vela-text-button-regular-line-height); }
+.vela-btn--large   { height: var(--vela-control-height-40); padding: 0 var(--vela-space-20); font-size: var(--vela-text-button-large-size);   line-height: var(--vela-text-button-large-line-height); }
+.vela-btn--huge    { height: var(--vela-control-height-60); padding: 0 var(--vela-space-30); font-size: var(--vela-text-button-huge-size);    line-height: var(--vela-text-button-huge-line-height); }
+
+.vela-btn__icon { display: inline-flex; flex: none; }
+.vela-btn--tiny .vela-btn__icon    { width: var(--vela-icon-12); height: var(--vela-icon-12); }
+.vela-btn--regular .vela-btn__icon,
+.vela-btn--large .vela-btn__icon,
+.vela-btn--huge .vela-btn__icon    { width: var(--vela-icon-16); height: var(--vela-icon-16); }
+.vela-btn__icon > svg { width: 100%; height: 100%; display: block; }
+
+/* -- primary -- */
+.vela-btn--primary.vela-btn--filled { background: var(--vela-btn-primary-bg); color: var(--vela-btn-primary-text); border-color: var(--vela-btn-primary-border); }
+.vela-btn--primary.vela-btn--filled:hover:not(:disabled) { background: var(--vela-btn-primary-hover-bg); border-color: var(--vela-btn-primary-hover-bg); }
+.vela-btn--primary.vela-btn--hollow { background: transparent; color: var(--vela-btn-hollow-primary-text); border-color: var(--vela-btn-hollow-primary-border); }
+.vela-btn--primary.vela-btn--hollow:hover:not(:disabled) { background: var(--vela-btn-hollow-hover-bg); }
+
+/* -- standard -- */
+.vela-btn--standard.vela-btn--filled { background: var(--vela-btn-standard-bg); color: var(--vela-btn-standard-text); border-color: var(--vela-btn-standard-border); }
+.vela-btn--standard.vela-btn--filled:hover:not(:disabled) { background: var(--vela-btn-standard-hover-bg); }
+.vela-btn--standard.vela-btn--hollow { background: transparent; color: var(--vela-btn-standard-text); border-color: var(--vela-btn-standard-border); }
+.vela-btn--standard.vela-btn--hollow:hover:not(:disabled) { background: var(--vela-bg-hover); }
+
+/* -- destructive -- */
+.vela-btn--destructive.vela-btn--filled { background: var(--vela-btn-destructive-bg); color: var(--vela-btn-destructive-text); border-color: var(--vela-btn-destructive-bg); }
+.vela-btn--destructive.vela-btn--filled:hover:not(:disabled) { background: var(--vela-btn-destructive-hover-bg); border-color: var(--vela-btn-destructive-hover-bg); }
+.vela-btn--destructive.vela-btn--hollow { background: transparent; color: var(--vela-btn-destructive-hollow-text); border-color: var(--vela-btn-destructive-hollow-text); }
+.vela-btn--destructive.vela-btn--hollow:hover:not(:disabled) { background: var(--vela-bg-severity-major); }
+
+/* -- text-link (primary only, tiny/regular only, never underlined) -- */
+.vela-btn--text-link { background: transparent; border-color: transparent; color: var(--vela-text-link); padding: 0; height: auto; text-decoration: none; }
+.vela-btn--text-link:hover:not(:disabled) { color: var(--vela-btn-primary-hover-bg); text-decoration: none; }
+
+/* -- disabled -- */
+.vela-btn:disabled { cursor: not-allowed; background: var(--vela-btn-disabled-bg); color: var(--vela-btn-disabled-text); border-color: var(--vela-border-inactive); }
+.vela-btn--hollow:disabled,
+.vela-btn--text-link:disabled { background: transparent; color: var(--vela-btn-disabled-text); border-color: var(--vela-border-inactive); }
+.vela-btn--text-link:disabled { border-color: transparent; }
+
+/* -- loading -- */
+.vela-btn[aria-busy="true"] { cursor: progress; }
+.vela-btn__spinner {
+  display: inline-block; flex: none;
+  width: var(--vela-icon-12); height: var(--vela-icon-12);
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: var(--vela-radius-full);
+  animation: vela-spin 700ms linear infinite;
+}
+.vela-btn--regular .vela-btn__spinner,
+.vela-btn--large .vela-btn__spinner,
+.vela-btn--huge .vela-btn__spinner { width: var(--vela-icon-16); height: var(--vela-icon-16); }
+@keyframes vela-spin { to { transform: rotate(360deg); } }

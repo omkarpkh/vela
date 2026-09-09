@@ -1,0 +1,293 @@
+/* ============================================================================
+   VELA — Design tokens
+   Two layers: primitives (raw scale values) and semantics (role-named).
+   Always bind to semantics. Primitives exist so semantics can be re-pointed
+   for theming — binding a primitive directly defeats the entire architecture.
+   Numeric tokens carry their unit. Use them directly; never calc(... * 1px).
+   ============================================================================ */
+
+:root {
+  color-scheme: light;
+
+  /* ---- Primitives: neutral ---- */
+  --vela-black: #26292b;
+  --vela-white: #ffffff;
+  --vela-grey-50: #f9f9f9;
+  --vela-grey-100: #f5f5f5;
+  --vela-grey-200: #e4e6e7;
+  --vela-grey-300: #d4d4d5;
+  --vela-grey-400: #b3b8bc;
+  --vela-grey-500: #8d959a;
+  --vela-grey-600: #6e767b;   /* AA-safe de-emphasized text on white */
+  --vela-grey-700: #51575c;
+  --vela-grey-800: #3c3e40;
+  --vela-grey-850: #2b2e30;
+  --vela-grey-900: #1f2224;
+  --vela-grey-950: #16181a;
+
+  /* ---- Primitives: brand / blue ---- */
+  --vela-primary-300: #8aa6fb;
+  --vela-primary-400: #5b82f7;
+  --vela-primary-500: #3664f4;
+  --vela-primary-600: #2849b2;
+  --vela-blue-100: #e8edfe;
+  --vela-blue-150: #d0dbfd;
+  --vela-blue-300: #8aa6fb;
+  --vela-blue-500: #2e7ffd;
+  --vela-blue-700: #4d5d8d;
+  --vela-blue-950: #101a33;
+
+  /* ---- Primitives: red / critical ---- */
+  --vela-red-100: #fbe3e3;
+  --vela-red-300: #ef8786;
+  --vela-red-500: #e74645;
+  --vela-red-700: #b93837;
+  --vela-red-950: #2b1315;
+  --vela-critical-100: #f1d2d2;
+  --vela-critical-300: #d06b6b;
+  --vela-critical-500: #b71c1c;
+  --vela-critical-700: #871515;
+  --vela-critical-950: #2e1010;
+
+  /* ---- Primitives: yellow / orange / green ---- */
+  --vela-yellow-100: #fdf0cf;
+  --vela-yellow-300: #fbd578;
+  --vela-yellow-500: #facd60;
+  --vela-yellow-600: #d7ab00;
+  --vela-yellow-700: #a38a00;
+  --vela-yellow-800: #826b32;
+  --vela-yellow-950: #2a2110;
+  --vela-orange-100: #fde5cc;
+  --vela-orange-300: #f8aa59;
+  --vela-orange-500: #f57c00;
+  --vela-orange-600: #d16a00; /* AA-safe status dot on white */
+  --vela-orange-700: #a45300;
+  --vela-orange-950: #2b1a0c;
+  --vela-green-100: #def0e1;
+  --vela-green-300: #92ce9d;
+  --vela-green-500: #58b368;
+  --vela-green-700: #248000;
+  --vela-green-800: #1c6600;  /* AA-safe success text on green-100 */
+  --vela-green-950: #10261a;
+
+  /* ---- Semantic: surface ---- */
+  --vela-bg-global: var(--vela-white);
+  --vela-bg-container: var(--vela-grey-100);
+  --vela-bg-raised: var(--vela-white);
+  --vela-bg-hover: var(--vela-grey-100);
+  --vela-bg-tooltip: var(--vela-grey-800);
+  --vela-bg-inactive: var(--vela-grey-100);
+  --vela-bg-selected: var(--vela-blue-100);
+  --vela-primary-tint: var(--vela-blue-100);
+  --vela-primary-active-bg: var(--vela-primary-500);
+
+  /* ---- Semantic: border ---- */
+  --vela-border-default: var(--vela-grey-500);
+  --vela-border-subtle: var(--vela-grey-200);
+  --vela-border-active: var(--vela-primary-500);
+  --vela-border-inactive: var(--vela-grey-200);
+  --vela-border-action: var(--vela-grey-700);
+
+  /* ---- Semantic: text ---- */
+  --vela-text-default: var(--vela-grey-700);
+  --vela-text-heading: var(--vela-black);
+  --vela-text-de-emphasized: var(--vela-grey-600);
+  --vela-text-inactive: var(--vela-grey-400);
+  --vela-text-link: var(--vela-primary-500);
+  --vela-text-on-brand: var(--vela-white);
+  --vela-text-on-tint: var(--vela-grey-700);
+  --vela-text-error: var(--vela-red-700);
+
+  /* ---- Semantic: icon ---- */
+  --vela-icon-default: var(--vela-grey-500);
+  --vela-icon-strong: var(--vela-grey-700);
+  --vela-icon-selected: var(--vela-primary-500);
+  --vela-icon-disabled: var(--vela-grey-300);
+  --vela-icon-on-brand: var(--vela-white);
+
+  /* ---- Semantic: button ---- */
+  --vela-btn-primary-bg: var(--vela-primary-500);
+  --vela-btn-primary-hover-bg: var(--vela-primary-600);
+  --vela-btn-primary-border: var(--vela-primary-500);
+  --vela-btn-primary-text: var(--vela-white);
+  --vela-btn-standard-bg: var(--vela-grey-100);
+  --vela-btn-standard-hover-bg: var(--vela-grey-200);
+  --vela-btn-standard-text: var(--vela-grey-700);
+  --vela-btn-hollow-primary-text: var(--vela-primary-500);
+  --vela-btn-hollow-primary-border: var(--vela-primary-500);
+  --vela-btn-disabled-bg: var(--vela-grey-200);
+  --vela-btn-disabled-text: var(--vela-text-inactive);
+
+
+  /* ---- Semantic: destructive button ----
+     NOTE: red-500 on white is 3.93:1 and fails WCAG AA for normal text.
+     Destructive filled therefore binds red-700 (5.73:1). This is a
+     deliberate divergence from a naive "use the signal color" mapping. */
+  --vela-btn-destructive-bg: var(--vela-red-700);
+  --vela-btn-destructive-hover-bg: var(--vela-critical-500);
+  --vela-btn-destructive-text: var(--vela-white);
+  --vela-btn-destructive-hollow-text: var(--vela-red-700);
+  --vela-btn-standard-border: var(--vela-grey-600);
+  --vela-btn-hollow-hover-bg: var(--vela-primary-tint);
+
+  /* ---- Semantic: form control ---- */
+  --vela-control-bg: var(--vela-white);
+  --vela-control-border: var(--vela-grey-500);
+  --vela-control-border-hover: var(--vela-grey-500);
+  --vela-control-border-active: var(--vela-primary-500);
+  --vela-control-border-error: var(--vela-red-500);
+  --vela-control-bg-disabled: var(--vela-grey-100);
+  --vela-control-placeholder: var(--vela-grey-600);
+  --vela-toggle-off-bg: var(--vela-grey-400);
+  --vela-toggle-on-bg: var(--vela-primary-500);
+  --vela-toggle-knob: var(--vela-white);
+
+  /* ============================================================================
+     SEVERITY — 6 levels. Describes events and alerts.
+     Never interchange with Risk or Status. There is no "high severity".
+     Every level defines the full row: bg, border, signal, icon, text, indicator.
+     ============================================================================ */
+  --vela-bg-severity-success: var(--vela-green-100);
+  --vela-border-severity-success: var(--vela-green-300);
+  --vela-signal-severity-success: var(--vela-green-500);
+  --vela-icon-severity-success: var(--vela-green-800);
+  --vela-text-severity-success: var(--vela-green-800);
+  --vela-border-severity-success-indicator: var(--vela-green-700);
+
+  --vela-bg-severity-info: var(--vela-blue-100);
+  --vela-border-severity-info: var(--vela-blue-300);
+  --vela-signal-severity-info: var(--vela-blue-500);
+  --vela-icon-severity-info: var(--vela-blue-700);
+  --vela-text-severity-info: var(--vela-blue-700);
+  --vela-border-severity-info-indicator: var(--vela-blue-700);
+
+  --vela-bg-severity-warning: var(--vela-yellow-100);
+  --vela-border-severity-warning: var(--vela-yellow-300);
+  --vela-signal-severity-warning: var(--vela-yellow-500);
+  --vela-icon-severity-warning: var(--vela-yellow-800);
+  --vela-text-severity-warning: var(--vela-yellow-800);
+  --vela-border-severity-warning-indicator: var(--vela-yellow-700);
+
+  --vela-bg-severity-minor: var(--vela-orange-100);
+  --vela-border-severity-minor: var(--vela-orange-300);
+  --vela-signal-severity-minor: var(--vela-orange-500);
+  --vela-icon-severity-minor: var(--vela-orange-700);
+  --vela-text-severity-minor: var(--vela-orange-700);
+  --vela-border-severity-minor-indicator: var(--vela-orange-700);
+
+  --vela-bg-severity-major: var(--vela-red-100);
+  --vela-border-severity-major: var(--vela-red-300);
+  --vela-signal-severity-major: var(--vela-red-500);
+  --vela-icon-severity-major: var(--vela-red-700);
+  --vela-text-severity-major: var(--vela-red-700);
+  --vela-border-severity-major-indicator: var(--vela-red-700);
+
+  --vela-bg-severity-critical: var(--vela-critical-100);
+  --vela-border-severity-critical: var(--vela-critical-300);
+  --vela-signal-severity-critical: var(--vela-critical-500);
+  --vela-icon-severity-critical: var(--vela-critical-700);
+  --vela-text-severity-critical: var(--vela-critical-700);
+  --vela-border-severity-critical-indicator: var(--vela-critical-700);
+
+  /* ============================================================================
+     RISK — 3 levels. Describes scoring. There is no "critical risk".
+     ============================================================================ */
+  --vela-bg-risk-low: var(--vela-green-100);
+  --vela-border-risk-low: var(--vela-green-300);
+  --vela-signal-risk-low: var(--vela-green-500);
+  --vela-icon-risk-low: var(--vela-green-800);
+  --vela-text-risk-low: var(--vela-green-800);
+  --vela-border-risk-low-indicator: var(--vela-green-700);
+
+  --vela-bg-risk-medium: var(--vela-yellow-100);
+  --vela-border-risk-medium: var(--vela-yellow-300);
+  --vela-signal-risk-medium: var(--vela-yellow-500);
+  --vela-icon-risk-medium: var(--vela-yellow-800);
+  --vela-text-risk-medium: var(--vela-yellow-800);
+  --vela-border-risk-medium-indicator: var(--vela-yellow-700);
+
+  --vela-bg-risk-high: var(--vela-red-100);
+  --vela-border-risk-high: var(--vela-red-300);
+  --vela-signal-risk-high: var(--vela-red-500);
+  --vela-icon-risk-high: var(--vela-red-700);
+  --vela-text-risk-high: var(--vela-red-700);
+  --vela-border-risk-high-indicator: var(--vela-red-700);
+
+  /* ============================================================================
+     STATUS — 5 health states. Status Indicator dots only. Neither of the above.
+     ============================================================================ */
+  --vela-signal-status-unknown: var(--vela-grey-500);
+  --vela-signal-status-healthy: var(--vela-green-700);
+  --vela-signal-status-warning: var(--vela-yellow-700);
+  --vela-signal-status-medium: var(--vela-orange-600);
+  --vela-signal-status-unhealthy: var(--vela-red-500);
+
+  /* ---- Spacing: 5px base. 25 exists; 50 does not. ---- */
+  --vela-space-5: 5px;
+  --vela-space-10: 10px;
+  --vela-space-15: 15px;
+  --vela-space-20: 20px;
+  --vela-space-25: 25px;
+  --vela-space-30: 30px;
+  --vela-space-40: 40px;
+  --vela-space-60: 60px;
+  --vela-space-80: 80px;
+
+  /* ---- Icon sizes ---- */
+  --vela-icon-12: 12px;
+  --vela-icon-16: 16px;
+  --vela-icon-20: 20px;
+  --vela-icon-24: 24px;
+
+  /* ---- Control heights ---- */
+  --vela-control-height-24: 24px;
+  --vela-control-height-25: 25px;
+  --vela-control-height-26: 26px;
+  --vela-control-height-35: 35px;
+  --vela-control-height-40: 40px;
+  --vela-control-height-48: 48px;
+  --vela-control-height-60: 60px;
+
+  /* ---- Radius ---- */
+  --vela-radius-3: 3px;
+  --vela-radius-4: 4px;
+  --vela-radius-8: 8px;
+  --vela-radius-12: 12px;
+  --vela-radius-full: 9999px;
+
+  /* ---- Typography: family & weight ---- */
+  --vela-font-family-primary: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --vela-font-family-display: "Oswald", "Open Sans", -apple-system, sans-serif;
+  --vela-font-weight-light: 300;
+  --vela-font-weight-regular: 400;
+  --vela-font-weight-semibold: 600;
+
+  /* ---- Typography: scale (size / weight / line-height triples) ---- */
+  --vela-text-h1-size: 32px;   --vela-text-h1-weight: 300; --vela-text-h1-line-height: 42px;
+  --vela-text-h2-size: 24px;   --vela-text-h2-weight: 300; --vela-text-h2-line-height: 33px;
+  --vela-text-h3-size: 20px;   --vela-text-h3-weight: 300; --vela-text-h3-line-height: 27px;
+  --vela-text-h4-size: 16px;   --vela-text-h4-weight: 400; --vela-text-h4-line-height: 24px;
+  --vela-text-h5-size: 14px;   --vela-text-h5-weight: 600; --vela-text-h5-line-height: 21px;
+  --vela-text-h6-size: 12px;   --vela-text-h6-weight: 600; --vela-text-h6-line-height: 18px;
+  --vela-text-body-size: 14px; --vela-text-body-weight: 400; --vela-text-body-line-height: 21px;
+  --vela-text-meta-size: 12px; --vela-text-meta-weight: 400; --vela-text-meta-line-height: 18px;
+  --vela-text-meta-tracking: 0.3px;
+
+  --vela-text-button-tiny-size: 12px;    --vela-text-button-tiny-line-height: 18px;
+  --vela-text-button-regular-size: 14px; --vela-text-button-regular-line-height: 21px;
+  --vela-text-button-large-size: 15px;   --vela-text-button-large-line-height: 22px;
+  --vela-text-button-huge-size: 16px;    --vela-text-button-huge-line-height: 24px;
+
+  --vela-text-tab-size: 14px;       --vela-text-tab-line-height: 19px;
+  --vela-text-tab-large-size: 18px; --vela-text-tab-large-line-height: 25px;
+
+  /* ---- Focus ---- */
+  --vela-focus-ring-width: 2px;
+  --vela-focus-ring-offset: 2px;
+  --vela-focus-ring-color: var(--vela-border-active);
+
+  /* ---- Motion (respects reduced-motion in components.css) ---- */
+  --vela-duration-fast: 120ms;
+  --vela-duration-base: 180ms;
+  --vela-ease-standard: cubic-bezier(0.2, 0, 0.2, 1);
+}

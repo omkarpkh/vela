@@ -1,0 +1,49 @@
+/* ============================================================================
+   Base — applied only inside .vela-root so the kit never fights a host app's
+   global styles. Wrap your app (or any subtree) in <div class="vela-root">.
+   ============================================================================ */
+
+.vela-root {
+  font-family: var(--vela-font-family-primary);
+  font-size: var(--vela-text-body-size);
+  font-weight: var(--vela-text-body-weight);
+  line-height: var(--vela-text-body-line-height);
+  color: var(--vela-text-default);
+  background: var(--vela-bg-global);
+  -webkit-font-smoothing: antialiased;
+}
+
+.vela-root *,
+.vela-root *::before,
+.vela-root *::after {
+  box-sizing: border-box;
+}
+
+/* Every focusable element in the kit uses one focus treatment. */
+.vela-root :focus-visible {
+  outline: var(--vela-focus-ring-width) solid var(--vela-focus-ring-color);
+  outline-offset: var(--vela-focus-ring-offset);
+}
+
+/* Visually hidden, still read by screen readers. */
+.vela-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vela-root *,
+  .vela-root *::before,
+  .vela-root *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
