@@ -25,9 +25,24 @@ const check = (cond, msg) => { if (!cond) failures++; log(cond, msg) }
 console.log('\n  PACK & CONSUME\n  ' + '-'.repeat(58))
 
 // 1. real tarball -----------------------------------------------------------
-const packJson = JSON.parse(run('npm', ['pack', '--json', '--pack-destination', root], root))
-const tarball = join(root, packJson[0].filename)
-const files = packJson[0].files.map((f) => f.path)
+// `npm pack --json` is not as stable as it looks: it returns an array normally,
+// but the shape differs when npm invokes it from inside a lifecycle script, and
+// warnings can precede the JSON. Parse defensively and fail with the actual
+// output rather than a TypeError three lines later.
+function parsePack(raw) {
+  const start = raw.search(/[[{]/)
+  if (start === -1) throw new Error('npm pack --json produced no JSON:\n' + raw.slice(0, 400))
+  const parsed = JSON.parse(raw.slice(start))
+  const entry = Array.isArray(parsed) ? parsed[0] : parsed
+  if (!entry || !entry.filename || !Array.isArray(entry.files)) {
+    throw new Error('npm pack --json returned an unexpected shape: ' + JSON.stringify(parsed).slice(0, 300))
+  }
+  return entry
+}
+
+const packed = parsePack(run('npm', ['pack', '--json', '--pack-destination', root], root))
+const tarball = join(root, packed.filename)
+const files = packed.files.map((f) => f.path)
 
 check(files.includes('dist/index.js'), 'tarball contains dist/index.js')
 check(files.includes('dist/index.d.ts'), 'tarball contains dist/index.d.ts')
@@ -36,7 +51,7 @@ check(files.includes('dist/tokens.css'), 'tarball contains dist/tokens.css')
 check(files.some((f) => f.startsWith('guidelines/')), 'tarball contains guidelines/')
 check(!files.some((f) => f.startsWith('src/')), 'no src/ leaked into the tarball')
 check(!files.some((f) => f.includes('.test.')), 'no test files leaked into the tarball')
-console.log(`  ....  ${files.length} files, ${(packJson[0].size / 1024).toFixed(1)} kB packed`)
+console.log(`  ....  ${files.length} files, ${(packed.size / 1024).toFixed(1)} kB packed`)
 
 // 2. throwaway consumer -----------------------------------------------------
 const app = mkdtempSync(join(tmpdir(), 'vela-consumer-'))

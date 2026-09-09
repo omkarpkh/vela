@@ -47,11 +47,18 @@ jobs:
 
       # Trusted publishing needs npm >= 11.5.1. Node 22 ships npm 10.x, so the
       # upgrade is required — without it the publish falls back to looking for a
-      # token and fails with ENEEDAUTH.
+      # token and fails with ENEEDAUTH. Pinned to the 11 line rather than @latest
+      # so a future major cannot change this job's behaviour without a commit.
       - name: Ensure npm supports trusted publishing
         run: |
-          npm install -g npm@latest
+          npm install -g npm@11
           npm --version
 
       - run: npm ci
-      - run: npm publish --access public
+      - run: npm run build
+
+      # --ignore-scripts skips prepublishOnly on purpose. The full gate already
+      # ran in the `verify` job this one depends on; running it again here
+      # repeats minutes of work and puts a second failure surface inside the
+      # publish step itself — which is exactly what broke the first tagged release.
+      - run: npm publish --access public --ignore-scripts

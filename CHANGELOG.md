@@ -13,6 +13,13 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   npm first. Without it npm falls back to looking for a token and fails with `ENEEDAUTH`, which
   reads like a credentials problem rather than a version one.
 
+- **`scripts/verify-pack.mjs` crashed on `npm pack --json`.** It assumed an array and indexed
+  `[0].filename` directly, which threw a bare `TypeError` when npm returned a different shape from
+  inside a lifecycle script. It now parses defensively and reports the actual output.
+- The publish job no longer re-runs the full gate. `prepublishOnly` fired inside `npm publish`,
+  repeating work the `verify` job had already done and putting a second failure surface inside the
+  publish step — which is what broke the first tagged release. The gate runs once, in `verify`.
+
 This release exists to prove the pipeline end to end. The tarball contents are unchanged from
 0.3.0 — but this one was built and published by CI from a git tag, with a provenance attestation
 tying it to the commit, rather than by hand from a laptop.
