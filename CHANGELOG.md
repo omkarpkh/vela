@@ -3,6 +3,20 @@
 All notable changes to this project are documented here.
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.1] — 2026-09-10
+
+### Fixed
+- **The release workflow could never publish.** It triggered only on pushes to `main` and on pull
+  requests, while the publish job gated on `refs/tags/v*` — so a tag push matched no trigger and
+  the job never ran. Tags are now listed explicitly.
+- Trusted publishing requires npm >= 11.5.1; Node 22 ships npm 10.x. The publish job now upgrades
+  npm first. Without it npm falls back to looking for a token and fails with `ENEEDAUTH`, which
+  reads like a credentials problem rather than a version one.
+
+This release exists to prove the pipeline end to end. The tarball contents are unchanged from
+0.3.0 — but this one was built and published by CI from a git tag, with a provenance attestation
+tying it to the commit, rather than by hand from a laptop.
+
 ## [0.3.0] — 2026-09-10
 
 ### Added
