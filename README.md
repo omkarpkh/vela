@@ -101,6 +101,23 @@ npm run contrast   # WCAG report for both themes
 npm run verify     # typecheck + tests + build + pack-and-consume gate
 ```
 
+## Editing tokens — one source, three targets
+
+`tokens/vela.tokens.json` is the only place a value is written. It uses the W3C Design Tokens
+format (2025.10), ships inside the package as `@omkarux/vela/tokens.json`, and everything else is
+generated from it:
+
+```bash
+npm run tokens          # → src/styles/tokens.light.css + tokens.dark.body.css
+npm run tokens:figma    # → a Plugin API script that creates-or-updates every Figma variable
+npm run tokens:check    # fails if the CSS was hand-edited instead of the JSON (runs in CI)
+```
+
+Figma's REST API only lets Enterprise plans write variables, so the Figma half is a generated
+script run inside the file (through the Figma MCP or the Scripter plugin). It looks each variable
+up by collection and name, so re-running never duplicates: the first run against the live library
+reported 0 created / 223 updated, then created the 11 numeric tokens Figma had never had.
+
 ## Using it on another stack
 
 Worth being precise about what travels and what doesn't:

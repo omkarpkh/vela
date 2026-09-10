@@ -1,0 +1,293 @@
+/* ============================================================================
+   VELA — Design tokens
+   Two layers: primitives (raw scale values) and semantics (role-named).
+   Always bind to semantics. Primitives exist so semantics can be re-pointed
+   for theming — binding a primitive directly defeats the entire architecture.
+   Numeric tokens carry their unit. Use them directly; never calc(... * 1px).
+   ============================================================================ */
+
+:root {
+  color-scheme: light;
+
+  /* ---- Primitives: neutral ---- */
+  @black
+  @white
+  @grey-50
+  @grey-100
+  @grey-200
+  @grey-300
+  @grey-400
+  @grey-500
+  @grey-600   /* AA-safe de-emphasized text on white */
+  @grey-700
+  @grey-800
+  @grey-850
+  @grey-900
+  @grey-950
+
+  /* ---- Primitives: brand / blue ---- */
+  @primary-300
+  @primary-400
+  @primary-500
+  @primary-600
+  @blue-100
+  @blue-150
+  @blue-300
+  @blue-500
+  @blue-700
+  @blue-950
+
+  /* ---- Primitives: red / critical ---- */
+  @red-100
+  @red-300
+  @red-500
+  @red-700
+  @red-950
+  @critical-100
+  @critical-300
+  @critical-500
+  @critical-700
+  @critical-950
+
+  /* ---- Primitives: yellow / orange / green ---- */
+  @yellow-100
+  @yellow-300
+  @yellow-500
+  @yellow-600
+  @yellow-700
+  @yellow-800
+  @yellow-950
+  @orange-100
+  @orange-300
+  @orange-500
+  @orange-600 /* AA-safe status dot on white */
+  @orange-700
+  @orange-950
+  @green-100
+  @green-300
+  @green-500
+  @green-700
+  @green-800  /* AA-safe success text on green-100 */
+  @green-950
+
+  /* ---- Semantic: surface ---- */
+  @bg-global
+  @bg-container
+  @bg-raised
+  @bg-hover
+  @bg-tooltip
+  @bg-inactive
+  @bg-selected
+  @primary-tint
+  @primary-active-bg
+
+  /* ---- Semantic: border ---- */
+  @border-default
+  @border-subtle
+  @border-active
+  @border-inactive
+  @border-action
+
+  /* ---- Semantic: text ---- */
+  @text-default
+  @text-heading
+  @text-de-emphasized
+  @text-inactive
+  @text-link
+  @text-on-brand
+  @text-on-tint
+  @text-error
+
+  /* ---- Semantic: icon ---- */
+  @icon-default
+  @icon-strong
+  @icon-selected
+  @icon-disabled
+  @icon-on-brand
+
+  /* ---- Semantic: button ---- */
+  @btn-primary-bg
+  @btn-primary-hover-bg
+  @btn-primary-border
+  @btn-primary-text
+  @btn-standard-bg
+  @btn-standard-hover-bg
+  @btn-standard-text
+  @btn-hollow-primary-text
+  @btn-hollow-primary-border
+  @btn-disabled-bg
+  @btn-disabled-text
+
+
+  /* ---- Semantic: destructive button ----
+     NOTE: red-500 on white is 4.08:1 and fails WCAG AA for normal text.
+     Destructive filled therefore binds red-700 (6.57:1). This is a
+     deliberate divergence from a naive "use the signal color" mapping. */
+  @btn-destructive-bg
+  @btn-destructive-hover-bg
+  @btn-destructive-text
+  @btn-destructive-hollow-text
+  @btn-standard-border
+  @btn-hollow-hover-bg
+
+  /* ---- Semantic: form control ---- */
+  @control-bg
+  @control-border
+  @control-border-hover
+  @control-border-active
+  @control-border-error
+  @control-bg-disabled
+  @control-placeholder
+  @toggle-off-bg
+  @toggle-on-bg
+  @toggle-knob
+
+  /* ============================================================================
+     SEVERITY — 6 levels. Describes events and alerts.
+     Never interchange with Risk or Status. There is no "high severity".
+     Every level defines the full row: bg, border, signal, icon, text, indicator.
+     ============================================================================ */
+  @bg-severity-success
+  @border-severity-success
+  @signal-severity-success
+  @icon-severity-success
+  @text-severity-success
+  @border-severity-success-indicator
+
+  @bg-severity-info
+  @border-severity-info
+  @signal-severity-info
+  @icon-severity-info
+  @text-severity-info
+  @border-severity-info-indicator
+
+  @bg-severity-warning
+  @border-severity-warning
+  @signal-severity-warning
+  @icon-severity-warning
+  @text-severity-warning
+  @border-severity-warning-indicator
+
+  @bg-severity-minor
+  @border-severity-minor
+  @signal-severity-minor
+  @icon-severity-minor
+  @text-severity-minor
+  @border-severity-minor-indicator
+
+  @bg-severity-major
+  @border-severity-major
+  @signal-severity-major
+  @icon-severity-major
+  @text-severity-major
+  @border-severity-major-indicator
+
+  @bg-severity-critical
+  @border-severity-critical
+  @signal-severity-critical
+  @icon-severity-critical
+  @text-severity-critical
+  @border-severity-critical-indicator
+
+  /* ============================================================================
+     RISK — 3 levels. Describes scoring. There is no "critical risk".
+     ============================================================================ */
+  @bg-risk-low
+  @border-risk-low
+  @signal-risk-low
+  @icon-risk-low
+  @text-risk-low
+  @border-risk-low-indicator
+
+  @bg-risk-medium
+  @border-risk-medium
+  @signal-risk-medium
+  @icon-risk-medium
+  @text-risk-medium
+  @border-risk-medium-indicator
+
+  @bg-risk-high
+  @border-risk-high
+  @signal-risk-high
+  @icon-risk-high
+  @text-risk-high
+  @border-risk-high-indicator
+
+  /* ============================================================================
+     STATUS — 5 health states. Status Indicator dots only. Neither of the above.
+     ============================================================================ */
+  @signal-status-unknown
+  @signal-status-healthy
+  @signal-status-warning
+  @signal-status-medium
+  @signal-status-unhealthy
+
+  /* ---- Spacing: 5px base. 25 exists; 50 does not. ---- */
+  @space-5
+  @space-10
+  @space-15
+  @space-20
+  @space-25
+  @space-30
+  @space-40
+  @space-60
+  @space-80
+
+  /* ---- Icon sizes ---- */
+  @icon-12
+  @icon-16
+  @icon-20
+  @icon-24
+
+  /* ---- Control heights ---- */
+  @control-height-24
+  @control-height-25
+  @control-height-26
+  @control-height-35
+  @control-height-40
+  @control-height-48
+  @control-height-60
+
+  /* ---- Radius ---- */
+  @radius-3
+  @radius-4
+  @radius-8
+  @radius-12
+  @radius-full
+
+  /* ---- Typography: family & weight ---- */
+  @font-family-primary
+  @font-family-display
+  @font-weight-light
+  @font-weight-regular
+  @font-weight-semibold
+
+  /* ---- Typography: scale (size / weight / line-height triples) ---- */
+  @text-h1-size   --vela-text-h1-weight: 300; --vela-text-h1-line-height: 42px;
+  @text-h2-size   --vela-text-h2-weight: 300; --vela-text-h2-line-height: 33px;
+  @text-h3-size   --vela-text-h3-weight: 300; --vela-text-h3-line-height: 27px;
+  @text-h4-size   --vela-text-h4-weight: 400; --vela-text-h4-line-height: 24px;
+  @text-h5-size   --vela-text-h5-weight: 600; --vela-text-h5-line-height: 21px;
+  @text-h6-size   --vela-text-h6-weight: 600; --vela-text-h6-line-height: 18px;
+  @text-body-size --vela-text-body-weight: 400; --vela-text-body-line-height: 21px;
+  @text-meta-size --vela-text-meta-weight: 400; --vela-text-meta-line-height: 18px;
+  @text-meta-tracking
+
+  @text-button-tiny-size    --vela-text-button-tiny-line-height: 18px;
+  @text-button-regular-size --vela-text-button-regular-line-height: 21px;
+  @text-button-large-size   --vela-text-button-large-line-height: 22px;
+  @text-button-huge-size    --vela-text-button-huge-line-height: 24px;
+
+  @text-tab-size       --vela-text-tab-line-height: 19px;
+  @text-tab-large-size --vela-text-tab-large-line-height: 25px;
+
+  /* ---- Focus ---- */
+  @focus-ring-width
+  @focus-ring-offset
+  @focus-ring-color
+
+  /* ---- Motion (respects reduced-motion in components.css) ---- */
+  @duration-fast
+  @duration-base
+  @ease-standard
+}

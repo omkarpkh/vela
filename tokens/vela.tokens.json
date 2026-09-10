@@ -1,0 +1,2577 @@
+{
+  "$schema": "https://www.designtokens.org/tr/2025.10/format/",
+  "$description": "Vela design tokens. THE source of truth: dist/tokens.css and the Figma library are both generated from this file. Edit here, run `npm run tokens`.",
+  "primitives": {
+    "black": {
+      "$type": "color",
+      "$value": "#191d1f",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "black"
+        }
+      }
+    },
+    "white": {
+      "$type": "color",
+      "$value": "#ffffff",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "white"
+        }
+      }
+    },
+    "grey-50": {
+      "$type": "color",
+      "$value": "#f7f9f9",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "grey/50"
+        }
+      }
+    },
+    "grey-100": {
+      "$type": "color",
+      "$value": "#eef2f2",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "grey/100"
+        }
+      }
+    },
+    "grey-200": {
+      "$type": "color",
+      "$value": "#dde3e4",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "grey/200"
+        }
+      }
+    },
+    "grey-300": {
+      "$type": "color",
+      "$value": "#c8d0d2",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "grey/300"
+        }
+      }
+    },
+    "grey-400": {
+      "$type": "color",
+      "$value": "#a3aeb1",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "grey/400"
+        }
+      }
+    },
+    "grey-500": {
+      "$type": "color",
+      "$value": "#7f8c90",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "grey/500"
+        }
+      }
+    },
+    "grey-600": {
+      "$type": "color",
+      "$value": "#667377",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "grey/600"
+        }
+      }
+    },
+    "grey-700": {
+      "$type": "color",
+      "$value": "#49555a",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "grey/700"
+        }
+      }
+    },
+    "grey-800": {
+      "$type": "color",
+      "$value": "#333d41",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "grey/800"
+        }
+      }
+    },
+    "grey-850": {
+      "$type": "color",
+      "$value": "#262e31",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "grey/850"
+        }
+      }
+    },
+    "grey-900": {
+      "$type": "color",
+      "$value": "#1b2225",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "grey/900"
+        }
+      }
+    },
+    "grey-950": {
+      "$type": "color",
+      "$value": "#11171a",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "grey/950"
+        }
+      }
+    },
+    "primary-300": {
+      "$type": "color",
+      "$value": "#5fb8c9",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "primary/300"
+        }
+      }
+    },
+    "primary-400": {
+      "$type": "color",
+      "$value": "#2f9db3",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "primary/400"
+        }
+      }
+    },
+    "primary-500": {
+      "$type": "color",
+      "$value": "#0a6c7d",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "primary/500"
+        }
+      }
+    },
+    "primary-600": {
+      "$type": "color",
+      "$value": "#075462",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "primary/600"
+        }
+      }
+    },
+    "blue-100": {
+      "$type": "color",
+      "$value": "#e6eefb",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "blue/100"
+        }
+      }
+    },
+    "blue-150": {
+      "$type": "color",
+      "$value": "#cfdff7",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "blue/150"
+        }
+      }
+    },
+    "blue-300": {
+      "$type": "color",
+      "$value": "#85aae8",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "blue/300"
+        }
+      }
+    },
+    "blue-500": {
+      "$type": "color",
+      "$value": "#3d7fd6",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "blue/500"
+        }
+      }
+    },
+    "blue-700": {
+      "$type": "color",
+      "$value": "#35558a",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "blue/700"
+        }
+      }
+    },
+    "blue-950": {
+      "$type": "color",
+      "$value": "#0e1a2e",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "blue/950"
+        }
+      }
+    },
+    "red-100": {
+      "$type": "color",
+      "$value": "#fce8e6",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "red/100"
+        }
+      }
+    },
+    "red-300": {
+      "$type": "color",
+      "$value": "#f0918c",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "red/300"
+        }
+      }
+    },
+    "red-500": {
+      "$type": "color",
+      "$value": "#dd4b3e",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "red/500"
+        }
+      }
+    },
+    "red-700": {
+      "$type": "color",
+      "$value": "#ab3125",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "red/700"
+        }
+      }
+    },
+    "red-950": {
+      "$type": "color",
+      "$value": "#2a1310",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "red/950"
+        }
+      }
+    },
+    "critical-100": {
+      "$type": "color",
+      "$value": "#f2d6d4",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "critical/100"
+        }
+      }
+    },
+    "critical-300": {
+      "$type": "color",
+      "$value": "#cc6f68",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "critical/300"
+        }
+      }
+    },
+    "critical-500": {
+      "$type": "color",
+      "$value": "#a81c14",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "critical/500"
+        }
+      }
+    },
+    "critical-700": {
+      "$type": "color",
+      "$value": "#7d150f",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "critical/700"
+        }
+      }
+    },
+    "critical-950": {
+      "$type": "color",
+      "$value": "#2b100e",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "critical/950"
+        }
+      }
+    },
+    "yellow-100": {
+      "$type": "color",
+      "$value": "#fdf1d3",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "yellow/100"
+        }
+      }
+    },
+    "yellow-300": {
+      "$type": "color",
+      "$value": "#f7d382",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "yellow/300"
+        }
+      }
+    },
+    "yellow-500": {
+      "$type": "color",
+      "$value": "#f0c14e",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "yellow/500"
+        }
+      }
+    },
+    "yellow-600": {
+      "$type": "color",
+      "$value": "#c99a10",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "yellow/600"
+        }
+      }
+    },
+    "yellow-700": {
+      "$type": "color",
+      "$value": "#9a7a0c",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "yellow/700"
+        }
+      }
+    },
+    "yellow-800": {
+      "$type": "color",
+      "$value": "#7a6224",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "yellow/800"
+        }
+      }
+    },
+    "yellow-950": {
+      "$type": "color",
+      "$value": "#26200e",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "yellow/950"
+        }
+      }
+    },
+    "orange-100": {
+      "$type": "color",
+      "$value": "#fde7d0",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "orange/100"
+        }
+      }
+    },
+    "orange-300": {
+      "$type": "color",
+      "$value": "#f5ad63",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "orange/300"
+        }
+      }
+    },
+    "orange-500": {
+      "$type": "color",
+      "$value": "#ea7f1a",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "orange/500"
+        }
+      }
+    },
+    "orange-600": {
+      "$type": "color",
+      "$value": "#c86a0d",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "orange/600"
+        }
+      }
+    },
+    "orange-700": {
+      "$type": "color",
+      "$value": "#9c5408",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "orange/700"
+        }
+      }
+    },
+    "orange-950": {
+      "$type": "color",
+      "$value": "#281a0b",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "orange/950"
+        }
+      }
+    },
+    "green-100": {
+      "$type": "color",
+      "$value": "#dcefe0",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "green/100"
+        }
+      }
+    },
+    "green-300": {
+      "$type": "color",
+      "$value": "#86c795",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "green/300"
+        }
+      }
+    },
+    "green-500": {
+      "$type": "color",
+      "$value": "#4aa863",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "green/500"
+        }
+      }
+    },
+    "green-700": {
+      "$type": "color",
+      "$value": "#1f7340",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "green/700"
+        }
+      }
+    },
+    "green-800": {
+      "$type": "color",
+      "$value": "#175c33",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "green/800"
+        }
+      }
+    },
+    "green-950": {
+      "$type": "color",
+      "$value": "#0d2318",
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "vela": {
+          "figma": "green/950"
+        }
+      }
+    }
+  },
+  "color": {
+    "bg-global": {
+      "$type": "color",
+      "$value": "{white}",
+      "$extensions": {
+        "vela": {
+          "dark": "{grey-950}",
+          "figma": "surface/global"
+        }
+      }
+    },
+    "bg-container": {
+      "$type": "color",
+      "$value": "{grey-100}",
+      "$extensions": {
+        "vela": {
+          "dark": "{grey-900}",
+          "figma": "surface/container"
+        }
+      }
+    },
+    "bg-raised": {
+      "$type": "color",
+      "$value": "{white}",
+      "$extensions": {
+        "vela": {
+          "dark": "{grey-850}",
+          "figma": "surface/raised"
+        }
+      }
+    },
+    "bg-hover": {
+      "$type": "color",
+      "$value": "{grey-100}",
+      "$extensions": {
+        "vela": {
+          "dark": "{grey-850}",
+          "figma": "surface/hover"
+        }
+      }
+    },
+    "bg-tooltip": {
+      "$type": "color",
+      "$value": "{grey-800}",
+      "$extensions": {
+        "vela": {
+          "dark": "{grey-700}",
+          "figma": "surface/tooltip"
+        }
+      }
+    },
+    "bg-inactive": {
+      "$type": "color",
+      "$value": "{grey-100}",
+      "$extensions": {
+        "vela": {
+          "dark": "{grey-900}",
+          "figma": "surface/inactive"
+        }
+      }
+    },
+    "bg-selected": {
+      "$type": "color",
+      "$value": "{blue-100}",
+      "$extensions": {
+        "vela": {
+          "dark": "{blue-950}",
+          "figma": "surface/selected"
+        }
+      }
+    },
+    "primary-tint": {
+      "$type": "color",
+      "$value": "{blue-100}",
+      "$extensions": {
+        "vela": {
+          "dark": "{blue-950}",
+          "figma": "surface/primary-tint"
+        }
+      }
+    },
+    "primary-active-bg": {
+      "$type": "color",
+      "$value": "{primary-500}",
+      "$extensions": {
+        "vela": {
+          "dark": "{primary-500}",
+          "figma": "surface/primary-active"
+        }
+      }
+    },
+    "border-default": {
+      "$type": "color",
+      "$value": "{grey-500}",
+      "$extensions": {
+        "vela": {
+          "dark": "{grey-600}",
+          "figma": "border/default"
+        }
+      }
+    },
+    "border-subtle": {
+      "$type": "color",
+      "$value": "{grey-200}",
+      "$extensions": {
+        "vela": {
+          "dark": "{grey-850}",
+          "figma": "border/subtle"
+        }
+      }
+    },
+    "border-active": {
+      "$type": "color",
+      "$value": "{primary-500}",
+      "$extensions": {
+        "vela": {
+          "dark": "{primary-400}",
+          "figma": "border/active"
+        }
+      }
+    },
+    "border-inactive": {
+      "$type": "color",
+      "$value": "{grey-200}",
+      "$extensions": {
+        "vela": {
+          "dark": "{grey-850}",
+          "figma": "border/inactive"
+        }
+      }
+    },
+    "border-action": {
+      "$type": "color",
+      "$value": "{grey-700}",
+      "$extensions": {
+        "vela": {
+          "dark": "{grey-500}",
+          "figma": "border/action"
+        }
+      }
+    },
+    "text-default": {
+      "$type": "color",
+      "$value": "{grey-700}",
+      "$extensions": {
+        "vela": {
+          "dark": "{grey-300}",
+          "figma": "text/default"
+        }
+      }
+    },
+    "text-heading": {
+      "$type": "color",
+      "$value": "{black}",
+      "$extensions": {
+        "vela": {
+          "dark": "{grey-50}",
+          "figma": "text/heading"
+        }
+      }
+    },
+    "text-de-emphasized": {
+      "$type": "color",
+      "$value": "{grey-600}",
+      "$extensions": {
+        "vela": {
+          "dark": "{grey-500}",
+          "figma": "text/de-emphasized"
+        }
+      }
+    },
+    "text-inactive": {
+      "$type": "color",
+      "$value": "{grey-400}",
+      "$extensions": {
+        "vela": {
+          "dark": "{grey-700}",
+          "figma": "text/inactive"
+        }
+      }
+    },
+    "text-link": {
+      "$type": "color",
+      "$value": "{primary-500}",
+      "$extensions": {
+        "vela": {
+          "dark": "{primary-400}",
+          "figma": "text/link"
+        }
+      }
+    },
+    "text-on-brand": {
+      "$type": "color",
+      "$value": "{white}",
+      "$extensions": {
+        "vela": {
+          "dark": "{white}",
+          "figma": "text/on-brand"
+        }
+      }
+    },
+    "text-on-tint": {
+      "$type": "color",
+      "$value": "{grey-700}",
+      "$extensions": {
+        "vela": {
+          "dark": "{grey-300}",
+          "figma": "text/on-tint"
+        }
+      }
+    },
+    "text-error": {
+      "$type": "color",
+      "$value": "{red-700}",
+      "$extensions": {
+        "vela": {
+          "dark": "{red-300}",
+          "figma": "text/error"
+        }
+      }
+    },
+    "icon-default": {
+      "$type": "color",
+      "$value": "{grey-500}",
+      "$extensions": {
+        "vela": {
+          "dark": "{grey-500}",
+          "figma": "icon/default"
+        }
+      }
+    },
+    "icon-strong": {
+      "$type": "color",
+      "$value": "{grey-700}",
+      "$extensions": {
+        "vela": {
+          "dark": "{grey-300}",
+          "figma": "icon/strong"
+        }
+      }
+    },
+    "icon-selected": {
+      "$type": "color",
+      "$value": "{primary-500}",
+      "$extensions": {
+        "vela": {
+          "dark": "{primary-400}",
+          "figma": "icon/selected"
+        }
+      }
+    },
+    "icon-disabled": {
+      "$type": "color",
+      "$value": "{grey-300}",
+      "$extensions": {
+        "vela": {
+          "dark": "{grey-700}",
+          "figma": "icon/disabled"
+        }
+      }
+    },
+    "icon-on-brand": {
+      "$type": "color",
+      "$value": "{white}",
+      "$extensions": {
+        "vela": {
+          "dark": "{white}",
+          "figma": "icon/on-brand"
+        }
+      }
+    },
+    "btn-primary-bg": {
+      "$type": "color",
+      "$value": "{primary-500}",
+      "$extensions": {
+        "vela": {
+          "dark": "{primary-500}",
+          "figma": "button/primary-bg"
+        }
+      }
+    },
+    "btn-primary-hover-bg": {
+      "$type": "color",
+      "$value": "{primary-600}",
+      "$extensions": {
+        "vela": {
+          "dark": "{primary-400}",
+          "figma": "button/primary-hover-bg"
+        }
+      }
+    },
+    "btn-primary-border": {
+      "$type": "color",
+      "$value": "{primary-500}",
+      "$extensions": {
+        "vela": {
+          "dark": "{primary-500}",
+          "figma": "button/primary-border"
+        }
+      }
+    },
+    "btn-primary-text": {
+      "$type": "color",
+      "$value": "{white}",
+      "$extensions": {
+        "vela": {
+          "dark": "{white}",
+          "figma": "button/primary-text"
+        }
+      }
+    },
+    "btn-standard-bg": {
+      "$type": "color",
+      "$value": "{grey-100}",
+      "$extensions": {
+        "vela": {
+          "dark": "{grey-850}",
+          "figma": "button/standard-bg"
+        }
+      }
+    },
+    "btn-standard-hover-bg": {
+      "$type": "color",
+      "$value": "{grey-200}",
+      "$extensions": {
+        "vela": {
+          "dark": "{grey-800}",
+          "figma": "button/standard-hover-bg"
+        }
+      }
+    },
+    "btn-standard-text": {
+      "$type": "color",
+      "$value": "{grey-700}",
+      "$extensions": {
+        "vela": {
+          "dark": "{grey-300}",
+          "figma": "button/standard-text"
+        }
+      }
+    },
+    "btn-hollow-primary-text": {
+      "$type": "color",
+      "$value": "{primary-500}",
+      "$extensions": {
+        "vela": {
+          "dark": "{primary-300}",
+          "figma": "button/hollow-primary-text"
+        }
+      }
+    },
+    "btn-hollow-primary-border": {
+      "$type": "color",
+      "$value": "{primary-500}",
+      "$extensions": {
+        "vela": {
+          "dark": "{primary-400}",
+          "figma": "button/hollow-primary-border"
+        }
+      }
+    },
+    "btn-disabled-bg": {
+      "$type": "color",
+      "$value": "{grey-200}",
+      "$extensions": {
+        "vela": {
+          "dark": "{grey-850}",
+          "figma": "button/disabled-bg"
+        }
+      }
+    },
+    "btn-disabled-text": {
+      "$type": "color",
+      "$value": "{text-inactive}",
+      "$extensions": {
+        "vela": {
+          "dark": "{grey-700}",
+          "figma": "button/disabled-text"
+        }
+      }
+    },
+    "btn-destructive-bg": {
+      "$type": "color",
+      "$value": "{red-700}",
+      "$extensions": {
+        "vela": {
+          "dark": "{red-700}",
+          "figma": "button/destructive-bg"
+        }
+      }
+    },
+    "btn-destructive-hover-bg": {
+      "$type": "color",
+      "$value": "{critical-500}",
+      "$extensions": {
+        "vela": {
+          "dark": "{red-500}",
+          "figma": "button/destructive-hover-bg"
+        }
+      }
+    },
+    "btn-destructive-text": {
+      "$type": "color",
+      "$value": "{white}",
+      "$extensions": {
+        "vela": {
+          "dark": "{white}",
+          "figma": "button/destructive-text"
+        }
+      }
+    },
+    "btn-destructive-hollow-text": {
+      "$type": "color",
+      "$value": "{red-700}",
+      "$extensions": {
+        "vela": {
+          "dark": "{red-300}",
+          "figma": "button/destructive-hollow-text"
+        }
+      }
+    },
+    "btn-standard-border": {
+      "$type": "color",
+      "$value": "{grey-600}",
+      "$extensions": {
+        "vela": {
+          "dark": "{grey-500}",
+          "figma": "button/standard-border"
+        }
+      }
+    },
+    "btn-hollow-hover-bg": {
+      "$type": "color",
+      "$value": "{primary-tint}",
+      "$extensions": {
+        "vela": {
+          "dark": "{primary-tint}",
+          "figma": "button/hollow-hover-bg"
+        }
+      }
+    },
+    "control-bg": {
+      "$type": "color",
+      "$value": "{white}",
+      "$extensions": {
+        "vela": {
+          "dark": "{grey-900}",
+          "figma": "control/bg"
+        }
+      }
+    },
+    "control-border": {
+      "$type": "color",
+      "$value": "{grey-500}",
+      "$extensions": {
+        "vela": {
+          "dark": "{grey-600}",
+          "figma": "control/border"
+        }
+      }
+    },
+    "control-border-hover": {
+      "$type": "color",
+      "$value": "{grey-500}",
+      "$extensions": {
+        "vela": {
+          "dark": "{grey-500}",
+          "figma": "control/border-hover"
+        }
+      }
+    },
+    "control-border-active": {
+      "$type": "color",
+      "$value": "{primary-500}",
+      "$extensions": {
+        "vela": {
+          "dark": "{primary-400}",
+          "figma": "control/border-active"
+        }
+      }
+    },
+    "control-border-error": {
+      "$type": "color",
+      "$value": "{red-500}",
+      "$extensions": {
+        "vela": {
+          "dark": "{red-500}",
+          "figma": "control/border-error"
+        }
+      }
+    },
+    "control-bg-disabled": {
+      "$type": "color",
+      "$value": "{grey-100}",
+      "$extensions": {
+        "vela": {
+          "dark": "{grey-900}",
+          "figma": "control/bg-disabled"
+        }
+      }
+    },
+    "control-placeholder": {
+      "$type": "color",
+      "$value": "{grey-600}",
+      "$extensions": {
+        "vela": {
+          "dark": "{grey-500}",
+          "figma": "control/placeholder"
+        }
+      }
+    },
+    "toggle-off-bg": {
+      "$type": "color",
+      "$value": "{grey-400}",
+      "$extensions": {
+        "vela": {
+          "dark": "{grey-700}",
+          "figma": "control/toggle-off-bg"
+        }
+      }
+    },
+    "toggle-on-bg": {
+      "$type": "color",
+      "$value": "{primary-500}",
+      "$extensions": {
+        "vela": {
+          "dark": "{primary-500}",
+          "figma": "control/toggle-on-bg"
+        }
+      }
+    },
+    "toggle-knob": {
+      "$type": "color",
+      "$value": "{white}",
+      "$extensions": {
+        "vela": {
+          "dark": "{white}",
+          "figma": "control/toggle-knob"
+        }
+      }
+    },
+    "bg-severity-success": {
+      "$type": "color",
+      "$value": "{green-100}",
+      "$extensions": {
+        "vela": {
+          "dark": "{green-950}",
+          "figma": "severity/success/bg"
+        }
+      },
+      "$description": "Severity describes events. Never interchange with Risk or Status."
+    },
+    "border-severity-success": {
+      "$type": "color",
+      "$value": "{green-300}",
+      "$extensions": {
+        "vela": {
+          "dark": "{green-700}",
+          "figma": "severity/success/border"
+        }
+      },
+      "$description": "Severity describes events. Never interchange with Risk or Status."
+    },
+    "signal-severity-success": {
+      "$type": "color",
+      "$value": "{green-500}",
+      "$extensions": {
+        "vela": {
+          "dark": "{green-500}",
+          "figma": "severity/success/signal"
+        }
+      },
+      "$description": "Severity describes events. Never interchange with Risk or Status."
+    },
+    "icon-severity-success": {
+      "$type": "color",
+      "$value": "{green-800}",
+      "$extensions": {
+        "vela": {
+          "dark": "{green-300}",
+          "figma": "severity/success/icon"
+        }
+      },
+      "$description": "Severity describes events. Never interchange with Risk or Status."
+    },
+    "text-severity-success": {
+      "$type": "color",
+      "$value": "{green-800}",
+      "$extensions": {
+        "vela": {
+          "dark": "{green-300}",
+          "figma": "severity/success/text"
+        }
+      },
+      "$description": "Severity describes events. Never interchange with Risk or Status."
+    },
+    "border-severity-success-indicator": {
+      "$type": "color",
+      "$value": "{green-700}",
+      "$extensions": {
+        "vela": {
+          "dark": "{green-500}",
+          "figma": "severity/success/indicator"
+        }
+      },
+      "$description": "Severity describes events. Never interchange with Risk or Status."
+    },
+    "bg-severity-info": {
+      "$type": "color",
+      "$value": "{blue-100}",
+      "$extensions": {
+        "vela": {
+          "dark": "{blue-950}",
+          "figma": "severity/info/bg"
+        }
+      },
+      "$description": "Severity describes events. Never interchange with Risk or Status."
+    },
+    "border-severity-info": {
+      "$type": "color",
+      "$value": "{blue-300}",
+      "$extensions": {
+        "vela": {
+          "dark": "{blue-700}",
+          "figma": "severity/info/border"
+        }
+      },
+      "$description": "Severity describes events. Never interchange with Risk or Status."
+    },
+    "signal-severity-info": {
+      "$type": "color",
+      "$value": "{blue-500}",
+      "$extensions": {
+        "vela": {
+          "dark": "{blue-500}",
+          "figma": "severity/info/signal"
+        }
+      },
+      "$description": "Severity describes events. Never interchange with Risk or Status."
+    },
+    "icon-severity-info": {
+      "$type": "color",
+      "$value": "{blue-700}",
+      "$extensions": {
+        "vela": {
+          "dark": "{blue-300}",
+          "figma": "severity/info/icon"
+        }
+      },
+      "$description": "Severity describes events. Never interchange with Risk or Status."
+    },
+    "text-severity-info": {
+      "$type": "color",
+      "$value": "{blue-700}",
+      "$extensions": {
+        "vela": {
+          "dark": "{blue-300}",
+          "figma": "severity/info/text"
+        }
+      },
+      "$description": "Severity describes events. Never interchange with Risk or Status."
+    },
+    "border-severity-info-indicator": {
+      "$type": "color",
+      "$value": "{blue-700}",
+      "$extensions": {
+        "vela": {
+          "dark": "{blue-500}",
+          "figma": "severity/info/indicator"
+        }
+      },
+      "$description": "Severity describes events. Never interchange with Risk or Status."
+    },
+    "bg-severity-warning": {
+      "$type": "color",
+      "$value": "{yellow-100}",
+      "$extensions": {
+        "vela": {
+          "dark": "{yellow-950}",
+          "figma": "severity/warning/bg"
+        }
+      },
+      "$description": "Severity describes events. Never interchange with Risk or Status."
+    },
+    "border-severity-warning": {
+      "$type": "color",
+      "$value": "{yellow-300}",
+      "$extensions": {
+        "vela": {
+          "dark": "{yellow-700}",
+          "figma": "severity/warning/border"
+        }
+      },
+      "$description": "Severity describes events. Never interchange with Risk or Status."
+    },
+    "signal-severity-warning": {
+      "$type": "color",
+      "$value": "{yellow-500}",
+      "$extensions": {
+        "vela": {
+          "dark": "{yellow-500}",
+          "figma": "severity/warning/signal"
+        }
+      },
+      "$description": "Severity describes events. Never interchange with Risk or Status."
+    },
+    "icon-severity-warning": {
+      "$type": "color",
+      "$value": "{yellow-800}",
+      "$extensions": {
+        "vela": {
+          "dark": "{yellow-300}",
+          "figma": "severity/warning/icon"
+        }
+      },
+      "$description": "Severity describes events. Never interchange with Risk or Status."
+    },
+    "text-severity-warning": {
+      "$type": "color",
+      "$value": "{yellow-800}",
+      "$extensions": {
+        "vela": {
+          "dark": "{yellow-300}",
+          "figma": "severity/warning/text"
+        }
+      },
+      "$description": "Severity describes events. Never interchange with Risk or Status."
+    },
+    "border-severity-warning-indicator": {
+      "$type": "color",
+      "$value": "{yellow-700}",
+      "$extensions": {
+        "vela": {
+          "dark": "{yellow-500}",
+          "figma": "severity/warning/indicator"
+        }
+      },
+      "$description": "Severity describes events. Never interchange with Risk or Status."
+    },
+    "bg-severity-minor": {
+      "$type": "color",
+      "$value": "{orange-100}",
+      "$extensions": {
+        "vela": {
+          "dark": "{orange-950}",
+          "figma": "severity/minor/bg"
+        }
+      },
+      "$description": "Severity describes events. Never interchange with Risk or Status."
+    },
+    "border-severity-minor": {
+      "$type": "color",
+      "$value": "{orange-300}",
+      "$extensions": {
+        "vela": {
+          "dark": "{orange-700}",
+          "figma": "severity/minor/border"
+        }
+      },
+      "$description": "Severity describes events. Never interchange with Risk or Status."
+    },
+    "signal-severity-minor": {
+      "$type": "color",
+      "$value": "{orange-500}",
+      "$extensions": {
+        "vela": {
+          "dark": "{orange-500}",
+          "figma": "severity/minor/signal"
+        }
+      },
+      "$description": "Severity describes events. Never interchange with Risk or Status."
+    },
+    "icon-severity-minor": {
+      "$type": "color",
+      "$value": "{orange-700}",
+      "$extensions": {
+        "vela": {
+          "dark": "{orange-300}",
+          "figma": "severity/minor/icon"
+        }
+      },
+      "$description": "Severity describes events. Never interchange with Risk or Status."
+    },
+    "text-severity-minor": {
+      "$type": "color",
+      "$value": "{orange-700}",
+      "$extensions": {
+        "vela": {
+          "dark": "{orange-300}",
+          "figma": "severity/minor/text"
+        }
+      },
+      "$description": "Severity describes events. Never interchange with Risk or Status."
+    },
+    "border-severity-minor-indicator": {
+      "$type": "color",
+      "$value": "{orange-700}",
+      "$extensions": {
+        "vela": {
+          "dark": "{orange-500}",
+          "figma": "severity/minor/indicator"
+        }
+      },
+      "$description": "Severity describes events. Never interchange with Risk or Status."
+    },
+    "bg-severity-major": {
+      "$type": "color",
+      "$value": "{red-100}",
+      "$extensions": {
+        "vela": {
+          "dark": "{red-950}",
+          "figma": "severity/major/bg"
+        }
+      },
+      "$description": "Severity describes events. Never interchange with Risk or Status."
+    },
+    "border-severity-major": {
+      "$type": "color",
+      "$value": "{red-300}",
+      "$extensions": {
+        "vela": {
+          "dark": "{red-700}",
+          "figma": "severity/major/border"
+        }
+      },
+      "$description": "Severity describes events. Never interchange with Risk or Status."
+    },
+    "signal-severity-major": {
+      "$type": "color",
+      "$value": "{red-500}",
+      "$extensions": {
+        "vela": {
+          "dark": "{red-500}",
+          "figma": "severity/major/signal"
+        }
+      },
+      "$description": "Severity describes events. Never interchange with Risk or Status."
+    },
+    "icon-severity-major": {
+      "$type": "color",
+      "$value": "{red-700}",
+      "$extensions": {
+        "vela": {
+          "dark": "{red-300}",
+          "figma": "severity/major/icon"
+        }
+      },
+      "$description": "Severity describes events. Never interchange with Risk or Status."
+    },
+    "text-severity-major": {
+      "$type": "color",
+      "$value": "{red-700}",
+      "$extensions": {
+        "vela": {
+          "dark": "{red-300}",
+          "figma": "severity/major/text"
+        }
+      },
+      "$description": "Severity describes events. Never interchange with Risk or Status."
+    },
+    "border-severity-major-indicator": {
+      "$type": "color",
+      "$value": "{red-700}",
+      "$extensions": {
+        "vela": {
+          "dark": "{red-500}",
+          "figma": "severity/major/indicator"
+        }
+      },
+      "$description": "Severity describes events. Never interchange with Risk or Status."
+    },
+    "bg-severity-critical": {
+      "$type": "color",
+      "$value": "{critical-100}",
+      "$extensions": {
+        "vela": {
+          "dark": "{critical-950}",
+          "figma": "severity/critical/bg"
+        }
+      },
+      "$description": "Severity describes events. Never interchange with Risk or Status."
+    },
+    "border-severity-critical": {
+      "$type": "color",
+      "$value": "{critical-300}",
+      "$extensions": {
+        "vela": {
+          "dark": "{critical-500}",
+          "figma": "severity/critical/border"
+        }
+      },
+      "$description": "Severity describes events. Never interchange with Risk or Status."
+    },
+    "signal-severity-critical": {
+      "$type": "color",
+      "$value": "{critical-500}",
+      "$extensions": {
+        "vela": {
+          "dark": "{critical-300}",
+          "figma": "severity/critical/signal"
+        }
+      },
+      "$description": "Severity describes events. Never interchange with Risk or Status."
+    },
+    "icon-severity-critical": {
+      "$type": "color",
+      "$value": "{critical-700}",
+      "$extensions": {
+        "vela": {
+          "dark": "{critical-300}",
+          "figma": "severity/critical/icon"
+        }
+      },
+      "$description": "Severity describes events. Never interchange with Risk or Status."
+    },
+    "text-severity-critical": {
+      "$type": "color",
+      "$value": "{critical-700}",
+      "$extensions": {
+        "vela": {
+          "dark": "{critical-300}",
+          "figma": "severity/critical/text"
+        }
+      },
+      "$description": "Severity describes events. Never interchange with Risk or Status."
+    },
+    "border-severity-critical-indicator": {
+      "$type": "color",
+      "$value": "{critical-700}",
+      "$extensions": {
+        "vela": {
+          "dark": "{critical-300}",
+          "figma": "severity/critical/indicator"
+        }
+      },
+      "$description": "Severity describes events. Never interchange with Risk or Status."
+    },
+    "bg-risk-low": {
+      "$type": "color",
+      "$value": "{green-100}",
+      "$extensions": {
+        "vela": {
+          "dark": "{green-950}",
+          "figma": "risk/low/bg"
+        }
+      },
+      "$description": "Risk describes scoring. There is no \"critical risk\"."
+    },
+    "border-risk-low": {
+      "$type": "color",
+      "$value": "{green-300}",
+      "$extensions": {
+        "vela": {
+          "dark": "{green-700}",
+          "figma": "risk/low/border"
+        }
+      },
+      "$description": "Risk describes scoring. There is no \"critical risk\"."
+    },
+    "signal-risk-low": {
+      "$type": "color",
+      "$value": "{green-500}",
+      "$extensions": {
+        "vela": {
+          "dark": "{green-500}",
+          "figma": "risk/low/signal"
+        }
+      },
+      "$description": "Risk describes scoring. There is no \"critical risk\"."
+    },
+    "icon-risk-low": {
+      "$type": "color",
+      "$value": "{green-800}",
+      "$extensions": {
+        "vela": {
+          "dark": "{green-300}",
+          "figma": "risk/low/icon"
+        }
+      },
+      "$description": "Risk describes scoring. There is no \"critical risk\"."
+    },
+    "text-risk-low": {
+      "$type": "color",
+      "$value": "{green-800}",
+      "$extensions": {
+        "vela": {
+          "dark": "{green-300}",
+          "figma": "risk/low/text"
+        }
+      },
+      "$description": "Risk describes scoring. There is no \"critical risk\"."
+    },
+    "border-risk-low-indicator": {
+      "$type": "color",
+      "$value": "{green-700}",
+      "$extensions": {
+        "vela": {
+          "dark": "{green-500}",
+          "figma": "risk/low/indicator"
+        }
+      },
+      "$description": "Risk describes scoring. There is no \"critical risk\"."
+    },
+    "bg-risk-medium": {
+      "$type": "color",
+      "$value": "{yellow-100}",
+      "$extensions": {
+        "vela": {
+          "dark": "{yellow-950}",
+          "figma": "risk/medium/bg"
+        }
+      },
+      "$description": "Risk describes scoring. There is no \"critical risk\"."
+    },
+    "border-risk-medium": {
+      "$type": "color",
+      "$value": "{yellow-300}",
+      "$extensions": {
+        "vela": {
+          "dark": "{yellow-700}",
+          "figma": "risk/medium/border"
+        }
+      },
+      "$description": "Risk describes scoring. There is no \"critical risk\"."
+    },
+    "signal-risk-medium": {
+      "$type": "color",
+      "$value": "{yellow-500}",
+      "$extensions": {
+        "vela": {
+          "dark": "{yellow-500}",
+          "figma": "risk/medium/signal"
+        }
+      },
+      "$description": "Risk describes scoring. There is no \"critical risk\"."
+    },
+    "icon-risk-medium": {
+      "$type": "color",
+      "$value": "{yellow-800}",
+      "$extensions": {
+        "vela": {
+          "dark": "{yellow-300}",
+          "figma": "risk/medium/icon"
+        }
+      },
+      "$description": "Risk describes scoring. There is no \"critical risk\"."
+    },
+    "text-risk-medium": {
+      "$type": "color",
+      "$value": "{yellow-800}",
+      "$extensions": {
+        "vela": {
+          "dark": "{yellow-300}",
+          "figma": "risk/medium/text"
+        }
+      },
+      "$description": "Risk describes scoring. There is no \"critical risk\"."
+    },
+    "border-risk-medium-indicator": {
+      "$type": "color",
+      "$value": "{yellow-700}",
+      "$extensions": {
+        "vela": {
+          "dark": "{yellow-500}",
+          "figma": "risk/medium/indicator"
+        }
+      },
+      "$description": "Risk describes scoring. There is no \"critical risk\"."
+    },
+    "bg-risk-high": {
+      "$type": "color",
+      "$value": "{red-100}",
+      "$extensions": {
+        "vela": {
+          "dark": "{red-950}",
+          "figma": "risk/high/bg"
+        }
+      },
+      "$description": "Risk describes scoring. There is no \"critical risk\"."
+    },
+    "border-risk-high": {
+      "$type": "color",
+      "$value": "{red-300}",
+      "$extensions": {
+        "vela": {
+          "dark": "{red-700}",
+          "figma": "risk/high/border"
+        }
+      },
+      "$description": "Risk describes scoring. There is no \"critical risk\"."
+    },
+    "signal-risk-high": {
+      "$type": "color",
+      "$value": "{red-500}",
+      "$extensions": {
+        "vela": {
+          "dark": "{red-500}",
+          "figma": "risk/high/signal"
+        }
+      },
+      "$description": "Risk describes scoring. There is no \"critical risk\"."
+    },
+    "icon-risk-high": {
+      "$type": "color",
+      "$value": "{red-700}",
+      "$extensions": {
+        "vela": {
+          "dark": "{red-300}",
+          "figma": "risk/high/icon"
+        }
+      },
+      "$description": "Risk describes scoring. There is no \"critical risk\"."
+    },
+    "text-risk-high": {
+      "$type": "color",
+      "$value": "{red-700}",
+      "$extensions": {
+        "vela": {
+          "dark": "{red-300}",
+          "figma": "risk/high/text"
+        }
+      },
+      "$description": "Risk describes scoring. There is no \"critical risk\"."
+    },
+    "border-risk-high-indicator": {
+      "$type": "color",
+      "$value": "{red-700}",
+      "$extensions": {
+        "vela": {
+          "dark": "{red-500}",
+          "figma": "risk/high/indicator"
+        }
+      },
+      "$description": "Risk describes scoring. There is no \"critical risk\"."
+    },
+    "signal-status-unknown": {
+      "$type": "color",
+      "$value": "{grey-500}",
+      "$extensions": {
+        "vela": {
+          "dark": "{grey-500}",
+          "figma": "status/unknown"
+        }
+      },
+      "$description": "Status Indicator dots only. Five states, neither severity nor risk."
+    },
+    "signal-status-healthy": {
+      "$type": "color",
+      "$value": "{green-700}",
+      "$extensions": {
+        "vela": {
+          "dark": "{green-500}",
+          "figma": "status/healthy"
+        }
+      },
+      "$description": "Status Indicator dots only. Five states, neither severity nor risk."
+    },
+    "signal-status-warning": {
+      "$type": "color",
+      "$value": "{yellow-700}",
+      "$extensions": {
+        "vela": {
+          "dark": "{yellow-500}",
+          "figma": "status/warning"
+        }
+      },
+      "$description": "Status Indicator dots only. Five states, neither severity nor risk."
+    },
+    "signal-status-medium": {
+      "$type": "color",
+      "$value": "{orange-600}",
+      "$extensions": {
+        "vela": {
+          "dark": "{orange-500}",
+          "figma": "status/medium"
+        }
+      },
+      "$description": "Status Indicator dots only. Five states, neither severity nor risk."
+    },
+    "signal-status-unhealthy": {
+      "$type": "color",
+      "$value": "{red-500}",
+      "$extensions": {
+        "vela": {
+          "dark": "{red-500}",
+          "figma": "status/unhealthy"
+        }
+      },
+      "$description": "Status Indicator dots only. Five states, neither severity nor risk."
+    },
+    "focus-ring-color": {
+      "$type": "color",
+      "$value": "{border-active}",
+      "$extensions": {
+        "vela": {
+          "dark": "{primary-400}",
+          "figma": "focus/ring"
+        }
+      },
+      "$description": "One focus treatment for the whole kit."
+    }
+  },
+  "sizing": {
+    "space-5": {
+      "$type": "dimension",
+      "$value": {
+        "value": 5,
+        "unit": "px"
+      },
+      "$extensions": {
+        "vela": {
+          "figma": "space/5"
+        }
+      }
+    },
+    "space-10": {
+      "$type": "dimension",
+      "$value": {
+        "value": 10,
+        "unit": "px"
+      },
+      "$extensions": {
+        "vela": {
+          "figma": "space/10"
+        }
+      }
+    },
+    "space-15": {
+      "$type": "dimension",
+      "$value": {
+        "value": 15,
+        "unit": "px"
+      },
+      "$extensions": {
+        "vela": {
+          "figma": "space/15"
+        }
+      }
+    },
+    "space-20": {
+      "$type": "dimension",
+      "$value": {
+        "value": 20,
+        "unit": "px"
+      },
+      "$extensions": {
+        "vela": {
+          "figma": "space/20"
+        }
+      }
+    },
+    "space-25": {
+      "$type": "dimension",
+      "$value": {
+        "value": 25,
+        "unit": "px"
+      },
+      "$description": "25 exists; 50 does not. Do not interpolate the scale.",
+      "$extensions": {
+        "vela": {
+          "figma": "space/25"
+        }
+      }
+    },
+    "space-30": {
+      "$type": "dimension",
+      "$value": {
+        "value": 30,
+        "unit": "px"
+      },
+      "$extensions": {
+        "vela": {
+          "figma": "space/30"
+        }
+      }
+    },
+    "space-40": {
+      "$type": "dimension",
+      "$value": {
+        "value": 40,
+        "unit": "px"
+      },
+      "$extensions": {
+        "vela": {
+          "figma": "space/40"
+        }
+      }
+    },
+    "space-60": {
+      "$type": "dimension",
+      "$value": {
+        "value": 60,
+        "unit": "px"
+      },
+      "$extensions": {
+        "vela": {
+          "figma": "space/60"
+        }
+      }
+    },
+    "space-80": {
+      "$type": "dimension",
+      "$value": {
+        "value": 80,
+        "unit": "px"
+      },
+      "$extensions": {
+        "vela": {
+          "figma": "space/80"
+        }
+      }
+    },
+    "icon-12": {
+      "$type": "dimension",
+      "$value": {
+        "value": 12,
+        "unit": "px"
+      },
+      "$extensions": {
+        "vela": {
+          "figma": "icon/12"
+        }
+      }
+    },
+    "icon-16": {
+      "$type": "dimension",
+      "$value": {
+        "value": 16,
+        "unit": "px"
+      },
+      "$description": "Button icons never exceed 16. 12 at tiny, 16 everywhere else.",
+      "$extensions": {
+        "vela": {
+          "figma": "icon/16"
+        }
+      }
+    },
+    "icon-20": {
+      "$type": "dimension",
+      "$value": {
+        "value": 20,
+        "unit": "px"
+      },
+      "$extensions": {
+        "vela": {
+          "figma": "icon/20"
+        }
+      }
+    },
+    "icon-24": {
+      "$type": "dimension",
+      "$value": {
+        "value": 24,
+        "unit": "px"
+      },
+      "$extensions": {
+        "vela": {
+          "figma": "icon/24"
+        }
+      }
+    },
+    "control-height-24": {
+      "$type": "dimension",
+      "$value": {
+        "value": 24,
+        "unit": "px"
+      },
+      "$description": "Button and the input family do not share a height ramp.",
+      "$extensions": {
+        "vela": {
+          "figma": "control/height-24"
+        }
+      }
+    },
+    "control-height-25": {
+      "$type": "dimension",
+      "$value": {
+        "value": 25,
+        "unit": "px"
+      },
+      "$description": "Button and the input family do not share a height ramp.",
+      "$extensions": {
+        "vela": {
+          "figma": "control/height-25"
+        }
+      }
+    },
+    "control-height-26": {
+      "$type": "dimension",
+      "$value": {
+        "value": 26,
+        "unit": "px"
+      },
+      "$description": "Button and the input family do not share a height ramp.",
+      "$extensions": {
+        "vela": {
+          "figma": "control/height-26"
+        }
+      }
+    },
+    "control-height-35": {
+      "$type": "dimension",
+      "$value": {
+        "value": 35,
+        "unit": "px"
+      },
+      "$description": "Button and the input family do not share a height ramp.",
+      "$extensions": {
+        "vela": {
+          "figma": "control/height-35"
+        }
+      }
+    },
+    "control-height-40": {
+      "$type": "dimension",
+      "$value": {
+        "value": 40,
+        "unit": "px"
+      },
+      "$description": "Button and the input family do not share a height ramp.",
+      "$extensions": {
+        "vela": {
+          "figma": "control/height-40"
+        }
+      }
+    },
+    "control-height-48": {
+      "$type": "dimension",
+      "$value": {
+        "value": 48,
+        "unit": "px"
+      },
+      "$description": "Button and the input family do not share a height ramp.",
+      "$extensions": {
+        "vela": {
+          "figma": "control/height-48"
+        }
+      }
+    },
+    "control-height-60": {
+      "$type": "dimension",
+      "$value": {
+        "value": 60,
+        "unit": "px"
+      },
+      "$description": "Button and the input family do not share a height ramp.",
+      "$extensions": {
+        "vela": {
+          "figma": "control/height-60"
+        }
+      }
+    },
+    "radius-3": {
+      "$type": "dimension",
+      "$value": {
+        "value": 3,
+        "unit": "px"
+      },
+      "$extensions": {
+        "vela": {
+          "figma": "radius/3"
+        }
+      }
+    },
+    "radius-4": {
+      "$type": "dimension",
+      "$value": {
+        "value": 4,
+        "unit": "px"
+      },
+      "$description": "The default corner for every component.",
+      "$extensions": {
+        "vela": {
+          "figma": "radius/4"
+        }
+      }
+    },
+    "radius-8": {
+      "$type": "dimension",
+      "$value": {
+        "value": 8,
+        "unit": "px"
+      },
+      "$extensions": {
+        "vela": {
+          "figma": "radius/8"
+        }
+      }
+    },
+    "radius-12": {
+      "$type": "dimension",
+      "$value": {
+        "value": 12,
+        "unit": "px"
+      },
+      "$extensions": {
+        "vela": {
+          "figma": "radius/12"
+        }
+      }
+    },
+    "radius-full": {
+      "$type": "dimension",
+      "$value": {
+        "value": 9999,
+        "unit": "px"
+      },
+      "$description": "Status Indicator dots and the Toggle track only.",
+      "$extensions": {
+        "vela": {
+          "figma": "radius/full"
+        }
+      }
+    },
+    "focus-ring-width": {
+      "$type": "dimension",
+      "$value": {
+        "value": 2,
+        "unit": "px"
+      },
+      "$extensions": {
+        "vela": {
+          "figma": "focus-ring-width"
+        }
+      }
+    },
+    "focus-ring-offset": {
+      "$type": "dimension",
+      "$value": {
+        "value": 2,
+        "unit": "px"
+      },
+      "$extensions": {
+        "vela": {
+          "figma": "focus-ring-offset"
+        }
+      }
+    },
+    "duration-fast": {
+      "$type": "duration",
+      "$value": "120ms",
+      "$extensions": {
+        "vela": {
+          "figma": "duration-fast"
+        }
+      }
+    },
+    "duration-base": {
+      "$type": "duration",
+      "$value": "180ms",
+      "$extensions": {
+        "vela": {
+          "figma": "duration-base"
+        }
+      }
+    },
+    "ease-standard": {
+      "$type": "cubicBezier",
+      "$value": [
+        0.2,
+        0.0,
+        0.2,
+        1.0
+      ],
+      "$extensions": {
+        "vela": {
+          "figma": "ease-standard"
+        }
+      }
+    }
+  },
+  "typography": {
+    "font-family-primary": {
+      "$type": "fontFamily",
+      "$value": "\"Open Sans\", -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif",
+      "$extensions": {
+        "vela": {
+          "figma": "font-family-primary",
+          "raw": true
+        }
+      }
+    },
+    "font-family-display": {
+      "$type": "fontFamily",
+      "$value": "\"Oswald\", \"Open Sans\", -apple-system, sans-serif",
+      "$extensions": {
+        "vela": {
+          "figma": "font-family-display",
+          "raw": true
+        }
+      }
+    },
+    "font-weight-light": {
+      "$type": "number",
+      "$value": 300,
+      "$extensions": {
+        "vela": {
+          "figma": "weight/light"
+        }
+      }
+    },
+    "font-weight-regular": {
+      "$type": "number",
+      "$value": 400,
+      "$description": "Button labels are Regular 400 at every size.",
+      "$extensions": {
+        "vela": {
+          "figma": "weight/regular"
+        }
+      }
+    },
+    "font-weight-semibold": {
+      "$type": "number",
+      "$value": 600,
+      "$extensions": {
+        "vela": {
+          "figma": "weight/semibold"
+        }
+      }
+    },
+    "text-h1-size": {
+      "$type": "dimension",
+      "$value": {
+        "value": 32,
+        "unit": "px"
+      },
+      "$extensions": {
+        "vela": {
+          "figma": "text/h1-size"
+        }
+      }
+    },
+    "text-h1-weight": {
+      "$type": "number",
+      "$value": 300,
+      "$extensions": {
+        "vela": {
+          "figma": "text/h1-weight"
+        }
+      }
+    },
+    "text-h1-line-height": {
+      "$type": "dimension",
+      "$value": {
+        "value": 42,
+        "unit": "px"
+      },
+      "$extensions": {
+        "vela": {
+          "figma": "text/h1-line-height"
+        }
+      }
+    },
+    "text-h2-size": {
+      "$type": "dimension",
+      "$value": {
+        "value": 24,
+        "unit": "px"
+      },
+      "$extensions": {
+        "vela": {
+          "figma": "text/h2-size"
+        }
+      }
+    },
+    "text-h2-weight": {
+      "$type": "number",
+      "$value": 300,
+      "$extensions": {
+        "vela": {
+          "figma": "text/h2-weight"
+        }
+      }
+    },
+    "text-h2-line-height": {
+      "$type": "dimension",
+      "$value": {
+        "value": 33,
+        "unit": "px"
+      },
+      "$extensions": {
+        "vela": {
+          "figma": "text/h2-line-height"
+        }
+      }
+    },
+    "text-h3-size": {
+      "$type": "dimension",
+      "$value": {
+        "value": 20,
+        "unit": "px"
+      },
+      "$extensions": {
+        "vela": {
+          "figma": "text/h3-size"
+        }
+      }
+    },
+    "text-h3-weight": {
+      "$type": "number",
+      "$value": 300,
+      "$extensions": {
+        "vela": {
+          "figma": "text/h3-weight"
+        }
+      }
+    },
+    "text-h3-line-height": {
+      "$type": "dimension",
+      "$value": {
+        "value": 27,
+        "unit": "px"
+      },
+      "$extensions": {
+        "vela": {
+          "figma": "text/h3-line-height"
+        }
+      }
+    },
+    "text-h4-size": {
+      "$type": "dimension",
+      "$value": {
+        "value": 16,
+        "unit": "px"
+      },
+      "$extensions": {
+        "vela": {
+          "figma": "text/h4-size"
+        }
+      }
+    },
+    "text-h4-weight": {
+      "$type": "number",
+      "$value": 400,
+      "$extensions": {
+        "vela": {
+          "figma": "text/h4-weight"
+        }
+      }
+    },
+    "text-h4-line-height": {
+      "$type": "dimension",
+      "$value": {
+        "value": 24,
+        "unit": "px"
+      },
+      "$extensions": {
+        "vela": {
+          "figma": "text/h4-line-height"
+        }
+      }
+    },
+    "text-h5-size": {
+      "$type": "dimension",
+      "$value": {
+        "value": 14,
+        "unit": "px"
+      },
+      "$extensions": {
+        "vela": {
+          "figma": "text/h5-size"
+        }
+      }
+    },
+    "text-h5-weight": {
+      "$type": "number",
+      "$value": 600,
+      "$extensions": {
+        "vela": {
+          "figma": "text/h5-weight"
+        }
+      }
+    },
+    "text-h5-line-height": {
+      "$type": "dimension",
+      "$value": {
+        "value": 21,
+        "unit": "px"
+      },
+      "$extensions": {
+        "vela": {
+          "figma": "text/h5-line-height"
+        }
+      }
+    },
+    "text-h6-size": {
+      "$type": "dimension",
+      "$value": {
+        "value": 12,
+        "unit": "px"
+      },
+      "$extensions": {
+        "vela": {
+          "figma": "text/h6-size"
+        }
+      }
+    },
+    "text-h6-weight": {
+      "$type": "number",
+      "$value": 600,
+      "$extensions": {
+        "vela": {
+          "figma": "text/h6-weight"
+        }
+      }
+    },
+    "text-h6-line-height": {
+      "$type": "dimension",
+      "$value": {
+        "value": 18,
+        "unit": "px"
+      },
+      "$extensions": {
+        "vela": {
+          "figma": "text/h6-line-height"
+        }
+      }
+    },
+    "text-body-size": {
+      "$type": "dimension",
+      "$value": {
+        "value": 14,
+        "unit": "px"
+      },
+      "$extensions": {
+        "vela": {
+          "figma": "text/body-size"
+        }
+      }
+    },
+    "text-body-weight": {
+      "$type": "number",
+      "$value": 400,
+      "$extensions": {
+        "vela": {
+          "figma": "text/body-weight"
+        }
+      }
+    },
+    "text-body-line-height": {
+      "$type": "dimension",
+      "$value": {
+        "value": 21,
+        "unit": "px"
+      },
+      "$extensions": {
+        "vela": {
+          "figma": "text/body-line-height"
+        }
+      }
+    },
+    "text-meta-size": {
+      "$type": "dimension",
+      "$value": {
+        "value": 12,
+        "unit": "px"
+      },
+      "$extensions": {
+        "vela": {
+          "figma": "text/meta-size"
+        }
+      }
+    },
+    "text-meta-weight": {
+      "$type": "number",
+      "$value": 400,
+      "$extensions": {
+        "vela": {
+          "figma": "text/meta-weight"
+        }
+      }
+    },
+    "text-meta-line-height": {
+      "$type": "dimension",
+      "$value": {
+        "value": 18,
+        "unit": "px"
+      },
+      "$extensions": {
+        "vela": {
+          "figma": "text/meta-line-height"
+        }
+      }
+    },
+    "text-meta-tracking": {
+      "$type": "dimension",
+      "$value": {
+        "value": 0.3,
+        "unit": "px"
+      },
+      "$extensions": {
+        "vela": {
+          "figma": "text/meta-tracking"
+        }
+      }
+    },
+    "text-button-tiny-size": {
+      "$type": "dimension",
+      "$value": {
+        "value": 12,
+        "unit": "px"
+      },
+      "$extensions": {
+        "vela": {
+          "figma": "text/button-tiny-size"
+        }
+      }
+    },
+    "text-button-tiny-line-height": {
+      "$type": "dimension",
+      "$value": {
+        "value": 18,
+        "unit": "px"
+      },
+      "$extensions": {
+        "vela": {
+          "figma": "text/button-tiny-line-height"
+        }
+      }
+    },
+    "text-button-regular-size": {
+      "$type": "dimension",
+      "$value": {
+        "value": 14,
+        "unit": "px"
+      },
+      "$extensions": {
+        "vela": {
+          "figma": "text/button-regular-size"
+        }
+      }
+    },
+    "text-button-regular-line-height": {
+      "$type": "dimension",
+      "$value": {
+        "value": 21,
+        "unit": "px"
+      },
+      "$extensions": {
+        "vela": {
+          "figma": "text/button-regular-line-height"
+        }
+      }
+    },
+    "text-button-large-size": {
+      "$type": "dimension",
+      "$value": {
+        "value": 15,
+        "unit": "px"
+      },
+      "$extensions": {
+        "vela": {
+          "figma": "text/button-large-size"
+        }
+      }
+    },
+    "text-button-large-line-height": {
+      "$type": "dimension",
+      "$value": {
+        "value": 22,
+        "unit": "px"
+      },
+      "$extensions": {
+        "vela": {
+          "figma": "text/button-large-line-height"
+        }
+      }
+    },
+    "text-button-huge-size": {
+      "$type": "dimension",
+      "$value": {
+        "value": 16,
+        "unit": "px"
+      },
+      "$extensions": {
+        "vela": {
+          "figma": "text/button-huge-size"
+        }
+      }
+    },
+    "text-button-huge-line-height": {
+      "$type": "dimension",
+      "$value": {
+        "value": 24,
+        "unit": "px"
+      },
+      "$extensions": {
+        "vela": {
+          "figma": "text/button-huge-line-height"
+        }
+      }
+    },
+    "text-tab-size": {
+      "$type": "dimension",
+      "$value": {
+        "value": 14,
+        "unit": "px"
+      },
+      "$extensions": {
+        "vela": {
+          "figma": "text/tab-size"
+        }
+      }
+    },
+    "text-tab-line-height": {
+      "$type": "dimension",
+      "$value": {
+        "value": 19,
+        "unit": "px"
+      },
+      "$extensions": {
+        "vela": {
+          "figma": "text/tab-line-height"
+        }
+      }
+    },
+    "text-tab-large-size": {
+      "$type": "dimension",
+      "$value": {
+        "value": 18,
+        "unit": "px"
+      },
+      "$extensions": {
+        "vela": {
+          "figma": "text/tab-large-size"
+        }
+      }
+    },
+    "text-tab-large-line-height": {
+      "$type": "dimension",
+      "$value": {
+        "value": 25,
+        "unit": "px"
+      },
+      "$extensions": {
+        "vela": {
+          "figma": "text/tab-large-line-height"
+        }
+      }
+    }
+  }
+}

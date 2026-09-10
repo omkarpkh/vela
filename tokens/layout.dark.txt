@@ -1,0 +1,152 @@
+  /* ============================================================================
+     DARK THEME
+     Note what is NOT here: primitives. Not one raw hex is redefined below.
+     Dark mode is achieved entirely by re-pointing semantic tokens onto a
+     different part of the same scale. That is the return on the two-layer
+     architecture — and the reason components never bind primitives directly.
+     Contrast ratios are asserted in src/styles/contrast.test.ts.
+     ============================================================================ */
+  color-scheme: dark;
+
+  /* ---- Surface ---- */
+  @bg-global
+  @bg-container
+  @bg-raised
+  @bg-hover
+  @bg-tooltip
+  @bg-inactive
+  @bg-selected
+  @primary-tint
+  @primary-active-bg
+
+  /* ---- Border ---- */
+  @border-default
+  @border-subtle
+  @border-active
+  @border-inactive
+  @border-action
+
+  /* ---- Text ---- */
+  @text-default
+  @text-heading
+  @text-de-emphasized
+  @text-inactive
+  @text-link
+  @text-on-brand
+  @text-on-tint
+  @text-error
+
+  /* ---- Icon ---- */
+  @icon-default
+  @icon-strong
+  @icon-selected
+  @icon-disabled
+  @icon-on-brand
+
+  /* ---- Button ---- */
+  @btn-primary-bg
+  @btn-primary-hover-bg
+  @btn-primary-border
+  @btn-primary-text
+  @btn-standard-bg
+  @btn-standard-hover-bg
+  @btn-standard-text
+  @btn-hollow-primary-text
+  @btn-hollow-primary-border
+  @btn-disabled-bg
+  @btn-disabled-text
+
+
+  @btn-destructive-bg
+  @btn-destructive-hover-bg
+  @btn-destructive-text
+  @btn-destructive-hollow-text
+  @btn-standard-border
+  @btn-hollow-hover-bg
+
+  /* ---- Form control ---- */
+  @control-bg
+  @control-border
+  @control-border-hover
+  @control-border-active
+  @control-border-error
+  @control-bg-disabled
+  @control-placeholder
+  @toggle-off-bg
+  @toggle-on-bg
+  @toggle-knob
+
+  /* ---- Severity (6) ---- */
+  @bg-severity-success
+  @border-severity-success
+  @signal-severity-success
+  @icon-severity-success
+  @text-severity-success
+  @border-severity-success-indicator
+
+  @bg-severity-info
+  @border-severity-info
+  @signal-severity-info
+  @icon-severity-info
+  @text-severity-info
+  @border-severity-info-indicator
+
+  @bg-severity-warning
+  @border-severity-warning
+  @signal-severity-warning
+  @icon-severity-warning
+  @text-severity-warning
+  @border-severity-warning-indicator
+
+  @bg-severity-minor
+  @border-severity-minor
+  @signal-severity-minor
+  @icon-severity-minor
+  @text-severity-minor
+  @border-severity-minor-indicator
+
+  @bg-severity-major
+  @border-severity-major
+  @signal-severity-major
+  @icon-severity-major
+  @text-severity-major
+  @border-severity-major-indicator
+
+  @bg-severity-critical
+  @border-severity-critical
+  @signal-severity-critical
+  @icon-severity-critical
+  @text-severity-critical
+  @border-severity-critical-indicator
+
+  /* ---- Risk (3) ---- */
+  @bg-risk-low
+  @border-risk-low
+  @signal-risk-low
+  @icon-risk-low
+  @text-risk-low
+  @border-risk-low-indicator
+
+  @bg-risk-medium
+  @border-risk-medium
+  @signal-risk-medium
+  @icon-risk-medium
+  @text-risk-medium
+  @border-risk-medium-indicator
+
+  @bg-risk-high
+  @border-risk-high
+  @signal-risk-high
+  @icon-risk-high
+  @text-risk-high
+  @border-risk-high-indicator
+
+  /* ---- Status (5 dots) ---- */
+  @signal-status-unknown
+  @signal-status-healthy
+  @signal-status-warning
+  @signal-status-medium
+  @signal-status-unhealthy
+
+  /* ---- Focus ---- */
+  @focus-ring-color

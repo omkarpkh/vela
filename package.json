@@ -26,18 +26,23 @@
     "./styles.css": "./dist/vela.css",
     "./tokens.css": "./dist/tokens.css",
     "./guidelines/*": "./guidelines/*",
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./tokens.json": "./tokens/vela.tokens.json"
   },
   "files": [
     "dist",
     "guidelines",
     "README.md",
     "CHANGELOG.md",
-    "LICENSE"
+    "LICENSE",
+    "tokens"
   ],
   "scripts": {
     "clean": "rm -rf dist",
-    "build": "npm run clean && npm run build:js && npm run build:css",
+    "tokens": "node scripts/build-tokens.mjs",
+    "tokens:figma": "node scripts/sync-figma.mjs",
+    "tokens:check": "node scripts/build-tokens.mjs && git diff --exit-code -- src/styles/tokens.light.css src/styles/tokens.dark.body.css",
+    "build": "npm run clean && npm run tokens && npm run build:js && npm run build:css",
     "build:js": "vite build",
     "build:css": "node scripts/build-css.mjs",
     "predev": "npm run build:css",
@@ -48,7 +53,7 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "contrast": "node scripts/contrast-report.mjs",
-    "verify": "npm run typecheck && npm run test && npm run build && node scripts/verify-pack.mjs",
+    "verify": "npm run tokens:check && npm run typecheck && npm run test && npm run build && node scripts/verify-pack.mjs",
     "prepublishOnly": "npm run verify"
   },
   "peerDependencies": {

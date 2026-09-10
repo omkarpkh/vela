@@ -1,11 +1,4 @@
-{
-  "version": "0.0.1",
-  "configurations": [
-    {
-      "name": "vela-demo",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
-      "port": 5173
-    }
-  ]
-}
+{ "version": "0.0.1", "configurations": [
+  { "name": "vela-demo", "runtimeExecutable": "npm", "runtimeArgs": ["run","dev","--","--port","5174","--strictPort"], "port": 5174 },
+  { "name": "deck", "runtimeExecutable": "python3", "runtimeArgs": ["-m","http.server","8797","--directory","/private/tmp/claude-501/-Users-ruchakode/6fbe33f5-c9c3-40b2-9d4e-3e9b88720d80/scratchpad"], "port": 8797 }
+] }

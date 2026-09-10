@@ -3,6 +3,24 @@
 All notable changes to this project are documented here.
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] — 2026-09-10
+
+### Added
+- **A single token source.** `tokens/vela.tokens.json` (W3C Design Tokens 2025.10) now holds every
+  value once. `src/styles/tokens.*.css` are generated from it and were proven byte-identical to the
+  hand-written files before the switch. `npm run tokens:check` runs in the gate and fails if the
+  CSS is edited directly.
+- **Figma sync.** `npm run tokens:figma` generates a Plugin API script that creates-or-updates every
+  variable in the library by name — values per mode, aliases, scopes, descriptions and the
+  `var(--vela-*)` code syntax. Idempotent: 0 created / 223 updated on its first run against the live
+  file. This closes the gap where the Figma library was a one-time export that would drift from
+  the code. The REST route was not an option: writing variables needs an Enterprise plan.
+- The JSON ships in the package as `@omkarux/vela/tokens.json` for other stacks and tools
+  (Style Dictionary, Tokens Studio, Terrazzo all read the format).
+- 5 tests guard the pipeline: every CSS declaration has a source token and vice versa, no
+  dangling alias, primitives hold raw values and semantics hold aliases only, every token carries
+  its Figma name, and regenerating the CSS changes nothing.
+
 ## [0.4.0] — 2026-09-10
 
 ### Added
