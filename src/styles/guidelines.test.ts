@@ -19,7 +19,9 @@ describe('component specs → Figma descriptions', () => {
 
   it.each(specs)('%s has the sections the sync compiles', (file) => {
     const md = readFileSync(resolve(root, 'guidelines/components', file), 'utf8')
-    for (const h of ['## Props', '## Hard constraints', '## Figma mapping', '## Anti-patterns'])
+    // A compound component documents its API under "Composition", not "Props".
+    expect(md, `${file} has no API section`).toMatch(/^## (Props|Composition)/m)
+    for (const h of ['## Hard constraints', '## Figma mapping', '## Anti-patterns'])
       expect(md, `${file} is missing ${h}`).toContain(h)
     expect(md, `${file} has no tsx example`).toMatch(/```tsx/)
     expect(md, `${file} does not name its Figma page`).toMatch(/page `[^`]+`/)
