@@ -111,7 +111,13 @@ generated from it:
 npm run tokens          # → src/styles/tokens.light.css + tokens.dark.body.css
 npm run tokens:figma    # → a Plugin API script that creates-or-updates every Figma variable
 npm run tokens:check    # fails if the CSS was hand-edited instead of the JSON (runs in CI)
+npm run guidelines:figma # → a script that writes each spec's summary into its Figma description
 ```
+
+The component specs in `guidelines/` follow the same rule: edit the markdown, and the package,
+the agent docs and the Figma descriptions follow. The one thing no script can do is add a
+variant — a spec that gains a prop is built in Figma and in code, by people, which is what the
+API review is for.
 
 Figma's REST API only lets Enterprise plans write variables, so the Figma half is a generated
 script run inside the file (through the Figma MCP or the Scripter plugin). It looks each variable

@@ -41,6 +41,7 @@
     "clean": "rm -rf dist",
     "tokens": "node scripts/build-tokens.mjs",
     "tokens:figma": "node scripts/sync-figma.mjs",
+    "guidelines:figma": "node scripts/sync-figma-descriptions.mjs",
     "tokens:check": "node scripts/build-tokens.mjs && git diff --exit-code -- src/styles/tokens.light.css src/styles/tokens.dark.body.css",
     "build": "npm run clean && npm run tokens && npm run build:js && npm run build:css",
     "build:js": "vite build",

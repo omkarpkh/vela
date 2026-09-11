@@ -3,6 +3,18 @@
 All notable changes to this project are documented here.
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] — 2026-09-11
+
+### Added
+- **Spec → Figma description sync.** `npm run guidelines:figma` compiles each component spec's
+  intent, code call, Figma-property→prop mapping, hard rules and source paths into that component
+  set's Figma description, so a spec edit lands in Inspect the same way a token edit does. Same
+  generated-script route as tokens; idempotent by page + name. What it deliberately does not do:
+  add or change variants — a spec that adds a prop is design work in Figma and code both.
+- A test asserts every spec keeps the sections the sync compiles (Props with a `tsx` example,
+  Hard constraints, Figma mapping naming its page, Anti-patterns), so a spec that drifts in shape
+  fails the build rather than silently producing a thinner description.
+
 ## [0.5.0] — 2026-09-10
 
 ### Added
