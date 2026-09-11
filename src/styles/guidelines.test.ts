@@ -32,6 +32,32 @@ describe('component specs → Figma descriptions', () => {
     expect(d).toContain('CODE\n<')
     expect(d).toMatch(/FIGMA → PROP\n.+→/)
     expect(d).toMatch(/RULES {2}\S/)
-    expect(d).toMatch(/src\/components\/\w+\/\w+\.tsx {2}· {2}guidelines\/components\/[\w-]+\.md$/)
+    expect(d).toMatch(/src\/components\/\w+\/\w+\.tsx {2}· {2}guidelines\/components\/[\w-]+\.md\n@omkarux\/vela \d+\.\d+\.\d+$/)
+  })
+})
+
+// The agent reads overview.md to choose a component and each spec to build it.
+// These are the properties that keep generated output on-system — the half of
+// the AI check that is deterministic and belongs in the gate. The other half
+// (does an agent pick the right component for a prompt) is scored by a person
+// per release, with a fixed prompt set, and recorded in the changelog.
+describe('the agent-facing contract is complete', () => {
+  const overview = readFileSync(resolve(root, 'guidelines/overview.md'), 'utf8')
+  const llms = readFileSync(resolve(root, 'guidelines/llms.txt'), 'utf8')
+
+  it.each(specs)('%s is in the overview catalogue and the llms.txt index', (file) => {
+    expect(overview, `${file} not in overview.md`).toContain(`components/${file}`)
+    expect(llms, `${file} not in llms.txt`).toContain(`components/${file}`)
+  })
+
+  it.each(specs)('%s tells an agent when NOT to use it', (file) => {
+    const md = readFileSync(resolve(root, 'guidelines/components', file), 'utf8')
+    expect(md).toMatch(/^## When to use/m)
+    expect(md, `${file} anti-patterns list is too thin to steer generation`).toMatch(/## Anti-patterns[\s\S]*?(- ❌.*\n){3,}/)
+  })
+
+  it('names every component that is NOT in the kit, so an agent flags a gap instead of inventing one', () => {
+    for (const missing of ['Checkbox', 'Modal', 'Tooltip', 'Icon Button', 'View Switcher'])
+      expect(overview).toContain(missing)
   })
 })

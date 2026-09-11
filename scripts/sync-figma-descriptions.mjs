@@ -24,6 +24,7 @@ import { fileURLToPath } from 'node:url'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const dir = join(root, 'guidelines/components')
+const version = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).version
 
 // spec file → Figma component set name and source directory
 const SETS = {
@@ -68,6 +69,7 @@ function parse(file) {
     'RULES  ' + rules.join('. ') + '.',
     '',
     `src/components/${SETS[file].src}/${SETS[file].src}.tsx  ·  guidelines/components/${file}`,
+    `@omkarux/vela ${version}`,
   ].join('\n')
 
   return { file, title, page, set: SETS[file].set, description: body }
