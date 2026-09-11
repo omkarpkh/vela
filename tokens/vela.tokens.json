@@ -1903,7 +1903,7 @@
       "$description": "Button and the input family do not share a height ramp.",
       "$extensions": {
         "vela": {
-          "figma": "control/height-24"
+          "figma": "control-height/24"
         }
       }
     },
@@ -1916,7 +1916,7 @@
       "$description": "Button and the input family do not share a height ramp.",
       "$extensions": {
         "vela": {
-          "figma": "control/height-25"
+          "figma": "control-height/25"
         }
       }
     },
@@ -1929,7 +1929,7 @@
       "$description": "Button and the input family do not share a height ramp.",
       "$extensions": {
         "vela": {
-          "figma": "control/height-26"
+          "figma": "control-height/26"
         }
       }
     },
@@ -1942,7 +1942,7 @@
       "$description": "Button and the input family do not share a height ramp.",
       "$extensions": {
         "vela": {
-          "figma": "control/height-35"
+          "figma": "control-height/35"
         }
       }
     },
@@ -1955,7 +1955,7 @@
       "$description": "Button and the input family do not share a height ramp.",
       "$extensions": {
         "vela": {
-          "figma": "control/height-40"
+          "figma": "control-height/40"
         }
       }
     },
@@ -1968,7 +1968,7 @@
       "$description": "Button and the input family do not share a height ramp.",
       "$extensions": {
         "vela": {
-          "figma": "control/height-48"
+          "figma": "control-height/48"
         }
       }
     },
@@ -1981,7 +1981,7 @@
       "$description": "Button and the input family do not share a height ramp.",
       "$extensions": {
         "vela": {
-          "figma": "control/height-60"
+          "figma": "control-height/60"
         }
       }
     },
@@ -2055,7 +2055,7 @@
       },
       "$extensions": {
         "vela": {
-          "figma": "focus-ring-width"
+          "figma": "focus/ring-width"
         }
       }
     },
@@ -2067,7 +2067,7 @@
       },
       "$extensions": {
         "vela": {
-          "figma": "focus-ring-offset"
+          "figma": "focus/ring-offset"
         }
       }
     },
@@ -2161,7 +2161,7 @@
       },
       "$extensions": {
         "vela": {
-          "figma": "text/h1-size"
+          "figma": "size/h1"
         }
       }
     },
@@ -2170,7 +2170,7 @@
       "$value": 300,
       "$extensions": {
         "vela": {
-          "figma": "text/h1-weight"
+          "figma": "weight/h1"
         }
       }
     },
@@ -2182,7 +2182,7 @@
       },
       "$extensions": {
         "vela": {
-          "figma": "text/h1-line-height"
+          "figma": "line-height/h1"
         }
       }
     },
@@ -2194,7 +2194,7 @@
       },
       "$extensions": {
         "vela": {
-          "figma": "text/h2-size"
+          "figma": "size/h2"
         }
       }
     },
@@ -2203,7 +2203,7 @@
       "$value": 300,
       "$extensions": {
         "vela": {
-          "figma": "text/h2-weight"
+          "figma": "weight/h2"
         }
       }
     },
@@ -2215,7 +2215,7 @@
       },
       "$extensions": {
         "vela": {
-          "figma": "text/h2-line-height"
+          "figma": "line-height/h2"
         }
       }
     },
@@ -2227,7 +2227,7 @@
       },
       "$extensions": {
         "vela": {
-          "figma": "text/h3-size"
+          "figma": "size/h3"
         }
       }
     },
@@ -2236,7 +2236,7 @@
       "$value": 300,
       "$extensions": {
         "vela": {
-          "figma": "text/h3-weight"
+          "figma": "weight/h3"
         }
       }
     },
@@ -2248,7 +2248,7 @@
       },
       "$extensions": {
         "vela": {
-          "figma": "text/h3-line-height"
+          "figma": "line-height/h3"
         }
       }
     },
@@ -2260,7 +2260,7 @@
       },
       "$extensions": {
         "vela": {
-          "figma": "text/h4-size"
+          "figma": "size/h4"
         }
       }
     },
@@ -2269,7 +2269,7 @@
       "$value": 400,
       "$extensions": {
         "vela": {
-          "figma": "text/h4-weight"
+          "figma": "weight/h4"
         }
       }
     },
@@ -2281,7 +2281,7 @@
       },
       "$extensions": {
         "vela": {
-          "figma": "text/h4-line-height"
+          "figma": "line-height/h4"
         }
       }
     },
@@ -2293,7 +2293,7 @@
       },
       "$extensions": {
         "vela": {
-          "figma": "text/h5-size"
+          "figma": "size/h5"
         }
       }
     },
@@ -2302,7 +2302,7 @@
       "$value": 600,
       "$extensions": {
         "vela": {
-          "figma": "text/h5-weight"
+          "figma": "weight/h5"
         }
       }
     },
@@ -2314,7 +2314,7 @@
       },
       "$extensions": {
         "vela": {
-          "figma": "text/h5-line-height"
+          "figma": "line-height/h5"
         }
       }
     },
@@ -2326,7 +2326,7 @@
       },
       "$extensions": {
         "vela": {
-          "figma": "text/h6-size"
+          "figma": "size/h6"
         }
       }
     },
@@ -2335,7 +2335,7 @@
       "$value": 600,
       "$extensions": {
         "vela": {
-          "figma": "text/h6-weight"
+          "figma": "weight/h6"
         }
       }
     },
@@ -2347,7 +2347,7 @@
       },
       "$extensions": {
         "vela": {
-          "figma": "text/h6-line-height"
+          "figma": "line-height/h6"
         }
       }
     },
@@ -2359,7 +2359,7 @@
       },
       "$extensions": {
         "vela": {
-          "figma": "text/body-size"
+          "figma": "size/body"
         }
       }
     },
@@ -2368,7 +2368,7 @@
       "$value": 400,
       "$extensions": {
         "vela": {
-          "figma": "text/body-weight"
+          "figma": "weight/body"
         }
       }
     },
@@ -2380,7 +2380,7 @@
       },
       "$extensions": {
         "vela": {
-          "figma": "text/body-line-height"
+          "figma": "line-height/body"
         }
       }
     },
@@ -2392,7 +2392,7 @@
       },
       "$extensions": {
         "vela": {
-          "figma": "text/meta-size"
+          "figma": "size/meta"
         }
       }
     },
@@ -2401,7 +2401,7 @@
       "$value": 400,
       "$extensions": {
         "vela": {
-          "figma": "text/meta-weight"
+          "figma": "weight/meta"
         }
       }
     },
@@ -2413,7 +2413,7 @@
       },
       "$extensions": {
         "vela": {
-          "figma": "text/meta-line-height"
+          "figma": "line-height/meta"
         }
       }
     },
@@ -2425,7 +2425,7 @@
       },
       "$extensions": {
         "vela": {
-          "figma": "text/meta-tracking"
+          "figma": "tracking/meta"
         }
       }
     },
@@ -2437,7 +2437,7 @@
       },
       "$extensions": {
         "vela": {
-          "figma": "text/button-tiny-size"
+          "figma": "size/button-tiny"
         }
       }
     },
@@ -2449,7 +2449,7 @@
       },
       "$extensions": {
         "vela": {
-          "figma": "text/button-tiny-line-height"
+          "figma": "line-height/button-tiny"
         }
       }
     },
@@ -2461,7 +2461,7 @@
       },
       "$extensions": {
         "vela": {
-          "figma": "text/button-regular-size"
+          "figma": "size/button-regular"
         }
       }
     },
@@ -2473,7 +2473,7 @@
       },
       "$extensions": {
         "vela": {
-          "figma": "text/button-regular-line-height"
+          "figma": "line-height/button-regular"
         }
       }
     },
@@ -2485,7 +2485,7 @@
       },
       "$extensions": {
         "vela": {
-          "figma": "text/button-large-size"
+          "figma": "size/button-large"
         }
       }
     },
@@ -2497,7 +2497,7 @@
       },
       "$extensions": {
         "vela": {
-          "figma": "text/button-large-line-height"
+          "figma": "line-height/button-large"
         }
       }
     },
@@ -2509,7 +2509,7 @@
       },
       "$extensions": {
         "vela": {
-          "figma": "text/button-huge-size"
+          "figma": "size/button-huge"
         }
       }
     },
@@ -2521,7 +2521,7 @@
       },
       "$extensions": {
         "vela": {
-          "figma": "text/button-huge-line-height"
+          "figma": "line-height/button-huge"
         }
       }
     },
@@ -2533,7 +2533,7 @@
       },
       "$extensions": {
         "vela": {
-          "figma": "text/tab-size"
+          "figma": "size/tab"
         }
       }
     },
@@ -2545,7 +2545,7 @@
       },
       "$extensions": {
         "vela": {
-          "figma": "text/tab-line-height"
+          "figma": "line-height/tab"
         }
       }
     },
@@ -2557,7 +2557,7 @@
       },
       "$extensions": {
         "vela": {
-          "figma": "text/tab-large-size"
+          "figma": "size/tab-large"
         }
       }
     },
@@ -2569,7 +2569,7 @@
       },
       "$extensions": {
         "vela": {
-          "figma": "text/tab-large-line-height"
+          "figma": "line-height/tab-large"
         }
       }
     }

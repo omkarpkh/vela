@@ -44,6 +44,25 @@ describe('token source', () => {
     expect(missing).toEqual([])
   })
 
+
+  it('Figma names follow each collection’s naming convention — the drift check depends on it', () => {
+    // Found by the read-back: 46 numeric tokens carried names like text/h1-size where the
+    // library has size/h1. Values matched, names did not, and nothing had checked the names.
+    const RULE: Record<string, RegExp> = {
+      color: /^(surface|border|text|icon|button|control|severity|risk|status|focus)\//,
+      sizing: /^(space|icon|control-height|radius|focus)\//,
+      typography: /^(size|line-height|weight|tracking)\//,
+    }
+    const bad: string[] = []
+    for (const [group, re] of Object.entries(RULE))
+      for (const [n, t] of Object.entries(doc[group] as Record<string, any>)) {
+        if (!['color', 'dimension', 'number'].includes(t.$type)) continue
+        const f = t.$extensions?.vela?.figma
+        if (!f || !re.test(f)) bad.push(`${group}/${n} → ${f}`)
+      }
+    expect(bad).toEqual([])
+  })
+
   it('regenerating the CSS from the source changes nothing (the CSS is not hand-edited)', () => {
     const light = readFileSync(resolve(root, 'src/styles/tokens.light.css'), 'utf8')
     const dark = readFileSync(resolve(root, 'src/styles/tokens.dark.body.css'), 'utf8')
