@@ -1,6 +1,6 @@
 {
   "name": "@omkarux/vela",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "A token-first design system: framework-agnostic tokens and component specs with a React implementation. Two-layer color architecture, separate severity and risk taxonomies, light and dark theming, WCAG AA asserted in CI, zero runtime dependencies.",
   "type": "module",
   "license": "MIT",
