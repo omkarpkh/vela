@@ -46,6 +46,13 @@ void main() {
     expect(theme.colorScheme.primary, VelaColors.dark.btnPrimaryBg);
     expect(theme.colorScheme.surface, VelaColors.dark.bgGlobal);
     expect(theme.scaffoldBackgroundColor, VelaColors.dark.bgGlobal);
-    expect(theme.textTheme.headlineLarge, VelaTypography.h1);
+    // ThemeData merges a supplied textTheme with Material's defaults (colour,
+    // inherit, letterSpacing), so whole-style equality never holds — assert that
+    // the ramp's values survive the merge instead.
+    final TextStyle? h1 = theme.textTheme.headlineLarge;
+    expect(h1?.fontFamily, VelaTypography.fontFamilyPrimary);
+    expect(h1?.fontSize, VelaTypography.textH1Size);
+    expect(h1?.fontWeight, VelaTypography.textH1Weight);
+    expect(h1?.height, VelaTypography.textH1LineHeight / VelaTypography.textH1Size);
   });
 }
