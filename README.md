@@ -60,6 +60,35 @@ icon" is not a paragraph someone has to remember:
 
 `npm run verify` asserts every one of those rejections against the *published tarball*.
 
+## Adopt without rewrite
+
+The question an acquisition raises is not "can we build a design system" but "can the products we
+just bought look like ours without being rebuilt". The demo answers it with a screen built on stock
+Material UI, rendered twice from identical component code — the right-hand copy receives one extra
+thing, a theme object generated from `tokens/vela.tokens.json`:
+
+![A clinic front-desk screen on stock Material UI beside the same screen themed by Vela tokens, light mode](docs/adopt-without-rewrite-light.png)
+
+![The same two screens in dark mode](docs/adopt-without-rewrite-dark.png)
+
+```tsx
+import { createTheme, ThemeProvider } from '@mui/material/styles'
+import vela from '@omkarux/vela/mui-theme.json'
+<ThemeProvider theme={createTheme(vela.light)}>{/* the existing app, untouched */}</ThemeProvider>
+```
+
+What the theme fixes: colour, type, radius, surfaces, alerts, both modes. What it cannot: Material has
+one colour vocabulary, so the status chips wear severity colours — Vela keeps Severity and Status
+apart, and that is component work. Theme first, components second, and the demo shows where the line is.
+
+## Visual regression
+
+Unit tests prove behaviour and the contrast audit proves the numbers; neither can see a padding
+change break a table. `npm run test:visual` screenshots every component section and both columns
+above, light and dark, and compares them with committed baselines (`tests/visual/*-snapshots/`).
+Baselines are per platform — the Linux set gates CI, the darwin set serves local runs — and are
+updated deliberately with `npm run test:visual:update`, never by hand.
+
 ## Accessibility is asserted, not claimed
 
 `npm run contrast` prints every foreground/background pair in both themes against WCAG 2.1

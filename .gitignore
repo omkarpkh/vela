@@ -5,3 +5,5 @@ demo-dist/
 .DS_Store
 coverage/
 src/styles/tokens.dev.css
+test-results/
+playwright-report/
