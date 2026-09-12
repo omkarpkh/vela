@@ -37,7 +37,9 @@
     "CHANGELOG.md",
     "LICENSE",
     "tokens",
-    "flutter"
+    "flutter/lib",
+    "flutter/pubspec.yaml",
+    "flutter/README.md"
   ],
   "scripts": {
     "clean": "rm -rf dist",

@@ -12,5 +12,9 @@ Figma library, so one token edit lands in all three.
 | `VelaTypography` | Font families, weights, sizes, and the ramp composed as `TextStyle`s. |
 | `velaThemeData(Brightness)` | A `ThemeData` seeded from the semantics, with `VelaColors` installed as an extension. |
 
+The styles name Open Sans (300/400/600); bundle it as an asset or load it with `google_fonts` —
+Flutter falls back to the platform font silently otherwise. `flutter test` runs the package's own
+checks; CI runs `flutter analyze` and `flutter test` on every push.
+
 Use it as a path dependency (`vela_tokens: { path: ../vela/flutter }`) or vendor the one file.
 Widgets are not generated: build them against `../guidelines/`, which is implementation-independent.

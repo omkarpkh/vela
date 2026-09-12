@@ -103,6 +103,10 @@ Container(color: colors.bgContainer, padding: const EdgeInsets.all(VelaSizing.sp
 Text('Healthy', style: VelaTypography.meta.copyWith(color: colors.signalStatusHealthy));
 ```
 
+The styles name Open Sans (300/400/600). Flutter does not fetch fonts: bundle it as an asset or load
+it with `google_fonts`, otherwise the platform font is used silently — the same degrade-not-break the
+CSS stack has.
+
 Same rule as the CSS: bind semantics (`VelaColors`), never `VelaPrimitives`. `VelaSizing` values are
 logical pixels, 1:1 with the CSS px values; each `VelaTypography` style carries its line-height as
 Flutter's `height` ratio. Widgets are not generated — build them against `guidelines/` like any other

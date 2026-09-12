@@ -261,6 +261,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
 `
 
 mkdirSync(join(root, 'flutter/lib'), { recursive: true })

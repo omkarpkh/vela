@@ -26,13 +26,33 @@ jobs:
       # published types reject the documented rule violations.
       - run: node scripts/verify-pack.mjs
 
+  # The package ships a Dart file generated from the token source. `verify` parses it
+  # when a Dart SDK is present; this job compiles it against a real Flutter SDK and
+  # runs the package's own tests, so "generated" also means "analyzes clean and
+  # installs as a theme". Publish waits for it.
+  flutter:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: flutter
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter --version
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test
+
   # Publishing uses npm Trusted Publishing (OIDC). No NPM_TOKEN secret exists,
   # and none should be created: as of Aug 2026 granular access tokens cannot
   # publish at all. npm attaches a provenance attestation automatically on this
   # path, tying the tarball to this commit and this workflow file.
   publish:
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: verify
+    needs: [verify, flutter]
     runs-on: ubuntu-latest
     permissions:
       contents: read
