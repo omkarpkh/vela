@@ -18,5 +18,5 @@ the specification and the source is one implementation of it.
 ## Before you claim it works
 
 ```bash
-npm run verify   # typecheck + 116 tests + build + pack-and-consume gate
+npm run verify   # typecheck + 154 tests + build + pack-and-consume gate
 ```

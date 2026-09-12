@@ -76,3 +76,34 @@ the spacing and sizing scales and the type ramp — with no React in the depende
 components against your own framework's idioms and hold them to `guidelines/`, which is written to
 be implementation-independent. On Angular, the closed prop sets become union input types with
 `strictTemplates` enabled; that buys most of what the discriminated unions buy in React.
+
+### Flutter
+
+The tokens also ship as Dart, generated from the same JSON as the CSS and the Figma library. It lives
+at `flutter/` inside the npm package (and is exported as `@omkarux/vela/tokens.dart`). Add it as a
+path dependency or vendor the single file `flutter/lib/vela_tokens.dart`:
+
+```yaml
+dependencies:
+  vela_tokens:
+    path: ../vela/flutter
+```
+
+```dart
+import 'package:vela_tokens/vela_tokens.dart';
+
+MaterialApp(
+  theme: velaThemeData(Brightness.light),
+  darkTheme: velaThemeData(Brightness.dark),
+);
+
+// In a widget — bind semantics, never VelaPrimitives:
+final colors = Theme.of(context).extension<VelaColors>()!;
+Container(color: colors.bgContainer, padding: const EdgeInsets.all(VelaSizing.space20));
+Text('Healthy', style: VelaTypography.meta.copyWith(color: colors.signalStatusHealthy));
+```
+
+Same rule as the CSS: bind semantics (`VelaColors`), never `VelaPrimitives`. `VelaSizing` values are
+logical pixels, 1:1 with the CSS px values; each `VelaTypography` style carries its line-height as
+Flutter's `height` ratio. Widgets are not generated — build them against `guidelines/` like any other
+stack, and hold them to the same specs.

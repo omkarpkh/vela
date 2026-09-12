@@ -3,6 +3,36 @@
 All notable changes to this project are documented here.
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] — 2026-09-12
+
+### Added
+- **Flutter target.** `npm run tokens` now also emits `flutter/lib/vela_tokens.dart` from the same
+  `tokens/vela.tokens.json`: primitives as `Color`s, every semantic as a field of a `VelaColors`
+  `ThemeExtension` with `light` and `dark` instances, the sizing scale as logical pixels, the type
+  ramp as `TextStyle`s (line-height ÷ size, which is what Flutter's `height` takes) and
+  `velaThemeData(Brightness)` to seed a `ThemeData`. Ships as `@omkarux/vela/tokens.dart` and as a
+  path-installable Dart package in `flutter/`. Tests hold it to the CSS's discipline: every token
+  present, every value identical to the JSON, regeneration a no-op; the file is syntax-checked
+  whenever a Dart SDK is on the machine. Nothing in the widget layer is generated — the tokens
+  travel, the components are built per stack against the same specs.
+
+## [0.7.1] — 2026-09-11
+
+### Fixed
+- 46 numeric tokens carried Figma names the library does not use (`text/h1-size` where the library
+  has `size/h1`, and the like). Found by the new read-back; corrected in the JSON, and a test now
+  holds every collection to its naming convention so the drift check can trust the names.
+
+## [0.7.0] — 2026-09-11
+
+### Added
+- **Read-back drift check.** `npm run tokens:figma:read` prints a script that reads every variable
+  out of the library, resolved per mode; `npm run tokens:figma:check <file>` diffs the result
+  against the JSON and exits 1 on any mismatch. Closes the half of the loop that only pushed.
+- Figma component builders live in source (`scripts/figma/components/*.figma.js`, run by
+  `npm run figma:build`), version stamps on every generated description, and a spec lint that
+  fails the build when a component spec loses a section the sync compiles.
+
 ## [0.6.0] — 2026-09-11
 
 ### Added

@@ -7,7 +7,9 @@
 > THESE SPECS ARE FRAMEWORK-AGNOSTIC. The published package is a React implementation of them, and
 > the code samples below are React — but the tokens, the closed prop sets, the taxonomies and the
 > accessibility rules hold for any implementation. If you are generating for Angular, Vue or
-> Svelte, follow every rule here and translate only the syntax.
+> Svelte, follow every rule here and translate only the syntax. For Flutter, the same tokens ship as
+> `tokens.dart` (`VelaColors`, `VelaSizing`, `VelaTypography`, `velaThemeData`) — bind `VelaColors`
+> semantics, never `VelaPrimitives`.
 
 Read `overview.md` first: it maps a user need to a component and lists the choices agents
 most often get wrong. Then read the per-component file before generating any markup.
@@ -22,7 +24,7 @@ most often get wrong. Then read the per-component file before generating any mar
 ## Figma
 
 A matching Figma library exists: **Vela Design System**. It is *compiled from this contract*, not
-the source of it — 223 variables and 6 component sets mirroring the token architecture 1:1, with
+the source of it — 234 variables and 6 component sets mirroring the token architecture 1:1, with
 every variable carrying its `var(--vela-*)` name for Dev Mode. Each component's per-file
 `## Figma mapping` section states which Figma property corresponds to which prop, and which
 behaviour has no Figma expression at all.
