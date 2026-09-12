@@ -111,3 +111,25 @@ Same rule as the CSS: bind semantics (`VelaColors`), never `VelaPrimitives`. `Ve
 logical pixels, 1:1 with the CSS px values; each `VelaTypography` style carries its line-height as
 Flutter's `height` ratio. Widgets are not generated — build them against `guidelines/` like any other
 stack, and hold them to the same specs.
+
+### A product already built on Material UI
+
+The tokens also compile to a Material UI theme. Pass it to `createTheme()` and the existing app takes
+the family look without a component being touched:
+
+```tsx
+import { createTheme, ThemeProvider } from '@mui/material/styles'
+import vela from '@omkarux/vela/mui-theme.json'
+
+const theme = createTheme(vela.light)   // or vela.dark — pick by your own mode switch
+
+<ThemeProvider theme={theme}>{/* the existing app, unchanged */}</ThemeProvider>
+```
+
+Thirty-eight colour roles (Alert surfaces included), thirteen type variants mapped by usage —
+Material's `h4`–`h6` titles become Vela's `h1`–`h3`, so an acquired product's titles keep their
+size — and the radius are mapped; `$sources` in the JSON names the
+token behind every colour. The limit is honest: Material has one colour vocabulary, so a status chip
+and a severity alert share `success`/`warning`/`error` — Vela keeps those taxonomies apart, and that
+separation is component work, not theme work.
+

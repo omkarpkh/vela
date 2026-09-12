@@ -101,14 +101,14 @@ npm run contrast   # WCAG report for both themes
 npm run verify     # typecheck + tests + build + pack-and-consume gate
 ```
 
-## Editing tokens — one source, four targets
+## Editing tokens — one source, five targets
 
 `tokens/vela.tokens.json` is the only place a value is written. It uses the W3C Design Tokens
 format (2025.10), ships inside the package as `@omkarux/vela/tokens.json`, and everything else is
 generated from it:
 
 ```bash
-npm run tokens          # → src/styles/tokens.*.css + flutter/lib/vela_tokens.dart (a Flutter theme)
+npm run tokens          # → tokens.*.css + flutter/lib/vela_tokens.dart (Flutter) + bridges/vela.mui-theme.json (MUI)
 npm run tokens:figma    # → a Plugin API script that creates-or-updates every Figma variable
 npm run tokens:check    # fails if the CSS was hand-edited instead of the JSON (runs in CI)
 npm run guidelines:figma # → a script that writes each spec's summary into its Figma description
@@ -132,6 +132,7 @@ Worth being precise about what travels and what doesn't:
 |---|---|
 | **Tokens** (`dist/tokens.css`) | **Entirely.** Plain CSS custom properties — Angular, Vue, Svelte, Rails, plain HTML. |
 | **Tokens for Flutter** (`tokens.dart`) | **Entirely.** Generated from the same JSON: the primitives, a `VelaColors` `ThemeExtension` with `light` and `dark`, the sizing scale in logical pixels, the type ramp as `TextStyle`s and `velaThemeData(Brightness)`. Swift, Kotlin or XML would be the same kind of script. Widgets are not generated — they are built against `guidelines/`. |
+| **Theme bridge for Material UI** (`mui-theme.json`) | **Entirely.** `createTheme(vela.light)` and a product already built on MUI takes the family look with no component touched — the adopt-without-rewrite path for an acquired product. What it cannot do: keep Severity and Status apart, because Material has one colour vocabulary. That is component work, which is why shared components come second. |
 | **The contract** (`guidelines/`) | **Entirely.** Intent, closed prop sets, token bindings, accessibility, anti-patterns. Only the code samples are React-shaped. |
 | **Components** (`dist/index.js`) | **No.** One implementation per framework, by definition. |
 | **The contrast audit** (`npm run contrast`) | **Entirely.** It parses CSS and knows nothing about React. |

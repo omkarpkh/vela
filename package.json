@@ -1,7 +1,7 @@
 {
   "name": "@omkarux/vela",
-  "version": "0.8.0",
-  "description": "A token-first design system: framework-agnostic tokens and component specs with a React implementation. Tokens compile to CSS, a Figma library and a Flutter theme from one source. Two-layer color architecture, separate severity and risk taxonomies, light and dark theming, WCAG AA asserted in CI, zero runtime dependencies.",
+  "version": "0.9.0",
+  "description": "A token-first design system: framework-agnostic tokens and component specs with a React implementation. Tokens compile to CSS, a Figma library, a Flutter theme and a Material UI theme from one source. Two-layer color architecture, separate severity and risk taxonomies, light and dark theming, WCAG AA asserted in CI, zero runtime dependencies.",
   "type": "module",
   "license": "MIT",
   "author": "Omkar Khadamkar",
@@ -28,7 +28,8 @@
     "./guidelines/*": "./guidelines/*",
     "./package.json": "./package.json",
     "./tokens.json": "./tokens/vela.tokens.json",
-    "./tokens.dart": "./flutter/lib/vela_tokens.dart"
+    "./tokens.dart": "./flutter/lib/vela_tokens.dart",
+    "./mui-theme.json": "./bridges/vela.mui-theme.json"
   },
   "files": [
     "dist",
@@ -39,18 +40,20 @@
     "tokens",
     "flutter/lib",
     "flutter/pubspec.yaml",
-    "flutter/README.md"
+    "flutter/README.md",
+    "bridges"
   ],
   "scripts": {
     "clean": "rm -rf dist",
-    "tokens": "node scripts/build-tokens.mjs && node scripts/build-tokens-dart.mjs",
+    "tokens": "node scripts/build-tokens.mjs && node scripts/build-tokens-dart.mjs && node scripts/build-tokens-mui.mjs",
     "tokens:dart": "node scripts/build-tokens-dart.mjs",
+    "tokens:mui": "node scripts/build-tokens-mui.mjs",
     "tokens:figma": "node scripts/sync-figma.mjs",
     "tokens:figma:read": "node scripts/figma-drift.mjs --read",
     "tokens:figma:check": "node scripts/figma-drift.mjs",
     "guidelines:figma": "node scripts/sync-figma-descriptions.mjs",
     "figma:build": "node scripts/figma/build-components.mjs",
-    "tokens:check": "npm run tokens && git diff --exit-code -- src/styles/tokens.light.css src/styles/tokens.dark.body.css flutter/lib/vela_tokens.dart flutter/pubspec.yaml",
+    "tokens:check": "npm run tokens && git diff --exit-code -- src/styles/tokens.light.css src/styles/tokens.dark.body.css flutter/lib/vela_tokens.dart flutter/pubspec.yaml bridges/vela.mui-theme.json",
     "build": "npm run clean && npm run tokens && npm run build:js && npm run build:css",
     "build:js": "vite build",
     "build:css": "node scripts/build-css.mjs",
@@ -70,6 +73,9 @@
     "react-dom": "^18.3 || ^19"
   },
   "devDependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/material": "^9.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.1.0",
     "@testing-library/user-event": "^14.5.2",
@@ -93,7 +99,10 @@
     "accessibility",
     "flutter",
     "dart",
-    "web-components"
+    "web-components",
+    "material-ui",
+    "mui",
+    "theme"
   ],
   "engines": {
     "node": ">=18"

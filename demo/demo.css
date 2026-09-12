@@ -13,3 +13,9 @@ body { margin: 0; background: var(--vela-bg-global); }
 .demo-swatch { display: flex; align-items: center; gap: var(--vela-space-10); }
 .demo-chip { width: 26px; height: 26px; border-radius: var(--vela-radius-4); border: 1px solid var(--vela-border-subtle); flex: none; }
 .demo-footer { padding: var(--vela-space-30) 0; }
+.demo-views { display: flex; gap: var(--vela-space-5); }
+.demo-controls { display: flex; gap: var(--vela-space-20); flex-wrap: wrap; align-items: center; }
+.adopt-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: var(--vela-space-20); margin-top: var(--vela-space-20); }
+.adopt-caption { margin: 0 0 var(--vela-space-10); }
+.adopt-frame { border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4); overflow: hidden; }
+.adopt-limit { margin-top: var(--vela-space-20); max-width: 72ch; }

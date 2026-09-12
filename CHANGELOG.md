@@ -3,6 +3,23 @@
 All notable changes to this project are documented here.
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.0] — 2026-09-12
+
+### Added
+- **Material UI theme bridge — "adopt without rewrite".** `npm run tokens` now also emits
+  `bridges/vela.mui-theme.json`: a `ThemeOptions` object per mode (38 colour roles incl. Alert surfaces, 13 type
+  variants mapped by usage, radius, two component defaults) with every value resolved from `tokens/vela.tokens.json`. A product
+  already built on MUI passes it to `createTheme()` and takes the family look without a component
+  being touched. Ships as `@omkarux/vela/mui-theme.json` — plain JSON, so the package still has zero
+  runtime dependencies. `$sources` records the token behind every colour; tests re-resolve all of
+  them per mode, reject any hex that is not a token value, check the type ramp, and prove
+  regeneration is a no-op.
+- Demo: a second view, **Adopt without rewrite** — a front-desk screen built on stock Material UI,
+  rendered twice from identical component code: default theme on the left, the generated Vela theme
+  on the right, in both light and dark. It also shows the limit: Material has one colour vocabulary
+  where Vela keeps Severity and Status apart, and that is a component-level change — the reason
+  shared components are step two, not step one.
+
 ## [0.8.0] — 2026-09-12
 
 ### Added

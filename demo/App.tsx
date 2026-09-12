@@ -5,8 +5,10 @@ import {
 import type { Severity, Status } from '../src'
 import { PlusIcon } from '../src/lib/icons'
 import './demo.css'
+import { Adopt } from './Adopt'
 
 type Theme = 'system' | 'light' | 'dark'
+type View = 'components' | 'adopt'
 
 const SEVERITIES: Severity[] = ['success', 'info', 'warning', 'minor', 'major', 'critical']
 const STATUSES: Status[] = ['unknown', 'healthy', 'warning', 'medium', 'unhealthy']
@@ -24,6 +26,7 @@ function Section({ title, note, children }: { title: string; note?: string; chil
 
 export function App() {
   const [theme, setTheme] = useState<Theme>('system')
+  const [view, setView] = useState<View>('components')
   const [alerts, setAlerts] = useState<Severity[]>(SEVERITIES)
   const [notify, setNotify] = useState(true)
   const [tenant, setTenant] = useState('')
@@ -47,6 +50,20 @@ export function App() {
             @omkarux/vela · 6 components · 76 contrast pairs asserted in both themes
           </p>
         </div>
+        <div className="demo-controls">
+          <div className="demo-views" role="group" aria-label="View">
+            {(['components', 'adopt'] as View[]).map((v) => (
+              <Button
+                key={v}
+                size="tiny"
+                variant={view === v ? 'primary' : 'standard'}
+                appearance={view === v ? 'filled' : 'hollow'}
+                onClick={() => setView(v)}
+              >
+                {v === 'components' ? 'Components' : 'Adopt without rewrite'}
+              </Button>
+            ))}
+          </div>
         <div className="demo-themes" role="group" aria-label="Theme">
           {(['system', 'light', 'dark'] as Theme[]).map((t) => (
             <Button
@@ -60,8 +77,11 @@ export function App() {
             </Button>
           ))}
         </div>
+        </div>
       </header>
 
+      {view === 'adopt' && <Adopt mode={theme} />}
+      {view === 'components' && (<>
       <Section title="Button" note="variant encodes consequence · appearance encodes weight · sizes are a closed set of four">
         <div className="demo-row">
           <Button variant="primary" appearance="filled" icon={<PlusIcon />}>Add Rule</Button>
@@ -162,6 +182,7 @@ export function App() {
           ))}
         </div>
       </Section>
+      </>)}
 
       <footer className="demo-footer vela-meta">
         Zero runtime dependencies · ESM · light + dark · WCAG 2.1 AA asserted in CI
