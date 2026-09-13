@@ -13,9 +13,12 @@
 .pg-toolbar__group { display: flex; gap: var(--vela-space-5); }
 .pg-toolbar__spacer { flex: 1; }
 
+/* The stage column is a container: the two frames stack whenever the column itself is narrow,
+   whether that is a small viewport or the nav and props panel eating a wide one. */
+.pg-main { container-type: inline-size; min-width: 0; }
 .pg-stage { display: grid; grid-template-columns: 1fr 1fr; gap: var(--vela-space-15); }
 .pg-stage--single { grid-template-columns: 1fr; }
-@media (max-width: 700px) { .pg-stage { grid-template-columns: 1fr; } }
+@container (max-width: 640px) { .pg-stage { grid-template-columns: 1fr; } }
 .pg-frame { position: relative; border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4); padding: var(--vela-space-60) var(--vela-space-30) var(--vela-space-40); min-height: 280px; display: flex; align-items: center; justify-content: center; }
 .pg-frame-label { position: absolute; top: var(--vela-space-10); left: var(--vela-space-15); color: var(--vela-text-de-emphasized); }
 .pg-frame-body { max-width: 100%; min-width: 0; }
@@ -27,7 +30,12 @@
 .pg-props__head h2 { margin: 0; }
 .pg-field { display: flex; flex-direction: column; gap: var(--vela-space-5); }
 .pg-field__label { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); font-weight: var(--vela-font-weight-semibold); color: var(--vela-text-default); }
-.pg-select { width: 100%; height: var(--vela-control-height-35); border: 1px solid var(--vela-control-border); border-radius: var(--vela-radius-4); background: var(--vela-control-bg); color: var(--vela-text-default); padding: 0 var(--vela-space-10); font: inherit; font-size: var(--vela-text-body-size); }
+/* Native select, own chevron: the browser draws its arrow flush to the edge, so the arrow is
+   hidden and redrawn as a masked shape inset by the same 10px the text gets on the left. */
+.pg-select-wrap { position: relative; display: block; }
+.pg-select { width: 100%; height: var(--vela-control-height-35); border: 1px solid var(--vela-control-border); border-radius: var(--vela-radius-4); background: var(--vela-control-bg); color: var(--vela-text-default); padding: 0 calc(var(--vela-space-10) + var(--vela-icon-16) + var(--vela-space-10)) 0 var(--vela-space-10); font: inherit; font-size: var(--vela-text-body-size); appearance: none; -webkit-appearance: none; cursor: pointer; }
+.pg-select-wrap::after { content: ''; position: absolute; right: var(--vela-space-10); top: 50%; width: var(--vela-icon-16); height: var(--vela-icon-16); transform: translateY(-50%); pointer-events: none; background: var(--vela-icon-default); -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M4 6l4 4 4-4' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/></svg>") center / contain no-repeat; mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M4 6l4 4 4-4' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/></svg>") center / contain no-repeat; }
+.pg-select:disabled { color: var(--vela-text-inactive); background: var(--vela-control-bg-disabled); cursor: not-allowed; }
 .pg-select:focus-visible { outline: var(--vela-focus-ring-width) solid var(--vela-focus-ring-color); outline-offset: var(--vela-focus-ring-offset); }
 .pg-booleans { display: flex; flex-direction: column; gap: var(--vela-space-10); padding-top: var(--vela-space-5); }
 .pg-uncontrolled { border-top: 1px solid var(--vela-border-subtle); padding-top: var(--vela-space-15); }

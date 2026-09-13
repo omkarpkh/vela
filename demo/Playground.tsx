@@ -32,11 +32,13 @@ function Field({ c, value, unavailable, onChange }: { c: Control; value: Values[
     return (
       <label className="pg-field">
         <span className="pg-field__label">{c.prop}</span>
-        <select className="pg-select" value={String(value ?? c.default ?? '')} onChange={(e) => onChange(e.target.value)}>
-          {c.options!.map((o) => (
-            <option key={o} value={o} disabled={unavailable.includes(o)}>{o}{unavailable.includes(o) ? '  · not with this appearance' : ''}</option>
-          ))}
-        </select>
+        <span className="pg-select-wrap">
+          <select className="pg-select" value={String(value ?? c.default ?? '')} onChange={(e) => onChange(e.target.value)}>
+            {c.options!.map((o) => (
+              <option key={o} value={o} disabled={unavailable.includes(o)}>{o}{unavailable.includes(o) ? '  · not with this appearance' : ''}</option>
+            ))}
+          </select>
+        </span>
       </label>
     )
   return <Input label={c.prop} size="tiny" value={String(value ?? '')} onChange={(e) => onChange(e.target.value)} />
@@ -108,7 +110,7 @@ function PlaygroundFor({ entry }: { entry: (typeof REGISTRY)[number] }) {
       </header>
 
       <div className="pg">
-        <div>
+        <div className="pg-main">
           <div className="pg-toolbar">
             <div className="pg-toolbar__group" role="group" aria-label="Stage">
               {(['both', 'light', 'dark'] as StageView[]).map((s) => (
