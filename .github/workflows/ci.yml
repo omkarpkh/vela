@@ -59,11 +59,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
-      # BOOTSTRAP — remove with the commit that adds the Linux baselines. The first run has
-      # no linux snapshots to compare against; Playwright writes them and reports failure,
-      # and the artifact below carries them back into the repo.
       - run: npm run test:visual
-        continue-on-error: true
       - uses: actions/upload-artifact@v4
         if: always()
         with:
