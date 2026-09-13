@@ -2070,38 +2070,6 @@
           "figma": "focus/ring-offset"
         }
       }
-    },
-    "duration-fast": {
-      "$type": "duration",
-      "$value": "120ms",
-      "$extensions": {
-        "vela": {
-          "figma": "duration-fast"
-        }
-      }
-    },
-    "duration-base": {
-      "$type": "duration",
-      "$value": "180ms",
-      "$extensions": {
-        "vela": {
-          "figma": "duration-base"
-        }
-      }
-    },
-    "ease-standard": {
-      "$type": "cubicBezier",
-      "$value": [
-        0.2,
-        0.0,
-        0.2,
-        1.0
-      ],
-      "$extensions": {
-        "vela": {
-          "figma": "ease-standard"
-        }
-      }
     }
   },
   "typography": {
@@ -2572,6 +2540,43 @@
           "figma": "line-height/tab-large"
         }
       }
+    }
+  },
+  "motion": {
+    "duration-fast": {
+      "$type": "duration",
+      "$value": "120ms",
+      "$extensions": {
+        "vela": {
+          "figma": "duration/fast"
+        }
+      },
+      "$description": "Anything that answers a pointer: hover in, press, exits."
+    },
+    "duration-base": {
+      "$type": "duration",
+      "$value": "180ms",
+      "$extensions": {
+        "vela": {
+          "figma": "duration/base"
+        }
+      },
+      "$description": "Anything that settles or enters: hover out, appearing."
+    },
+    "ease-standard": {
+      "$type": "cubicBezier",
+      "$value": [
+        0.2,
+        0.0,
+        0.2,
+        1.0
+      ],
+      "$extensions": {
+        "vela": {
+          "figma": "easing/standard"
+        }
+      },
+      "$description": "The only curve. Never a bare ease."
     }
   }
 }

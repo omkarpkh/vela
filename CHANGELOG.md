@@ -21,6 +21,11 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **Subtree theming.** `data-theme` now works on any element, not only the root: light tokens are
   declared on `:root` and on `[data-theme="light"]`, the explicit dark block on any `[data-theme="dark"]`.
   A dark sidebar in a light app costs one attribute.
+- **Motion is its own token group and a Figma collection.** `duration-fast`, `duration-base` and
+  `ease-standard` move from `sizing` to `motion` in the source; the Dart target gains `VelaMotion`; the
+  Figma sync creates a **Motion** collection (FLOAT milliseconds, STRING curve, no scopes — they
+  document, they do not bind) and the read-back drift check covers it. `npm run tokens:figma -- --only
+  Motion` limits a sync to one collection.
 - **The MUI bridge carries timing.** `transitions.duration` and `transitions.easing` are generated from the
   motion tokens, so an adopted product moves on Vela's clock; its ripple stays, because the kind of feedback
   is component behaviour.

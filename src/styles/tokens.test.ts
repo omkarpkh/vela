@@ -38,7 +38,7 @@ describe('token source', () => {
 
   it('every token carries the Figma variable name the sync needs', () => {
     const missing = Object.entries(all)
-      .filter(([, t]) => t.$type === 'color' || t.$type === 'dimension' || t.$type === 'number')
+      .filter(([, t]) => ['color', 'dimension', 'number', 'duration', 'cubicBezier'].includes(t.$type))
       .filter(([, t]) => !t.$extensions?.vela?.figma)
       .map(([n]) => n)
     expect(missing).toEqual([])
@@ -52,11 +52,12 @@ describe('token source', () => {
       color: /^(surface|border|text|icon|button|control|severity|risk|status|focus)\//,
       sizing: /^(space|icon|control-height|radius|focus)\//,
       typography: /^(size|line-height|weight|tracking)\//,
+      motion: /^(duration|easing)\//,
     }
     const bad: string[] = []
     for (const [group, re] of Object.entries(RULE))
       for (const [n, t] of Object.entries(doc[group] as Record<string, any>)) {
-        if (!['color', 'dimension', 'number'].includes(t.$type)) continue
+        if (!['color', 'dimension', 'number', 'duration', 'cubicBezier'].includes(t.$type)) continue
         const f = t.$extensions?.vela?.figma
         if (!f || !re.test(f)) bad.push(`${group}/${n} → ${f}`)
       }

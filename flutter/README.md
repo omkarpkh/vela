@@ -9,6 +9,7 @@ Figma library, so one token edit lands in all three.
 | `VelaPrimitives` | The raw palette. Alias only — never bind in a widget. |
 | `VelaColors` | Every semantic colour as a field; a `ThemeExtension` with `light` and `dark` instances. |
 | `VelaSizing` | Spacing, icon, control-height, radius and focus scales in logical pixels, plus motion. |
+| `VelaMotion` | Two `Duration`s and the one `Cubic`, for feedback that matches the web. |
 | `VelaTypography` | Font families, weights, sizes, and the ramp composed as `TextStyle`s. |
 | `velaThemeData(Brightness)` | A `ThemeData` seeded from the semantics, with `VelaColors` installed as an extension. |
 

@@ -1069,7 +1069,7 @@ class VelaColors extends ThemeExtension<VelaColors> {
   }
 }
 
-/// Spacing, icon, control-height, radius and focus scales in logical pixels, plus motion.
+/// Spacing, icon, control-height, radius and focus scales in logical pixels.
 abstract final class VelaSizing {
   static const double space5 = 5;
   static const double space10 = 10;
@@ -1109,8 +1109,16 @@ abstract final class VelaSizing {
   static const double radiusFull = 9999;
   static const double focusRingWidth = 2;
   static const double focusRingOffset = 2;
+}
+
+/// Motion: two durations and the one curve. Pointer answers and exits use [durationFast];
+/// anything that settles or enters uses [durationBase]. Same values as tokens.css.
+abstract final class VelaMotion {
+  /// Anything that answers a pointer: hover in, press, exits.
   static const Duration durationFast = Duration(milliseconds: 120);
+  /// Anything that settles or enters: hover out, appearing.
   static const Duration durationBase = Duration(milliseconds: 180);
+  /// The only curve. Never a bare ease.
   static const Cubic easeStandard = Cubic(0.2, 0, 0.2, 1);
 }
 

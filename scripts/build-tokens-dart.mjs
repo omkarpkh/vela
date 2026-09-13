@@ -157,7 +157,7 @@ w(`}`)
 w()
 
 // ---------- sizing ----------
-w(`/// Spacing, icon, control-height, radius and focus scales in logical pixels, plus motion.`)
+w(`/// Spacing, icon, control-height, radius and focus scales in logical pixels.`)
 w(`abstract final class VelaSizing {`)
 for (const [name, t] of Object.entries(doc.sizing)) {
   const id = ident(name)
@@ -166,6 +166,20 @@ for (const [name, t] of Object.entries(doc.sizing)) {
   else if (t.$type === 'duration') w(`  static const Duration ${id} = ${ms(t.$value, name)};`)
   else if (t.$type === 'cubicBezier') w(`  static const Cubic ${id} = Cubic(${t.$value.join(', ')});`)
   else throw new Error(`unmapped sizing type ${t.$type} on ${name}`)
+}
+w(`}`)
+w()
+
+// ---------- motion ----------
+w(`/// Motion: two durations and the one curve. Pointer answers and exits use [durationFast];`)
+w(`/// anything that settles or enters uses [durationBase]. Same values as tokens.css.`)
+w(`abstract final class VelaMotion {`)
+for (const [name, t] of Object.entries(doc.motion)) {
+  const id = ident(name)
+  if (t.$description) w(`  /// ${t.$description}`)
+  if (t.$type === 'duration') w(`  static const Duration ${id} = ${ms(t.$value, name)};`)
+  else if (t.$type === 'cubicBezier') w(`  static const Cubic ${id} = Cubic(${t.$value.join(', ')});`)
+  else throw new Error(`unmapped motion type ${t.$type} on ${name}`)
 }
 w(`}`)
 w()

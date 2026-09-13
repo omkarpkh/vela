@@ -60,6 +60,11 @@ function parse(file) {
 
   const notes = [...section(md, 'Figma mapping').matchAll(/^\*\*(.+?)\*\*/gm)].map((m) => strip(m[1]))
 
+  // Motion table: | Moment | What moves | Timing | Why | → "Hover in — fast (120ms)"
+  const motion = [...section(md, 'Motion').matchAll(/^\| ([^|]+) \| ([^|]+) \| ([^|]+) \| [^|]+ \|$/gm)]
+    .filter((m) => !/^Moment/.test(m[1]) && !/^-+$/.test(m[1].trim()))
+    .map((m) => `${strip(m[1])} — ${strip(m[3])}`)
+
   const body = [
     intent, '',
     'CODE', code, '',
@@ -67,6 +72,7 @@ function parse(file) {
     ...(notes.length ? ['', ...notes] : []),
     '',
     'RULES  ' + rules.join('. ') + '.',
+    ...(motion.length ? ['', 'MOTION  ' + motion.join('  ·  ')] : []),
     '',
     `src/components/${SETS[file].src}/${SETS[file].src}.tsx  ·  guidelines/components/${file}`,
     `@omkarux/vela ${version}`,

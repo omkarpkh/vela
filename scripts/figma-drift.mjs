@@ -30,7 +30,7 @@ for (const [group, tokens] of Object.entries(doc)) {
   if (group.startsWith('$')) continue
   for (const [name, t] of Object.entries(tokens)) all[name] = { ...t, group }
 }
-const collectionOf = { primitives: 'Primitives', color: 'Color', sizing: 'Sizing', typography: 'Typography' }
+const collectionOf = { primitives: 'Primitives', color: 'Color', sizing: 'Sizing', typography: 'Typography', motion: 'Motion' }
 
 const resolveColor = (name, mode, seen = new Set()) => {
   const t = all[name]
@@ -54,6 +54,8 @@ for (const [name, t] of Object.entries(all)) {
   if (t.$type === 'color') expected[key] = { css: name, light: resolveColor(name, 'light'), dark: resolveColor(name, 'dark') }
   else if (t.$type === 'dimension') expected[key] = { css: name, value: t.$value.value }
   else if (t.$type === 'number') expected[key] = { css: name, value: t.$value }
+  else if (t.$type === 'duration') expected[key] = { css: name, value: Number(String(t.$value).replace(/ms$/, '')) }
+  else if (t.$type === 'cubicBezier') expected[key] = { css: name, string: `cubic-bezier(${t.$value.join(', ')})` }
 }
 
 // ---------- mode 1: print the read script ----------
@@ -83,6 +85,7 @@ for (const v of vars) {
   const css = ((v.codeSyntax && v.codeSyntax.WEB) || '').replace(/^var\\(--vela-/, '').replace(/\\)$/, '');
   if (v.resolvedType === 'COLOR') lines.push([key, css, hex(resolve(v, 'Light')), hex(resolve(v, 'Dark'))].join('\\t'));
   else if (v.resolvedType === 'FLOAT') lines.push([key, css, resolve(v, 'Value')].join('\\t'));
+  else if (v.resolvedType === 'STRING') lines.push([key, css, resolve(v, 'Value')].join('\\t'));
 }
 return lines.join('\\n');
 `)
@@ -95,13 +98,15 @@ const actual = {}
 for (const line of readFileSync(process.argv[2], 'utf8').split('\n')) {
   if (!line.trim()) continue
   const [key, css, a, b] = line.split('\t')
-  actual[key] = b !== undefined ? { css, light: a, dark: b } : { css, value: Number(a) }
+  actual[key] = b !== undefined ? { css, light: a, dark: b } : { css, value: Number(a), string: a }
 }
 const problems = []
 for (const [key, e] of Object.entries(expected)) {
   const a = actual[key]
   if (!a) { problems.push(`MISSING in Figma   ${key}`); continue }
-  if ('value' in e) {
+  if ('string' in e) {
+    if (a.string !== e.string) problems.push(`STRING  ${key}: figma="${a.string}" json="${e.string}"`)
+  } else if ('value' in e) {
     if (Math.abs(a.value - e.value) > 0.001) problems.push(`VALUE   ${key}: figma=${a.value} json=${e.value}`)
   } else {
     if (a.light !== e.light) problems.push(`LIGHT   ${key}: figma=${a.light} json=${e.light}`)

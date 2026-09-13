@@ -21,6 +21,11 @@ cannot be named in one of those words, it does not ship.
 
 No component defines its own duration or curve. A new one is a token change, reviewed like a colour.
 
+In Figma they live in the **Motion** collection: `duration/fast` and `duration/base` as numbers in
+milliseconds, `easing/standard` as a string, each carrying its `var(--vela-*)` code syntax. They
+document; Figma cannot bind a prototype's transition to a variable, so an interaction built in Figma
+copies these values by hand — the builder that generates the library stamps them for you.
+
 ## Rules
 
 1. Only `transform`, `opacity` and `filter` animate. Never width, height, margin, padding or position.
