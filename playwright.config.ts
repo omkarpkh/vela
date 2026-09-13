@@ -8,7 +8,7 @@ import { defineConfig } from '@playwright/test'
  *   npm run test:visual:update
  */
 export default defineConfig({
-  testDir: 'tests/visual',
+  testDir: 'tests',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
@@ -16,7 +16,7 @@ export default defineConfig({
   outputDir: 'test-results',
   use: {
     baseURL: 'http://localhost:4173',
-    viewport: { width: 1200, height: 900 },
+    viewport: { width: 1440, height: 900 },
     deviceScaleFactor: 1,
     colorScheme: 'light',
     reducedMotion: 'reduce',

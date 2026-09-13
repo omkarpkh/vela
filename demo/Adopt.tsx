@@ -107,9 +107,12 @@ export function Adopt({ mode }: { mode: 'system' | Mode }) {
   const stock = useMemo(() => createTheme({ palette: { mode: resolved } }), [resolved])
   const vela = useMemo(() => createTheme(bridge[resolved] as ThemeOptions), [resolved])
   return (
-    <section className="demo-section">
-      <h2 className="vela-h3">Adopt without rewrite</h2>
-      <p className="vela-meta demo-note">
+    <section>
+      <header className="page-head">
+        <p className="vela-meta page-head__eyebrow">Demo</p>
+        <h1 className="vela-h2">Adopt without rewrite</h1>
+      </header>
+      <p className="vela-meta demo-note" style={{ marginTop: 'var(--vela-space-20)' }}>
         An acquired product built on Material UI, rendered twice from identical component code. The right-hand
         copy receives one extra thing: a theme object generated from tokens/vela.tokens.json.
       </p>

@@ -50,7 +50,11 @@ export function Markdown({ source }: { source: string }) {
       }
       out.push(<ul key={k++} className="pg-list">{items.map((it, j) => <li key={j}>{inline(it, j)}</li>)}</ul>)
     } else if (/^#{1,4} /.test(line)) {
-      out.push(<h4 key={k++} className="pg-h">{line.replace(/^#+ /, '')}</h4>)
+      const level = line.match(/^#+/)![0].length
+      const text = line.replace(/^#+ /, '')
+      out.push(level <= 1 ? <h2 key={k++} className="vela-h3 pg-h1">{text}</h2>
+        : level === 2 ? <h3 key={k++} className="vela-h4 pg-h2">{text}</h3>
+        : <h4 key={k++} className="pg-h">{text}</h4>)
       i++
     } else if (line.trim() === '') {
       i++

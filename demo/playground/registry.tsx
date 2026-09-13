@@ -16,6 +16,9 @@ export interface Entry {
   id: string
   name: string
   spec: string
+  /** Spec file and source folder, for the page's links. */
+  file: string
+  src: string
   /** Starting values for controls the spec does not default (label text, children). */
   seed: Values
   /** Controls the Props table cannot express (a callback becomes a boolean "present"). */
@@ -41,6 +44,8 @@ const bool = (v: string | boolean | undefined) => v === true
 export const REGISTRY: Entry[] = [
   {
     id: 'button',
+    file: 'button.md',
+    src: 'Button',
     name: 'Button',
     spec: buttonMd,
     seed: { children: 'Save Changes', variant: 'primary', icon: true },
@@ -76,6 +81,8 @@ export const REGISTRY: Entry[] = [
   },
   {
     id: 'toggle',
+    file: 'toggle.md',
+    src: 'Toggle',
     name: 'Toggle',
     spec: toggleMd,
     seed: { label: 'Email alerts', defaultChecked: true },
@@ -94,6 +101,8 @@ export const REGISTRY: Entry[] = [
   },
   {
     id: 'input',
+    file: 'input.md',
+    src: 'Input',
     name: 'Input',
     spec: inputMd,
     seed: { label: 'Tenant name', hint: 'Lowercase letters only', error: '' },
@@ -111,6 +120,8 @@ export const REGISTRY: Entry[] = [
   },
   {
     id: 'contextual-alert',
+    file: 'contextual-alert.md',
+    src: 'ContextualAlert',
     name: 'Contextual Alert',
     spec: alertMd,
     seed: { severity: 'warning', title: 'Scan incomplete', children: 'The scan could not reach 3 of 12 hosts.', onDismiss: true },
@@ -131,6 +142,8 @@ export const REGISTRY: Entry[] = [
   },
   {
     id: 'status-indicator',
+    file: 'status-indicator.md',
+    src: 'StatusIndicator',
     name: 'Status Indicator',
     spec: statusMd,
     seed: { status: 'healthy', label: 'api-gateway-01' },
@@ -140,6 +153,8 @@ export const REGISTRY: Entry[] = [
   },
   {
     id: 'tabs',
+    file: 'tabs.md',
+    src: 'Tabs',
     name: 'Tabs',
     spec: tabsMd,
     seed: {},

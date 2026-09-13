@@ -8,7 +8,7 @@ for (const theme of ['light', 'dark'] as const) {
   test(`adopt without rewrite · ${theme}`, async ({ page }) => {
     await page.goto('/')
     await page.getByRole('group', { name: 'Theme' }).getByRole('button', { name: new RegExp(`^${theme}$`, 'i') }).click()
-    await page.getByRole('group', { name: 'View' }).getByRole('button', { name: 'Adopt without rewrite' }).click()
+    await page.getByRole('navigation', { name: 'Site' }).getByRole('link', { name: 'Adopt without rewrite' }).click()
     await page.evaluate(() => document.fonts.ready)
     await page.locator('.adopt-grid').screenshot({ path: `docs/adopt-without-rewrite-${theme}.png`, animations: 'disabled' })
   })

@@ -118,7 +118,10 @@ above says so, and adding it would push the matrix past 30 combinations for no g
 
 **`appearance="text-link"` is a separate component set**, not a third value of `Appearance`.
 That mirrors the type: `ButtonProps` is a discriminated union, and text-link is its own member
-with a narrower `size` and `icon?: never`. One union member, one component set.
+with a narrower `size` and `icon?: never`. One union member, one component set. **It is still one
+component.** Adjectives are props, nouns are components, and a costume does not make a noun: a
+text-link Button does the same job, it just narrows the other adjectives. The union is how code says
+that; the second set exists only because Figma variant axes cannot constrain each other.
 
 ## Anti-patterns
 

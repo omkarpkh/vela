@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Toggle, Input, Tabs, cn } from '../src'
+import { Button, Toggle, Input, Tabs, cn } from '../src'
 import tokensJson from '../tokens/vela.tokens.json'
 import { REGISTRY, type Values } from './playground/registry'
 import { parseSpec, sectionOf, type Control } from './playground/spec'
@@ -7,9 +7,11 @@ import { Markdown } from './playground/Markdown'
 import './playground.css'
 
 type Mode = 'light' | 'dark'
+type StageView = 'both' | Mode
 type Tok = { $type: string; $value: unknown; $extensions?: { vela?: { dark?: string; figma?: string } } }
 const ALL: Record<string, Tok> = {}
 for (const [g, toks] of Object.entries(tokensJson as Record<string, unknown>)) if (!g.startsWith('$')) Object.assign(ALL, toks as Record<string, Tok>)
+const KNOWN = Object.keys(ALL).map((n) => `--vela-${n}`)
 
 // The same alias walk the CSS makes, so the pane shows what the browser resolves.
 function resolve(name: string, mode: Mode): string {
@@ -22,20 +24,17 @@ function resolve(name: string, mode: Mode): string {
   if (t.$type === 'cubicBezier') return `cubic-bezier(${(v as number[]).join(', ')})`
   return String(v)
 }
-const KNOWN = Object.keys(ALL).map((n) => `--vela-${n}`)
 const figmaOf = (name: string) => ALL[name]?.$extensions?.vela?.figma ?? '—'
 const isColor = (name: string) => ALL[name]?.$type === 'color'
 
 function Field({ c, value, unavailable, onChange }: { c: Control; value: Values[string]; unavailable: string[]; onChange: (v: string | boolean) => void }) {
-  if (c.kind === 'boolean')
-    return <Toggle label={c.prop} size="tiny" checked={value === true} disabled={unavailable.includes('true')} onChange={onChange} />
   if (c.kind === 'select')
     return (
       <label className="pg-field">
-        <span className="vela-meta">{c.prop}</span>
+        <span className="pg-field__label">{c.prop}</span>
         <select className="pg-select" value={String(value ?? c.default ?? '')} onChange={(e) => onChange(e.target.value)}>
           {c.options!.map((o) => (
-            <option key={o} value={o} disabled={unavailable.includes(o)}>{o}{unavailable.includes(o) ? '  (not with this appearance)' : ''}</option>
+            <option key={o} value={o} disabled={unavailable.includes(o)}>{o}{unavailable.includes(o) ? '  · not with this appearance' : ''}</option>
           ))}
         </select>
       </label>
@@ -43,20 +42,41 @@ function Field({ c, value, unavailable, onChange }: { c: Control; value: Values[
   return <Input label={c.prop} size="tiny" value={String(value ?? '')} onChange={(e) => onChange(e.target.value)} />
 }
 
-export function Playground() {
-  const [id, setId] = useState(REGISTRY[0].id)
-  const entry = REGISTRY.find((e) => e.id === id) ?? REGISTRY[0]
+function CopyButton({ text }: { text: string }) {
+  const [done, setDone] = useState(false)
+  return (
+    <Button
+      size="tiny"
+      appearance="hollow"
+      className="pg-code-copy"
+      onClick={async () => {
+        try { await navigator.clipboard.writeText(text); setDone(true); setTimeout(() => setDone(false), 1500) } catch { /* clipboard unavailable */ }
+      }}
+    >
+      {done ? 'Copied' : 'Copy'}
+    </Button>
+  )
+}
+
+export function Playground({ id }: { id: string }) {
+  const entry = REGISTRY.find((e) => e.id === id)
+  if (!entry) return <p className="vela-body">No component called “{id}”.</p>
+  return <PlaygroundFor entry={entry} />
+}
+
+function PlaygroundFor({ entry }: { entry: (typeof REGISTRY)[number] }) {
   const spec = useMemo(() => parseSpec(entry.spec, KNOWN), [entry])
   const controls = useMemo(() => [...spec.controls.filter((c) => !entry.hide?.includes(c.prop)), ...(entry.extra ?? [])], [spec, entry])
-  const [values, setValues] = useState<Values>({})
-  const [reduced, setReduced] = useState(false)
-
-  useEffect(() => {
+  const initial = useMemo(() => {
     const next: Values = {}
     for (const c of controls) next[c.prop] = entry.seed[c.prop] ?? c.default
     for (const [k, v] of Object.entries(entry.seed)) if (!(k in next)) next[k] = v
-    setValues(next)
+    return next
   }, [entry, controls])
+  const [values, setValues] = useState<Values>(initial)
+  const [reduced, setReduced] = useState(false)
+  const [stage, setStage] = useState<StageView>('both')
+  useEffect(() => setValues(initial), [initial])
 
   const v = entry.constrain ? entry.constrain(values) : values
   const unavailable = entry.unavailable?.(v) ?? {}
@@ -66,89 +86,135 @@ export function Playground() {
   const isBound = entry.highlight ? entry.highlight(v) : (t: string) => boundTokens.has(t)
   const rules = ['Hard constraints', 'States', 'Motion', 'Anti-patterns'].map((h) => sectionOf(spec, h)).filter((s): s is NonNullable<typeof s> => !!s)
   const figma = sectionOf(spec, 'Figma mapping')
+  const selects = controls.filter((c) => c.kind === 'select')
+  const texts = controls.filter((c) => c.kind === 'text')
+  const booleans = controls.filter((c) => c.kind === 'boolean')
+  const uncontrolled = spec.props.filter((p) => !controls.some((c) => c.prop === p.prop) && !entry.hide?.includes(p.prop))
+  const dirty = JSON.stringify(values) !== JSON.stringify(initial)
+  const frames: Mode[] = stage === 'both' ? ['light', 'dark'] : [stage]
 
   return (
-    <section className="demo-section">
-      <h2 className="vela-h3">Playground</h2>
-      <p className="vela-meta demo-note">
-        The controls are read from the spec's Props table; the rules, the tokens and the Figma mapping are the same file.
-        Change a control and the code, the bound tokens and the Figma names follow — nothing here is listed twice.
-      </p>
-
-      <div className="pg-top">
-        <label className="pg-field">
-          <span className="vela-meta">Component</span>
-          <select className="pg-select" value={id} onChange={(e) => setId(e.target.value)}>
-            {REGISTRY.map((e) => <option key={e.id} value={e.id}>{e.name}</option>)}
-          </select>
-        </label>
-        <Toggle label="Reduced motion" size="tiny" checked={reduced} onChange={setReduced} />
-        <div className="pg-intro"><Markdown source={spec.intro} /></div>
-      </div>
+    <>
+      <header className="pg-head">
+        <div className="pg-head__text">
+          <p className="vela-meta pg-head__eyebrow">Component</p>
+          <h1 className="vela-h2">{entry.name}</h1>
+          <div className="pg-intro"><Markdown source={spec.intro} /></div>
+        </div>
+        <div className="pg-head__links">
+          <a className="vela-meta" href={`https://github.com/omkarpkh/vela/blob/main/guidelines/components/${entry.file}`}>Spec on GitHub</a>
+          <a className="vela-meta" href={`https://github.com/omkarpkh/vela/blob/main/src/components/${entry.src}/${entry.src}.tsx`}>Source</a>
+        </div>
+      </header>
 
       <div className="pg">
-        <aside className="pg-panel pg-controls" aria-label="Controls">
-          {controls.map((c) => (
-            <Field key={c.prop} c={c} value={v[c.prop]} unavailable={unavailable[c.prop] ?? []} onChange={(val) => setValues((s) => ({ ...s, [c.prop]: val }))} />
-          ))}
-          <p className="vela-meta" style={{ margin: 0 }}>Selects are native: Select List is not in this kit yet, and the kit does not invent one.</p>
-        </aside>
-
-        <div className={cn('pg-stage', reduced && 'pg-reduced')}>
-          {(['light', 'dark'] as Mode[]).map((m) => (
-            <div key={m} className="vela-root pg-frame" data-theme={m}>
-              <span className="pg-frame-label vela-meta">{m}</span>
-              <div key={JSON.stringify(v)} className="pg-frame-body">{entry.render(v)}</div>
+        <div>
+          <div className="pg-toolbar">
+            <div className="pg-toolbar__group" role="group" aria-label="Stage">
+              {(['both', 'light', 'dark'] as StageView[]).map((s) => (
+                <Button key={s} size="tiny" variant={stage === s ? 'primary' : 'standard'} appearance={stage === s ? 'filled' : 'hollow'} onClick={() => setStage(s)}>
+                  {s === 'both' ? 'Light + dark' : s[0].toUpperCase() + s.slice(1)}
+                </Button>
+              ))}
             </div>
-          ))}
+            <div className="pg-toolbar__spacer" />
+            <Toggle label="Reduced motion" size="tiny" checked={reduced} onChange={setReduced} />
+          </div>
+          <div className={cn('pg-stage', frames.length === 1 && 'pg-stage--single', reduced && 'pg-reduced')}>
+            {frames.map((m) => (
+              <div key={m} className="vela-root pg-frame" data-theme={m}>
+                <span className="pg-frame-label vela-meta">{m}</span>
+                <div key={JSON.stringify(v)} className="pg-frame-body">{entry.render(v)}</div>
+              </div>
+            ))}
+          </div>
+
+          <section className="pg-panel pg-contract" aria-label="Contract">
+            <Tabs defaultValue="code" size="regular">
+              <Tabs.List aria-label="Contract views">
+                <Tabs.Trigger value="code">Code</Tabs.Trigger>
+                <Tabs.Trigger value="tokens" count={spec.tokens.length}>Tokens</Tabs.Trigger>
+                <Tabs.Trigger value="rules">Rules</Tabs.Trigger>
+                <Tabs.Trigger value="figma">Figma</Tabs.Trigger>
+              </Tabs.List>
+              <Tabs.Panel value="code">
+                <div className="pg-code-wrap">
+                  <pre className="pg-code">{code}</pre>
+                  <CopyButton text={code} />
+                </div>
+                <p className="pg-p">Defaults from the Props table are omitted, exactly as the spec's own example writes them.</p>
+              </Tabs.Panel>
+              <Tabs.Panel value="tokens">
+                <div className="pg-tablewrap">
+                  <table className="pg-table">
+                    <thead><tr><th>Token</th><th>Light</th><th>Dark</th><th>Figma</th></tr></thead>
+                    <tbody>
+                      {spec.tokens.map((t) => {
+                        const n = t.replace(/^--vela-/, '')
+                        const l = resolve(n, 'light'), d = resolve(n, 'dark')
+                        return (
+                          <tr key={t} className={isBound(t) ? 'is-bound' : undefined}>
+                            <td><code>{t}</code></td>
+                            <td>{isColor(n) && <span className="pg-chip" style={{ background: l }} />}<code>{l}</code></td>
+                            <td>{isColor(n) && <span className="pg-chip" style={{ background: d }} />}<code>{d}</code></td>
+                            <td><code>{figmaOf(n)}</code></td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+                <p className="pg-p">{bound || entry.highlight ? 'Highlighted rows are bound for the current values.' : 'Every token this spec names, resolved for both themes.'}</p>
+              </Tabs.Panel>
+              <Tabs.Panel value="rules">
+                <div className="pg-rules">
+                  {rules.map((s) => (
+                    <div key={s.heading}>
+                      <h3 className="vela-h4 pg-h2">{s.heading}</h3>
+                      <Markdown source={s.body} />
+                    </div>
+                  ))}
+                </div>
+              </Tabs.Panel>
+              <Tabs.Panel value="figma">{figma ? <Markdown source={figma.body} /> : <p className="pg-p">No Figma mapping in this spec.</p>}</Tabs.Panel>
+            </Tabs>
+          </section>
         </div>
 
-        <aside className="pg-panel pg-contract" aria-label="Contract">
-          <Tabs defaultValue="code" size="regular">
-            <Tabs.List aria-label="Contract views">
-              <Tabs.Trigger value="code">Code</Tabs.Trigger>
-              <Tabs.Trigger value="tokens" count={spec.tokens.length}>Tokens</Tabs.Trigger>
-              <Tabs.Trigger value="rules">Rules</Tabs.Trigger>
-              <Tabs.Trigger value="figma">Figma</Tabs.Trigger>
-            </Tabs.List>
-            <Tabs.Panel value="code">
-              <pre className="pg-code">{code}</pre>
-              <p className="pg-p">Defaults from the Props table are omitted, exactly as the spec's own example writes them.</p>
-            </Tabs.Panel>
-            <Tabs.Panel value="tokens">
-              <div className="pg-tablewrap">
-                <table className="pg-table">
-                  <thead><tr><th>Token</th><th>Light</th><th>Dark</th><th>Figma</th></tr></thead>
-                  <tbody>
-                    {spec.tokens.map((t) => {
-                      const n = t.replace(/^--vela-/, '')
-                      const l = resolve(n, 'light'), d = resolve(n, 'dark')
-                      return (
-                        <tr key={t} className={isBound(t) ? 'is-bound' : undefined}>
-                          <td><code>{t}</code></td>
-                          <td>{isColor(n) && <span className="pg-chip" style={{ background: l }} />}<code>{l}</code></td>
-                          <td>{isColor(n) && <span className="pg-chip" style={{ background: d }} />}<code>{d}</code></td>
-                          <td><code>{figmaOf(n)}</code></td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
-              </div>
-              <p className="pg-p">{bound || entry.highlight ? 'Highlighted rows are the ones bound for the current values.' : 'Every token this spec names, resolved for both themes.'}</p>
-            </Tabs.Panel>
-            <Tabs.Panel value="rules">
-              {rules.map((s) => (
-                <div key={s.heading}>
-                  <h4 className="pg-h">{s.heading}</h4>
-                  <Markdown source={s.body} />
-                </div>
+        <aside className="pg-panel pg-props" aria-label="Props">
+          <div className="pg-props__head">
+            <h2 className="vela-h4">Props</h2>
+            <Button size="tiny" appearance="hollow" disabled={!dirty} onClick={() => setValues(initial)}>Reset</Button>
+          </div>
+          {selects.map((c) => (
+            <Field key={c.prop} c={c} value={v[c.prop]} unavailable={unavailable[c.prop] ?? []} onChange={(val) => setValues((s) => ({ ...s, [c.prop]: val }))} />
+          ))}
+          {texts.map((c) => (
+            <Field key={c.prop} c={c} value={v[c.prop]} unavailable={[]} onChange={(val) => setValues((s) => ({ ...s, [c.prop]: val }))} />
+          ))}
+          {booleans.length > 0 && (
+            <div className="pg-booleans">
+              {booleans.map((c) => (
+                <Toggle key={c.prop} label={c.prop} size="tiny" checked={v[c.prop] === true} disabled={(unavailable[c.prop] ?? []).includes('true')} onChange={(val) => setValues((s) => ({ ...s, [c.prop]: val }))} />
               ))}
-            </Tabs.Panel>
-            <Tabs.Panel value="figma">{figma ? <Markdown source={figma.body} /> : <p className="pg-p">No Figma mapping in this spec.</p>}</Tabs.Panel>
-          </Tabs>
+            </div>
+          )}
+          {uncontrolled.length > 0 && (
+            <div className="pg-uncontrolled">
+              <h3>Also in the API</h3>
+              <dl>
+                {uncontrolled.map((p) => (
+                  <div key={`${p.part ?? ''}${p.prop}`} style={{ display: 'contents' }}>
+                    <dt>{p.part ? `${p.part}.` : ''}{p.prop}</dt>
+                    <dd><code>{p.type.replace(/`/g, '')}</code></dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          )}
+          <p className="vela-meta pg-hint">Selects are native: Select List is not in this kit yet, and the kit does not invent one.</p>
         </aside>
       </div>
-    </section>
+    </>
   )
 }

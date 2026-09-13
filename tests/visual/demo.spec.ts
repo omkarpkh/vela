@@ -30,7 +30,7 @@ for (const theme of THEMES) {
   test.describe(`adopt without rewrite · ${theme}`, () => {
     test.beforeEach(async ({ page }) => {
       await open(page, theme)
-      await page.getByRole('group', { name: 'View' }).getByRole('button', { name: 'Adopt without rewrite' }).click()
+      await page.getByRole('navigation', { name: 'Site' }).getByRole('link', { name: 'Adopt without rewrite' }).click()
       await expect(page.getByRole('heading', { name: 'Adopt without rewrite' })).toBeVisible()
     })
 

@@ -46,8 +46,9 @@ jobs:
       - run: flutter analyze
       - run: flutter test
 
-  # Visual regression: every component section and both "adopt without rewrite" columns,
-  # light and dark, against the committed Linux baselines (tests/visual/*-snapshots/*-linux.png).
+  # Browser tests: visual regression (every component section and both "adopt without rewrite"
+  # columns, light and dark, against the committed Linux baselines) plus the playground's
+  # behavioural checks in tests/e2e.
   # On a failure the diff report is uploaded so the change can be judged, not guessed.
   visual:
     runs-on: ubuntu-latest
@@ -59,7 +60,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
-      - run: npm run test:visual
+      - run: npm run test:e2e
       - uses: actions/upload-artifact@v4
         if: always()
         with:

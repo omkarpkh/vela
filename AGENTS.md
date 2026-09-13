@@ -19,5 +19,5 @@ the specification and the source is one implementation of it.
 
 ```bash
 npm run verify        # typecheck + 158 tests + build + pack-and-consume gate
-npm run test:visual   # 18 screenshots vs committed baselines; update only with test:visual:update
+npm run test:e2e      # 18 screenshots vs committed baselines + playground behaviour; update baselines only with test:visual:update
 ```
