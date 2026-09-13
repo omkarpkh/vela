@@ -6,7 +6,8 @@
    Numeric tokens carry their unit. Use them directly; never calc(... * 1px).
    ============================================================================ */
 
-:root {
+:root,
+[data-theme="light"] {
   color-scheme: light;
 
   /* ---- Primitives: neutral ---- */

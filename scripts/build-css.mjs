@@ -4,9 +4,12 @@
  * The dark theme is authored ONCE as a selector-less block of declarations,
  * then emitted under two selectors:
  *   1. @media (prefers-color-scheme: dark) :root:not([data-theme="light"])
- *   2. :root[data-theme="dark"]
+ *   2. [data-theme="dark"]  — the root, or any subtree
  * so the OS preference is respected by default and an explicit toggle wins in
- * both directions. Authoring it twice by hand is how the two copies drift.
+ * both directions. The light block is likewise declared on :root and on any
+ * [data-theme="light"] subtree, so a section can be themed against its page:
+ * a dark sidebar in a light app, or the playground's side-by-side stage.
+ * Authoring the dark block twice by hand is how the two copies drift.
  */
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
 import { join, dirname } from 'node:path'
@@ -28,8 +31,8 @@ ${indent(darkBody, '  ')}
   }
 }
 
-/* -- dark: explicit opt-in, wins over the OS preference -------------------- */
-:root[data-theme="dark"] {
+/* -- dark: explicit opt-in on the root or any subtree, wins over the OS ------- */
+[data-theme="dark"] {
 ${darkBody}
 }
 `

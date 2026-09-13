@@ -12,6 +12,15 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   `@media (hover: hover)`. Resting styles are pixel-identical; every visual baseline passes unchanged.
 - **Motion foundation.** `guidelines/foundations/motion.md`: the frequency gate, the three motion tokens,
   six rules; the Button spec gains a Motion section naming what moves, why, and what deliberately does not.
+- **Playground (demo).** A third view: controls generated from each spec's Props table, the component
+  rendered light and dark side by side (with a reduced-motion switch), and the contract beside it —
+  the JSX for the current state, every token the spec names resolved for both themes with its Figma
+  name (the row bound for the current variant highlighted), the rules, and the Figma mapping. Nothing
+  is listed twice; the spec is parsed. A test holds every spec to the parser's shape and fails if a spec
+  names a token that does not exist.
+- **Subtree theming.** `data-theme` now works on any element, not only the root: light tokens are
+  declared on `:root` and on `[data-theme="light"]`, the explicit dark block on any `[data-theme="dark"]`.
+  A dark sidebar in a light app costs one attribute.
 - **The MUI bridge carries timing.** `transitions.duration` and `transitions.easing` are generated from the
   motion tokens, so an adopted product moves on Vela's clock; its ripple stays, because the kind of feedback
   is component behaviour.

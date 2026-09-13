@@ -6,9 +6,11 @@ import type { Severity, Status } from '../src'
 import { PlusIcon } from '../src/lib/icons'
 import './demo.css'
 import { Adopt } from './Adopt'
+import { Playground } from './Playground'
 
 type Theme = 'system' | 'light' | 'dark'
-type View = 'components' | 'adopt'
+type View = 'components' | 'adopt' | 'playground'
+const VIEW_LABEL: Record<View, string> = { components: 'Components', adopt: 'Adopt without rewrite', playground: 'Playground' }
 
 const SEVERITIES: Severity[] = ['success', 'info', 'warning', 'minor', 'major', 'critical']
 const STATUSES: Status[] = ['unknown', 'healthy', 'warning', 'medium', 'unhealthy']
@@ -52,7 +54,7 @@ export function App() {
         </div>
         <div className="demo-controls">
           <div className="demo-views" role="group" aria-label="View">
-            {(['components', 'adopt'] as View[]).map((v) => (
+            {(['components', 'adopt', 'playground'] as View[]).map((v) => (
               <Button
                 key={v}
                 size="tiny"
@@ -60,7 +62,7 @@ export function App() {
                 appearance={view === v ? 'filled' : 'hollow'}
                 onClick={() => setView(v)}
               >
-                {v === 'components' ? 'Components' : 'Adopt without rewrite'}
+                {VIEW_LABEL[v]}
               </Button>
             ))}
           </div>
@@ -81,6 +83,7 @@ export function App() {
       </header>
 
       {view === 'adopt' && <Adopt mode={theme} />}
+      {view === 'playground' && <Playground />}
       {view === 'components' && (<>
       <Section title="Button" note="variant encodes consequence · appearance encodes weight · sizes are a closed set of four">
         <div className="demo-row">

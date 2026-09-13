@@ -42,6 +42,7 @@ Three states, handled for you:
 | *(none)* | Follows the OS via `prefers-color-scheme` |
 | `data-theme="light"` | Forced light, even if the OS is dark |
 | `data-theme="dark"` | Forced dark, even if the OS is light |
+| `data-theme` on any element | That subtree only. A dark sidebar in a light app, a light card on a dark page; the demo's playground renders light and dark side by side this way |
 
 ```tsx
 document.documentElement.setAttribute('data-theme', 'dark')
