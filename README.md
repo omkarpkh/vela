@@ -20,6 +20,9 @@ import { Button, ContextualAlert, Tabs } from '@omkarux/vela'
 </div>
 ```
 
+**Live:** the overview, the foundations and a playground for every component — controls, tokens,
+rules and Figma mapping generated from the same files — at **https://omkarpkh.github.io/vela/**.
+
 ## What is actually in here
 
 | | |

@@ -95,7 +95,7 @@ export function App() {
       </header>
 
       <div className="shell__body">
-        <nav id="site-nav" className="sitenav" aria-label="Site">
+        <nav id="site-nav" className="sitenav" aria-label="Site" onKeyDown={(e) => { if (e.key === 'Escape') setNavOpen(false) }}>
           <Input label="Filter" size="tiny" placeholder="Find a page" value={filter} onChange={(e) => setFilter(e.target.value)} />
           <div className="sitenav__group">
             <h3>Start</h3>

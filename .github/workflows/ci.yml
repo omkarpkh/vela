@@ -72,6 +72,36 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
+  # The demo site — overview, foundations, the playground — deploys to GitHub Pages from
+  # main, only after verify, flutter and visual have passed: https://omkarpkh.github.io/vela/
+  pages:
+    if: github.ref == 'refs/heads/main'
+    needs: [verify, flutter, visual]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run demo:build
+        env:
+          VITE_BASE: /vela/
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: demo-dist
+      - id: deploy
+        uses: actions/deploy-pages@v4
+
   # Publishing uses npm Trusted Publishing (OIDC). No NPM_TOKEN secret exists,
   # and none should be created: as of Aug 2026 granular access tokens cannot
   # publish at all. npm attaches a provenance attestation automatically on this

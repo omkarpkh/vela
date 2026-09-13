@@ -3,9 +3,15 @@
 All notable changes to this project are documented here.
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.10.0] — 2026-09-13
 
 ### Added
+- **The demo is a site, and it is public.** A collapsible left nav (Overview · Foundations · Components ·
+  Demos, generated from the guideline files and the component registry, with a filter), hash routes so
+  every page has a link, foundation docs rendered from their markdown, and a re-laid component page: stage
+  with a light-and-dark / light / dark switch and reduced motion, a sticky props panel, and the contract
+  below with a Copy button. Deployed to GitHub Pages from `main` after every gate passes:
+  https://omkarpkh.github.io/vela/. Behavioural tests cover the constraints, the navigation and the filter.
 - **Button motion, feedback only.** Hover colours settle in at `duration-fast` and out at `duration-base`
   (no flicker across a toolbar); a pointer press scales to 0.97 (keyboard activation, busy, disabled and
   text-link excluded); the loading spinner materialises before it spins. Hover rules are gated by
