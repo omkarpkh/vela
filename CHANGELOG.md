@@ -3,6 +3,19 @@
 All notable changes to this project are documented here.
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **Button motion, feedback only.** Hover colours settle in at `duration-fast` and out at `duration-base`
+  (no flicker across a toolbar); a pointer press scales to 0.97 (keyboard activation, busy, disabled and
+  text-link excluded); the loading spinner materialises before it spins. Hover rules are gated by
+  `@media (hover: hover)`. Resting styles are pixel-identical; every visual baseline passes unchanged.
+- **Motion foundation.** `guidelines/foundations/motion.md`: the frequency gate, the three motion tokens,
+  six rules; the Button spec gains a Motion section naming what moves, why, and what deliberately does not.
+- **The MUI bridge carries timing.** `transitions.duration` and `transitions.easing` are generated from the
+  motion tokens, so an adopted product moves on Vela's clock; its ripple stays, because the kind of feedback
+  is component behaviour.
+
 ## [0.9.0] — 2026-09-12
 
 ### Added

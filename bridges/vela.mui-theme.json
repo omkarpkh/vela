@@ -218,6 +218,23 @@
     },
     "shape": {
       "borderRadius": 4
+    },
+    "transitions": {
+      "duration": {
+        "shortest": 120,
+        "shorter": 120,
+        "short": 120,
+        "standard": 180,
+        "complex": 180,
+        "enteringScreen": 180,
+        "leavingScreen": 120
+      },
+      "easing": {
+        "easeInOut": "cubic-bezier(0.2, 0, 0.2, 1)",
+        "easeOut": "cubic-bezier(0.2, 0, 0.2, 1)",
+        "easeIn": "cubic-bezier(0.2, 0, 0.2, 1)",
+        "sharp": "cubic-bezier(0.2, 0, 0.2, 1)"
+      }
     }
   },
   "dark": {
@@ -383,6 +400,23 @@
     },
     "shape": {
       "borderRadius": 4
+    },
+    "transitions": {
+      "duration": {
+        "shortest": 120,
+        "shorter": 120,
+        "short": 120,
+        "standard": 180,
+        "complex": 180,
+        "enteringScreen": 180,
+        "leavingScreen": 120
+      },
+      "easing": {
+        "easeInOut": "cubic-bezier(0.2, 0, 0.2, 1)",
+        "easeOut": "cubic-bezier(0.2, 0, 0.2, 1)",
+        "easeIn": "cubic-bezier(0.2, 0, 0.2, 1)",
+        "sharp": "cubic-bezier(0.2, 0, 0.2, 1)"
+      }
     }
   }
 }

@@ -129,7 +129,9 @@ const theme = createTheme(vela.light)   // or vela.dark — pick by your own mod
 Thirty-eight colour roles (Alert surfaces included), thirteen type variants mapped by usage —
 Material's `h4`–`h6` titles become Vela's `h1`–`h3`, so an acquired product's titles keep their
 size — and the radius are mapped; `$sources` in the JSON names the
-token behind every colour. The limit is honest: Material has one colour vocabulary, so a status chip
-and a severity alert share `success`/`warning`/`error` — Vela keeps those taxonomies apart, and that
-separation is component work, not theme work.
+token behind every colour. Motion timing travels too: the two
+durations and the one curve are mapped onto Material's `transitions`. The limit is honest: Material has
+one colour vocabulary, so a status chip and a severity alert share `success`/`warning`/`error`, and the
+kind of feedback (Material's ripple, Vela's press) is component behaviour — Vela keeps the taxonomies
+apart and answers a press differently, and both are component work, not theme work.
 

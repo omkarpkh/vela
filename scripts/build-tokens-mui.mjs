@@ -117,6 +117,18 @@ const textStyle = (s) => {
   return out
 }
 
+const ms = (name) => {
+  const t = all[name]
+  const m = t && t.$type === 'duration' && /^(\d+)ms$/.exec(t.$value)
+  if (!m) throw new Error(`${name} is not a <n>ms duration token`)
+  return Number(m[1])
+}
+const bezier = (name) => {
+  const t = all[name]
+  if (!t || t.$type !== 'cubicBezier') throw new Error(`${name} is not a cubicBezier token`)
+  return `cubic-bezier(${t.$value.join(', ')})`
+}
+
 const set = (obj, path, value) => {
   const keys = path.split('.')
   let cur = obj
@@ -137,6 +149,19 @@ const theme = (mode) => {
   for (const [variant, s] of Object.entries(TYPE)) t.typography[variant] = textStyle(s)
   t.typography.button.textTransform = 'none'
   t.shape = { borderRadius: px('radius-4') }
+  // Timing travels with the tokens: two durations and one curve, mapped onto Material's slots
+  // (pointer answers and exits at `fast`, anything that settles or enters at `base`). The KIND of
+  // feedback does not travel: Material's ripple stays until the component is swapped for Vela's,
+  // whose press is a 3% scale. That boundary is component behaviour, which is why shared
+  // components are step two.
+  t.transitions = {
+    duration: {
+      shortest: ms('duration-fast'), shorter: ms('duration-fast'), short: ms('duration-fast'),
+      standard: ms('duration-base'), complex: ms('duration-base'), enteringScreen: ms('duration-base'),
+      leavingScreen: ms('duration-fast'),
+    },
+    easing: { easeInOut: bezier('ease-standard'), easeOut: bezier('ease-standard'), easeIn: bezier('ease-standard'), sharp: bezier('ease-standard') },
+  }
   t.components = {
     ...t.components,
     // Vela buttons are flat; Material's elevation would add a shadow no token defines.

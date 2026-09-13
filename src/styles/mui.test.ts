@@ -64,6 +64,19 @@ describe('MUI theme bridge', () => {
     expect(bridge.light.typography.fontFamily).toBe(all['font-family-primary'].$value)
   })
 
+  it('carries the motion tokens: two durations onto Material\'s slots, one curve everywhere', () => {
+    const ms = (n: string) => parseInt(all[n].$value)
+    const curve = `cubic-bezier(${all['ease-standard'].$value.join(', ')})`
+    for (const mode of MODES) {
+      const { duration, easing } = bridge[mode].transitions
+      expect(duration.short).toBe(ms('duration-fast'))
+      expect(duration.leavingScreen).toBe(ms('duration-fast'))
+      expect(duration.standard).toBe(ms('duration-base'))
+      expect(duration.enteringScreen).toBe(ms('duration-base'))
+      for (const k of ['easeInOut', 'easeOut', 'easeIn', 'sharp']) expect(easing[k], k).toBe(curve)
+    }
+  })
+
   it('regenerating from the source changes nothing (the bridge is not hand-edited)', () => {
     const before = readFileSync(bridgePath, 'utf8')
     execFileSync('node', ['scripts/build-tokens-mui.mjs'], { cwd: root, stdio: 'ignore' })

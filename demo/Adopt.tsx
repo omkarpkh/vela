@@ -120,9 +120,10 @@ export function Adopt({ mode }: { mode: 'system' | Mode }) {
       <p className="vela-meta adopt-limit">
         What the theme fixes: colour, type, radius, surfaces, alerts, both modes — {Object.keys(bridge.$sources).length} colour
         roles and {Object.keys(bridge.$typeSources).length} type variants, each traced to a token and tested against the
-        source (@omkarux/vela/mui-theme.json). What it cannot fix: Material
-        has one colour vocabulary, so the status chips above wear severity colours. Vela keeps Severity and Status
-        apart, and that is component work — which is why shared components are step two, not step one.
+        source (@omkarux/vela/mui-theme.json), and the motion timing: two durations, one curve. What it cannot fix:
+        Material has one colour vocabulary, so the status chips above wear severity colours; and the kind of feedback is
+        component behaviour, so the buttons on the right still ripple like Material's while Vela's answer a press with a
+        3% scale. Both are component work — which is why shared components are step two, not step one.
       </p>
     </section>
   )
