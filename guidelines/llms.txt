@@ -38,6 +38,7 @@ behaviour has no Figma expression at all.
 - [Sizing](foundations/sizing.md)
 - [Radius](foundations/radius.md)
 - [Typography](foundations/typography.md)
+- [Motion](foundations/motion.md)
 
 ## Components
 - [Button](components/button.md)

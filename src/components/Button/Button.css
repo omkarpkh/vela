@@ -11,9 +11,23 @@
   font-weight: var(--vela-font-weight-regular);
   cursor: pointer;
   text-decoration: none;
-  transition: background-color var(--vela-duration-fast) var(--vela-ease-standard),
-              border-color var(--vela-duration-fast) var(--vela-ease-standard),
-              color var(--vela-duration-fast) var(--vela-ease-standard);
+  /* Colour transitions use the destination state's duration: hover-in below is fast,
+     hover-out inherits this slower settle, so a pointer crossing a toolbar never flickers. */
+  transition: background-color var(--vela-duration-base) var(--vela-ease-standard),
+              border-color var(--vela-duration-base) var(--vela-ease-standard),
+              color var(--vela-duration-base) var(--vela-ease-standard),
+              transform var(--vela-duration-fast) var(--vela-ease-standard);
+}
+
+/* -- motion: feedback only. A button is pressed hundreds of times a day, so nothing here
+      exists to be noticed. Focus rings and keyboard activation stay instant. -- */
+@media (hover: hover) {
+  .vela-btn:hover:not(:disabled) { transition-duration: var(--vela-duration-fast); }
+}
+/* Press: a 3% scale, pointer only. :focus-visible excludes keyboard activation; a busy or
+   disabled button must not pretend to react; a text link is text, and text does not squash. */
+.vela-btn:active:not(:disabled):not([aria-busy="true"]):not(.vela-btn--text-link):not(:focus-visible) {
+  transform: scale(0.97);
 }
 
 /* -- sizes -- */
@@ -31,25 +45,30 @@
 
 /* -- primary -- */
 .vela-btn--primary.vela-btn--filled { background: var(--vela-btn-primary-bg); color: var(--vela-btn-primary-text); border-color: var(--vela-btn-primary-border); }
-.vela-btn--primary.vela-btn--filled:hover:not(:disabled) { background: var(--vela-btn-primary-hover-bg); border-color: var(--vela-btn-primary-hover-bg); }
 .vela-btn--primary.vela-btn--hollow { background: transparent; color: var(--vela-btn-hollow-primary-text); border-color: var(--vela-btn-hollow-primary-border); }
-.vela-btn--primary.vela-btn--hollow:hover:not(:disabled) { background: var(--vela-btn-hollow-hover-bg); }
 
 /* -- standard -- */
 .vela-btn--standard.vela-btn--filled { background: var(--vela-btn-standard-bg); color: var(--vela-btn-standard-text); border-color: var(--vela-btn-standard-border); }
-.vela-btn--standard.vela-btn--filled:hover:not(:disabled) { background: var(--vela-btn-standard-hover-bg); }
 .vela-btn--standard.vela-btn--hollow { background: transparent; color: var(--vela-btn-standard-text); border-color: var(--vela-btn-standard-border); }
-.vela-btn--standard.vela-btn--hollow:hover:not(:disabled) { background: var(--vela-bg-hover); }
 
 /* -- destructive -- */
 .vela-btn--destructive.vela-btn--filled { background: var(--vela-btn-destructive-bg); color: var(--vela-btn-destructive-text); border-color: var(--vela-btn-destructive-bg); }
-.vela-btn--destructive.vela-btn--filled:hover:not(:disabled) { background: var(--vela-btn-destructive-hover-bg); border-color: var(--vela-btn-destructive-hover-bg); }
 .vela-btn--destructive.vela-btn--hollow { background: transparent; color: var(--vela-btn-destructive-hollow-text); border-color: var(--vela-btn-destructive-hollow-text); }
-.vela-btn--destructive.vela-btn--hollow:hover:not(:disabled) { background: var(--vela-bg-severity-major); }
 
 /* -- text-link (primary only, tiny/regular only, never underlined) -- */
 .vela-btn--text-link { background: transparent; border-color: transparent; color: var(--vela-text-link); padding: 0; height: auto; text-decoration: none; }
-.vela-btn--text-link:hover:not(:disabled) { color: var(--vela-btn-primary-hover-bg); text-decoration: none; }
+
+/* -- hover colours: only on devices that hover. Touch gets press feedback instead of a
+      hover state that sticks after the tap. -- */
+@media (hover: hover) {
+  .vela-btn--primary.vela-btn--filled:hover:not(:disabled) { background: var(--vela-btn-primary-hover-bg); border-color: var(--vela-btn-primary-hover-bg); }
+  .vela-btn--primary.vela-btn--hollow:hover:not(:disabled) { background: var(--vela-btn-hollow-hover-bg); }
+  .vela-btn--standard.vela-btn--filled:hover:not(:disabled) { background: var(--vela-btn-standard-hover-bg); }
+  .vela-btn--standard.vela-btn--hollow:hover:not(:disabled) { background: var(--vela-bg-hover); }
+  .vela-btn--destructive.vela-btn--filled:hover:not(:disabled) { background: var(--vela-btn-destructive-hover-bg); border-color: var(--vela-btn-destructive-hover-bg); }
+  .vela-btn--destructive.vela-btn--hollow:hover:not(:disabled) { background: var(--vela-bg-severity-major); }
+  .vela-btn--text-link:hover:not(:disabled) { color: var(--vela-btn-primary-hover-bg); text-decoration: none; }
+}
 
 /* -- disabled -- */
 .vela-btn:disabled { cursor: not-allowed; background: var(--vela-btn-disabled-bg); color: var(--vela-btn-disabled-text); border-color: var(--vela-border-inactive); }
@@ -65,9 +84,14 @@
   border: 2px solid currentColor;
   border-right-color: transparent;
   border-radius: var(--vela-radius-full);
-  animation: vela-spin 700ms linear infinite;
+  /* Appearing is a state change worth acknowledging (opacity + scale + blur, one beat);
+     spinning uses `rotate` so the two animations never contend for `transform`. Under
+     prefers-reduced-motion the global rule in base.css leaves a static arc: still a signal. */
+  animation: vela-materialize var(--vela-duration-base) var(--vela-ease-standard) both,
+             vela-spin 700ms linear infinite;
 }
 .vela-btn--regular .vela-btn__spinner,
 .vela-btn--large .vela-btn__spinner,
 .vela-btn--huge .vela-btn__spinner { width: var(--vela-icon-16); height: var(--vela-icon-16); }
-@keyframes vela-spin { to { transform: rotate(360deg); } }
+@keyframes vela-spin { to { rotate: 360deg; } }
+@keyframes vela-materialize { from { opacity: 0; scale: 0.8; filter: blur(2px); } to { opacity: 1; scale: 1; filter: blur(0); } }

@@ -88,6 +88,19 @@ Label weight is **Regular 400 at every size**.
   button remains focusable while ignoring clicks. Swapping the label for a spinner would
   strip the control's accessible name mid-request; disabling it would drop focus.
 
+## Motion
+
+Buttons are pressed hundreds of times a day, so motion here is feedback, never decoration.
+
+| Moment | What moves | Timing | Why |
+|---|---|---|---|
+| Hover in | background, border, text colour | `--vela-duration-fast` (120ms), `--vela-ease-standard` | acknowledges the pointer without lag |
+| Hover out | the same colours | `--vela-duration-base` (180ms) | a slower settle, so a pointer crossing a row of buttons never flickers |
+| Press (pointer) | `transform: scale(0.97)` | `--vela-duration-fast` | tactile confirmation that the press registered |
+| Loading begins | the spinner materialises (opacity 0→1, scale 0.8→1, blur 2px→0), then spins | `--vela-duration-base`; spin 700ms linear | a state change is acknowledged, not swapped |
+
+What deliberately does not move: the focus ring (keyboard users want instant); keyboard activation (Space and Enter never scale — `:focus-visible` excludes them); the icon; disabled and busy buttons (a control that cannot act must not pretend to react); text-link (text does not squash). Hover colours apply only where hover exists (`@media (hover: hover)`); touch gets the press feedback instead of a hover state that sticks after the tap. Under `prefers-reduced-motion` every duration collapses and the spinner is a static arc: still a signal, no motion. See [Motion](../foundations/motion.md).
+
 ## Figma mapping
 
 Library file: **Vela Design System** → page `Button`. The component set is 24 variants:
