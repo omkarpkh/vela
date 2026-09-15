@@ -23,7 +23,8 @@ most often get wrong. Then read the per-component file before generating any mar
 
 ## Figma
 
-A matching Figma library exists: **Vela Design System**. It is *compiled from this contract*, not
+A matching Figma library exists: **Vela Design System**
+(https://www.figma.com/design/XO2rmeCcgOjyKe4oipgF4j/Vela-Design-System). It is *compiled from this contract*, not
 the source of it — 237 variables and 6 component sets mirroring the token architecture 1:1, with
 every variable carrying its `var(--vela-*)` name for Dev Mode. Each component's per-file
 `## Figma mapping` section states which Figma property corresponds to which prop, and which

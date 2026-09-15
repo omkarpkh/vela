@@ -4,6 +4,7 @@ import tokensJson from '../tokens/vela.tokens.json'
 import { REGISTRY, type Values } from './playground/registry'
 import { parseSpec, sectionOf, type Control } from './playground/spec'
 import { Markdown } from './playground/Markdown'
+import { LINKS, figmaUrl } from './links'
 import './playground.css'
 
 type Mode = 'light' | 'dark'
@@ -106,6 +107,7 @@ function PlaygroundFor({ entry }: { entry: (typeof REGISTRY)[number] }) {
         <div className="pg-head__links">
           <a className="vela-meta" href={`https://github.com/omkarpkh/vela/blob/main/guidelines/components/${entry.file}`}>Spec on GitHub</a>
           <a className="vela-meta" href={`https://github.com/omkarpkh/vela/blob/main/src/components/${entry.src}/${entry.src}.tsx`}>Source</a>
+          <a className="vela-meta" href={figmaUrl(entry.figma)}>Figma</a>
         </div>
       </header>
 
@@ -178,7 +180,13 @@ function PlaygroundFor({ entry }: { entry: (typeof REGISTRY)[number] }) {
                   ))}
                 </div>
               </Tabs.Panel>
-              <Tabs.Panel value="figma">{figma ? <Markdown source={figma.body} /> : <p className="pg-p">No Figma mapping in this spec.</p>}</Tabs.Panel>
+              <Tabs.Panel value="figma">
+                <p className="pg-p">
+                  <a href={figmaUrl(entry.figma)}>{entry.figma ? `Open ${entry.name} in the Figma library` : 'Open the Figma library'}</a>
+                  {' '}— the file is public, and everything in it is generated from the same token file and specs as this page ({LINKS.figma.replace('https://www.', '')}).
+                </p>
+                {figma ? <Markdown source={figma.body} /> : <p className="pg-p">No Figma mapping in this spec.</p>}
+              </Tabs.Panel>
             </Tabs>
           </section>
         </div>

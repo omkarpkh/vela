@@ -3,6 +3,12 @@
 All notable changes to this project are documented here.
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- Links to the public Figma library file: the site's top bar, every component page (header and
+  Figma tab), the README and `llms.txt`. The registry can carry a per-component node id for a deep link.
+
 ## [0.10.0] — 2026-09-13
 
 ### Added

@@ -23,6 +23,9 @@ import { Button, ContextualAlert, Tabs } from '@omkarux/vela'
 **Live:** the overview, the foundations and a playground for every component — controls, tokens,
 rules and Figma mapping generated from the same files — at **https://omkarpkh.github.io/vela/**.
 
+**Figma:** the library file is public — [Vela Design System](https://www.figma.com/design/XO2rmeCcgOjyKe4oipgF4j/Vela-Design-System) —
+with its variables, component sets and descriptions generated from the same token file and specs.
+
 ## What is actually in here
 
 | | |

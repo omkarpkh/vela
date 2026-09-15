@@ -4,6 +4,7 @@ import pkg from '../package.json'
 import './demo.css'
 import { useRoute, href, sameRoute, type Route } from './router'
 import { FOUNDATIONS, COMPONENTS } from './nav'
+import { LINKS, figmaUrl } from './links'
 import { Overview } from './pages/Overview'
 import { Foundation } from './pages/Foundation'
 import { Adopt } from './Adopt'
@@ -89,8 +90,9 @@ export function App() {
               </Button>
             ))}
           </div>
-          <a className="topbar__link vela-meta" href="https://github.com/omkarpkh/vela">GitHub</a>
-          <a className="topbar__link vela-meta" href="https://www.npmjs.com/package/@omkarux/vela">npm</a>
+          <a className="topbar__link vela-meta" href={LINKS.github}>GitHub</a>
+          <a className="topbar__link vela-meta" href={LINKS.npm}>npm</a>
+          <a className="topbar__link vela-meta" href={figmaUrl()}>Figma</a>
         </div>
       </header>
 

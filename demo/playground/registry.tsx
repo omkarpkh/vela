@@ -33,6 +33,8 @@ export interface Entry {
   code: (v: Values, spec: Spec) => string
   /** The Token bindings row that applies to the current values, if the spec has one. */
   bindingKey?: (v: Values) => string
+  /** Node id of the component set in the Figma library ("12:34"), for the deep link. */
+  figma?: string
   /** Or a predicate for which of the spec's tokens the current values bind. */
   highlight?: (v: Values) => (token: string) => boolean
 }
