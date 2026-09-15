@@ -26,6 +26,9 @@ rules and Figma mapping generated from the same files — at **https://omkarpkh.
 **Figma:** the library file is public — [Vela Design System](https://www.figma.com/design/XO2rmeCcgOjyKe4oipgF4j/Vela-Design-System) —
 with its variables, component sets and descriptions generated from the same token file and specs.
 
+**How it is made:** https://omkarpkh.github.io/vela/#/how — the token file, its five generated targets with a
+link to each, and the number of automated checks, written by the test runners rather than by hand.
+
 ## What is actually in here
 
 | | |
@@ -35,7 +38,7 @@ with its variables, component sets and descriptions generated from the same toke
 | **Themes** | Light + dark. OS preference by default, `data-theme` to override |
 | **Dependencies** | None. `react` / `react-dom` are peers (18.3 or 19) |
 | **Format** | ESM, `preserveModules` for tree-shaking, full `.d.ts` |
-| **Tests** | 116, including 76 asserted contrast pairs across both themes |
+| **Tests** | 196 automated checks — 169 unit and contract (76 asserted contrast pairs across both themes), 24 browser, 3 Flutter — counted by `npm run checks` |
 | **Packed size** | 26.7 kB, 43 files |
 
 ## The three ideas worth stealing
@@ -131,7 +134,8 @@ document.documentElement.removeAttribute('data-theme')        // follow the OS
 
 ```bash
 npm run dev        # demo showcase at localhost:5174
-npm test           # 116 tests
+npm test           # 169 unit and contract tests
+npm run checks     # counts every automated check into demo/checks.json (diffed in verify)
 npm run contrast   # WCAG report for both themes
 npm run verify     # typecheck + tests + build + pack-and-consume gate
 ```

@@ -64,3 +64,16 @@ body { margin: 0; background: var(--vela-bg-global); }
 .adopt-caption { margin: 0 0 var(--vela-space-10); }
 .adopt-frame { border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4); overflow: hidden; }
 .adopt-limit { margin-top: var(--vela-space-20); max-width: 72ch; }
+
+/* How it is made */
+.how-figure { margin: var(--vela-space-30) 0 0; }
+.how-figure svg { display: block; width: 100%; height: auto; max-width: 720px; }
+.how-figure figcaption { margin: var(--vela-space-10) 0 0; }
+.how-scroll { overflow-x: auto; }
+.how-table { width: 100%; border-collapse: collapse; font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); }
+.how-table th, .how-table td { text-align: left; vertical-align: top; padding: var(--vela-space-10) var(--vela-space-10) var(--vela-space-10) 0; border-bottom: 1px solid var(--vela-border-subtle); }
+.how-table thead th { color: var(--vela-text-de-emphasized); font-weight: 500; }
+.how-table th[scope="row"] { white-space: nowrap; font-weight: 600; }
+.how-table code, .how-list code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.92em; }
+.how-list { margin: 0 0 var(--vela-space-20); padding-left: 1.2em; }
+.how-list li { margin: 0 0 var(--vela-space-10); }

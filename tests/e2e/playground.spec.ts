@@ -33,3 +33,12 @@ test('the nav filter narrows the list and the menu button collapses it', async (
   await page.getByRole('button', { name: 'Hide navigation' }).click()
   await expect(nav).toBeHidden()
 })
+
+test('"How it is made" lists the token file, five generated targets and a generated check count', async ({ page }) => {
+  await page.goto('/#/how')
+  await expect(page.getByRole('heading', { level: 1, name: 'One file, five targets' })).toBeVisible()
+  const table = page.getByRole('table', { name: 'Generated targets' })
+  await expect(table.getByRole('row')).toHaveCount(7)
+  await expect(table.getByRole('link', { name: 'open the library' })).toHaveAttribute('href', /figma\.com\/design/)
+  await expect(page.getByRole('heading', { level: 2, name: /^\d{2,} automated checks on every change$/ })).toBeVisible()
+})

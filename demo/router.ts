@@ -1,18 +1,20 @@
 import { useEffect, useState } from 'react'
 
 // Hash routes, so every page has a link that survives a reload and the back button works,
-// with no router dependency. `#/components/button`, `#/foundations/motion`, `#/adopt`, `#/`.
+// with no router dependency. `#/components/button`, `#/foundations/motion`, `#/adopt`, `#/how`, `#/`.
 export type Route =
   | { kind: 'overview' }
   | { kind: 'component'; id: string }
   | { kind: 'foundation'; id: string }
   | { kind: 'adopt' }
+  | { kind: 'how' }
 
 export function parseHash(hash: string): Route {
   const parts = hash.replace(/^#\/?/, '').split('/').filter(Boolean)
   if (parts[0] === 'components' && parts[1]) return { kind: 'component', id: parts[1] }
   if (parts[0] === 'foundations' && parts[1]) return { kind: 'foundation', id: parts[1] }
   if (parts[0] === 'adopt') return { kind: 'adopt' }
+  if (parts[0] === 'how') return { kind: 'how' }
   return { kind: 'overview' }
 }
 
@@ -20,6 +22,7 @@ export const href = (r: Route): string =>
   r.kind === 'component' ? `#/components/${r.id}`
   : r.kind === 'foundation' ? `#/foundations/${r.id}`
   : r.kind === 'adopt' ? '#/adopt'
+  : r.kind === 'how' ? '#/how'
   : '#/'
 
 export const sameRoute = (a: Route, b: Route) => href(a) === href(b)

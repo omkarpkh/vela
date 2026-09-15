@@ -6,6 +6,9 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Unreleased]
 
 ### Added
+- **How it is made** page (`#/how`): the token file, its five generated targets with a link to each, and
+  the automated-check count. The count is generated from the test runners (`npm run checks`) and diffed in
+  `verify`, like the generated CSS, so the page cannot go stale.
 - Links to the public Figma library file: the site's top bar, every component page (header and
   Figma tab), the README and `llms.txt`. The registry can carry a per-component node id for a deep link.
 

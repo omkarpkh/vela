@@ -9,6 +9,7 @@ import { Overview } from './pages/Overview'
 import { Foundation } from './pages/Foundation'
 import { Adopt } from './Adopt'
 import { Playground } from './Playground'
+import { How } from './pages/How'
 
 type Theme = 'system' | 'light' | 'dark'
 
@@ -33,6 +34,7 @@ const titleFor = (r: Route) =>
   r.kind === 'component' ? COMPONENTS.find((c) => c.id === r.id)?.title
   : r.kind === 'foundation' ? FOUNDATIONS.find((f) => f.id === r.id)?.title
   : r.kind === 'adopt' ? 'Adopt without rewrite'
+  : r.kind === 'how' ? 'How it is made'
   : 'Overview'
 
 export function App() {
@@ -102,6 +104,7 @@ export function App() {
           <div className="sitenav__group">
             <h3>Start</h3>
             <NavLink to={{ kind: 'overview' }} current={route}>Overview</NavLink>
+            <NavLink to={{ kind: 'how' }} current={route}>How it is made</NavLink>
           </div>
           {foundations.length > 0 && (
             <div className="sitenav__group">
@@ -127,6 +130,7 @@ export function App() {
           {route.kind === 'component' && <Playground key={route.id} id={route.id} />}
           {route.kind === 'foundation' && <Foundation id={route.id} />}
           {route.kind === 'adopt' && <Adopt mode={theme} />}
+          {route.kind === 'how' && <How />}
           <footer className="demo-footer vela-meta">
             Zero runtime dependencies · ESM · light + dark · WCAG 2.1 AA asserted in CI
           </footer>
