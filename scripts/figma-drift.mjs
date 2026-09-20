@@ -11,7 +11,7 @@
  *
  *   npm run tokens:figma:read > /tmp/read.js     # run the printed script in the
  *                                                # file (MCP / Scripter), save the
- *                                                # returned JSON as /tmp/figma.json
+ *                                                # returned text as /tmp/figma.tsv
  *   npm run tokens:figma:check -- /tmp/figma.tsv
  *
  * Exit 1 on any mismatch, so it can gate a Figma library publish the way
@@ -54,8 +54,9 @@ for (const [name, t] of Object.entries(all)) {
   if (t.$type === 'color') expected[key] = { css: name, light: resolveColor(name, 'light'), dark: resolveColor(name, 'dark') }
   else if (t.$type === 'dimension') expected[key] = { css: name, value: t.$value.value }
   else if (t.$type === 'number') expected[key] = { css: name, value: t.$value }
-  else if (t.$type === 'duration') expected[key] = { css: name, value: Number(String(t.$value).replace(/ms$/, '')) }
-  else if (t.$type === 'cubicBezier') expected[key] = { css: name, string: `cubic-bezier(${t.$value.join(', ')})` }
+  // Figma keeps timing in seconds and an easing as a bezier object (see sync-figma.mjs)
+  else if (t.$type === 'duration') expected[key] = { css: name, value: Number(String(t.$value).replace(/ms$/, '')) / 1000 }
+  else if (t.$type === 'cubicBezier') expected[key] = { css: name, bezier: t.$value.map(Number) }
 }
 
 // ---------- mode 1: print the read script ----------
@@ -84,8 +85,10 @@ for (const v of vars) {
   const key = c.name + '|' + v.name;
   const css = ((v.codeSyntax && v.codeSyntax.WEB) || '').replace(/^var\\(--vela-/, '').replace(/\\)$/, '');
   if (v.resolvedType === 'COLOR') lines.push([key, css, hex(resolve(v, 'Light')), hex(resolve(v, 'Dark'))].join('\\t'));
-  else if (v.resolvedType === 'FLOAT') lines.push([key, css, resolve(v, 'Value')].join('\\t'));
+  else if (v.resolvedType === 'FLOAT' || v.resolvedType === 'TIMING') lines.push([key, css, resolve(v, 'Value')].join('\\t'));
   else if (v.resolvedType === 'STRING') lines.push([key, css, resolve(v, 'Value')].join('\\t'));
+  else if (v.resolvedType === 'EASING') { const e = resolve(v, 'Value'), b = e && e.easingFunctionCubicBezier;
+    lines.push([key, css, e.type === 'CUSTOM_CUBIC_BEZIER' && b ? 'bezier:' + [b.x1, b.y1, b.x2, b.y2].join(',') : 'preset:' + e.type].join('\\t')); }
 }
 return lines.join('\\n');
 `)
@@ -93,18 +96,24 @@ return lines.join('\\n');
 }
 
 // ---------- mode 2: compare a saved read result ----------
-// the read script returns one line per variable: key \t css \t light \t dark   (or key \t css \t value)
+// the read script returns one line per variable: key \t css \t light \t dark   (or key \t css \t value,
+// where an EASING value reads "bezier:x1,y1,x2,y2" or "preset:NAME")
 const actual = {}
 for (const line of readFileSync(process.argv[2], 'utf8').split('\n')) {
   if (!line.trim()) continue
   const [key, css, a, b] = line.split('\t')
-  actual[key] = b !== undefined ? { css, light: a, dark: b } : { css, value: Number(a), string: a }
+  actual[key] = b !== undefined ? { css, light: a, dark: b }
+    : { css, value: Number(a), string: a, bezier: a.startsWith('bezier:') ? a.slice(7).split(',').map(Number) : undefined }
 }
 const problems = []
 for (const [key, e] of Object.entries(expected)) {
   const a = actual[key]
   if (!a) { problems.push(`MISSING in Figma   ${key}`); continue }
-  if ('string' in e) {
+  if ('bezier' in e) {
+    // Figma stores numbers as float32 (0.2 reads back as 0.20000000298), so compare within 1e-4
+    const ok = a.bezier?.length === 4 && a.bezier.every((n, i) => Math.abs(n - e.bezier[i]) < 1e-4)
+    if (!ok) problems.push(`EASING  ${key}: figma="${a.string}" json="cubic-bezier(${e.bezier.join(', ')})"`)
+  } else if ('string' in e) {
     if (a.string !== e.string) problems.push(`STRING  ${key}: figma="${a.string}" json="${e.string}"`)
   } else if ('value' in e) {
     if (Math.abs(a.value - e.value) > 0.001) problems.push(`VALUE   ${key}: figma=${a.value} json=${e.value}`)

@@ -6,7 +6,9 @@
  * API script and prints it. Run that script inside the Vela Design System file
  * (via the Figma MCP `use_figma` tool, or the Scripter plugin) and every
  * variable is created-or-updated in place: value per mode, alias per mode,
- * scopes, description, and the `var(--vela-*)` code syntax.
+ * scopes, description, and the `var(--vela-*)` code syntax. A variable whose
+ * Figma type changed is removed and recreated under the same name, because a
+ * resolved type cannot be edited.
  *
  *   npm run tokens:figma            # prints the script to stdout
  *   npm run tokens:figma > /tmp/sync.js
@@ -46,7 +48,8 @@ const scopesFor = (group, figmaName, cssName) => {
     return SCOPES[head] ?? SCOPES.bg
   }
   if (group === 'sizing') return head === 'icon' ? SCOPES.iconSize : (SCOPES[head] ?? ['WIDTH_HEIGHT'])
-  if (group === 'motion') return []
+  // TIMING and EASING variables have no scopes — setting any throws — the type decides where Figma offers them
+  if (group === 'motion') return null
   return SCOPES[head] ?? []
 }
 
@@ -59,16 +62,22 @@ for (const [group, tokens] of Object.entries(doc)) {
   for (const [css, t] of Object.entries(tokens)) {
     const figma = t.$extensions?.vela?.figma
     if (!figma) continue
-    // Colours and numbers become COLOR/FLOAT variables; durations are FLOAT milliseconds and the
-    // easing curve a STRING, in a Motion collection with no scopes: they document, they do not bind.
+    // Colours become COLOR variables and numbers FLOAT. The motion tokens use Figma's own motion
+    // types (Figma Motion, June 2026): a duration is a TIMING variable — Figma keeps timing in
+    // seconds, so 120ms is stored as 0.12 — and the curve an EASING variable holding the bezier.
+    // A Figma Motion timeline can bind them; a prototype transition still cannot (foundations/motion.md).
     if (t.$type === 'fontFamily') continue
     if (only && collectionOf[group] !== only) continue
-    const num = (v) => (t.$type === 'dimension' ? v.value : t.$type === 'duration' ? Number(String(v).replace(/ms$/, '')) : v)
-    const type = t.$type === 'color' ? 'COLOR' : t.$type === 'cubicBezier' ? 'STRING' : 'FLOAT'
+    const type = t.$type === 'color' ? 'COLOR' : t.$type === 'duration' ? 'TIMING' : t.$type === 'cubicBezier' ? 'EASING' : 'FLOAT'
+    const value = (v) =>
+      t.$type === 'dimension' ? v.value
+      : t.$type === 'duration' ? Number(String(v).replace(/ms$/, '')) / 1000
+      : t.$type === 'cubicBezier' ? { type: 'CUSTOM_CUBIC_BEZIER', easingFunctionCubicBezier: { x1: v[0], y1: v[1], x2: v[2], y2: v[3] } }
+      : v
     entries.push({
       collection: collectionOf[group], name: figma, css,
       type,
-      light: t.$type === 'color' ? t.$value : t.$type === 'cubicBezier' ? `cubic-bezier(${t.$value.join(', ')})` : num(t.$value),
+      light: value(t.$value),
       dark: t.$type === 'color' ? (t.$extensions?.vela?.dark ?? t.$value) : undefined,
       scopes: scopesFor(group, figma, css),
       description: t.$description ?? '',
@@ -101,20 +110,23 @@ const all = await figma.variables.getLocalVariablesAsync();
 const lookup = {};
 for (const v of all) lookup[v.variableCollectionId + '|' + v.name] = v;
 const hex = h => { const n = parseInt(h.slice(1), 16); return { r: ((n>>16)&255)/255, g: ((n>>8)&255)/255, b: (n&255)/255 }; };
-const val = (x, type) => (x && typeof x === 'object' && x.alias) ? { type: 'VARIABLE_ALIAS', id: lookup[byName[x.collection].id + '|' + x.alias].id } : (type === 'STRING' ? x : (typeof x === 'string' ? hex(x) : x));
-let created = 0, updated = 0;
+// an alias → VARIABLE_ALIAS; a hex string → RGB; TIMING seconds and the EASING object pass through as they are
+const val = (x, type) => (x && typeof x === 'object' && x.alias) ? { type: 'VARIABLE_ALIAS', id: lookup[byName[x.collection].id + '|' + x.alias].id } : (type === 'COLOR' && typeof x === 'string' ? hex(x) : x);
+let created = 0, updated = 0, retyped = 0;
 // two passes so aliases always resolve: primitives first, then everything else
 for (const pass of [e => e.collection === 'Primitives', e => e.collection !== 'Primitives']) {
   for (const e of ENTRIES.filter(pass)) {
     const c = byName[e.collection]; const key = c.id + '|' + e.name;
     let v = lookup[key];
+    // a resolved type cannot be edited: a token whose Figma type changed is removed and recreated under its name
+    if (v && v.resolvedType !== e.type) { v.remove(); v = null; retyped++; }
     if (!v) { v = figma.variables.createVariable(e.name, c, e.type); lookup[key] = v; created++; } else updated++;
     if (e.collection === 'Color') { v.setValueForMode(mode(c,'Light'), val(e.light, e.type)); v.setValueForMode(mode(c,'Dark'), val(e.dark, e.type)); }
     else v.setValueForMode(c.modes[0].modeId, val(e.light, e.type));
-    v.scopes = e.scopes; v.description = e.description;
+    if (e.scopes) v.scopes = e.scopes; v.description = e.description;
     v.setVariableCodeSyntax('WEB', 'var(--vela-' + e.css + ')');
   }
 }
-return { created, updated, total: ENTRIES.length };
+return { created, updated, retyped, total: ENTRIES.length };
 `
 process.stdout.write(script)

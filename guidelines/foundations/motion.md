@@ -21,10 +21,14 @@ cannot be named in one of those words, it does not ship.
 
 No component defines its own duration or curve. A new one is a token change, reviewed like a colour.
 
-In Figma they live in the **Motion** collection: `duration/fast` and `duration/base` as numbers in
-milliseconds, `easing/standard` as a string, each carrying its `var(--vela-*)` code syntax. They
-document; Figma cannot bind a prototype's transition to a variable, so an interaction built in Figma
-copies these values by hand — the builder that generates the library stamps them for you.
+In Figma they live in the **Motion** collection as Figma's own motion variable types: `duration/fast`
+and `duration/base` are **timing** variables (Figma keeps timing in seconds, so 120ms is stored as
+0.12) and `easing/standard` is an **easing** variable holding the same cubic-bezier, each carrying its
+`var(--vela-*)` code syntax. A Figma Motion timeline animation can bind them, so a token change reaches
+it on the next sync. A prototype transition still cannot: its duration is a typed number and its curve
+a menu choice, so an interaction built in Figma copies these values by hand. The component description
+the sync writes lists each moment from the spec's Motion table with its token and value, so the number
+to type sits on the component itself.
 
 ## Rules
 

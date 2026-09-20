@@ -12,6 +12,15 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Links to the public Figma library file: the site's top bar, every component page (header and
   Figma tab), the README and `llms.txt`. The registry can carry a per-component node id for a deep link.
 
+### Changed
+- **The Figma motion tokens use Figma's own types.** `duration/fast` and `duration/base` are now
+  **TIMING** variables (Figma keeps timing in seconds: 0.12 and 0.18) and `easing/standard` an **EASING**
+  variable holding the cubic-bezier, replacing the FLOAT-milliseconds and STRING stand-ins of 0.10.0.
+  A Figma Motion timeline can bind them; a prototype transition still cannot, and `motion.md` now says
+  so plainly instead of promising a stamp the builder never made. The sync recreates a variable whose
+  type changed (a resolved type cannot be edited) and the drift check reads timing in seconds and the
+  bezier as four numbers, within float32 tolerance.
+
 ## [0.10.0] — 2026-09-13
 
 ### Added
