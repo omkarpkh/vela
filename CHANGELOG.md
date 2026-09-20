@@ -12,6 +12,16 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Links to the public Figma library file: the site's top bar, every component page (header and
   Figma tab), the README and `llms.txt`. The registry can carry a per-component node id for a deep link.
 
+### Added
+- **Every documented rule now has to carry a proof.** Each bullet under `## Hard constraints`
+  is tagged `[[rule: id | compiler|runtime|convention]]`, and `npm run rules:check` fails the
+  build when a `compiler` rule has no fixture in `verify-pack.mjs` (or has one the types do not
+  reject), when a `runtime` rule has no unit test naming it, when a fixture names no rule, or
+  when a new bullet arrives untagged. It caught two: `Tabs` and `Toggle` documented "controlled
+  and uncontrolled are exclusive" and the types allowed both — `TabsProps` went further and
+  *required* `defaultValue`, so a controlled `<Tabs>` was a type error. Both are discriminated
+  unions now; the alert's decorative-icon rule got the test it never had.
+
 ### Changed
 - **The Figma motion tokens use Figma's own types.** `duration/fast` and `duration/base` are now
   **TIMING** variables (Figma keeps timing in seconds: 0.12 and 0.18) and `easing/standard` an **EASING**

@@ -29,13 +29,13 @@ An inline banner carrying a severity. Lives in the page flow, next to the thing 
 ## Hard constraints
 
 - **Six severities, no more.** There is no `"high"`, no `"error"`, no `"danger"`. Those
-  belong to the Risk taxonomy or to nothing. The compiler rejects them.
+  belong to the Risk taxonomy or to nothing. The compiler rejects them. [[rule: alert-severity-closed-set | compiler]]
 - **`major` and `critical` announce assertively** (`role="alert"`, `aria-live="assertive"`);
   everything else is polite (`role="status"`). This is derived from `severity` and is not
-  configurable — an info banner that interrupts a screen reader is a defect.
+  configurable — an info banner that interrupts a screen reader is a defect. [[rule: alert-live-region-by-severity | runtime]]
 - **No dismiss control unless `onDismiss` is passed.** A critical alert the user can clear
-  without acting is usually wrong.
-- Icon is chosen by severity and is `aria-hidden` — the text carries the meaning.
+  without acting is usually wrong. [[rule: alert-dismiss-requires-handler | runtime]]
+- Icon is chosen by severity and is `aria-hidden` — the text carries the meaning. [[rule: alert-icon-is-decorative | runtime]]
 
 ## Token bindings
 

@@ -27,11 +27,11 @@ Every other native `<input>` attribute is forwarded; the ref lands on the `<inpu
 
 ## Hard constraints
 
-- **`label` is required.** An input with only a placeholder is not labelled.
+- **`label` is required.** An input with only a placeholder is not labelled. [[rule: input-label-required | compiler]]
 - **`error` is a message, not a boolean.** An error state with no explanation is not an
-  error state.
+  error state. [[rule: input-error-is-a-message | compiler]]
 - `aria-describedby` only ever references elements that are actually rendered — a dangling
-  reference is worse than none, and a test asserts this.
+  reference is worse than none, and a test asserts this. [[rule: input-describedby-only-rendered | runtime]]
 
 ## Token bindings
 

@@ -29,6 +29,7 @@ describe('Tabs', () => {
     expect(panel).toHaveAttribute('aria-labelledby', tab.id)
   })
 
+  // [[rule: tabs-only-active-panel-renders]]
   it('renders only the active panel', () => {
     render(<Fixture />)
     expect(screen.getByText('Alerts panel')).toBeInTheDocument()
@@ -69,6 +70,7 @@ describe('Tabs', () => {
     expect(onValueChange).toHaveBeenCalledWith('assets')
   })
 
+  // [[rule: tabs-parts-require-provider]]
   it('fails loudly when a part is used outside Tabs', () => {
     const spy = vi.spyOn(console, 'error').mockImplementation(() => {})
     expect(() => render(<Tabs.Trigger value="x">Orphan</Tabs.Trigger>)).toThrow(

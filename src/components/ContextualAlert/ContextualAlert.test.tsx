@@ -4,6 +4,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { ContextualAlert } from './ContextualAlert'
 
 describe('ContextualAlert', () => {
+  // [[rule: alert-live-region-by-severity]]
   it('uses a polite live region for low-urgency severities', () => {
     render(<ContextualAlert severity="info">Scan scheduled.</ContextualAlert>)
     const el = screen.getByRole('status')
@@ -27,6 +28,18 @@ describe('ContextualAlert', () => {
     expect(onDismiss).toHaveBeenCalledTimes(1)
   })
 
+  // [[rule: alert-icon-is-decorative]]
+  // Written because scripts/check-rules.mjs found this rule documented and unproven.
+  it.each(['success', 'info', 'warning', 'minor', 'major', 'critical'] as const)(
+    'gives %s a severity icon the screen reader skips', (severity) => {
+      const { container } = render(<ContextualAlert severity={severity}>Body.</ContextualAlert>)
+      const icon = container.querySelector('.vela-alert__icon svg') ?? container.querySelector('svg')
+      expect(icon, 'no icon rendered').not.toBeNull()
+      expect(icon).toHaveAttribute('aria-hidden', 'true')
+    },
+  )
+
+  // [[rule: alert-dismiss-requires-handler]]
   it('renders no dismiss control unless a handler is supplied', () => {
     render(<ContextualAlert severity="critical">Cannot be cleared.</ContextualAlert>)
     expect(screen.queryByRole('button')).toBeNull()

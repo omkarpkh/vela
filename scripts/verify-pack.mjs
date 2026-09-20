@@ -94,6 +94,15 @@ export const H = () => (
     <Tabs.Panel value="a">Panel</Tabs.Panel>
   </Tabs>
 )
+// Controlled mode must compile WITHOUT defaultValue. Until the union landed, TabsProps
+// required defaultValue outright, so the type forced the very state the spec forbids.
+export const I = () => (
+  <Tabs value="a" onValueChange={(v: string) => v}>
+    <Tabs.List aria-label="Views"><Tabs.Trigger value="a">Alerts</Tabs.Trigger></Tabs.List>
+    <Tabs.Panel value="a">Panel</Tabs.Panel>
+  </Tabs>
+)
+export const J = () => <Toggle label="Email alerts" checked onChange={(v: boolean) => v} />
 export const props: ButtonProps = { variant: 'standard', children: 'OK' }
 `)
   const tsc = join(root, 'node_modules', '.bin', 'tsc')
@@ -107,22 +116,32 @@ export const props: ButtonProps = { variant: 'standard', children: 'OK' }
   // -- invalid usage must NOT compile --
   // Each of these is a rule from the guidelines. If any compiles, the design
   // constraint is documentation only, which is how systems drift.
+  //
+  // The first field is the rule id carried by that rule's `[[rule: …]]` tag in
+  // guidelines/components/*.md; scripts/check-rules.mjs fails the build if a rule
+  // tagged `compiler` has no entry here, or an entry names no rule. These snippets
+  // stay HAND-WRITTEN: a fixture generated from the annotation would share a source
+  // with the thing it is testing and prove nothing.
   const violations = [
-    ['destructive text-link', `<Button variant="destructive" appearance="text-link">Delete</Button>`],
-    ['text-link at size huge', `<Button variant="primary" appearance="text-link" size="huge">Go</Button>`],
-    ['text-link carrying an icon', `<Button variant="primary" appearance="text-link" icon={<svg />}>Go</Button>`],
-    ['invented button size', `<Button size="medium">Go</Button>`],
-    ['invented severity', `<ContextualAlert severity="high">Body</ContextualAlert>`],
-    ['severity used as a status', `<StatusIndicator status="critical" />`],
-    ['tablist with no accessible name', `<Tabs defaultValue="a"><Tabs.List><Tabs.Trigger value="a">A</Tabs.Trigger></Tabs.List></Tabs>`],
-    ['toggle with no label', `<Toggle />`],
+    ['button-text-link-requires-primary', 'destructive text-link', `<Button variant="destructive" appearance="text-link">Delete</Button>`],
+    ['button-text-link-size-and-icon', 'text-link at size huge', `<Button variant="primary" appearance="text-link" size="huge">Go</Button>`],
+    ['button-text-link-size-and-icon', 'text-link carrying an icon', `<Button variant="primary" appearance="text-link" icon={<svg />}>Go</Button>`],
+    ['button-prop-sets-closed', 'invented button size', `<Button size="medium">Go</Button>`],
+    ['alert-severity-closed-set', 'invented severity', `<ContextualAlert severity="high">Body</ContextualAlert>`],
+    ['status-closed-set', 'severity used as a status', `<StatusIndicator status="critical" />`],
+    ['tabs-list-requires-aria-label', 'tablist with no accessible name', `<Tabs defaultValue="a"><Tabs.List><Tabs.Trigger value="a">A</Tabs.Trigger></Tabs.List></Tabs>`],
+    ['toggle-label-required', 'toggle with no label', `<Toggle />`],
+    ['input-label-required', 'input with no label', `<Input />`],
+    ['input-error-is-a-message', 'error as a boolean', `<Input label="Tenant" error />`],
+    ['tabs-controlled-exclusive', 'tabs both controlled and uncontrolled', `<Tabs value="a" defaultValue="a"><Tabs.List aria-label="V"><Tabs.Trigger value="a">A</Tabs.Trigger></Tabs.List></Tabs>`],
+    ['toggle-controlled-exclusive', 'toggle both controlled and uncontrolled', `<Toggle label="Alerts" checked defaultChecked />`],
   ]
-  for (const [name, snippet] of violations) {
+  for (const [id, name, snippet] of violations) {
     writeFileSync(join(app, 'invalid.tsx'),
-      `import { Button, ContextualAlert, StatusIndicator, Tabs, Toggle } from '@omkarux/vela'\nexport const X = () => (${snippet})\n`)
+      `import { Button, ContextualAlert, Input, StatusIndicator, Tabs, Toggle } from '@omkarux/vela'\nexport const X = () => (${snippet})\n`)
     let rejected = false
     try { run(tsc, ['--noEmit', '-p', 'tsconfig.json'], app) } catch { rejected = true }
-    check(rejected, `compiler rejects: ${name}`)
+    check(rejected, `compiler rejects: ${name}  [${id}]`)
   }
   rmSync(join(app, 'invalid.tsx'))
 

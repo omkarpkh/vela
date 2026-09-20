@@ -3,8 +3,13 @@ import { cells } from './spec'
 
 // Just enough markdown for the specs: headings, paragraphs, lists, tables, fenced code,
 // inline code and bold. No dependency, no HTML injection.
+// `[[rule: id | enforcement]]` tags a spec rule for scripts/check-rules.mjs. It is metadata for
+// the gate, not prose, so it never reaches the page. (An HTML comment would have rendered
+// literally here — this renderer has no HTML pass, on purpose.)
+export const RULE_TAG = /\s*\[\[rule:[^\]]*\]\]/g
+
 function inline(text: string, key: number): ReactNode {
-  const parts = text.split(/(`[^`]+`|\*\*[^*]+\*\*)/g).filter(Boolean)
+  const parts = text.replace(RULE_TAG, '').split(/(`[^`]+`|\*\*[^*]+\*\*)/g).filter(Boolean)
   return (
     <span key={key}>
       {parts.map((p, i) =>

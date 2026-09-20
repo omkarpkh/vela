@@ -17,15 +17,23 @@ function useTabs(component: string): TabsContextValue {
   return ctx
 }
 
-export interface TabsProps {
-  /** Controlled active value. Omit for uncontrolled. */
-  value?: string
-  defaultValue: string
+interface TabsBaseProps {
   onValueChange?: (value: string) => void
   size?: 'regular' | 'large'
   children: React.ReactNode
   className?: string
 }
+
+/**
+ * Controlled and uncontrolled are exclusive, so the union says it rather than the prose:
+ * `value` drives it from outside, `defaultValue` seeds it once, and the other arm's prop
+ * is `never`. Passing both is a build failure, not a bug report.
+ */
+export type TabsProps = TabsBaseProps &
+  (
+    | { /** Controlled active value. */ value: string; defaultValue?: never }
+    | { value?: never; /** Uncontrolled initial value. */ defaultValue: string }
+  )
 
 /**
  * Navigate between DIFFERENT content panels.
@@ -41,7 +49,8 @@ export function Tabs({
   className,
 }: TabsProps) {
   const isControlled = value !== undefined
-  const [internal, setInternal] = React.useState(defaultValue)
+  // In controlled mode the type forbids `defaultValue`, and this seed is never read.
+  const [internal, setInternal] = React.useState(defaultValue ?? '')
   const active = isControlled ? value : internal
   const idPrefix = React.useId()
 

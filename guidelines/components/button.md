@@ -38,15 +38,17 @@ These are not review conventions — the compiler rejects them. `ButtonProps` is
 discriminated union, so a violation is a build failure, not a bug report.
 
 - **`appearance="text-link"` requires `variant="primary"`.** No standard or destructive
-  text-link exists.
-- **`text-link` is `tiny` or `regular` only**, and **never carries an icon** (`icon?: never`).
-- **`text-link` is never underlined.** Colour carries the affordance; hover shifts colour.
+  text-link exists. [[rule: button-text-link-requires-primary | compiler]]
+- **`text-link` is `tiny` or `regular` only**, and **never carries an icon** (`icon?: never`). [[rule: button-text-link-size-and-icon | compiler]]
+- **`text-link` is never underlined.** Colour carries the affordance; hover shifts colour. [[rule: button-text-link-not-underlined | convention]]
 - **One `variant="primary" appearance="filled"` per page.** Pair it with hollow / text-link
-  for everything else. This one is a convention — the compiler cannot count buttons.
-- **Icons sit left only.**
-- **Width hugs content.** Never fix a button width.
+  for everything else. This one is a convention — the compiler cannot count buttons. [[rule: button-one-primary-filled-per-page | convention]]
+- **The prop sets are closed.** `variant`, `appearance` and `size` accept only the values in
+  the Props table. An invented one is a compile error, not a fallback. [[rule: button-prop-sets-closed | compiler]]
+- **Icons sit left only.** [[rule: button-icons-left-only | convention]]
+- **Width hugs content.** Never fix a button width. [[rule: button-width-hugs-content | convention]]
 - **`destructive` encodes consequence, not emphasis.** Delete/revoke/remove only. Never
-  for "Cancel", never just to stand out.
+  for "Cancel", never just to stand out. [[rule: button-destructive-is-consequence | convention]]
 
 ## Token bindings
 

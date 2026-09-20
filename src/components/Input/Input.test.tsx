@@ -19,6 +19,7 @@ describe('Input', () => {
     expect(screen.getByRole('alert')).toHaveTextContent('This tenant already exists')
   })
 
+  // [[rule: input-describedby-only-rendered]]
   it('never points aria-describedby at an element that is not rendered', () => {
     render(<Input label="Tenant name" />)
     expect(screen.getByLabelText('Tenant name')).not.toHaveAttribute('aria-describedby')
