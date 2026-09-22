@@ -5,14 +5,26 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.11.0] — 2026-09-22
+
+### Changed — breaking (types only)
+
+- **`Tabs` and `Toggle` now type-enforce "controlled or uncontrolled, never both."** `TabsProps`
+  and `ToggleProps` are discriminated unions instead of flat interfaces:
+  - `<Tabs value=… defaultValue=…>` and `<Toggle checked defaultChecked>` are **type errors**. They
+    always were defects — the guidelines have forbidden them since 0.9.0 — but the types allowed them.
+  - **`Tabs` no longer requires `defaultValue`.** It was declared required, so a purely controlled
+    `<Tabs value=… onValueChange=…>` did not compile: the type forced the very state the spec
+    forbids. Controlled usage now type-checks, and `defaultValue` is required only when `value` is absent.
+  - Runtime behaviour is unchanged in both components. Nothing to migrate unless your code passed
+    both props, in which case delete the one you were not reading.
+
 ### Added
 - **How it is made** page (`#/how`): the token file, its five generated targets with a link to each, and
   the automated-check count. The count is generated from the test runners (`npm run checks`) and diffed in
   `verify`, like the generated CSS, so the page cannot go stale.
 - Links to the public Figma library file: the site's top bar, every component page (header and
   Figma tab), the README and `llms.txt`. The registry can carry a per-component node id for a deep link.
-
-### Added
 - **Every documented rule now has to carry a proof.** Each bullet under `## Hard constraints`
   is tagged `[[rule: id | compiler|runtime|convention]]`, and `npm run rules:check` fails the
   build when a `compiler` rule has no fixture in `verify-pack.mjs` (or has one the types do not

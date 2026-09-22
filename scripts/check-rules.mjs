@@ -11,15 +11,19 @@
  * playground (demo/playground/Markdown.tsx) or a Figma description
  * (scripts/sync-figma-descriptions.mjs) — and asserts:
  *
- *   1. every `compiler` rule has a hand-written fixture in verify-pack.mjs carrying its id,
- *      and the types actually reject that fixture;
- *   2. every `runtime` rule is referenced by at least one unit test;
+ *   1. every `compiler` rule — one the types reject outright — has a hand-written fixture in
+ *      verify-pack.mjs carrying its id, and the types actually reject that fixture;
+ *   2. every `runtime` rule — one ENFORCED BY THE IMPLEMENTATION AND PROVABLE BY A UNIT TEST,
+ *      whether it throws, asserts, or simply renders the only correct thing — is referenced by
+ *      at least one unit test;
  *   3. every fixture names a rule that exists — no orphans;
  *   4. every rule id is unique;
  *   5. every Hard-constraints bullet carries a tag, so a rule added later cannot skip the gate.
  *
  * `convention` is a real answer, not an excuse: "one primary filled button per page" cannot be
- * mechanically enforced, and the gate must not demand a fixture for it.
+ * mechanically enforced, and the gate must not demand a fixture for it. Where a rule sits between
+ * levels, it is filed at the lower one — a rule enforced only by CSS and a visual baseline is a
+ * convention here. Understating what is enforced is the safe direction; there is no fourth level.
  *
  * The fixtures are NOT generated from the annotations. A fixture derived from the same source
  * as the thing it tests proves nothing — see the comment above `violations` in verify-pack.mjs.

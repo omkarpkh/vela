@@ -38,7 +38,7 @@ link to each, and the number of automated checks, written by the test runners ra
 | **Themes** | Light + dark. OS preference by default, `data-theme` to override |
 | **Dependencies** | None. `react` / `react-dom` are peers (18.3 or 19) |
 | **Format** | ESM, `preserveModules` for tree-shaking, full `.d.ts` |
-| **Tests** | 196 automated checks — 169 unit and contract (76 asserted contrast pairs across both themes), 24 browser, 3 Flutter — counted by `npm run checks` |
+| **Tests** | 207 automated checks — 180 unit and contract (76 asserted contrast pairs across both themes), 24 browser, 3 Flutter — counted by `npm run checks` |
 | **Packed size** | 26.7 kB, 43 files |
 
 ## The three ideas worth stealing
@@ -175,6 +175,7 @@ Worth being precise about what travels and what doesn't:
 | **The contract** (`guidelines/`) | **Entirely.** Intent, closed prop sets, token bindings, accessibility, anti-patterns. Only the code samples are React-shaped. |
 | **Components** (`dist/index.js`) | **No.** One implementation per framework, by definition. |
 | **The contrast audit** (`npm run contrast`) | **Entirely.** It parses CSS and knows nothing about React. |
+| **Constraints** (`[[rule: … ]]` tags) | **Port as data:** each rule carries its enforcement level. In TypeScript and Dart a compiler rule stays a compiler rule; in Angular, whose template checker cannot relate two inputs, a cross-prop compiler rule becomes lint or runtime. |
 
 So on Angular you would take `tokens.css` and `guidelines/` unchanged, and write the components
 against your own idioms — standalone components, signals, `ControlValueAccessor` for form controls.
@@ -184,6 +185,10 @@ what the discriminated unions buy here.
 This is not a limitation to work around. If an organisation runs more than one framework, no
 framework's components can be the source of truth for the others — **the only thing that can be
 shared is the contract**, which is the argument this repository exists to make.
+
+So every rule in `guidelines/` is tagged with how it is enforced (compiler, runtime or convention),
+and `npm run rules:check` fails the build when a compiler or runtime rule has no proof behind it,
+or a new rule arrives untagged.
 
 ## Scope
 
