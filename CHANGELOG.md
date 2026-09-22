@@ -5,6 +5,12 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+### Changed
+- **The Button playground stops offering a control that does nothing.** `type` moved from the
+  props panel to "Also in the API": `submit` only means something inside a `<form>`, which the
+  playground does not have, so the control was a switch with no consequence on the stage. New
+  registry field `noControl` for exactly that case — documented, not demonstrated. Demo only.
+
 ## [0.11.0] — 2026-09-22
 
 ### Changed — breaking (types only)

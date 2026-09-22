@@ -25,6 +25,12 @@ export interface Entry {
   extra?: Control[]
   /** Controls the table declares but the playground fixes (Tabs' children are a fixed example). */
   hide?: string[]
+  /**
+   * Props the playground documents but does not demonstrate: they change nothing you can see
+   * here, so a control would be a switch with no consequence. Unlike `hide` they keep their
+   * row under "Also in the API" — the prop is real, the demonstration is not.
+   */
+  noControl?: string[]
   /** Mirrors the type-level rules: invalid combinations do not exist, so they cannot be picked. */
   constrain?: (v: Values) => Values
   /** Which control options are unavailable for the current values (shown, never selectable). */
@@ -51,6 +57,9 @@ export const REGISTRY: Entry[] = [
     name: 'Button',
     spec: buttonMd,
     seed: { children: 'Save Changes', variant: 'primary', icon: true },
+    // type changes nothing on the stage: "submit" only means anything inside a <form>, and the
+    // spec says so ("submit only for a form's commit button"). Documented, not demonstrated.
+    noControl: ['type'],
     constrain: (v) =>
       v.appearance === 'text-link'
         ? { ...v, variant: 'primary', icon: false, size: v.size === 'tiny' ? 'tiny' : 'regular' }

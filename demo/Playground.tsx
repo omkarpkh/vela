@@ -69,7 +69,13 @@ export function Playground({ id }: { id: string }) {
 
 function PlaygroundFor({ entry }: { entry: (typeof REGISTRY)[number] }) {
   const spec = useMemo(() => parseSpec(entry.spec, KNOWN), [entry])
-  const controls = useMemo(() => [...spec.controls.filter((c) => !entry.hide?.includes(c.prop)), ...(entry.extra ?? [])], [spec, entry])
+  const controls = useMemo(
+    () => [
+      ...spec.controls.filter((c) => !entry.hide?.includes(c.prop) && !entry.noControl?.includes(c.prop)),
+      ...(entry.extra ?? []),
+    ],
+    [spec, entry],
+  )
   const initial = useMemo(() => {
     const next: Values = {}
     for (const c of controls) next[c.prop] = entry.seed[c.prop] ?? c.default
