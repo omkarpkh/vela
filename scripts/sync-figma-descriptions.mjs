@@ -36,8 +36,12 @@ const SETS = {
   'tabs.md': { set: 'Tab', src: 'Tabs' },
 }
 
+// `[[rule: id | enforcement]]` is metadata for scripts/check-rules.mjs, not prose: it is stripped
+// here so it never reaches a Figma component description, and in demo/playground/Markdown.tsx so
+// it never reaches the playground.
 const strip = (s) =>
-  s.replace(/\*\*(.+?)\*\*/g, '$1').replace(/`([^`]+)`/g, '$1').replace(/\s+/g, ' ').trim()
+  s.replace(/\s*\[\[rule:[^\]]*\]\]/g, '')
+    .replace(/\*\*(.+?)\*\*/g, '$1').replace(/`([^`]+)`/g, '$1').replace(/\s+/g, ' ').trim()
 
 const section = (md, heading) => {
   const m = md.match(new RegExp(`^## ${heading}[^\\n]*\\n([\\s\\S]*?)(?=^## |\\Z)`, 'm'))

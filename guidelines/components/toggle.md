@@ -18,8 +18,8 @@ A binary setting that takes effect **immediately**. No Save step.
 | Prop | Type | Default | Notes |
 |---|---|---|---|
 | `label` | `string` | — | **Required.** A switch with no name is unusable by screen reader. |
-| `checked` | `boolean` | — | Controlled. Omit for uncontrolled. |
-| `defaultChecked` | `boolean` | `false` | Uncontrolled initial state. |
+| `checked` | `boolean` | — | Controlled. Omit for uncontrolled. Exclusive with `defaultChecked`. |
+| `defaultChecked` | `boolean` | `false` | Uncontrolled initial state. Exclusive with `checked`. |
 | `onChange` | `(checked: boolean) => void` | — | Receives the **next** value. |
 | `disabled` | `boolean` | `false` | |
 | `labelPosition` | `"right" \| "left"` | `"right"` | |
@@ -28,9 +28,9 @@ A binary setting that takes effect **immediately**. No Save step.
 ## Hard constraints
 
 - **`label` is required and is a `string`.** Not optional, not `ReactNode`. The type system
-  makes an unlabelled switch impossible.
-- Controlled and uncontrolled are exclusive: pass `checked` **or** `defaultChecked`.
-- The change is immediate. Never pair a Toggle with a Save button that gates it.
+  makes an unlabelled switch impossible. [[rule: toggle-label-required | compiler]]
+- Controlled and uncontrolled are exclusive: pass `checked` **or** `defaultChecked`. [[rule: toggle-controlled-exclusive | compiler]]
+- The change is immediate. Never pair a Toggle with a Save button that gates it. [[rule: toggle-change-is-immediate | convention]]
 
 ## Token bindings
 

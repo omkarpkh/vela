@@ -18,6 +18,6 @@ the specification and the source is one implementation of it.
 ## Before you claim it works
 
 ```bash
-npm run verify        # typecheck + 158 tests + build + pack-and-consume gate
+npm run verify        # typecheck + tests + build + pack-and-consume gate
 npm run test:e2e      # 18 screenshots vs committed baselines + playground behaviour; update baselines only with test:visual:update
 ```

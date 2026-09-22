@@ -27,8 +27,8 @@ Navigate between **different** content panels.
 
 | Part | Prop | Type | Notes |
 |---|---|---|---|
-| `Tabs` | `defaultValue` | `string` | **Required.** |
-| | `value` / `onValueChange` | `string` / `(v) => void` | Controlled mode. |
+| `Tabs` | `defaultValue` | `string` | Uncontrolled mode. **Required unless `value` is passed.** |
+| | `value` / `onValueChange` | `string` / `(v) => void` | Controlled mode. `value` and `defaultValue` are exclusive. |
 | | `size` | `"regular" \| "large"` | **These two only.** |
 | `Tabs.List` | `aria-label` | `string` | **Required.** |
 | `Tabs.Trigger` | `value` | `string` | Must match a Panel. |
@@ -39,11 +39,11 @@ Navigate between **different** content panels.
 ## Hard constraints
 
 - **`Tabs.List` requires `aria-label`.** An unnamed tablist is unnavigable by screen reader,
-  so the type makes it impossible.
+  so the type makes it impossible. [[rule: tabs-list-requires-aria-label | compiler]]
 - **Parts must be used inside `<Tabs>`.** They throw a named error otherwise, rather than
-  rendering something silently broken.
-- **Only the active panel renders.** Do not rely on hidden panels holding DOM state.
-- Controlled and uncontrolled are exclusive.
+  rendering something silently broken. [[rule: tabs-parts-require-provider | runtime]]
+- **Only the active panel renders.** Do not rely on hidden panels holding DOM state. [[rule: tabs-only-active-panel-renders | runtime]]
+- Controlled and uncontrolled are exclusive. [[rule: tabs-controlled-exclusive | compiler]]
 
 ## Token bindings
 

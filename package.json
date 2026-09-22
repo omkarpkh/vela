@@ -1,6 +1,6 @@
 {
   "name": "@omkarux/vela",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "description": "A token-first design system: framework-agnostic tokens and component specs with a React implementation. Tokens compile to CSS, a Figma library, a Flutter theme and a Material UI theme from one source. Two-layer color architecture, separate severity and risk taxonomies, light and dark theming, WCAG AA asserted in CI, zero runtime dependencies.",
   "type": "module",
   "license": "MIT",
@@ -54,6 +54,7 @@
     "guidelines:figma": "node scripts/sync-figma-descriptions.mjs",
     "figma:build": "node scripts/figma/build-components.mjs",
     "tokens:check": "npm run tokens && git diff --exit-code -- src/styles/tokens.light.css src/styles/tokens.dark.body.css flutter/lib/vela_tokens.dart flutter/pubspec.yaml bridges/vela.mui-theme.json",
+    "rules:check": "node scripts/check-rules.mjs",
     "build": "npm run clean && npm run tokens && npm run build:js && npm run build:css",
     "build:js": "vite build",
     "build:css": "node scripts/build-css.mjs",
@@ -71,7 +72,7 @@
     "screenshots": "DOCS=1 playwright test tests/visual/docs.spec.ts",
     "typecheck": "tsc --noEmit",
     "contrast": "node scripts/contrast-report.mjs",
-    "verify": "npm run tokens:check && npm run typecheck && npm run test && npm run checks:check && npm run build && node scripts/verify-pack.mjs",
+    "verify": "npm run tokens:check && npm run rules:check && npm run typecheck && npm run test && npm run checks:check && npm run build && node scripts/verify-pack.mjs",
     "prepublishOnly": "npm run verify"
   },
   "peerDependencies": {

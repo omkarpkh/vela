@@ -3,6 +3,7 @@ import { describe, it, expect } from 'vitest'
 import { StatusIndicator } from './StatusIndicator'
 
 describe('StatusIndicator', () => {
+  // [[rule: status-never-colour-only]]
   it('falls back to a text alternative when there is no visible label', () => {
     render(<StatusIndicator status="unhealthy" />)
     // WCAG 1.4.1: the dot must not convey status through colour alone.

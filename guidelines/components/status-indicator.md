@@ -24,12 +24,12 @@ next to an object name.
 ## Hard constraints
 
 - **Five states.** Not severity's six, not risk's three. There is no `"critical"` status and
-  no `"high"` status — the compiler rejects both.
+  no `"high"` status — the compiler rejects both. [[rule: status-closed-set | compiler]]
 - **`medium` means degraded**, sitting between `warning` and `unhealthy`. It is not the
-  middle of a risk scale.
+  middle of a risk scale. [[rule: status-medium-is-degraded | convention]]
 - **Colour is never the only signal.** With no `label`, the component sets an `aria-label`
   from the status ("Unhealthy", "Degraded", …) so the dot is never silent. With a `label`,
-  it does not duplicate it — the visible text is the accessible name.
+  it does not duplicate it — the visible text is the accessible name. [[rule: status-never-colour-only | runtime]]
 
 ## Token bindings
 

@@ -1,10 +1,7 @@
 import * as React from 'react'
 import { cn } from '../../lib/cn'
 
-export interface ToggleProps {
-  /** Controlled state. Omit for uncontrolled. */
-  checked?: boolean
-  defaultChecked?: boolean
+interface ToggleBaseProps {
   onChange?: (checked: boolean) => void
   disabled?: boolean
   /**
@@ -18,6 +15,17 @@ export interface ToggleProps {
   name?: string
   className?: string
 }
+
+/**
+ * Controlled and uncontrolled are exclusive, so the union says it rather than the prose:
+ * `checked` drives it from outside, `defaultChecked` seeds it once, and the other arm's
+ * prop is `never`. Passing both is a build failure, not a bug report.
+ */
+export type ToggleProps = ToggleBaseProps &
+  (
+    | { /** Controlled state. */ checked: boolean; defaultChecked?: never }
+    | { checked?: never; /** Uncontrolled initial state. */ defaultChecked?: boolean }
+  )
 
 /**
  * A binary setting that takes effect IMMEDIATELY.
