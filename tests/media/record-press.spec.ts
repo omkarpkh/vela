@@ -1,9 +1,10 @@
 /**
  * Regenerates decisions/press-feedback/media/press-comparison.webm.
  *
- * Not part of the suite — `npm run test:e2e` ignores tests/media. Run it directly:
- *   npx playwright test tests/media --reporter=line
- * then copy test-results/<dir>/video.webm over the file in decisions/press-feedback/media.
+ * Not part of the suite — `npm run test:e2e` ignores tests/media, and because testIgnore applies
+ * to discovery, naming the path is not enough. Run it with:
+ *   RECORD=1 npx playwright test tests/media --reporter=line
+ * then copy test-results/<dir>/video.webm over the files in decisions/press-feedback/media.
  *
  * Playwright records the video and ships its own ffmpeg, so nothing else is needed: no screen
  * recorder, no manual capture, and the clip re-records itself when the press changes. Playwright

@@ -9,9 +9,11 @@ import { defineConfig } from '@playwright/test'
  */
 export default defineConfig({
   testDir: 'tests',
-  // tests/media holds the recorder that regenerates the case-study clip. It is not a check —
-  // it records a video and asserts nothing — so it stays out of the suite. Run it by path.
-  testIgnore: '**/media/**',
+  // tests/media holds the recorders that regenerate the case-study clips. They are not checks —
+  // they record video and assert nothing — so they stay out of the suite. testIgnore applies to
+  // discovery, so naming the path is not enough to run them: use RECORD=1.
+  //   RECORD=1 npx playwright test tests/media --reporter=line
+  testIgnore: process.env.RECORD ? [] : '**/media/**',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,

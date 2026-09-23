@@ -19,7 +19,13 @@ Two things made it worth questioning. Apple's WWDC24 session on fluid interfaces
 this pattern — *the animation does not respond to where I touch it* — and the geometry has a
 consequence nobody in the surveyed systems had written down. A centre-origin scale pulls both edges
 inward **while the pointer is still down**: 4.80px a side on a 320px button, 1.5px at 102px. Press
-near an edge and the button moves out from under the pointer before the release.
+near an edge and the button moves out from under the cursor before the release.
+
+**This is a mouse defect only.** The same gesture as a touch loses nothing — 0/12 against the
+mouse's 9/12 — because the browser sets implicit pointer capture on touch and pen, as the Pointer
+Events spec requires, and does not for a mouse. `gotpointercapture` fires on every touch run and
+never on a mouse one. The JavaScript layer's `setPointerCapture` is therefore not a trick: it gives
+the mouse the behaviour touch has always had.
 
 ## What was considered
 
