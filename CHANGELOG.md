@@ -3,7 +3,7 @@
 All notable changes to this project are documented here.
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.12.0] — 2026-09-24
 
 ### Fixed
 - **A press no longer swallows clicks near a button's edge.** `:active` scales the button to

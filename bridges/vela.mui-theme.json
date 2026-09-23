@@ -1,5 +1,5 @@
 {
-  "$description": "Material UI ThemeOptions generated from tokens/vela.tokens.json by scripts/build-tokens-mui.mjs — do not edit. @omkarux/vela 0.11.0. Pass `light` or `dark` to createTheme().",
+  "$description": "Material UI ThemeOptions generated from tokens/vela.tokens.json by scripts/build-tokens-mui.mjs — do not edit. @omkarux/vela 0.12.0. Pass `light` or `dark` to createTheme().",
   "$sources": {
     "palette.primary.main": "btn-primary-bg",
     "palette.primary.dark": "btn-primary-hover-bg",
