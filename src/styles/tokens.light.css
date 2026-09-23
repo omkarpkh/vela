@@ -288,6 +288,7 @@
   --vela-focus-ring-color: var(--vela-border-active);
 
   /* ---- Motion (respects reduced-motion in components.css) ---- */
+  --vela-duration-instant: 70ms;
   --vela-duration-fast: 120ms;
   --vela-duration-base: 180ms;
   --vela-ease-standard: cubic-bezier(0.2, 0, 0.2, 1);

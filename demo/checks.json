@@ -3,10 +3,10 @@
   "unit": 180,
   "browser": {
     "visual": 18,
-    "e2e": 4,
+    "e2e": 5,
     "docs": 2,
-    "total": 24
+    "total": 25
   },
   "flutter": 3,
-  "total": 207
+  "total": 208
 }

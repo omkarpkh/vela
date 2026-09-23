@@ -171,8 +171,9 @@ w(`}`)
 w()
 
 // ---------- motion ----------
-w(`/// Motion: two durations and the one curve. Pointer answers and exits use [durationFast];`)
-w(`/// anything that settles or enters uses [durationBase]. Same values as tokens.css.`)
+w(`/// Motion: three durations and the one curve. A press lands on [durationInstant]; pointer`)
+w(`/// answers and exits use [durationFast]; anything that settles or enters uses`)
+w(`/// [durationBase]. Same values as tokens.css.`)
 w(`abstract final class VelaMotion {`)
 for (const [name, t] of Object.entries(doc.motion)) {
   const id = ident(name)

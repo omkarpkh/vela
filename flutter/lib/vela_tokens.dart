@@ -1111,10 +1111,13 @@ abstract final class VelaSizing {
   static const double focusRingOffset = 2;
 }
 
-/// Motion: two durations and the one curve. Pointer answers and exits use [durationFast];
-/// anything that settles or enters uses [durationBase]. Same values as tokens.css.
+/// Motion: three durations and the one curve. A press lands on [durationInstant]; pointer
+/// answers and exits use [durationFast]; anything that settles or enters uses
+/// [durationBase]. Same values as tokens.css.
 abstract final class VelaMotion {
-  /// Anything that answers a pointer: hover in, press, exits.
+  /// A press landing. Below the ~85ms where a delay starts to read as lag, so contact and acknowledgement arrive together. Press-in only — the release settles at duration-base.
+  static const Duration durationInstant = Duration(milliseconds: 70);
+  /// Anything that answers a pointer: hover in, exits.
   static const Duration durationFast = Duration(milliseconds: 120);
   /// Anything that settles or enters: hover out, appearing.
   static const Duration durationBase = Duration(milliseconds: 180);

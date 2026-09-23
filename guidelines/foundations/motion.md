@@ -11,18 +11,20 @@ cannot be named in one of those words, it does not ship.
 | Hundreds of times a day — button press, tab switch, toggle | instant, or feedback under 200ms |
 | Daily — a dialog, a panel, an alert appearing | subtle and fast: opacity, a few px of travel, a touch of blur |
 | Rarely — onboarding, a first success | room for expression |
-| From the keyboard | nothing animates |
+| From the keyboard | nothing animates — an instant state change, with no duration, still counts as still |
 
 ## Tokens
 
-- `--vela-duration-fast` (120ms): anything that answers a pointer.
+- `--vela-duration-instant` (70ms): a press landing. Under the ~85ms where a delay starts to
+  read as lag, so contact and acknowledgement arrive together. Press-in only.
+- `--vela-duration-fast` (120ms): anything else that answers a pointer.
 - `--vela-duration-base` (180ms): anything that settles or appears.
 - `--vela-ease-standard` `cubic-bezier(0.2, 0, 0.2, 1)`: the only curve. Never a bare `ease`.
 
 No component defines its own duration or curve. A new one is a token change, reviewed like a colour.
 
-In Figma they live in the **Motion** collection as Figma's own motion variable types: `duration/fast`
-and `duration/base` are **timing** variables (Figma keeps timing in seconds, so 120ms is stored as
+In Figma they live in the **Motion** collection as Figma's own motion variable types: `duration/instant`,
+`duration/fast` and `duration/base` are **timing** variables (Figma keeps timing in seconds, so 120ms is stored as
 0.12) and `easing/standard` is an **easing** variable holding the same cubic-bezier, each carrying its
 `var(--vela-*)` code syntax. A Figma Motion timeline animation can bind them, so a token change reaches
 it on the next sync. A prototype transition still cannot: its duration is a typed number and its curve
@@ -33,8 +35,11 @@ to type sits on the component itself.
 ## Rules
 
 1. Only `transform`, `opacity` and `filter` animate. Never width, height, margin, padding or position.
-2. Pointer states enter faster than they leave (hover in at `fast`, out at `base`). Things that leave the
-   screen exit more softly than they entered.
+   A `transform` that changes an element's size must not change where it can be clicked: scale the
+   visual and hold the hit target, or the control moves out from under the pointer that is pressing it.
+2. Pointer states enter faster than they leave (hover in at `fast`, out at `base`; press in at `instant`,
+   out at `base`). Things that leave the screen exit more softly than they entered. The asymmetry is the
+   point: arrival is information and wants to be immediate, release is resolution and can settle.
 3. Transitions, not keyframes, for anything a person can re-trigger: transitions retarget mid-flight.
 4. Hover only where hover exists. Wrap hover rules in `@media (hover: hover)`; touch gets press feedback.
 5. `prefers-reduced-motion` is handled once, globally, in `src/styles/base.css`: durations collapse, loops

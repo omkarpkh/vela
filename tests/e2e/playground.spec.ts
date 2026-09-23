@@ -42,3 +42,29 @@ test('"How it is made" lists the token file, five generated targets and a genera
   await expect(table.getByRole('link', { name: 'open the library' })).toHaveAttribute('href', /figma\.com\/design/)
   await expect(page.getByRole('heading', { level: 2, name: /^\d{2,} automated checks on every change$/ })).toBeVisible()
 })
+
+// [[rule: button-press-keeps-hit-target]]
+// A pressed button scales to 0.97 about its centre, so its edges travel inward while the
+// pointer is down. If the pointerup lands where the button no longer is, the click retargets
+// to the parent and is lost. Displacement is width-proportional (1.5px at 102px, 4.8px at
+// 320px), so the width is set explicitly — a button that hugs its content is too narrow to
+// fail. This is the assertion the suite never made: .click() dispatches down and up in one
+// tick, so the press never advances and the defect is invisible to it.
+test('a press at the inner edge of a wide button still fires its click', async ({ page }) => {
+  await page.goto('/#/components/button')
+  const btn = page.locator('.vela-btn').first()
+  await expect(btn).toBeVisible()
+  await btn.evaluate((el: HTMLElement) => {
+    el.style.width = '320px'
+    ;(window as Window & { __hits?: number }).__hits = 0
+    el.addEventListener('click', () => { (window as Window & { __hits?: number }).__hits!++ })
+  })
+  const box = (await btn.boundingBox())!
+  for (const x of [box.x + 2, box.x + box.width - 2]) {
+    await page.mouse.move(x, box.y + box.height / 2)
+    await page.mouse.down()
+    await page.waitForTimeout(150)   // longer than the press transition; .click() cannot fail
+    await page.mouse.up()
+  }
+  expect(await page.evaluate(() => (window as Window & { __hits?: number }).__hits)).toBe(2)
+})

@@ -5,6 +5,38 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+### Fixed
+- **A press no longer swallows clicks near a button's edge.** `:active` scales the button to
+  0.97 about its centre, which pulls both edges inward while the pointer is down — 1.5px a side
+  at 102px wide, 4.8px at 320px. A press that landed 2px inside an edge came back up where the
+  button no longer was, so the click retargeted to the parent and was lost. Measured, not
+  theorised: in a browser, **0 of 2 edge presses on a 320px button fired**. The fix is a
+  counter-scaled `::after` (0.97 × 1.0309278 = 1) that holds the original border box for the
+  length of the press. Pure CSS and no handler, so every target and every framework port gets
+  it. Now `tests/e2e/playground.spec.ts` asserts it, under the new `browser` enforcement level.
+  The suite could not have caught this before: `.click()` dispatches pointerdown and pointerup
+  in one tick, so the press never advances.
+
+### Added
+- **`--vela-duration-instant` (70ms)** — a third motion duration, for a press landing. Under the
+  ~85ms where a delay begins to read as lag. Reaches all five targets: CSS, Flutter (`VelaMotion
+  .durationInstant`), the MUI theme, Figma's Motion collection and the docs.
+- **A `browser` enforcement level in the rule-coverage gate.** A rule enforced by the
+  implementation but provable only in a real browser, because it depends on layout or
+  hit-testing. The press rule is the first: jsdom does no hit-testing, and a screenshot cannot
+  tell a fired click from a swallowed one, so neither `runtime` nor a visual baseline could
+  prove it. `check-rules.mjs` now requires a Playwright spec carrying the rule id.
+
+### Changed
+- **The press is asymmetric.** In at `--vela-duration-instant` (70ms), out at
+  `--vela-duration-base` (180ms) — previously 120ms both ways. Arrival is information and wants
+  to be immediate; release is resolution and can settle. This extends motion rule 2, which
+  already asymmetric-timed hover, to the press.
+- **A keyboard press is acknowledged.** `:focus-visible` excludes keyboard activation from the
+  scale, which left Space and Enter as the one input that got no feedback at all. The focus ring
+  now collapses onto the edge (`outline-offset: 0`) — a state change with no duration, so
+  "from the keyboard, nothing animates" still holds.
+
 ### Changed
 - **The Button playground stops offering a control that does nothing.** `type` moved from the
   props panel to "Also in the API": `submit` only means something inside a `<form>`, which the

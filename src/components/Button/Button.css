@@ -12,22 +12,64 @@
   cursor: pointer;
   text-decoration: none;
   /* Colour transitions use the destination state's duration: hover-in below is fast,
-     hover-out inherits this slower settle, so a pointer crossing a toolbar never flickers. */
+     hover-out inherits this slower settle, so a pointer crossing a toolbar never flickers.
+     The press duration is a variable because the press is asymmetric: the :active rule
+     swaps in the fast value on the way down, so this one is only ever the release. */
+  --vela-btn-press-duration: var(--vela-duration-base);
   transition: background-color var(--vela-duration-base) var(--vela-ease-standard),
               border-color var(--vela-duration-base) var(--vela-ease-standard),
               color var(--vela-duration-base) var(--vela-ease-standard),
-              transform var(--vela-duration-fast) var(--vela-ease-standard);
+              transform var(--vela-btn-press-duration) var(--vela-ease-standard);
 }
 
 /* -- motion: feedback only. A button is pressed hundreds of times a day, so nothing here
       exists to be noticed. Focus rings and keyboard activation stay instant. -- */
 @media (hover: hover) {
-  .vela-btn:hover:not(:disabled) { transition-duration: var(--vela-duration-fast); }
+  /* Colour only. The fourth value keeps transform on the press duration rather than
+     flattening it to hover's — and every mouse press begins from hover. The list order
+     must match the `transition` above. */
+  .vela-btn:hover:not(:disabled) {
+    transition-duration: var(--vela-duration-fast), var(--vela-duration-fast),
+                         var(--vela-duration-fast), var(--vela-btn-press-duration);
+  }
 }
 /* Press: a 3% scale, pointer only. :focus-visible excludes keyboard activation; a busy or
-   disabled button must not pretend to react; a text link is text, and text does not squash. */
+   disabled button must not pretend to react; a text link is text, and text does not squash.
+   Asymmetric by design: in at duration-instant so the acknowledgement arrives with the
+   finger rather than after it, out at duration-base so the release settles instead of
+   snapping. Colour is deliberately not part of the press — see the note below. */
 .vela-btn:active:not(:disabled):not([aria-busy="true"]):not(.vela-btn--text-link):not(:focus-visible) {
+  --vela-btn-press-duration: var(--vela-duration-instant);
   transform: scale(0.97);
+}
+
+/* The scale pulls the edges inward while the pointer is down, so a press that lands near an
+   edge can come back up where the button no longer is. The click then retargets to the
+   nearest common ancestor and is lost. Displacement is width-proportional — 1.5px a side at
+   102px, 4.8px at 320px — so it is wide buttons that break, and a suite that dispatches
+   pointerdown and pointerup in one tick can never see it.
+
+   This guard is the inverse scale (0.97 x 1.0309278 = 1), so for as long as the press lasts
+   it occupies exactly the border box the button had before it shrank, and the pointerup
+   always lands on the button. `inset: -1px` matches the 1px border: an absolutely positioned
+   box is inset from the padding box, and it is the border box the pointer aims at.
+
+   No `position: relative` is needed. The transform in the rule above already makes the
+   button a containing block for absolutely positioned descendants, and the guard exists
+   only while that transform does. Pure CSS, so it holds in every target and needs no
+   handler — a framework port that translates the syntax gets the fix with it. */
+.vela-btn:active:not(:disabled):not([aria-busy="true"]):not(.vela-btn--text-link):not(:focus-visible)::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  transform: scale(1.0309278);
+}
+
+/* Keyboard press: the focus ring it already has collapses onto the edge. No geometry, no
+   duration, nothing to animate, so "keyboard activation stays instant" still holds — and a
+   keyboard press stops being the one input that gets no acknowledgement at all. */
+.vela-btn:active:not(:disabled):not([aria-busy="true"]):focus-visible {
+  outline-offset: 0;
 }
 
 /* -- sizes -- */

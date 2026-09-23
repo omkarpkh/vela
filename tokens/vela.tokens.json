@@ -2543,6 +2543,16 @@
     }
   },
   "motion": {
+    "duration-instant": {
+      "$type": "duration",
+      "$value": "70ms",
+      "$extensions": {
+        "vela": {
+          "figma": "duration/instant"
+        }
+      },
+      "$description": "A press landing. Below the ~85ms where a delay starts to read as lag, so contact and acknowledgement arrive together. Press-in only \u2014 the release settles at duration-base."
+    },
     "duration-fast": {
       "$type": "duration",
       "$value": "120ms",
@@ -2551,7 +2561,7 @@
           "figma": "duration/fast"
         }
       },
-      "$description": "Anything that answers a pointer: hover in, press, exits."
+      "$description": "Anything that answers a pointer: hover in, exits."
     },
     "duration-base": {
       "$type": "duration",

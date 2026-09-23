@@ -149,7 +149,7 @@ const theme = (mode) => {
   for (const [variant, s] of Object.entries(TYPE)) t.typography[variant] = textStyle(s)
   t.typography.button.textTransform = 'none'
   t.shape = { borderRadius: px('radius-4') }
-  // Timing travels with the tokens: two durations and one curve, mapped onto Material's slots
+  // Timing travels with the tokens: three durations and one curve, mapped onto Material's slots
   // (pointer answers and exits at `fast`, anything that settles or enters at `base`). The KIND of
   // feedback does not travel: Material's ripple stays until the component is swapped for Vela's,
   // whose press is a 3% scale. That boundary is component behaviour, which is why shared

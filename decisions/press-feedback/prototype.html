@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Press feedback — seven candidates</title>
+<style>
+/* Vela tokens, inlined so this file runs with no build step and no dependency.
+   Values copied from src/styles/tokens.light.css and tokens.dark.body.css. */
+:root{
+  --vela-white:#ffffff; --vela-grey-100:#eef2f2; --vela-grey-200:#dde3e4; --vela-grey-300:#c8d0d2;
+  --vela-grey-700:#49555a; --vela-grey-850:#262e31; --vela-grey-900:#1b2225; --vela-grey-950:#11171a;
+  --vela-primary-300:#5fb8c9; --vela-primary-400:#2f9db3; --vela-primary-500:#0a6c7d; --vela-primary-600:#075462;
+
+  --vela-bg-global:var(--vela-white);
+  --vela-bg-container:var(--vela-grey-100);
+  --vela-text-default:var(--vela-grey-700);
+  --vela-border-subtle:var(--vela-grey-200);
+  --vela-btn-primary-bg:var(--vela-primary-500);
+  --vela-btn-primary-hover-bg:var(--vela-primary-600);
+  --vela-btn-primary-text:var(--vela-white);
+
+  --vela-space-15:15px; --vela-space-20:20px;
+  --vela-control-height-35:35px; --vela-radius-4:4px;
+  --vela-text-button-regular-size:14px; --vela-text-button-regular-line-height:21px;
+  --vela-focus-ring-width:2px; --vela-focus-ring-offset:2px; --vela-focus-ring-color:var(--vela-primary-500);
+  --vela-duration-fast:120ms; --vela-duration-base:180ms;
+  --vela-ease-standard:cubic-bezier(0.2, 0, 0.2, 1);
+
+  --ok:#1f7340; --bad:#ab3125; --warn:#8a6212;
+}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+  --vela-bg-global:var(--vela-grey-950); --vela-bg-container:var(--vela-grey-900);
+  --vela-text-default:var(--vela-grey-300); --vela-border-subtle:var(--vela-grey-850);
+  --vela-btn-primary-hover-bg:var(--vela-primary-400); --vela-focus-ring-color:var(--vela-primary-400);
+  --ok:#6fbf83; --bad:#f0918c; --warn:#d9a63c;
+}}
+:root[data-theme="dark"]{
+  --vela-bg-global:var(--vela-grey-950); --vela-bg-container:var(--vela-grey-900);
+  --vela-text-default:var(--vela-grey-300); --vela-border-subtle:var(--vela-grey-850);
+  --vela-btn-primary-hover-bg:var(--vela-primary-400); --vela-focus-ring-color:var(--vela-primary-400);
+  --ok:#6fbf83; --bad:#f0918c; --warn:#d9a63c;
+}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--vela-bg-global);color:var(--vela-text-default);
+  font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;padding:32px 22px 80px}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:23px;margin:0 0 6px;color:var(--vela-text-default)}
+.sub{margin:0 0 22px;max-width:70ch;opacity:.85}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.9em}
+
+.bar{display:flex;flex-wrap:wrap;gap:18px;align-items:center;padding:14px 16px;
+  border:1px solid var(--vela-border-subtle);background:var(--vela-bg-container);border-radius:var(--vela-radius-4);margin-bottom:10px}
+.bar label{display:flex;gap:7px;align-items:center;font-size:13px;white-space:nowrap}
+.tally{margin-left:auto;font-family:ui-monospace,Menlo,monospace;font-size:13px}
+.tally b{font-size:16px}
+.how{margin:0 0 26px;font-size:13.5px;opacity:.85;max-width:78ch}
+
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(320px,1fr))}
+.card{border:1px solid var(--vela-border-subtle);border-radius:var(--vela-radius-4);padding:18px;background:var(--vela-bg-container)}
+.card h2{font-size:15px;margin:0 0 3px}
+.card .mech{font-size:13px;opacity:.8;margin:0 0 4px;min-height:2.8em}
+.card .note{font-size:12px;opacity:.65;margin:0 0 14px}
+.stage{padding:20px 0 16px;display:flex;justify-content:center;position:relative}
+.count{font-family:ui-monospace,Menlo,monospace;font-size:12px;display:flex;gap:12px;justify-content:center;
+  border-top:1px solid var(--vela-border-subtle);padding-top:10px}
+.count .lost[data-n="0"]{color:var(--ok)}
+.count .lost:not([data-n="0"]){color:var(--bad);font-weight:600}
+
+/* ---- the button, as Vela ships it ---- */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  height:var(--vela-control-height-35);padding:0 var(--vela-space-20);
+  font-size:var(--vela-text-button-regular-size);line-height:var(--vela-text-button-regular-line-height);
+  font-family:inherit;font-weight:500;
+  background:var(--vela-btn-primary-bg);color:var(--vela-btn-primary-text);
+  border:1px solid var(--vela-btn-primary-bg);border-radius:var(--vela-radius-4);
+  cursor:pointer;position:relative;
+  transition:background var(--vela-duration-base) var(--vela-ease-standard),
+             transform var(--vela-duration-fast) var(--vela-ease-standard);
+}
+@media (hover:hover){ .btn:hover{background:var(--vela-btn-primary-hover-bg)} }
+.btn:focus-visible{outline:var(--vela-focus-ring-width) solid var(--vela-focus-ring-color);outline-offset:var(--vela-focus-ring-offset)}
+[data-w="wide"] .btn{width:320px}
+[data-w="full"] .btn{width:100%}
+
+/* The danger zone: the band where a centre-shrinking button stops being under your
+   cursor. Drawn as its own element over the button — using ::before/::after here would
+   collide with the hit guards that candidates D, E and F rely on. */
+.zonebar{position:absolute;pointer-events:none;display:none}
+.zone .zonebar{display:block}
+.zonebar i{position:absolute;top:0;bottom:0;width:1.5%;background:var(--bad);opacity:.5}
+.zonebar i.r{right:0}
+
+/* ===== BASELINE — exactly what Vela ships today ===== */
+#base .btn:active{transform:scale(0.97)}
+
+/* ===== A — origin-anchored scale =====
+   Same 3% shrink, but anchored to the contact point, so the pixel you pressed
+   is the fixed point of the transform and cannot move away from you. */
+#a .btn{transform-origin:var(--px,50%) var(--py,50%)}
+#a .btn:active{transform:scale(0.97)}
+
+/* ===== B — contact bloom =====
+   Colour and opacity only. No geometry, so nothing moves and it sits outside
+   WCAG's definition of motion animation. */
+#b .btn .bloom{position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;
+  background:radial-gradient(circle 64px at var(--px,50%) var(--py,50%),
+    rgba(255,255,255,.42), rgba(255,255,255,0) 70%);
+  transition:opacity var(--vela-duration-base) var(--vela-ease-standard)}
+#b .btn:active .bloom{opacity:1;transition-duration:var(--vela-duration-fast)}
+
+/* ===== C — directional edge-light ===== */
+#c .btn{--edge:inset 0 0 0 0 transparent}
+#c .btn:active{box-shadow:var(--edge)}
+
+/* ===== D — origin-anchored displacement =====
+   Moves 1px AWAY from the press point. ::after keeps the original hit area. */
+#d .btn::after{content:'';position:absolute;inset:0;pointer-events:auto}
+#d .btn:active{transform:translate(var(--dx,0px),var(--dy,1px))}
+#d .btn:active::after{top:calc(-1 * var(--dy,1px));left:calc(-1 * var(--dx,0px));
+  right:calc(var(--dx,0px));bottom:calc(var(--dy,1px))}
+
+/* ===== E — bloom over scale (with the hit-area guard) ===== */
+#e .btn .bloom{position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;
+  background:radial-gradient(circle 64px at var(--px,50%) var(--py,50%),
+    rgba(255,255,255,.42), rgba(255,255,255,0) 70%);
+  transition:opacity var(--vela-duration-base) var(--vela-ease-standard)}
+#e .btn:active{transform:scale(0.97)}
+#e .btn:active .bloom{opacity:1;transition-duration:var(--vela-duration-fast)}
+#e .btn .guard{position:absolute;inset:0;pointer-events:auto}
+#e .btn:active .guard{transform:scale(1.030928)}
+
+/* ===== F — control: centre scale + hit-area guard, no origin awareness ===== */
+#f .btn .guard{position:absolute;inset:0;pointer-events:auto}
+#f .btn:active{transform:scale(0.97)}
+#f .btn:active .guard{transform:scale(1.030928)}
+
+/* ===== G — Linear's pairing =====
+   Production CSS from static.linear.app, fetched 23 Sep 2026:
+   .variant-primary:active { filter: brightness(98%); transform: scale(.97) }
+   Hover brightens 15%, press darkens 2%. One duration, ease-out-quad. */
+#g .btn{transition:background var(--vela-duration-base) var(--vela-ease-standard),
+                   transform .16s cubic-bezier(.25,.46,.45,.94),
+                   filter .16s cubic-bezier(.25,.46,.45,.94)}
+#g .btn:active{transform:scale(0.97);filter:brightness(0.98)}
+
+/* ===== H — Argyle's subtraction =====
+   web.dev's button adds nothing on press. `:not(:active)` guards mean pressing
+   REMOVES what hover added. Nothing to disable under reduced motion. */
+#h .btn{transition:background 145ms ease,outline-offset 145ms ease}
+@media (hover:hover){ #h .btn:hover:not(:active){background:var(--vela-btn-primary-hover-bg)} }
+#h .btn:active{background:var(--vela-btn-primary-bg)}
+#h .btn:focus-visible:not(:active){outline-offset:var(--vela-focus-ring-offset)}
+#h .btn:focus-visible:active{outline-offset:0}
+
+/* ===== I — the synthesis =====
+   A's anchored scale (hit target holds, no guard) + Linear's 2% darkening
+   + asymmetric timing: 70ms in (inside Kaaresoja's 30-85ms band), 160ms out. */
+#i .btn{transform-origin:var(--px,50%) var(--py,50%);
+  transition:background var(--vela-duration-base) var(--vela-ease-standard),
+             transform 210ms cubic-bezier(.25,.46,.45,.94),
+             filter 210ms cubic-bezier(.25,.46,.45,.94)}
+#i .btn:active{transform:scale(0.97);filter:brightness(0.98);
+  transition-duration:var(--vela-duration-base),70ms,70ms}
+
+@media (prefers-reduced-motion:reduce){
+  .btn,.btn *{transition-duration:.01ms !important}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Press feedback — seven candidates</h1>
+  <p class="sub">Two faults are being tested. <b>One:</b> a centre-shrinking button moves its own hit target, so a press near the edge lands on the parent and the click never fires. <b>Two:</b> a uniform scale doesn't respond to where you touched — Apple's "lifeless and stiff".</p>
+
+  <div class="bar">
+    <label>Theme
+      <select id="theme"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select>
+    </label>
+    <label>Width
+      <select id="width"><option value="auto">Auto (~120px)</option><option value="wide" selected>Wide (320px)</option><option value="full">Full</option></select>
+    </label>
+    <label><input type="checkbox" id="zone"> Show the danger zone</label>
+    <span class="tally">swallowed clicks: <b id="total">0</b> &nbsp;·&nbsp; <button id="reset" style="font:inherit;cursor:pointer">reset</button></span>
+  </div>
+  <p class="how">Aim at the far left or right end of a wide button and press. Every card counts pointer presses against clicks that actually landed. A number in the "lost" column is a click the browser threw away. Tab to a button and press Space to see what each candidate does with no pointer to anchor to.</p>
+
+  <div class="grid" id="grid" data-w="wide">
+
+    <div class="card" id="base">
+      <h2>Baseline — as shipped</h2>
+      <p class="mech"><code>scale(0.97)</code> toward the centre, 120ms. What Vela ships today.</p>
+      <p class="note">Keyboard: excluded via <code>:not(:focus-visible)</code> in the real component; shown here for all inputs.</p>
+      <div class="stage"><button class="btn">Revoke access</button></div>
+      <div class="count"><span>pressed <b class="p">0</b></span><span>landed <b class="l">0</b></span><span class="lost" data-n="0">lost <b class="x">0</b></span></div>
+    </div>
+
+    <div class="card" id="a">
+      <h2>A — origin-anchored scale</h2>
+      <p class="mech">Same shrink, anchored to the contact point. The pixel you pressed is the fixed point, so it can't move away from you.</p>
+      <p class="note">Keyboard: falls back to centre origin — two behaviours for one interaction.</p>
+      <div class="stage"><button class="btn">Revoke access</button></div>
+      <div class="count"><span>pressed <b class="p">0</b></span><span>landed <b class="l">0</b></span><span class="lost" data-n="0">lost <b class="x">0</b></span></div>
+    </div>
+
+    <div class="card" id="b">
+      <h2>B — contact bloom</h2>
+      <p class="mech">A highlight at the contact point. Colour and opacity only — no geometry, so nothing moves.</p>
+      <p class="note">Outside WCAG's motion definition. Keyboard: blooms from centre.</p>
+      <div class="stage"><button class="btn"><span class="bloom"></span>Revoke access</button></div>
+      <div class="count"><span>pressed <b class="p">0</b></span><span>landed <b class="l">0</b></span><span class="lost" data-n="0">lost <b class="x">0</b></span></div>
+    </div>
+
+    <div class="card" id="c">
+      <h2>C — directional edge-light</h2>
+      <p class="mech">The nearest edge brightens. Coarse origin-awareness — which side, not which pixel.</p>
+      <p class="note">Survives tiny buttons where a radial gradient would not read.</p>
+      <div class="stage"><button class="btn">Revoke access</button></div>
+      <div class="count"><span>pressed <b class="p">0</b></span><span>landed <b class="l">0</b></span><span class="lost" data-n="0">lost <b class="x">0</b></span></div>
+    </div>
+
+    <div class="card" id="d">
+      <h2>D — origin-anchored displacement</h2>
+      <p class="mech">Moves 1px <em>away</em> from the press point. GOV.UK's idea, made directional.</p>
+      <p class="note">Hit area held by a pseudo-element, as GOV.UK does.</p>
+      <div class="stage"><button class="btn">Revoke access</button></div>
+      <div class="count"><span>pressed <b class="p">0</b></span><span>landed <b class="l">0</b></span><span class="lost" data-n="0">lost <b class="x">0</b></span></div>
+    </div>
+
+    <div class="card" id="e">
+      <h2>E — bloom over scale</h2>
+      <p class="mech">The scale carries contact, the bloom carries location. Hit area guarded.</p>
+      <p class="note">The most to specify, and the most to port to five targets.</p>
+      <div class="stage"><button class="btn"><span class="guard"></span><span class="bloom"></span>Revoke access</button></div>
+      <div class="count"><span>pressed <b class="p">0</b></span><span>landed <b class="l">0</b></span><span class="lost" data-n="0">lost <b class="x">0</b></span></div>
+    </div>
+
+    <div class="card" id="f">
+      <h2>F — control: fix only</h2>
+      <p class="mech">Centre scale as today, plus the counter-scaled guard. No origin awareness.</p>
+      <p class="note">The honest possibility: origin-awareness isn't worth what it costs.</p>
+      <div class="stage"><button class="btn"><span class="guard"></span>Revoke access</button></div>
+      <div class="count"><span>pressed <b class="p">0</b></span><span>landed <b class="l">0</b></span><span class="lost" data-n="0">lost <b class="x">0</b></span></div>
+    </div>
+
+    <div class="card" id="g">
+      <h2>G — Linear's pairing</h2>
+      <p class="mech"><code>scale(0.97)</code> <em>and</em> <code>brightness(98%)</code>, 160ms ease-out-quad. Verbatim from Linear's shipped CSS.</p>
+      <p class="note">Their hover brightens 15%; press darkens 2%. Left faithful to what they ship — <b>including the swallowed click</b>, since they scale from centre with no guard. Compare with I.</p>
+      <div class="stage"><button class="btn">Revoke access</button></div>
+      <div class="count"><span>pressed <b class="p">0</b></span><span>landed <b class="l">0</b></span><span class="lost" data-n="0">lost <b class="x">0</b></span></div>
+    </div>
+
+    <div class="card" id="h">
+      <h2>H — Argyle's subtraction</h2>
+      <p class="mech">Press adds nothing. It <em>removes</em> the hover colour and collapses the focus offset. Hover this one first, then press.</p>
+      <p class="note">No geometry, no new token, nothing to disable under reduced motion.</p>
+      <div class="stage"><button class="btn">Revoke access</button></div>
+      <div class="count"><span>pressed <b class="p">0</b></span><span>landed <b class="l">0</b></span><span class="lost" data-n="0">lost <b class="x">0</b></span></div>
+    </div>
+
+    <div class="card" id="i">
+      <h2>I — the synthesis</h2>
+      <p class="mech">A's anchored scale, plus 2% darkening, plus asymmetric timing: 70ms in, 160ms out.</p>
+      <p class="note">G's aesthetic with the defect removed: the contact point is the transform's fixed point, so no guard is needed. 70ms sits inside the 30–85ms measured band.</p>
+      <div class="stage"><button class="btn">Revoke access</button></div>
+      <div class="count"><span>pressed <b class="p">0</b></span><span>landed <b class="l">0</b></span><span class="lost" data-n="0">lost <b class="x">0</b></span></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function(){
+  var grid = document.getElementById('grid');
+  var total = document.getElementById('total');
+  var lost = 0;
+
+  document.getElementById('theme').addEventListener('change', function(e){
+    if (e.target.value === 'system') document.documentElement.removeAttribute('data-theme');
+    else document.documentElement.setAttribute('data-theme', e.target.value);
+  });
+  document.getElementById('width').addEventListener('change', function(e){ grid.dataset.w = e.target.value; });
+  document.getElementById('zone').addEventListener('change', function(e){
+    grid.classList.toggle('zone', e.target.checked);
+    if (e.target.checked) placeZones();
+  });
+  // The band is 1.5% of the button's width at each end — half of the 3% the button loses.
+  function placeZones(){
+    grid.querySelectorAll('.stage').forEach(function(stage){
+      var btn = stage.querySelector('.btn');
+      var bar = stage.querySelector('.zonebar');
+      if (!bar) { bar = document.createElement('div'); bar.className = 'zonebar';
+                  bar.innerHTML = '<i></i><i class="r"></i>'; stage.appendChild(bar); }
+      var s = stage.getBoundingClientRect(), b = btn.getBoundingClientRect();
+      bar.style.left = (b.left - s.left) + 'px'; bar.style.top = (b.top - s.top) + 'px';
+      bar.style.width = b.width + 'px'; bar.style.height = b.height + 'px';
+    });
+  }
+  window.addEventListener('resize', function(){ if (grid.classList.contains('zone')) placeZones(); });
+  document.getElementById('width').addEventListener('change', function(){
+    if (grid.classList.contains('zone')) setTimeout(placeZones, 30);
+  });
+  document.getElementById('reset').addEventListener('click', function(){
+    lost = 0; total.textContent = '0';
+    grid.querySelectorAll('.count b').forEach(function(b){ b.textContent = '0'; });
+    grid.querySelectorAll('.lost').forEach(function(s){ s.dataset.n = '0'; });
+  });
+
+  grid.querySelectorAll('.card').forEach(function(card){
+    var btn = card.querySelector('.btn');
+    var P = card.querySelector('.p'), L = card.querySelector('.l'), X = card.querySelector('.x');
+    var lostEl = card.querySelector('.lost');
+    var id = card.id;
+    var pending = false;
+
+    btn.addEventListener('pointerdown', function(e){
+      var r = btn.getBoundingClientRect();
+      var px = ((e.clientX - r.left) / r.width) * 100;
+      var py = ((e.clientY - r.top) / r.height) * 100;
+      // A, B, E read the contact point directly
+      btn.style.setProperty('--px', px.toFixed(2) + '%');
+      btn.style.setProperty('--py', py.toFixed(2) + '%');
+      // C needs the nearest edge
+      if (id === 'c') {
+        var d = [px, 100 - px, py, 100 - py];
+        var i = d.indexOf(Math.min.apply(null, d));
+        var inset = ['inset 3px 0 0 0','inset -3px 0 0 0','inset 0 3px 0 0','inset 0 -3px 0 0'][i];
+        btn.style.setProperty('--edge', inset + ' rgba(255,255,255,.75)');
+      }
+      // D moves away from the press point
+      if (id === 'd') {
+        btn.style.setProperty('--dx', (px < 50 ? 1 : -1) + 'px');
+        btn.style.setProperty('--dy', (py < 50 ? 1 : -1) + 'px');
+      }
+      pending = true;
+      P.textContent = +P.textContent + 1;
+    });
+
+    // e.detail is 0 for keyboard-generated clicks, so pointer clicks are counted separately
+    btn.addEventListener('click', function(e){
+      if (e.detail !== 0) { L.textContent = +L.textContent + 1; pending = false; }
+    });
+
+    // Settle after the pointer is released: a press still pending by then is a click
+    // the browser threw away. Listening on the window catches releases that land
+    // outside the button, which is exactly the failure being measured.
+    window.addEventListener('pointerup', function(){
+      if (!pending) return;
+      setTimeout(function(){
+        if (!pending) return;
+        pending = false;
+        var n = +X.textContent + 1;
+        X.textContent = n; lostEl.dataset.n = String(n);
+        lost += 1; total.textContent = String(lost);
+      }, 80);
+    });
+  });
+})();
+</script>
+</body>
+</html>

@@ -16,6 +16,9 @@
  *   2. every `runtime` rule — one ENFORCED BY THE IMPLEMENTATION AND PROVABLE BY A UNIT TEST,
  *      whether it throws, asserts, or simply renders the only correct thing — is referenced by
  *      at least one unit test;
+ *   2b. every `browser` rule — one enforced by the implementation but provable ONLY in a real
+ *      browser, because it depends on layout, hit-testing or paint — is referenced by at least
+ *      one Playwright spec. jsdom has no layout, so these rules cannot reach a unit test;
  *   3. every fixture names a rule that exists — no orphans;
  *   4. every rule id is unique;
  *   5. every Hard-constraints bullet carries a tag, so a rule added later cannot skip the gate.
@@ -23,7 +26,18 @@
  * `convention` is a real answer, not an excuse: "one primary filled button per page" cannot be
  * mechanically enforced, and the gate must not demand a fixture for it. Where a rule sits between
  * levels, it is filed at the lower one — a rule enforced only by CSS and a visual baseline is a
- * convention here. Understating what is enforced is the safe direction; there is no fourth level.
+ * convention here. Understating what is enforced is the safe direction.
+ *
+ * `browser` was added after the fact, and the reason is worth keeping. This file first said there
+ * was no fourth level, which was true of every rule that existed when it was written: each was
+ * either rejected by the types, asserted in jsdom, or unenforceable. Then the press rule arrived.
+ * A press that lands 2px inside a wide button must still fire its click — the button scales under
+ * the pointer, and if the pointerup misses, the click retargets to the parent and vanishes. That
+ * is enforcement, not convention; it is also invisible to both of the other proofs. jsdom does no
+ * layout and no hit-testing, so a unit test cannot see it. A screenshot cannot see it either: the
+ * pixels are identical whether the click fired or not. Filing it as `convention` would have been
+ * the safe direction and also a lie, so the level exists instead. The bar for a fifth is the same:
+ * a rule that is genuinely enforced and that no existing level can prove.
  *
  * The fixtures are NOT generated from the annotations. A fixture derived from the same source
  * as the thing it tests proves nothing — see the comment above `violations` in verify-pack.mjs.
@@ -39,7 +53,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
-const LEVELS = ['compiler', 'runtime', 'convention']
+const LEVELS = ['compiler', 'runtime', 'browser', 'convention']
 
 const problems = []
 const fail = (msg) => problems.push(msg)
@@ -132,26 +146,37 @@ if (proven.length) {
   } finally { rmSync(dir, { recursive: true, force: true }) }
 }
 
-// 2. every runtime rule is referenced by a unit test
-const tests = []
-const walk = (d) => readdirSync(d, { withFileTypes: true }).forEach((e) => {
-  const p = join(d, e.name)
-  if (e.isDirectory()) walk(p)
-  else if (/\.test\.tsx?$/.test(e.name)) tests.push({ p, src: readFileSync(p, 'utf8') })
-})
-walk(join(root, 'src'))
-for (const r of rules.filter((x) => x.level === 'runtime')) {
-  const hit = tests.find((t) => new RegExp(`\\[\\[rule:\\s*${r.id}\\b`).test(t.src))
-  if (!hit) fail(`${r.file}: rule "${r.id}" is tagged runtime but no unit test references it\n          add "// [[rule: ${r.id}]]" above the test that proves it`)
+// 2. every runtime rule is referenced by a unit test, and every browser rule by a Playwright spec
+const collect = (dir, re) => {
+  const out = []
+  const walk = (d) => readdirSync(d, { withFileTypes: true }).forEach((e) => {
+    const p = join(d, e.name)
+    if (e.isDirectory()) walk(p)
+    else if (re.test(e.name)) out.push({ p, src: readFileSync(p, 'utf8') })
+  })
+  walk(dir)
+  return out
+}
+const proofs = {
+  runtime: { files: collect(join(root, 'src'), /\.test\.tsx?$/), kind: 'unit test' },
+  browser: { files: collect(join(root, 'tests'), /\.spec\.tsx?$/), kind: 'Playwright spec' },
+}
+for (const [level, { files, kind }] of Object.entries(proofs)) {
+  for (const r of rules.filter((x) => x.level === level)) {
+    const hit = files.find((t) => new RegExp(`\\[\\[rule:\\s*${r.id}\\b`).test(t.src))
+    if (!hit) fail(`${r.file}: rule "${r.id}" is tagged ${level} but no ${kind} references it\n          add "// [[rule: ${r.id}]]" above the test that proves it`)
+  }
 }
 
 // ---------- report ----------
 const count = (l) => rules.filter((r) => r.level === l).length
 console.log('\n  RULE COVERAGE\n  ' + '-'.repeat(58))
 console.log(`  ${rules.length} rules across ${new Set(rules.map((r) => r.file)).size} specs — ` +
-  `${count('compiler')} compiler, ${count('runtime')} runtime, ${count('convention')} convention`)
+  `${count('compiler')} compiler, ${count('runtime')} runtime, ${count('browser')} browser, ` +
+  `${count('convention')} convention`)
 console.log(`  ${fixtures.length} fixtures, ${rejected.size} proved rejected by the types; ` +
-  `${rules.filter((r) => r.level === 'runtime').length} runtime rules referenced by tests`)
+  `${count('runtime')} runtime rules referenced by unit tests, ` +
+  `${count('browser')} browser rules by specs`)
 if (problems.length) {
   console.log('')
   for (const p of problems) console.log(`  FAIL  ${p}`)

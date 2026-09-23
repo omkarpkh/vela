@@ -288,6 +288,7 @@
   @focus-ring-color
 
   /* ---- Motion (respects reduced-motion in components.css) ---- */
+  @duration-instant
   @duration-fast
   @duration-base
   @ease-standard
