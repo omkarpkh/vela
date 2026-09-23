@@ -34,6 +34,29 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   asserted in both themes. Every mouse press begins from hover.
 
 ### Added
+- **The press pivots on the point you touched, where a pointer can be read.** Vela's position is
+  that every target gets the best it can do, so the press now has two layers and the lower one
+  stands alone. In CSS the button scales from its centre and the guard above holds its footprint —
+  correct in all five targets, no script. Where React is present the scale pivots on the pressed
+  pixel instead, so that pixel does not move: **0.06px against the centre scale's 4.80px** on a
+  320px button. Apple's WWDC24 session on fluid interfaces is the argument for it ("the animation
+  does not respond to where I touch it").
+
+  The seam is documented rather than incidental. `guidelines/llms.txt` no longer says a port
+  "translates only the syntax" — it says an enhancement is additive by definition, may not touch
+  the props, the markup or what the CSS does alone, and that skipping it costs feel and never
+  function. A new hard constraint, `button-enhancement-not-load-bearing`, is proved by a browser
+  test that strips the JS path and asserts the press is still correct. Material UI takes the same
+  trade and does not survive it as cleanly: its ripple silently starts from the centre when the
+  press came from a keyboard.
+
+  Implementation notes worth keeping: the pivot cannot be handed to a CSS `:active` rule, because
+  the browser paints the scale in the same frame the handler is writing and the loser leaves the
+  press pivoting on the *previous* contact point. So the component drives the press itself —
+  `vela-btn--js` switches `:active` off, and the pivot and the pressed flag land in one statement.
+  It also captures the pointer, without which the scale moves the button out from under the pointer
+  and fires `pointerleave`, ending the press because of the press.
+
 - **`--vela-duration-instant` (70ms)** — a third motion duration, for a press landing. Under the
   ~85ms where a delay begins to read as lag. Reaches all five targets: CSS, Flutter (`VelaMotion
   .durationInstant`), the MUI theme, Figma's Motion collection and the docs.

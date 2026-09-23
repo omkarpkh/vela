@@ -7,7 +7,11 @@
 > THESE SPECS ARE FRAMEWORK-AGNOSTIC. The published package is a React implementation of them, and
 > the code samples below are React — but the tokens, the closed prop sets, the taxonomies and the
 > accessibility rules hold for any implementation. If you are generating for Angular, Vue or
-> Svelte, follow every rule here and translate only the syntax. For Flutter, the same tokens ship as
+> Svelte, follow every rule here and translate the syntax. Where a component documents a **pointer
+> enhancement**, it is additive by definition: the component is complete, correct and accessible
+> without it, every rule here still holds, and skipping it costs feel and never function. An
+> enhancement may not change the props, the markup contract or what the CSS does on its own — if
+> yours would, it is not an enhancement. Never invent one. For Flutter, the same tokens ship as
 > `tokens.dart` (`VelaColors`, `VelaSizing`, `VelaTypography`, `velaThemeData`) — bind `VelaColors`
 > semantics, never `VelaPrimitives`.
 

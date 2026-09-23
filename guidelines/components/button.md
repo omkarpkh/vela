@@ -49,6 +49,11 @@ discriminated union, so a violation is a build failure, not a bug report.
 - **Width hugs content.** Never fix a button width. [[rule: button-width-hugs-content | convention]]
 - **`destructive` encodes consequence, not emphasis.** Delete/revoke/remove only. Never
   for "Cancel", never just to stand out. [[rule: button-destructive-is-consequence | convention]]
+- **A pointer enhancement may never be load-bearing.** The press pivots on the contact point where
+  there is a pointer to read and JavaScript to read it; everywhere else it scales from the centre.
+  Both paths are correct, both keep the hit target, and neither changes the props or the markup. A
+  target that gets only the CSS is not getting a degraded button — it is getting the same button
+  without the part that only a pointer can supply. [[rule: button-enhancement-not-load-bearing | browser]]
 - **A press never moves the hit target.** The press scales the button, which pulls its edges
   inward under the pointer — 4.8px a side on a 320px button. A counter-scaled guard holds the
   original border box for the length of the press, so a click that lands 2px inside an edge
@@ -103,12 +108,20 @@ Buttons are pressed hundreds of times a day, so motion here is feedback, never d
 |---|---|---|---|
 | Hover in | background, border, text colour | `--vela-duration-fast` (120ms), `--vela-ease-standard` | acknowledges the pointer without lag |
 | Hover out | the same colours | `--vela-duration-base` (180ms) | a slower settle, so a pointer crossing a row of buttons never flickers |
-| Press in (pointer) | `transform: scale(0.97)`, anchored so the hit target does not move | `--vela-duration-instant` (70ms) | the acknowledgement lands with the finger, not after it — 70ms sits under the ~85ms where a delay starts to read as lag |
+| Press in (pointer) | `transform: scale(0.97)`, pivoted on the contact point where one is known, otherwise on the centre; the hit target holds either way | `--vela-duration-instant` (70ms) | the acknowledgement lands with the finger, not after it — 70ms sits under the ~85ms where a delay starts to read as lag |
 | Press out | the scale releases | `--vela-duration-base` (180ms) | a release settles; only the arrival needs to be immediate |
 | Press (keyboard) | the focus ring collapses onto the edge (`outline-offset: 0`) | none — instant | Space and Enter get an acknowledgement without geometry or animation |
 | Loading begins | the spinner materialises (opacity 0→1, scale 0.8→1, blur 2px→0), then spins | `--vela-duration-base`; spin 700ms linear | a state change is acknowledged, not swapped |
 
 What deliberately does not move: the icon; disabled and busy buttons (a control that cannot act must not pretend to react); text-link (text does not squash); and the button's geometry under a keyboard press — Space and Enter never scale, because `:focus-visible` excludes them. They collapse the focus ring instead, which is a state change with no duration, so "from the keyboard, nothing animates" still holds.
+
+**The press has two layers, and the lower one stands alone.** In CSS the button scales from its
+centre and a counter-scaled guard holds its original footprint, so the press is correct in every
+target with no script at all. Where React is present it adds one thing: the scale pivots on the
+pixel you pressed, so that pixel does not move — 0.06px against the centre scale's 4.80px on a
+320px button. The component sets `vela-btn--js` to hand the press to its own handlers, which write
+the pivot and the pressed flag in one statement and capture the pointer; the two paths never both
+apply. Nothing about the API, the markup or the accessibility changes between them.
 
 Colour is deliberately not part of the press. `filter: brightness()` scales the label and the background by the same factor, so it dims figure and ground together and the contrast a person actually reads barely moves — measured, 6.08:1 to 6.00:1 at 2%, and 5.69:1 at 10%, which is *worse*. A press that reads through colour needs its own token per variant per theme, asserted in `PAIRS`; the geometry and the timing carry it instead. Hover colours apply only where hover exists (`@media (hover: hover)`); touch gets the press feedback instead of a hover state that sticks after the tap. Under `prefers-reduced-motion` every duration collapses and the spinner is a static arc: still a signal, no motion. See [Motion](../foundations/motion.md).
 

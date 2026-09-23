@@ -51,15 +51,14 @@ test('"How it is made" lists the token file, five generated targets and a genera
 // pointer is down. If the pointerup lands where the button no longer is, the click retargets
 // to the parent and is lost. Displacement is width-proportional (1.5px at 102px, 4.8px at
 // 320px), so the width is set explicitly — a button that hugs its content is too narrow to
-// fail. Measured on the rule as it shipped in 0.9.0: 13 of 400 edge presses lost. Intermittent
-// rather than certain, because the shrink also drops :active, which restores the size in time
-// for some releases and not others. The suite never made this assertion: .click() dispatches
-// down and up in one tick, so the press never advances and the defect is invisible to it.
+// fail. Measured on the rule as it shipped in 0.9.0, pressing 2px inside the edge of a 320px
+// button: 40 of 40 lost in Chromium, 35 of 40 in WebKit, and none once the guard is in. The
+// suite never made this assertion, because .click() dispatches down and up in one tick — the
+// press never advances, so the defect is invisible to it.
 //
-// The box is re-measured before each press on purpose. The first press shifts this page's
-// layout by several pixels, so a run that measures once ends up pressing where the button is
-// not — which looks exactly like the defect and is not. That mistake reported this bug as
-// 100% reproducible when it is 3%.
+// The box is re-measured before each press on purpose: the first press shifts this page's
+// layout by several pixels, and a run that measures once ends up pressing where the button is
+// not, which looks exactly like the defect and is not.
 test('a press at the inner edge of a wide button still fires its click', async ({ page }) => {
   await page.goto('/#/components/button')
   const btn = page.locator('.pg-frame-body .vela-btn').first()
@@ -84,6 +83,7 @@ test('a press at the inner edge of a wide button still fires its click', async (
 // origin that every target without JS gets, and asserts the guard alone still holds the hit
 // target — so a framework port that translates only the CSS is not quietly broken.
 // [[rule: button-press-keeps-hit-target]]
+// [[rule: button-enhancement-not-load-bearing]]
 test('the hit target holds even with no JS to anchor the press', async ({ page }) => {
   await page.goto('/#/components/button')
   const btn = page.locator('.pg-frame-body .vela-btn').first()
