@@ -68,3 +68,52 @@ test('a press at the inner edge of a wide button still fires its click', async (
   }
   expect(await page.evaluate(() => (window as Window & { __hits?: number }).__hits)).toBe(2)
 })
+
+// The guard is the contract; anchoring is the enhancement on top of it. This forces the
+// centre origin that every target without JS gets, and asserts the guard alone still holds
+// the hit target — so a framework port that translates only the CSS is not quietly broken.
+// [[rule: button-press-keeps-hit-target]]
+test('the hit target holds even with no JS to anchor the press', async ({ page }) => {
+  await page.goto('/#/components/button')
+  const btn = page.locator('.vela-btn').first()
+  await expect(btn).toBeVisible()
+  await btn.evaluate((el: HTMLElement) => {
+    el.style.width = '320px'
+    el.style.setProperty('transform-origin', '50% 50%', 'important')
+    ;(window as Window & { __hits?: number }).__hits = 0
+    el.addEventListener('click', () => { (window as Window & { __hits?: number }).__hits!++ })
+  })
+  const box = (await btn.boundingBox())!
+  for (const x of [box.x + 2, box.x + box.width - 2]) {
+    await page.mouse.move(x, box.y + box.height / 2)
+    await page.mouse.down()
+    await page.waitForTimeout(150)
+    await page.mouse.up()
+  }
+  expect(await page.evaluate(() => (window as Window & { __hits?: number }).__hits)).toBe(2)
+})
+
+// What anchoring buys that the guard cannot: the pressed pixel does not move at all, so the
+// press reads as the button yielding under the finger rather than retreating from it.
+test('an anchored press does not move the point it was pressed on', async ({ page }) => {
+  await page.goto('/#/components/button')
+  const btn = page.locator('.vela-btn').first()
+  await expect(btn).toBeVisible()
+  await btn.evaluate((el: HTMLElement) => { el.style.width = '320px' })
+  const box = (await btn.boundingBox())!
+  const pressX = box.x + 2
+
+  await page.mouse.move(pressX, box.y + box.height / 2)
+  await page.mouse.down()
+  await page.waitForTimeout(120)
+  const pressed = await btn.evaluate((el: HTMLElement) => {
+    const r = el.getBoundingClientRect()
+    return { left: r.left, right: r.right, origin: getComputedStyle(el).transformOrigin }
+  })
+  await page.mouse.up()
+
+  // Anchored at the left edge: that edge stays, and the far edge is the one that travels.
+  expect(Math.abs(pressed.left - box.x)).toBeLessThan(0.75)
+  expect(box.x + box.width - pressed.right).toBeGreaterThan(8)
+  expect(pressed.origin).not.toMatch(/^160px/)   // not the centre of a 320px button
+})
