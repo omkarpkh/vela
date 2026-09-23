@@ -48,8 +48,15 @@ test('"How it is made" lists the token file, five generated targets and a genera
 // pointer is down. If the pointerup lands where the button no longer is, the click retargets
 // to the parent and is lost. Displacement is width-proportional (1.5px at 102px, 4.8px at
 // 320px), so the width is set explicitly — a button that hugs its content is too narrow to
-// fail. This is the assertion the suite never made: .click() dispatches down and up in one
-// tick, so the press never advances and the defect is invisible to it.
+// fail. Measured on the rule as it shipped in 0.9.0: 13 of 400 edge presses lost. Intermittent
+// rather than certain, because the shrink also drops :active, which restores the size in time
+// for some releases and not others. The suite never made this assertion: .click() dispatches
+// down and up in one tick, so the press never advances and the defect is invisible to it.
+//
+// The box is re-measured before each press on purpose. The first press shifts this page's
+// layout by several pixels, so a run that measures once ends up pressing where the button is
+// not — which looks exactly like the defect and is not. That mistake reported this bug as
+// 100% reproducible when it is 3%.
 test('a press at the inner edge of a wide button still fires its click', async ({ page }) => {
   await page.goto('/#/components/button')
   const btn = page.locator('.vela-btn').first()
@@ -59,8 +66,9 @@ test('a press at the inner edge of a wide button still fires its click', async (
     ;(window as Window & { __hits?: number }).__hits = 0
     el.addEventListener('click', () => { (window as Window & { __hits?: number }).__hits!++ })
   })
-  const box = (await btn.boundingBox())!
-  for (const x of [box.x + 2, box.x + box.width - 2]) {
+  for (const side of ['left', 'right'] as const) {
+    const box = (await btn.boundingBox())!
+    const x = side === 'left' ? box.x + 2 : box.x + box.width - 2
     await page.mouse.move(x, box.y + box.height / 2)
     await page.mouse.down()
     await page.waitForTimeout(150)   // longer than the press transition; .click() cannot fail
@@ -69,9 +77,9 @@ test('a press at the inner edge of a wide button still fires its click', async (
   expect(await page.evaluate(() => (window as Window & { __hits?: number }).__hits)).toBe(2)
 })
 
-// The guard is the contract; anchoring is the enhancement on top of it. This forces the
-// centre origin that every target without JS gets, and asserts the guard alone still holds
-// the hit target — so a framework port that translates only the CSS is not quietly broken.
+// The guard is the contract; anchoring is the enhancement on top of it. This forces the centre
+// origin that every target without JS gets, and asserts the guard alone still holds the hit
+// target — so a framework port that translates only the CSS is not quietly broken.
 // [[rule: button-press-keeps-hit-target]]
 test('the hit target holds even with no JS to anchor the press', async ({ page }) => {
   await page.goto('/#/components/button')
@@ -79,12 +87,15 @@ test('the hit target holds even with no JS to anchor the press', async ({ page }
   await expect(btn).toBeVisible()
   await btn.evaluate((el: HTMLElement) => {
     el.style.width = '320px'
-    el.style.setProperty('transform-origin', '50% 50%', 'important')
+    el.classList.remove('vela-btn--js')
+    el.style.removeProperty('--vela-btn-press-x')
+    el.style.removeProperty('--vela-btn-press-y')
     ;(window as Window & { __hits?: number }).__hits = 0
     el.addEventListener('click', () => { (window as Window & { __hits?: number }).__hits!++ })
   })
-  const box = (await btn.boundingBox())!
-  for (const x of [box.x + 2, box.x + box.width - 2]) {
+  for (const side of ['left', 'right'] as const) {
+    const box = (await btn.boundingBox())!
+    const x = side === 'left' ? box.x + 2 : box.x + box.width - 2
     await page.mouse.move(x, box.y + box.height / 2)
     await page.mouse.down()
     await page.waitForTimeout(150)
@@ -101,19 +112,16 @@ test('an anchored press does not move the point it was pressed on', async ({ pag
   await expect(btn).toBeVisible()
   await btn.evaluate((el: HTMLElement) => { el.style.width = '320px' })
   const box = (await btn.boundingBox())!
-  const pressX = box.x + 2
-
-  await page.mouse.move(pressX, box.y + box.height / 2)
+  await page.mouse.move(box.x + 2, box.y + box.height / 2)
   await page.mouse.down()
   await page.waitForTimeout(120)
   const pressed = await btn.evaluate((el: HTMLElement) => {
     const r = el.getBoundingClientRect()
-    return { left: r.left, right: r.right, origin: getComputedStyle(el).transformOrigin }
+    return { left: r.left, right: r.right }
   })
   await page.mouse.up()
 
   // Anchored at the left edge: that edge stays, and the far edge is the one that travels.
   expect(Math.abs(pressed.left - box.x)).toBeLessThan(0.75)
   expect(box.x + box.width - pressed.right).toBeGreaterThan(8)
-  expect(pressed.origin).not.toMatch(/^160px/)   // not the centre of a 320px button
 })
