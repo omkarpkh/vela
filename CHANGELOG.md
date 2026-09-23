@@ -10,7 +10,10 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   0.97 about its centre, which pulls both edges inward while the pointer is down — 1.5px a side
   at 102px wide, 4.8px at 320px. A press that landed 2px inside an edge came back up where the
   button no longer was, so the click retargeted to the parent and was lost. Measured, not
-  theorised: in a browser, **0 of 2 edge presses on a 320px button fired**. The fix is a
+  theorised: pressing 2px inside the edge of a 320px button, **40 of 40 presses were lost in
+  Chromium and 35 of 40 in WebKit**, and none at all after the fix. Confirmed on the shipped
+  component with the guard toggled and nothing else changed: 10/30 lost without it, 0/30 with it.
+  The same pattern reproduced from Linear's published CSS loses them at the same rate. The fix is a
   counter-scaled `::after` (0.97 × 1.0309278 = 1) that holds the original border box for the
   length of the press. Pure CSS and no handler, so every target and every framework port gets
   it. Now `tests/e2e/playground.spec.ts` asserts it, under the new `browser` enforcement level.

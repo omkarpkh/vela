@@ -9,6 +9,9 @@ import { defineConfig } from '@playwright/test'
  */
 export default defineConfig({
   testDir: 'tests',
+  // tests/media holds the recorder that regenerates the case-study clip. It is not a check —
+  // it records a video and asserts nothing — so it stays out of the suite. Run it by path.
+  testIgnore: '**/media/**',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
