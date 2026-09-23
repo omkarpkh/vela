@@ -43,6 +43,9 @@ test('"How it is made" lists the token file, five generated targets and a genera
   await expect(page.getByRole('heading', { level: 2, name: /^\d{2,} automated checks on every change$/ })).toBeVisible()
 })
 
+// The selector matters: `.vela-btn` alone first matches a theme toggle in the playground's
+// own chrome, which is a plain <button> and not the component under test. Scoping to the
+// preview frame targets the real Button, the only one carrying the component's behaviour.
 // [[rule: button-press-keeps-hit-target]]
 // A pressed button scales to 0.97 about its centre, so its edges travel inward while the
 // pointer is down. If the pointerup lands where the button no longer is, the click retargets
@@ -59,7 +62,7 @@ test('"How it is made" lists the token file, five generated targets and a genera
 // 100% reproducible when it is 3%.
 test('a press at the inner edge of a wide button still fires its click', async ({ page }) => {
   await page.goto('/#/components/button')
-  const btn = page.locator('.vela-btn').first()
+  const btn = page.locator('.pg-frame-body .vela-btn').first()
   await expect(btn).toBeVisible()
   await btn.evaluate((el: HTMLElement) => {
     el.style.width = '320px'
@@ -83,7 +86,7 @@ test('a press at the inner edge of a wide button still fires its click', async (
 // [[rule: button-press-keeps-hit-target]]
 test('the hit target holds even with no JS to anchor the press', async ({ page }) => {
   await page.goto('/#/components/button')
-  const btn = page.locator('.vela-btn').first()
+  const btn = page.locator('.pg-frame-body .vela-btn').first()
   await expect(btn).toBeVisible()
   await btn.evaluate((el: HTMLElement) => {
     el.style.width = '320px'
@@ -108,7 +111,7 @@ test('the hit target holds even with no JS to anchor the press', async ({ page }
 // press reads as the button yielding under the finger rather than retreating from it.
 test('an anchored press does not move the point it was pressed on', async ({ page }) => {
   await page.goto('/#/components/button')
-  const btn = page.locator('.vela-btn').first()
+  const btn = page.locator('.pg-frame-body .vela-btn').first()
   await expect(btn).toBeVisible()
   await btn.evaluate((el: HTMLElement) => { el.style.width = '320px' })
   const box = (await btn.boundingBox())!
