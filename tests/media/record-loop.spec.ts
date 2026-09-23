@@ -8,9 +8,8 @@ import { test } from '@playwright/test'
 import { pathToFileURL } from 'node:url'
 import { join } from 'node:path'
 
-test.use({ video: { mode: 'on', size: { width: 1000, height: 440 } }, viewport: { width: 1000, height: 440 } })
+test.use({ video: { mode: 'on', size: { width: 1000, height: 232 } }, viewport: { width: 1000, height: 232 } })
 
-test.use({ video: { mode: 'on', size: { width: 1000, height: 440 } }, viewport: { width: 1000, height: 440 } })
 
 test('centre against anchored', async ({ page }) => {
   await page.goto(pathToFileURL(join(process.cwd(), 'decisions/press-feedback/prototype.html')).href)
@@ -21,6 +20,7 @@ test('centre against anchored', async ({ page }) => {
     css.textContent = `
       .head,.sub,.bar,.how,h1{display:none !important}
       .wrap{max-width:none;padding:0 18px}
+        body{overflow:hidden}
       .grid{grid-template-columns:1fr 1fr !important;gap:20px}
       .card:not(#base):not(#a){display:none !important}
       .card .mech,.card .note{display:none !important}
@@ -38,7 +38,7 @@ test('centre against anchored', async ({ page }) => {
     addEventListener('mousedown', () => c.classList.add('down'), true)
     addEventListener('mouseup', () => c.classList.remove('down'), true)
     document.querySelectorAll('.card h2').forEach((h) => {
-      h.textContent = h.id === '' && h.parentElement?.id === 'base' ? 'Shrinks from the centre' : 'Shrinks from your finger'
+      h.textContent = h.parentElement?.id === 'base' ? 'Shrinks from the centre' : 'Shrinks from the cursor'
     })
   })
   await page.waitForTimeout(500)

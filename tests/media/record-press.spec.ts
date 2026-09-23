@@ -72,7 +72,7 @@ test('press comparison', async ({ page }) => {
   await caption('Three presses. Nothing landed.', 'The button shrank out from under the pointer, so every release hit the page behind it.')
   await page.waitForTimeout(2600)
 
-  await caption('The same 3%, pivoted on your finger instead', 'The pixel you pressed becomes the one point that cannot move.')
+  await caption('The same 3%, pivoted on the cursor instead', 'The pixel under the cursor becomes the one point that cannot move.')
   await pressEdge('a')
   await caption('Three presses. Three landed.', 'Same shrink, same duration, same 3%. Only the pivot changed.')
   await page.waitForTimeout(2800)
