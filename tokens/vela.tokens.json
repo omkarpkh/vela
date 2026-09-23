@@ -162,6 +162,16 @@
         }
       }
     },
+    "primary-450": {
+      "$type": "color",
+      "$value": "#187e91",
+      "$description": "Primitive. Do not bind directly \u2014 bind a semantic token. Exists so a dark-mode hover can lighten without dropping white text below WCAG AA: the next step up fails at 3.18:1.",
+      "$extensions": {
+        "vela": {
+          "figma": "primitives/primary-450"
+        }
+      }
+    },
     "primary-500": {
       "$type": "color",
       "$value": "#0a6c7d",
@@ -269,6 +279,16 @@
       "$extensions": {
         "vela": {
           "figma": "red/500"
+        }
+      }
+    },
+    "red-600": {
+      "$type": "color",
+      "$value": "#cd4336",
+      "$description": "Primitive. Do not bind directly \u2014 bind a semantic token. Exists so a dark-mode hover can lighten without dropping white text below WCAG AA: the next step up fails at 4.08:1.",
+      "$extensions": {
+        "vela": {
+          "figma": "primitives/red-600"
         }
       }
     },
@@ -819,7 +839,7 @@
       "$value": "{primary-600}",
       "$extensions": {
         "vela": {
-          "dark": "{primary-400}",
+          "dark": "{primary-450}",
           "figma": "button/primary-hover-bg"
         }
       }
@@ -929,7 +949,7 @@
       "$value": "{critical-500}",
       "$extensions": {
         "vela": {
-          "dark": "{red-500}",
+          "dark": "{red-600}",
           "figma": "button/destructive-hover-bg"
         }
       }

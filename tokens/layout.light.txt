@@ -29,6 +29,7 @@
   /* ---- Primitives: brand / blue ---- */
   @primary-300
   @primary-400
+  @primary-450
   @primary-500
   @primary-600
   @blue-100
@@ -42,6 +43,7 @@
   @red-100
   @red-300
   @red-500
+  @red-600
   @red-700
   @red-950
   @critical-100

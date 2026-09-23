@@ -20,6 +20,19 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   The suite could not have caught this before: `.click()` dispatches pointerdown and pointerup
   in one tick, so the press never advances.
 
+### Fixed
+- **Dark-mode button hovers failed WCAG AA against their own labels, and CI had never looked.**
+  `--vela-btn-primary-hover-bg` was **3.18:1** against white and `--vela-btn-destructive-hover-bg`
+  was **4.08:1**; AA needs 4.5:1. Both now pass with headroom — 4.74:1 and 4.72:1 — via two new
+  ramp steps, `primary-450` (#187e91) and `red-600` (#cd4336). The dark hovers had been reaching
+  for `primary-400` and `red-500`, which are also the focus ring, link text and severity signals,
+  so those keep their values and only the hover bindings moved. The new steps stay clearly
+  perceptible as hovers: ΔL* +6.8 and +9.0 from rest, against a 4–7 norm.
+
+  The reason it survived this long is the more useful half: **no hover pair was in `PAIRS`**, so
+  "WCAG AA asserted in CI" was true only of buttons sitting still. Four hover pairs are now
+  asserted in both themes. Every mouse press begins from hover.
+
 ### Added
 - **`--vela-duration-instant` (70ms)** — a third motion duration, for a press landing. Under the
   ~85ms where a delay begins to read as lag. Reaches all five targets: CSS, Flutter (`VelaMotion

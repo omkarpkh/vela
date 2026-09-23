@@ -29,6 +29,7 @@
   /* ---- Primitives: brand / blue ---- */
   --vela-primary-300: #5fb8c9;
   --vela-primary-400: #2f9db3;
+  --vela-primary-450: #187e91;
   --vela-primary-500: #0a6c7d;
   --vela-primary-600: #075462;
   --vela-blue-100: #e6eefb;
@@ -42,6 +43,7 @@
   --vela-red-100: #fce8e6;
   --vela-red-300: #f0918c;
   --vela-red-500: #dd4b3e;
+  --vela-red-600: #cd4336;
   --vela-red-700: #ab3125;
   --vela-red-950: #2a1310;
   --vela-critical-100: #f2d6d4;

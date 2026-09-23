@@ -71,6 +71,14 @@ export const PAIRS = [
   ['--vela-btn-destructive-text',   '--vela-btn-destructive-bg', 'Destructive button label', 'text'],
   ['--vela-btn-hollow-primary-text','--vela-bg-global',          'Hollow primary label',     'text'],
 
+  // Hover, not rest. Every mouse press begins from hover, so a button spends real time in these
+  // colours — and they were unasserted until a dark-mode hover was found at 3.18:1 against its own
+  // white label. A state a person can see is a state the suite has to check.
+  ['--vela-btn-primary-text',       '--vela-btn-primary-hover-bg',     'Primary button label, hovered',     'text'],
+  ['--vela-btn-standard-text',      '--vela-btn-standard-hover-bg',    'Standard button label, hovered',    'text'],
+  ['--vela-btn-destructive-text',   '--vela-btn-destructive-hover-bg', 'Destructive button label, hovered', 'text'],
+  ['--vela-btn-hollow-primary-text','--vela-btn-hollow-hover-bg',      'Hollow primary label, hovered',     'text'],
+
   ...['success', 'info', 'warning', 'minor', 'major', 'critical'].flatMap((s) => [
     [`--vela-text-severity-${s}`, `--vela-bg-severity-${s}`, `Severity ${s} text`, 'text'],
     [`--vela-icon-severity-${s}`, `--vela-bg-severity-${s}`, `Severity ${s} icon`, 'ui'],

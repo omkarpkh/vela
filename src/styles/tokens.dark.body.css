@@ -45,7 +45,7 @@
 
   /* ---- Button ---- */
   --vela-btn-primary-bg: var(--vela-primary-500);
-  --vela-btn-primary-hover-bg: var(--vela-primary-400);
+  --vela-btn-primary-hover-bg: var(--vela-primary-450);
   --vela-btn-primary-border: var(--vela-primary-500);
   --vela-btn-primary-text: var(--vela-white);
   --vela-btn-standard-bg: var(--vela-grey-850);
@@ -58,7 +58,7 @@
 
 
   --vela-btn-destructive-bg: var(--vela-red-700);
-  --vela-btn-destructive-hover-bg: var(--vela-red-500);
+  --vela-btn-destructive-hover-bg: var(--vela-red-600);
   --vela-btn-destructive-text: var(--vela-white);
   --vela-btn-destructive-hollow-text: var(--vela-red-300);
   --vela-btn-standard-border: var(--vela-grey-500);

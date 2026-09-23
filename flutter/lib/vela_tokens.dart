@@ -25,6 +25,7 @@ abstract final class VelaPrimitives {
   static const Color grey950 = Color(0xFF11171A);
   static const Color primary300 = Color(0xFF5FB8C9);
   static const Color primary400 = Color(0xFF2F9DB3);
+  static const Color primary450 = Color(0xFF187E91);
   static const Color primary500 = Color(0xFF0A6C7D);
   static const Color primary600 = Color(0xFF075462);
   static const Color blue100 = Color(0xFFE6EEFB);
@@ -36,6 +37,7 @@ abstract final class VelaPrimitives {
   static const Color red100 = Color(0xFFFCE8E6);
   static const Color red300 = Color(0xFFF0918C);
   static const Color red500 = Color(0xFFDD4B3E);
+  static const Color red600 = Color(0xFFCD4336);
   static const Color red700 = Color(0xFFAB3125);
   static const Color red950 = Color(0xFF2A1310);
   static const Color critical100 = Color(0xFFF2D6D4);
@@ -624,7 +626,7 @@ class VelaColors extends ThemeExtension<VelaColors> {
     iconDisabled: VelaPrimitives.grey700,
     iconOnBrand: VelaPrimitives.white,
     btnPrimaryBg: VelaPrimitives.primary500,
-    btnPrimaryHoverBg: VelaPrimitives.primary400,
+    btnPrimaryHoverBg: VelaPrimitives.primary450,
     btnPrimaryBorder: VelaPrimitives.primary500,
     btnPrimaryText: VelaPrimitives.white,
     btnStandardBg: VelaPrimitives.grey850,
@@ -635,7 +637,7 @@ class VelaColors extends ThemeExtension<VelaColors> {
     btnDisabledBg: VelaPrimitives.grey850,
     btnDisabledText: VelaPrimitives.grey700,
     btnDestructiveBg: VelaPrimitives.red700,
-    btnDestructiveHoverBg: VelaPrimitives.red500,
+    btnDestructiveHoverBg: VelaPrimitives.red600,
     btnDestructiveText: VelaPrimitives.white,
     btnDestructiveHollowText: VelaPrimitives.red300,
     btnStandardBorder: VelaPrimitives.grey500,
