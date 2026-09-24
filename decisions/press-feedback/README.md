@@ -49,14 +49,21 @@ A pressure test then disqualified **both** on grounds the scoring had never aske
 
 ## The measurements
 
-Pressing 2px inside the edge of a 320px-wide button, 40 presses per candidate, box re-measured
-before each press:
+Pressing 2px inside the edge of a 320px-wide button, box re-measured before each press:
 
 | | Chromium | WebKit |
 |---|---|---|
-| Baseline — centre scale, no protection | **40/40 lost** | **35/40 lost** |
+| Baseline — centre scale, no protection | **160/160 lost** | **143/160 lost** |
 | G — Linear's pattern, reproduced | **40/40 lost** | **35/40 lost** |
 | A, D, F, H, I — anchored, guarded, or no geometry | 0/40 | 0/40 |
+
+**Chromium is deterministic; WebKit is not.** Four runs of 40 on the baseline: Chromium lost
+40, 40, 40, 40 — every press, every run. WebKit lost 36, 36, 34, 37, settling around 89%. So a
+single "35 of 40" is one draw from a distribution, not a constant, and quoting it as a fixed
+figure claims a precision the measurement does not have. **Why some WebKit presses survive is
+unexamined** — it points at timing in how the release is processed against the shrunken button,
+but that has not been tested and is not claimed. Candidate rows other than the baseline are
+single runs of 40.
 
 Confirmed on the shipped component too, with the guard toggled and nothing else changed:
 10/30 lost without it, 0/30 with it.

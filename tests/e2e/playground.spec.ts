@@ -52,7 +52,7 @@ test('"How it is made" lists the token file, five generated targets and a genera
 // to the parent and is lost. Displacement is width-proportional (1.5px at 102px, 4.8px at
 // 320px), so the width is set explicitly — a button that hugs its content is too narrow to
 // fail. Measured on the rule as it shipped in 0.9.0, pressing 2px inside the edge of a 320px
-// button: 40 of 40 lost in Chromium, 35 of 40 in WebKit, and none once the guard is in. The
+// button: every one of 160 lost in Chromium, about 9 in 10 in WebKit, none once the guard is in. The
 // suite never made this assertion, because .click() dispatches down and up in one tick — the
 // press never advances, so the defect is invisible to it.
 //

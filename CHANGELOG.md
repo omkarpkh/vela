@@ -10,8 +10,9 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   0.97 about its centre, which pulls both edges inward while the pointer is down — 1.5px a side
   at 102px wide, 4.8px at 320px. A press that landed 2px inside an edge came back up where the
   button no longer was, so the click retargeted to the parent and was lost. Measured, not
-  theorised: pressing 2px inside the edge of a 320px button, **40 of 40 presses were lost in
-  Chromium and 35 of 40 in WebKit**, and none at all after the fix. Confirmed on the shipped
+  theorised: pressing 2px inside the edge of a 320px button, **every one of 160 presses was lost
+  in Chromium and about nine in ten in WebKit** (four runs of 40: 40/40/40/40 against
+  36/36/34/37), and none at all after the fix. Confirmed on the shipped
   component with the guard toggled and nothing else changed: 10/30 lost without it, 0/30 with it.
   The same pattern reproduced from Linear's published CSS loses them at the same rate. The fix is a
   counter-scaled `::after` (0.97 × 1.0309278 = 1) that holds the original border box for the
