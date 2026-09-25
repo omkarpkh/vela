@@ -32,7 +32,7 @@ export function Overview() {
       <header className="page-head">
         <p className="vela-meta page-head__eyebrow">Overview</p>
         <h1 className="vela-h2">Every component, every state</h1>
-        <p className="vela-meta">6 components · 76 contrast pairs asserted in both themes · switch the theme in the top bar · <a href="#/how">how it is made</a></p>
+        <p className="vela-meta">6 components · 42 contrast pairs, each asserted in both themes · switch the theme in the top bar · <a href="#/how">how it is made</a></p>
       </header>
       <Section title="Button" note="variant encodes consequence · appearance encodes weight · sizes are a closed set of four">
         <div className="demo-row">

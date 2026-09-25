@@ -51,7 +51,7 @@ test('"How it is made" lists the token file, five generated targets and a genera
 // pointer is down. If the pointerup lands where the button no longer is, the click retargets
 // to the parent and is lost. Displacement is width-proportional (1.5px at 102px, 4.8px at
 // 320px), so the width is set explicitly — a button that hugs its content is too narrow to
-// fail. Measured on the rule as it shipped in 0.9.0, pressing 2px inside the edge of a 320px
+// fail. Measured on the rule as it shipped in 0.10.0, pressing 2px inside the edge of a 320px
 // button: every one of 160 lost in Chromium, about 9 in 10 in WebKit, none once the guard is in. The
 // suite never made this assertion, because .click() dispatches down and up in one tick — the
 // press never advances, so the defect is invisible to it.

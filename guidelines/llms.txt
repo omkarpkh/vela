@@ -2,7 +2,8 @@
 
 > A token-first design system. Two-layer colour architecture (primitives -> semantics), three
 > deliberately separate status taxonomies, full light and dark theming, zero runtime dependencies.
-> Every design constraint below is enforced by the TypeScript types, not by review.
+> 11 of the 27 design rules are enforced by the TypeScript types; the rest are checked at runtime, in a
+> real browser, or by review. Each rule in the component guidelines is tagged with its level.
 >
 > THESE SPECS ARE FRAMEWORK-AGNOSTIC. The published package is a React implementation of them, and
 > the code samples below are React — but the tokens, the closed prop sets, the taxonomies and the

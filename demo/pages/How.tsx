@@ -135,7 +135,7 @@ export function How() {
       <section className="demo-section">
         <h2 className="vela-h3">{checks.total} automated checks on every change</h2>
         <ul className="how-list vela-body">
-          <li><b>{checks.unit}</b> unit and contract tests, Vitest: every component's closed prop sets, token bindings and accessibility; every spec on this site parses and names only tokens that exist; 76 contrast pairs hold in both themes.</li>
+          <li><b>{checks.unit}</b> unit and contract tests, Vitest: every component's closed prop sets, token bindings and accessibility; every spec on this site parses and names only tokens that exist; 42 contrast pairs hold in both themes.</li>
           <li><b>{b.total}</b> browser tests, Playwright: {b.visual} visual regression screenshots against approved baselines, {b.e2e} end-to-end journeys through this site, {b.docs} documentation screenshots.</li>
           <li><b>{checks.flutter}</b> Flutter tests plus <code>flutter analyze</code> on the generated Dart.</li>
           <li>The generated stylesheet, Dart and Material UI theme are regenerated in CI and diffed against the token file; a hand edit fails the build. The Figma variables are read back and compared on every sync, from inside the file, because the plan has no API access to variables.</li>

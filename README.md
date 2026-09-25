@@ -2,7 +2,8 @@
 
 A token-first design system. The tokens and the component specs are framework-agnostic;
 this repository is a **React implementation** of them. Six components, two themes, zero runtime
-dependencies — and every design rule in the documentation is enforced by the TypeScript compiler.
+dependencies — and every design rule in the documentation is tagged with how it is enforced: 11 of the
+27 by the TypeScript compiler, the rest at runtime, in a real browser, or by review.
 
 ```bash
 npm install @omkarux/vela
@@ -34,12 +35,12 @@ link to each, and the number of automated checks, written by the test runners ra
 | | |
 |---|---|
 | **Components** | Button · Toggle · Input · ContextualAlert · StatusIndicator · Tabs |
-| **Tokens** | 239 CSS custom properties, two layers (primitives → semantics) |
+| **Tokens** | 242 CSS custom properties, two layers (primitives → semantics) |
 | **Themes** | Light + dark. OS preference by default, `data-theme` to override |
 | **Dependencies** | None. `react` / `react-dom` are peers (18.3 or 19) |
 | **Format** | ESM, `preserveModules` for tree-shaking, full `.d.ts` |
-| **Tests** | 207 automated checks — 180 unit and contract (76 asserted contrast pairs across both themes), 24 browser, 3 Flutter — counted by `npm run checks` |
-| **Packed size** | 26.7 kB, 43 files |
+| **Tests** | 218 automated checks — 188 unit and contract (42 contrast pairs, each asserted in both themes), 27 browser, 3 Flutter — counted by `npm run checks` |
+| **Packed size** | 67.6 kB, 53 files, as `npm run verify` measures it |
 
 ## The three ideas worth stealing
 
@@ -134,7 +135,7 @@ document.documentElement.removeAttribute('data-theme')        // follow the OS
 
 ```bash
 npm run dev        # demo showcase at localhost:5174
-npm test           # 169 unit and contract tests
+npm test           # 188 unit and contract tests
 npm run checks     # counts every automated check into demo/checks.json (diffed in verify)
 npm run contrast   # WCAG report for both themes
 npm run verify     # typecheck + tests + build + pack-and-consume gate
