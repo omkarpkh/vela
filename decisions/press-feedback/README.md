@@ -12,7 +12,7 @@ that actually landed. `media/press-comparison.webm` is a recording of it, regene
 
 ## What started it
 
-Vela's button shrinks 3% when pressed. That rule shipped in 0.9.0 and nobody had questioned it: I
+Vela's button shrinks 3% when pressed. That rule shipped in 0.10.0 and nobody had questioned it: I
 believed most design systems did it, and it looks right. Of the systems whose source I read, only
 Linear does this exact thing.
 
@@ -43,7 +43,7 @@ options were examined, weighted through a rubric, and scored /120:
 | E | 74 | bloom over scale, hit area guarded |
 | G | 70 | Linear's pairing, reproduced verbatim |
 | H | 68 | take something away: the press removes the hover colour and collapses the focus offset |
-| Base | 67 | what shipped in 0.9.0 |
+| Base | 67 | what shipped in 0.10.0 |
 | B, D | 66 | |
 | C | 59 | |
 

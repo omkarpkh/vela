@@ -32,7 +32,7 @@ visual weight.
 
 Every other native `<button>` attribute is forwarded, and the ref lands on the `<button>`.
 
-## Hard constraints (enforced by the type system)
+## Hard constraints
 
 These are not review conventions — the compiler rejects them. `ButtonProps` is a
 discriminated union, so a violation is a build failure, not a bug report.
