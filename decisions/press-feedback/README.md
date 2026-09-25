@@ -12,12 +12,15 @@ that actually landed. `media/press-comparison.webm` is a recording of it, regene
 
 ## What started it
 
-Vela's button shrinks 3% when pressed. That rule shipped in 0.9.0 and nobody had questioned it: it
-is what most design systems do, and it looks right.
+Vela's button shrinks 3% when pressed. That rule shipped in 0.9.0 and nobody had questioned it: I
+believed most design systems did it, and it looks right. Of the systems whose source I read, only
+Linear does this exact thing.
 
-Two things made it worth questioning. Apple's WWDC24 session on fluid interfaces criticises exactly
-this pattern — *the animation does not respond to where I touch it* — and the geometry has a
-consequence nobody in the surveyed systems had written down. A centre-origin scale pulls both edges
+Two things made it worth questioning. Apple's [Designing Fluid
+Interfaces](https://developer.apple.com/videos/play/wwdc2018/803/) (WWDC18) argues that an interface
+should feel connected to the hand moving it, and a button that shrinks from its centre retreats from
+the cursor wherever the cursor is. And the geometry has a consequence nobody in the surveyed systems
+had written down. A centre-origin scale pulls both edges
 inward **while the pointer is still down**: 4.80px a side on a 320px button, 1.5px at 102px. Press
 near an edge and the button moves out from under the cursor before the release.
 
@@ -39,7 +42,7 @@ options were examined, weighted through a rubric, and scored /120:
 | F | 77 | |
 | E | 74 | bloom over scale, hit area guarded |
 | G | 70 | Linear's pairing, reproduced verbatim |
-| H | 68 | Argyle's subtraction |
+| H | 68 | take something away: the press removes the hover colour and collapses the focus offset |
 | Base | 67 | what shipped in 0.9.0 |
 | B, D | 66 | |
 | C | 59 | |
@@ -133,7 +136,7 @@ console is decoration.
 
 - **A press no longer moves its own hit target.** A counter-scaled `::after` (0.97 × 1.0309278 = 1)
   holding the original border box for the length of the press. Pure CSS, no handler, so every
-  target and every framework port gets it.
+  framework port built on the stylesheet gets it.
 - **An asymmetric press** — in at the new `--vela-duration-instant` (70ms, under the ~85ms where
   delay begins to read as lag), out at `--vela-duration-base` (180ms).
 - **A keyboard acknowledgement**, borrowed from H, which placed sixth: the focus ring collapses
