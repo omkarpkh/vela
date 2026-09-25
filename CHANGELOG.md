@@ -16,8 +16,8 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   component with the guard toggled and nothing else changed: 10/30 lost without it, 0/30 with it.
   The same pattern reproduced from Linear's published CSS loses them at the same rate. The fix is a
   counter-scaled `::after` (0.97 × 1.0309278 = 1) that holds the original border box for the
-  length of the press. Pure CSS and no handler, so every target and every framework port gets
-  it. Now `tests/e2e/playground.spec.ts` asserts it, under the new `browser` enforcement level.
+  length of the press. Pure CSS and no handler, so every framework port built on the stylesheet
+  gets it. Now `tests/e2e/playground.spec.ts` asserts it, under the new `browser` enforcement level.
   The suite could not have caught this before: `.click()` dispatches pointerdown and pointerup
   in one tick, so the press never advances.
 
@@ -38,10 +38,10 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **The press pivots on the point you touched, where a pointer can be read.** Vela's position is
   that every target gets the best it can do, so the press now has two layers and the lower one
   stands alone. In CSS the button scales from its centre and the guard above holds its footprint —
-  correct in all five targets, no script. Where React is present the scale pivots on the pressed
+  correct wherever the stylesheet runs, no script. Where React is present the scale pivots on the pressed
   pixel instead, so that pixel does not move: **0.06px against the centre scale's 4.80px** on a
-  320px button. Apple's WWDC24 session on fluid interfaces is the argument for it ("the animation
-  does not respond to where I touch it").
+  320px button. Apple's [Designing Fluid Interfaces](https://developer.apple.com/videos/play/wwdc2018/803/)
+  (WWDC18) is the argument for it: an interface should feel connected to the hand moving it.
 
   The seam is documented rather than incidental. `guidelines/llms.txt` no longer says a port
   "translates only the syntax" — it says an enhancement is additive by definition, may not touch
@@ -59,8 +59,9 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   and fires `pointerleave`, ending the press because of the press.
 
 - **`--vela-duration-instant` (70ms)** — a third motion duration, for a press landing. Under the
-  ~85ms where a delay begins to read as lag. Reaches all five targets: CSS, Flutter (`VelaMotion
-  .durationInstant`), the MUI theme, Figma's Motion collection and the docs.
+  ~85ms where a delay begins to read as lag. Emitted to CSS, Flutter (`VelaMotion
+  .durationInstant`), the docs and the Figma sync script. The MUI theme does not carry it:
+  Material's duration slots map to `fast` and `base` only.
 - **A `browser` enforcement level in the rule-coverage gate.** A rule enforced by the
   implementation but provable only in a real browser, because it depends on layout or
   hit-testing. The press rule is the first: jsdom does no hit-testing, and a screenshot cannot

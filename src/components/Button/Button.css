@@ -73,7 +73,7 @@
 
    No `position: relative` is needed. The transform in the rule above already makes the
    button a containing block for absolutely positioned descendants, and the guard exists
-   only while that transform does. Pure CSS, so it holds in every target and needs no
+   only while that transform does. Pure CSS, so it holds wherever this stylesheet runs and needs no
    handler — a framework port that translates the syntax gets the fix with it. */
 .vela-btn:not(.vela-btn--js):active:not(:disabled):not([aria-busy="true"]):not(.vela-btn--text-link):not(:focus-visible)::after,
 .vela-btn--js[data-vela-pressed]:not(:disabled):not([aria-busy="true"]):not(.vela-btn--text-link):not(:focus-visible)::after {

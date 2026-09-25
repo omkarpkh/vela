@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Press feedback — seven candidates</title>
+<title>Press feedback — ten candidates</title>
 <style>
 /* Vela tokens, inlined so this file runs with no build step and no dependency.
    Values copied from src/styles/tokens.light.css and tokens.dark.body.css. */
@@ -146,7 +146,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.9em}
                    filter .16s cubic-bezier(.25,.46,.45,.94)}
 #g .btn:active{transform:scale(0.97);filter:brightness(0.98)}
 
-/* ===== H — Argyle's subtraction =====
+/* ===== H — take something away =====
    web.dev's button adds nothing on press. `:not(:active)` guards mean pressing
    REMOVES what hover added. Nothing to disable under reduced motion. */
 #h .btn{transition:background 145ms ease,outline-offset 145ms ease}
@@ -172,7 +172,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.9em}
 </head>
 <body>
 <div class="wrap">
-  <h1>Press feedback — seven candidates</h1>
+  <h1>Press feedback — ten candidates</h1>
   <p class="sub">Two faults are being tested. <b>One:</b> a centre-shrinking button moves its own hit target, so a press near the edge lands on the parent and the click never fires. <b>Two:</b> a uniform scale doesn't respond to where you touched — Apple's "lifeless and stiff".</p>
 
   <div class="bar">
@@ -254,7 +254,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.9em}
     </div>
 
     <div class="card" id="h">
-      <h2>H — Argyle's subtraction</h2>
+      <h2>H — take something away</h2>
       <p class="mech">Press adds nothing. It <em>removes</em> the hover colour and collapses the focus offset. Hover this one first, then press.</p>
       <p class="note">No geometry, no new token, nothing to disable under reduced motion.</p>
       <div class="stage"><button class="btn">Revoke access</button></div>

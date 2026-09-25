@@ -80,7 +80,7 @@ test('a press at the inner edge of a wide button still fires its click', async (
 })
 
 // The guard is the contract; anchoring is the enhancement on top of it. This forces the centre
-// origin that every target without JS gets, and asserts the guard alone still holds the hit
+// origin a page gets without the JS layer, and asserts the guard alone still holds the hit
 // target — so a framework port that translates only the CSS is not quietly broken.
 // [[rule: button-press-keeps-hit-target]]
 // [[rule: button-enhancement-not-load-bearing]]
