@@ -29,9 +29,9 @@ const TARGETS: Target[] = [
   },
   {
     name: 'Figma library',
-    what: 'Every token as a Figma variable, in collections with light and dark modes, plus the six component sets. Built by scripts run inside the file, then read back and compared with the token file.',
-    by: 'scripts/sync-figma.mjs · scripts/figma/build-components.mjs',
-    links: [{ label: 'open the library', href: figmaUrl() }, { label: 'drift check', href: `${GH}/scripts/figma-drift.mjs` }],
+    what: 'Every token as a Figma variable, in collections with light and dark modes, the text styles bound to them, and the six component sets. Built by scripts run inside the file, then read back and compared with the token file and the builders.',
+    by: 'scripts/sync-figma.mjs · scripts/figma/text-styles.mjs · scripts/figma/build-components.mjs',
+    links: [{ label: 'open the library', href: figmaUrl() }, { label: 'drift check', href: `${GH}/scripts/figma-drift.mjs` }, { label: 'component check', href: `${GH}/scripts/figma/check-components.mjs` }],
   },
   {
     name: 'Flutter theme',

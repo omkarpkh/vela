@@ -6,6 +6,7 @@
 
 const STATES = { default: { text: 'text/de-emphasized', border: null }, selected: { text: 'text/link', border: 'border/active' }, disabled: { text: 'text/inactive', border: null } };
 const SIZES = { default: 'Tab/Default', large: 'Tab/Large' };
+const COUNT = { default: 'Tab/Count', large: 'Tab/Count Large' };
 const STATE_ORDER = ['default', 'selected', 'disabled'];
 
 const variants = [];
@@ -23,9 +24,10 @@ for (const state of STATE_ORDER) for (const size of Object.keys(SIZES)) {
   await label.setTextStyleIdAsync(style(SIZES[size]).id); label.fills = [paint(st.text)];
   t.appendChild(label); label.layoutSizingHorizontal = 'HUG';
 
+  // The count has its own styles: a weight override on a styled node detaches the style, which
+  // is how the count once shipped with no style at all.
   const count = figma.createText(); count.name = 'Count'; count.characters = '12';
-  await count.setTextStyleIdAsync(style(SIZES[size]).id); count.fontName = { family: 'Open Sans', style: 'SemiBold' };
-  count.fills = [paint(st.text)];
+  await count.setTextStyleIdAsync(style(COUNT[size]).id); count.fills = [paint(st.text)];
   t.appendChild(count); count.layoutSizingHorizontal = 'HUG';
 
   t.layoutSizingHorizontal = 'HUG'; t.layoutSizingVertical = 'HUG';

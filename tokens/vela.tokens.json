@@ -168,7 +168,7 @@
       "$description": "Primitive. Do not bind directly \u2014 bind a semantic token. Exists so a dark-mode hover can lighten without dropping white text below WCAG AA: the next step up fails at 3.18:1.",
       "$extensions": {
         "vela": {
-          "figma": "primitives/primary-450"
+          "figma": "primary/450"
         }
       }
     },
@@ -288,7 +288,7 @@
       "$description": "Primitive. Do not bind directly \u2014 bind a semantic token. Exists so a dark-mode hover can lighten without dropping white text below WCAG AA: the next step up fails at 4.08:1.",
       "$extensions": {
         "vela": {
-          "figma": "primitives/red-600"
+          "figma": "red/600"
         }
       }
     },

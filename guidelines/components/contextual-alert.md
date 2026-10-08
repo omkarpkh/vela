@@ -59,9 +59,19 @@ plus a `Dismissible` boolean.
 | `Severity` | `severity` |
 | `Dismissible` | `onDismiss` — presence of the handler, not a flag |
 
-The Figma icons are **placeholder glyphs** (circle / triangle / octagon). Production swaps in the
-real icons from `src/lib/icons.tsx`. The live-region politeness (`role="alert"` for major and
-critical, `role="status"` otherwise) is derived from severity in code and has no Figma expression.
+Each variant is one row, `space/10` apart, padded `space/10` top and bottom and `space/15` left
+and right: `Status mark / <severity>`, a centred auto-layout box `icon/20` wide and
+`line-height/body` tall so the mark sits on the first line of text, holding `Shape / <severity>`
+at `icon/16`; `Content`, which stacks `Title` (Heading/H5) and `Message` (Body/Default) `space/5`
+apart; and `Dismiss / Close`, an `icon/20` × `line-height/body` text box in Body/Default that
+`Dismissible` shows or hides. On the critical variant the dismiss is hidden outright. The code
+draws the same boxes: `.vela-alert__mark`, `.vela-alert__body` and `.vela-alert__dismiss`.
+
+**The status mark is a simple shape: a circle for success and info, a triangle for warning, minor
+and major, an octagon for critical. It stays until Vela has an icon set. Severity is also carried
+by the title text, never by colour alone.** Production swaps in the real icons from
+`src/lib/icons.tsx`. The live-region politeness (`role="alert"` for major and critical,
+`role="status"` otherwise) is derived from severity in code and has no Figma expression.
 
 ## Anti-patterns
 

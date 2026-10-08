@@ -32,18 +32,21 @@ for (const variant of VARIANTS) for (const appearance of APPS) for (const size o
   bindRadius(btn, 'radius/4');
   btn.fills = cb.fill ? [paint(cb.fill)] : []; btn.strokes = [paint(cb.stroke)]; btn.strokeWeight = 1;
 
-  // Icon placeholder: a plus built from two bars, tinted with the label colour. Toggled by the Icon property.
+  // Icon slot: a centred auto-layout box at the size token, hidden until the Icon property shows
+  // it. The glyph is ONE shape — a plus, the union of two bars — tinted with the label colour.
   const icon = figma.createFrame(); icon.name = 'Icon'; icon.fills = []; icon.clipsContent = false;
+  icon.layoutMode = 'HORIZONTAL'; icon.primaryAxisAlignItems = 'CENTER'; icon.counterAxisAlignItems = 'CENTER';
   btn.appendChild(icon);
   icon.layoutSizingHorizontal = 'FIXED'; icon.layoutSizingVertical = 'FIXED';
   icon.setBoundVariable('width', num(sz.icon)); icon.setBoundVariable('height', num(sz.icon));
   const px = num(sz.icon).valuesByMode[Object.keys(num(sz.icon).valuesByMode)[0]];
-  for (const horiz of [true, false]) {
-    const bar = figma.createRectangle(); bar.name = horiz ? 'bar-h' : 'bar-v';
-    bar.resize(horiz ? px * 0.75 : 1.5, horiz ? 1.5 : px * 0.75);
-    bar.x = horiz ? px * 0.125 : (px - 1.5) / 2; bar.y = horiz ? (px - 1.5) / 2 : px * 0.125;
-    bar.fills = [paint(cb.text)]; bar.cornerRadius = 1; icon.appendChild(bar);
-  }
+  const arm = px * 0.75, stroke = 1.5;
+  const barH = figma.createRectangle(); barH.name = 'bar-h'; barH.resize(arm, stroke); barH.x = 0; barH.y = (arm - stroke) / 2;
+  barH.cornerRadius = 1; barH.fills = [paint(cb.text)];
+  const barV = figma.createRectangle(); barV.name = 'bar-v'; barV.resize(stroke, arm); barV.x = (arm - stroke) / 2; barV.y = 0;
+  barV.cornerRadius = 1; barV.fills = [paint(cb.text)];
+  const glyph = figma.union([barH, barV], icon); glyph.name = 'Glyph / plus'; glyph.fills = [paint(cb.text)];
+  glyph.layoutSizingHorizontal = 'FIXED'; glyph.layoutSizingVertical = 'FIXED';
 
   const label = figma.createText(); label.name = 'Label'; label.characters = 'Button';
   await label.setTextStyleIdAsync(style(sz.style).id); label.fills = [paint(cb.text)];

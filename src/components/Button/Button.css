@@ -101,7 +101,7 @@
 .vela-btn--large   { height: var(--vela-control-height-40); padding: 0 var(--vela-space-20); font-size: var(--vela-text-button-large-size);   line-height: var(--vela-text-button-large-line-height); }
 .vela-btn--huge    { height: var(--vela-control-height-60); padding: 0 var(--vela-space-30); font-size: var(--vela-text-button-huge-size);    line-height: var(--vela-text-button-huge-line-height); }
 
-.vela-btn__icon { display: inline-flex; flex: none; }
+.vela-btn__icon { display: inline-flex; flex: none; align-items: center; justify-content: center; }
 .vela-btn--tiny .vela-btn__icon    { width: var(--vela-icon-12); height: var(--vela-icon-12); }
 .vela-btn--regular .vela-btn__icon,
 .vela-btn--large .vela-btn__icon,
