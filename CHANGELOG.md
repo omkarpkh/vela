@@ -3,6 +3,49 @@
 All notable changes to this project are documented here.
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.12.1] — 2026-10-09
+
+### Fixed
+- **The Figma builders now reproduce the library as it was corrected by hand on 9 October**, so a
+  rebuild no longer loses those corrections. Contextual Alert: the status shapes live in a centred
+  `Status mark / <severity>` box (`icon/20` by `line-height/body`, so the mark sits on the first
+  line of text) and are named `Shape / <severity>`; `Content` stacks title and message `space/5`
+  apart (was a raw 2); the dismiss is a `Dismiss / Close` text box in Body/Default (was an unstyled
+  18px) at `icon/20` × `line-height/body`; the critical variant's dismiss is hidden outright. Button:
+  the hidden icon is one union shape, `Glyph / plus`, inside an `Icon` box that is a centred auto
+  layout at the icon-size variable (was two loose bars in a frame with no layout). Tab: the count
+  uses the new `Tab/Count` and `Tab/Count Large` styles (was `Tab/Default` with a weight override,
+  which detaches the style and shipped the count unstyled). The spec's Figma mapping documents the
+  layer structure and carries the status-mark note the library shows: "The status mark is a simple
+  shape … never by colour alone."
+- **The text styles have a source.** `scripts/figma/text-styles.mjs` derives one style per ramp
+  size the way the Flutter theme does, plus `Body/Link` and the two tab counts, and
+  `npm run styles:figma` creates-or-updates them by name with size, line height, weight and
+  tracking bound to the typography variables. Until now the styles were hand-made, which is how a
+  count could ship without one.
+- **The code draws the same boxes.** `.vela-alert__mark` (`icon-20` × body line height, centred)
+  wraps the alert icon, the title keeps `space-5` below it, and the dismiss is `icon-20` × body line
+  height in body type with no negative margins; the Button icon slot centres its glyph. The alert's
+  mark and text therefore sit where the library puts them; six visual baselines move by a few pixels.
+
+### Fixed
+- **`npm run tokens:figma --only <Collection>` wrote empty values.** The alias lookup was built from
+  the filtered list, so every Color alias into Primitives became `{}`. Aliases now resolve over every
+  token before the filter narrows the output, an unknown alias throws, and a test holds the line.
+  The two primitives added in 0.12.0 are also renamed in Figma from `primitives/primary-450` and
+  `primitives/red-600` to `primary/450` and `red/600`, beside their siblings.
+
+### Added
+- **Builders are linted and diffed without opening Figma.** `scripts/figma/mock-figma.mjs` is a
+  small fake of the Plugin API; `scripts/figma/check-components.mjs --lint` runs every builder
+  through it and applies the rules a design-system reviewer applies to the file — spacing from the
+  scale, every text styled, no placeholder or default layer names, fixed sizes and colours bound,
+  auto layout wherever a frame has children — and fails on a violation unless the builder waives
+  the rule by name with a reason (Toggle's track and knob, Status Indicator's dot). It runs in
+  `npm test`. `--read <name>` prints a read script for the live set in the same shape, and
+  `components:figma:check <name> <live.json>` diffs the two, so drift in either direction is a
+  command, not a review.
+
 ## [0.12.0] — 2026-09-24
 
 ### Fixed

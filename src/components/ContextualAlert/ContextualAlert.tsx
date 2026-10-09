@@ -55,7 +55,9 @@ export function ContextualAlert({
       role={assertive ? 'alert' : 'status'}
       aria-live={assertive ? 'assertive' : 'polite'}
     >
-      <Icon className="vela-alert__icon" />
+      <span className="vela-alert__mark" aria-hidden="true">
+        <Icon className="vela-alert__icon" />
+      </span>
       <div className="vela-alert__body">
         {title && <strong className="vela-alert__title">{title}</strong>}
         {children}

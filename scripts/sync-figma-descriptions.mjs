@@ -62,7 +62,8 @@ function parse(file) {
     .filter((m) => !/^Figma property/.test(m[1]))
     .map((m) => `${m[1]} → ${strip(m[2])}`)
 
-  const notes = [...section(md, 'Figma mapping').matchAll(/^\*\*(.+?)\*\*/gm)].map((m) => strip(m[1]))
+  // A bold-led paragraph in the Figma mapping section ships to Figma verbatim; it may wrap.
+  const notes = [...section(md, 'Figma mapping').matchAll(/^\*\*([\s\S]+?)\*\*/gm)].map((m) => strip(m[1]))
 
   // Motion table: | Moment | What moves | Timing | Why | → "Hover in — fast (120ms)"
   const motion = [...section(md, 'Motion').matchAll(/^\| ([^|]+) \| ([^|]+) \| ([^|]+) \| [^|]+ \|$/gm)]

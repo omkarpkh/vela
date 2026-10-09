@@ -3,6 +3,7 @@
 // Status Indicator — 10 variants (5 statuses × 2 sizes) + Label boolean.
 // Dot fill binds the STATUS taxonomy only — never severity, never risk.
 // Dot diameters are literal here and in the CSS: a known, recorded token gap.
+// @allow raw-size dot diameters 10 and 8 have no token (recorded gap)
 
 const STATUS = ['unknown', 'healthy', 'warning', 'medium', 'unhealthy'];
 const LABELS = { unknown: 'Status unknown', healthy: 'Healthy', warning: 'Warning', medium: 'Degraded', unhealthy: 'Unhealthy' };

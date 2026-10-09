@@ -50,3 +50,19 @@ describe('Figma sync: the motion tokens use Figma\'s own motion types', () => {
     }
   })
 })
+
+describe('Figma sync: --only narrows the output, never the alias lookup', () => {
+  it('a Color-only script still carries every alias into Primitives', () => {
+    const only = execFileSync('node', [resolve(root, 'scripts/sync-figma.mjs'), '--only', 'Color'], { encoding: 'utf8' })
+    const colour: any[] = JSON.parse(only.match(/const ENTRIES = (\[.*?\]);\n/s)![1])
+    expect(colour.length).toBeGreaterThan(100)
+    expect(colour.every((e) => e.collection === 'Color')).toBe(true)
+    for (const e of colour) for (const k of ['light', 'dark']) {
+      const v = e[k]
+      const ok = (typeof v === 'string' && /^#[0-9a-f]{6}$/i.test(v)) || (v && typeof v === 'object' && typeof v.alias === 'string' && typeof v.collection === 'string')
+      expect(ok, `${e.css}.${k} = ${JSON.stringify(v)}`).toBe(true)
+    }
+    expect(colour.some((e) => e.light?.collection === 'Primitives')).toBe(true)
+    expect(colour.find((e) => e.css === 'btn-primary-hover-bg').dark).toEqual({ alias: 'primary/450', collection: 'Primitives' })
+  })
+})

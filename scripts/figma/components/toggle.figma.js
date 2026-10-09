@@ -2,6 +2,8 @@
 // @set  Toggle
 // Toggle — 4 variants (State × Size) + a required "Label text" property.
 // Track/knob geometry is literal here and in the CSS: a known, recorded token gap.
+// @allow raw-size track and knob diameters have no token (recorded gap)
+// @allow absolute-children the knob is positioned inside the track, not laid out
 
 const GEO = { regular: { w: 34, h: 20, knob: 16 }, tiny: { w: 26, h: 15, knob: 11 } };
 const variants = [];

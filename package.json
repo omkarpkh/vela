@@ -1,6 +1,6 @@
 {
   "name": "@omkarux/vela",
-  "version": "0.12.0",
+  "version": "0.12.1",
   "description": "A token-first design system: framework-agnostic tokens and component specs with a React implementation. Tokens compile to CSS, a Figma library, a Flutter theme and a Material UI theme from one source. Two-layer color architecture, separate severity and risk taxonomies, light and dark theming, WCAG AA asserted in CI, zero runtime dependencies.",
   "type": "module",
   "license": "MIT",
@@ -53,6 +53,10 @@
     "tokens:figma:check": "node scripts/figma-drift.mjs",
     "guidelines:figma": "node scripts/sync-figma-descriptions.mjs",
     "figma:build": "node scripts/figma/build-components.mjs",
+    "styles:figma": "node scripts/figma/text-styles.mjs",
+    "components:figma:lint": "node scripts/figma/check-components.mjs --lint",
+    "components:figma:read": "node scripts/figma/check-components.mjs --read",
+    "components:figma:check": "node scripts/figma/check-components.mjs",
     "tokens:check": "npm run tokens && git diff --exit-code -- src/styles/tokens.light.css src/styles/tokens.dark.body.css flutter/lib/vela_tokens.dart flutter/pubspec.yaml bridges/vela.mui-theme.json",
     "rules:check": "node scripts/check-rules.mjs",
     "build": "npm run clean && npm run tokens && npm run build:js && npm run build:css",

@@ -39,7 +39,7 @@ link to each, and the number of automated checks, written by the test runners ra
 | **Themes** | Light + dark. OS preference by default, `data-theme` to override |
 | **Dependencies** | None. `react` / `react-dom` are peers (18.3 or 19) |
 | **Format** | ESM, `preserveModules` for tree-shaking, full `.d.ts` |
-| **Tests** | 218 automated checks — 188 unit and contract (42 contrast pairs, each asserted in both themes), 27 browser, 3 Flutter — counted by `npm run checks` |
+| **Tests** | 238 automated checks — 208 unit and contract (42 contrast pairs, each asserted in both themes), 27 browser, 3 Flutter — counted by `npm run checks` |
 | **Packed size** | 67.6 kB, 53 files, as `npm run verify` measures it |
 
 ## The three ideas worth stealing
@@ -150,6 +150,9 @@ generated from it:
 ```bash
 npm run tokens          # → tokens.*.css + flutter/lib/vela_tokens.dart (Flutter) + bridges/vela.mui-theme.json (MUI)
 npm run tokens:figma    # → a Plugin API script that creates-or-updates every Figma variable
+npm run styles:figma    # → a script that creates-or-updates every Figma text style, bound to those variables
+npm run components:figma:lint   # builds every component builder in a mock Plugin API and applies the reviewer rules
+npm run components:figma:check <name> <live.json>   # diffs the live set against what a rebuild would create
 npm run tokens:check    # fails if the CSS was hand-edited instead of the JSON (runs in CI)
 npm run guidelines:figma # → a script that writes each spec's summary into its Figma description
 ```
