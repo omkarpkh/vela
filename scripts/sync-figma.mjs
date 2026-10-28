@@ -33,8 +33,14 @@ const SCOPES = {
   icon: ['SHAPE_FILL', 'STROKE_COLOR'],
   space: ['WIDTH_HEIGHT', 'GAP'], 'control-height': ['WIDTH_HEIGHT'], iconSize: ['WIDTH_HEIGHT'],
   radius: ['CORNER_RADIUS'], size: ['FONT_SIZE'], 'line-height': ['LINE_HEIGHT'], weight: ['FONT_WEIGHT'],
+  // Scopes decide which property picker offers a variable. Stroke weights (the focus ring, stroke/2)
+  // belong in the stroke-weight picker, not width/height; a gap in the gap picker; letter-spacing in
+  // its own; a motion-group float (the materialise blur) in the effect picker. The live library had
+  // three of these right by hand before the sync carried them — figma.test.ts pins them now.
+  stroke: ['STROKE_FLOAT'], focusSize: ['STROKE_FLOAT'], field: ['GAP'],
+  tracking: ['LETTER_SPACING'], effect: ['EFFECT_FLOAT'],
 }
-const scopesFor = (group, figmaName, cssName) => {
+const scopesFor = (group, figmaName, cssName, type) => {
   if (group === 'primitives') return SCOPES.primitive
   const head = figmaName.split('/')[0], last = figmaName.split('/').pop()
   if (group === 'color') {
@@ -48,9 +54,14 @@ const scopesFor = (group, figmaName, cssName) => {
     }
     return SCOPES[head] ?? SCOPES.bg
   }
-  if (group === 'sizing') return head === 'icon' ? SCOPES.iconSize : (SCOPES[head] ?? ['WIDTH_HEIGHT'])
-  // TIMING and EASING variables have no scopes — setting any throws — the type decides where Figma offers them
-  if (group === 'motion') return null
+  if (group === 'sizing') {
+    if (head === 'icon') return SCOPES.iconSize
+    if (head === 'focus') return SCOPES.focusSize
+    return SCOPES[head] ?? ['WIDTH_HEIGHT']
+  }
+  // TIMING and EASING variables have no scopes — setting any throws — the type decides where Figma
+  // offers them. A FLOAT in the motion group (a dimension such as the blur) does take scopes.
+  if (group === 'motion') return type === 'FLOAT' ? SCOPES.effect : null
   return SCOPES[head] ?? []
 }
 
@@ -90,7 +101,7 @@ for (const [group, tokens] of Object.entries(set.base)) {
       type,
       light: value(set.valueOf(css, 'light')),
       dark: t.$type === 'color' ? value(set.valueOf(css, 'dark')) : undefined,
-      scopes: scopesFor(group, figma, css),
+      scopes: scopesFor(group, figma, css, type),
       description: note ? `${note[0].toUpperCase()}${note.slice(1)}.${t.$description ? ' ' + t.$description : ''}` : (t.$description ?? ''),
     })
   }

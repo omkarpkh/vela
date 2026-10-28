@@ -35,7 +35,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   vendor extension. Every generated target is byte-identical to before. `npm run
   tokens:validate` parses both files with `@terrazzo/parser` and fails on a warning; it runs
   in `npm test` and as its own CI step.
-- **Thirteen geometry tokens** replace every bare number in component CSS: `stroke-2`,
+- **Twelve geometry tokens** replace every bare number in component CSS: `stroke-2`,
   `field-mark-gap`, the seven Toggle track and knob dimensions (knob travel is derived from
   them), the two Status Indicator dots, and `blur-materialize`. A CSS lint (`npm run
   css:check`, in `npm test`) fails on a raw colour or a bare length in `src/components`

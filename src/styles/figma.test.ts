@@ -36,7 +36,7 @@ describe('Figma sync: the motion tokens use Figma\'s own motion types', () => {
   })
 
   it('motion variables carry no scopes: Figma refuses scopes on TIMING and EASING, the type decides where they are offered', () => {
-    for (const e of entries.filter((e) => e.collection === 'Motion')) expect(e.scopes, e.css).toBeNull()
+    for (const e of entries.filter((e) => e.collection === 'Motion' && e.type !== 'FLOAT')) expect(e.scopes, e.css).toBeNull()
     expect(script).toContain('if (e.scopes) v.scopes = e.scopes;')
   })
 
@@ -85,5 +85,26 @@ describe('Figma sync: colours arrive as the hex the Plugin API script converts',
       const target = darkPath.split('.').pop()
       expect(e.dark.alias, css).toBe(byCss[target].name)
     }
+  })
+})
+
+// Scopes decide which property picker offers a variable. The live library had three of these
+// right by hand before the sync carried them (R6, 28 Oct 2026): a dry run showed the sync would
+// have moved the focus ring out of the stroke-weight picker and hidden tracking from every picker.
+describe('Figma sync: variable scopes match the property each token is for', () => {
+  it.each([
+    ['focus-ring-width', ['STROKE_FLOAT']],
+    ['focus-ring-offset', ['STROKE_FLOAT']],
+    ['stroke-2', ['STROKE_FLOAT']],
+    ['field-mark-gap', ['GAP']],
+    ['text-meta-tracking', ['LETTER_SPACING']],
+    ['blur-materialize', ['EFFECT_FLOAT']],
+    ['toggle-track-width', ['WIDTH_HEIGHT']],
+    ['status-dot', ['WIDTH_HEIGHT']],
+    ['space-10', ['WIDTH_HEIGHT', 'GAP']],
+    ['radius-4', ['CORNER_RADIUS']],
+  ])('%s → %j', (css, scopes) => {
+    expect(byCss[css], css).toBeDefined()
+    expect(byCss[css].scopes).toEqual(scopes)
   })
 })
