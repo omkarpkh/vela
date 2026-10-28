@@ -17,13 +17,15 @@
   font-weight: var(--vela-font-weight-regular);
   color: var(--vela-text-de-emphasized);
   cursor: pointer; white-space: nowrap;
-  border-bottom: 2px solid transparent;
+  border-bottom: 2px solid transparent; /* vela-allow: needs stroke token (selected underline), tracked in Phase 0 */
   transition: color var(--vela-duration-fast) var(--vela-ease-standard),
               border-color var(--vela-duration-fast) var(--vela-ease-standard);
 }
 .vela-tabs--large .vela-tabs__trigger { font-size: var(--vela-text-tab-large-size); line-height: var(--vela-text-tab-large-line-height); }
 
-.vela-tabs__trigger:hover:not(:disabled) { color: var(--vela-text-default); }
+@media (hover: hover) {
+  .vela-tabs__trigger:hover:not(:disabled) { color: var(--vela-text-default); }
+}
 .vela-tabs__trigger[aria-selected='true'] { color: var(--vela-text-link); border-bottom-color: var(--vela-border-active); }
 .vela-tabs__trigger:disabled { color: var(--vela-text-inactive); cursor: not-allowed; }
 

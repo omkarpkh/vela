@@ -17,7 +17,11 @@
   font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height);
   display: inline-flex; align-items: center; justify-content: center;
 }
-.vela-alert__dismiss:hover { background: rgb(0 0 0 / 0.06); }
+/* The hover surface is the kit's hover token, not a translucent darkening: it re-points in dark
+   mode, and the dismiss glyph (--vela-text-severity-*) is asserted against it in PAIRS. */
+@media (hover: hover) {
+  .vela-alert__dismiss:hover { background: var(--vela-bg-hover); }
+}
 
 .vela-alert--success  { background: var(--vela-bg-severity-success);  border-color: var(--vela-border-severity-success);  color: var(--vela-text-severity-success); }
 .vela-alert--info     { background: var(--vela-bg-severity-info);     border-color: var(--vela-border-severity-info);     color: var(--vela-text-severity-info); }

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
-import { Button, Toggle, Input, ContextualAlert, StatusIndicator, Tabs } from '../../src'
-import type { Severity, Status } from '../../src'
+import { Button, Toggle, Input, ContextualAlert, StatusIndicator, RiskPill, Tabs } from '../../src'
+import type { Severity, Status, Risk } from '../../src'
 import { PlusIcon } from '../../src/lib/icons'
 import { printJsx, type Control, type Spec } from './spec'
 import buttonMd from '../../guidelines/components/button.md?raw'
@@ -8,6 +8,7 @@ import toggleMd from '../../guidelines/components/toggle.md?raw'
 import inputMd from '../../guidelines/components/input.md?raw'
 import alertMd from '../../guidelines/components/contextual-alert.md?raw'
 import statusMd from '../../guidelines/components/status-indicator.md?raw'
+import riskMd from '../../guidelines/components/risk-pill.md?raw'
 import tabsMd from '../../guidelines/components/tabs.md?raw'
 
 export type Values = Record<string, string | boolean | undefined>
@@ -161,6 +162,19 @@ export const REGISTRY: Entry[] = [
     highlight: (v) => (t) => t.includes(`-status-${str(v.status) || 'unknown'}`),
     render: (v) => <StatusIndicator status={(str(v.status) || 'unknown') as Status} label={str(v.label) || undefined} size={(str(v.size) || 'regular') as 'small' | 'regular'} />,
     code: (v, spec) => printJsx('StatusIndicator', { status: v.status, label: v.label, size: v.size }, defaultsOf(spec)),
+  },
+  {
+    id: 'risk-pill',
+    file: 'risk-pill.md',
+    src: 'RiskPill',
+    name: 'Risk Pill',
+    spec: riskMd,
+    // An empty label is the default on purpose: the pill then renders the level word, which is
+    // what the spec says happens, and the printed code carries no label prop.
+    seed: { risk: 'high', label: '' },
+    highlight: (v) => (t) => t.includes(`-risk-${str(v.risk) || 'low'}`) || t === '--vela-radius-3',
+    render: (v) => <RiskPill risk={(str(v.risk) || 'low') as Risk} label={str(v.label) || undefined} size={(str(v.size) || 'regular') as 'regular' | 'small'} />,
+    code: (v, spec) => printJsx('RiskPill', { risk: v.risk, label: v.label, size: v.size }, defaultsOf(spec)),
   },
   {
     id: 'tabs',

@@ -1,13 +1,11 @@
 # Working in this repository
 
-Vela is a design system. The rules live in `guidelines/` and they are load-bearing.
-
-**Before generating or editing any component or style, read `guidelines/llms.txt`**, then the
-relevant `guidelines/components/*.md`. Do not infer an API from the source — the guideline is
-the specification and the source is one implementation of it.
+Vela is a design system and its rules are load-bearing. Read, in this order, then act:
+1. **`DESIGN.md`** — the global rules: tokens, the three taxonomies, closed props, states, motion, theming, responsiveness, accessibility.
+2. **`guidelines/components/<name>.md`** — the spec for the component you are touching. The guideline is the specification; the source is one implementation of it. Do not infer an API from `src/`.
+3. New component? `DESIGN.md` → *How to add a component*, then `CONTRIBUTING.md`.
 
 ## Non-negotiables
-
 1. Bind **semantic** tokens (`var(--vela-text-default)`). Never a primitive, never raw hex.
 2. Numeric tokens carry their unit — never `calc(var(--vela-space-10) * 1px)`.
 3. Prop sets are **closed**. If a value is not in the Props table, it does not exist.
@@ -16,8 +14,7 @@ the specification and the source is one implementation of it.
 6. New colour pair? Add it to `PAIRS` in `scripts/contrast-core.mjs`. Unasserted is unverified.
 
 ## Before you claim it works
-
 ```bash
-npm run verify        # typecheck + tests + build + pack-and-consume gate
-npm run test:e2e      # 18 screenshots vs committed baselines + playground behaviour; update baselines only with test:visual:update
+npm run verify        # tokens + rules + typecheck + tests (incl. css:check) + build + pack-and-consume gate
+npm run test:e2e      # screenshots vs committed baselines + playground behaviour; update baselines only with test:visual:update
 ```

@@ -1,0 +1,21 @@
+/* -------------------------------------------------------------- RiskPill -- */
+.vela-risk {
+  display: inline-flex; align-items: center;
+  border: 1px solid;
+  border-radius: var(--vela-radius-3);      /* an inline chip, so radius-3 — never radius-full */
+  font-size: var(--vela-text-meta-size);
+  line-height: var(--vela-text-meta-line-height);
+  font-weight: var(--vela-font-weight-regular);
+  letter-spacing: var(--vela-text-meta-tracking);
+  white-space: nowrap;
+}
+
+/* -- sizes: regular shares Button tiny's height so the two sit level in a toolbar or a table
+      row; small hugs the text (line-height plus the 1px border) for dense tables -- */
+.vela-risk--regular { height: var(--vela-control-height-24); padding: 0 var(--vela-space-10); }
+.vela-risk--small   { padding: 0 var(--vela-space-5); }
+
+/* -- the RISK taxonomy only: never a severity row, never a status fill -- */
+.vela-risk--low    { background: var(--vela-bg-risk-low);    border-color: var(--vela-border-risk-low);    color: var(--vela-text-risk-low); }
+.vela-risk--medium { background: var(--vela-bg-risk-medium); border-color: var(--vela-border-risk-medium); color: var(--vela-text-risk-medium); }
+.vela-risk--high   { background: var(--vela-bg-risk-high);   border-color: var(--vela-border-risk-high);   color: var(--vela-text-risk-high); }

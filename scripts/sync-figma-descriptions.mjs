@@ -33,6 +33,7 @@ const SETS = {
   'input.md': { set: 'Input', src: 'Input' },
   'contextual-alert.md': { set: 'Contextual Alert', src: 'ContextualAlert' },
   'status-indicator.md': { set: 'Status Indicator', src: 'StatusIndicator' },
+  'risk-pill.md': { set: 'Risk Pill', src: 'RiskPill' },
   'tabs.md': { set: 'Tab', src: 'Tabs' },
 }
 

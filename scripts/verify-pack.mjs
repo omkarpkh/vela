@@ -78,8 +78,8 @@ try {
   // -- valid usage must compile --
   mkdirSync(join(app, 'src'), { recursive: true })
   writeFileSync(join(app, 'valid.tsx'), `
-import { Button, Toggle, Input, ContextualAlert, StatusIndicator, Tabs } from '@omkarux/vela'
-import type { Severity, Status, ButtonProps } from '@omkarux/vela'
+import { Button, Toggle, Input, ContextualAlert, StatusIndicator, RiskPill, Tabs } from '@omkarux/vela'
+import type { Severity, Status, Risk, ButtonProps } from '@omkarux/vela'
 
 export const A = () => <Button variant="primary" appearance="filled" size="huge">Save Changes</Button>
 export const B = () => <Button variant="primary" appearance="text-link" size="tiny">Learn More</Button>
@@ -88,6 +88,7 @@ export const D = () => <Toggle label="Email alerts" onChange={(v: boolean) => v}
 export const E = () => <Input label="Tenant" hint="Lowercase only" error="Taken" size="large" />
 export const F = (s: Severity) => <ContextualAlert severity={s}>Body</ContextualAlert>
 export const G = (s: Status) => <StatusIndicator status={s} label="Node 1" />
+export const G2 = (r: Risk) => <RiskPill risk={r} label="High · 87" size="small" />
 export const H = () => (
   <Tabs defaultValue="a">
     <Tabs.List aria-label="Views"><Tabs.Trigger value="a" count={3}>Alerts</Tabs.Trigger></Tabs.List>
@@ -129,6 +130,11 @@ export const props: ButtonProps = { variant: 'standard', children: 'OK' }
     ['button-prop-sets-closed', 'invented button size', `<Button size="medium">Go</Button>`],
     ['alert-severity-closed-set', 'invented severity', `<ContextualAlert severity="high">Body</ContextualAlert>`],
     ['status-closed-set', 'severity used as a status', `<StatusIndicator status="critical" />`],
+    ['risk-closed-set', 'invented risk', `<RiskPill risk="severe" />`],
+    ['risk-closed-set', 'severity used as a risk', `<RiskPill risk="critical" />`],
+    ['risk-closed-set', 'status used as a risk', `<RiskPill risk="unhealthy" />`],
+    ['risk-closed-set', 'pill with no level', `<RiskPill label="High" />`],
+    ['risk-pill-sizes-closed', 'invented risk pill size', `<RiskPill risk="low" size="large" />`],
     ['tabs-list-requires-aria-label', 'tablist with no accessible name', `<Tabs defaultValue="a"><Tabs.List><Tabs.Trigger value="a">A</Tabs.Trigger></Tabs.List></Tabs>`],
     ['toggle-label-required', 'toggle with no label', `<Toggle />`],
     ['input-label-required', 'input with no label', `<Input />`],
@@ -138,7 +144,7 @@ export const props: ButtonProps = { variant: 'standard', children: 'OK' }
   ]
   for (const [id, name, snippet] of violations) {
     writeFileSync(join(app, 'invalid.tsx'),
-      `import { Button, ContextualAlert, Input, StatusIndicator, Tabs, Toggle } from '@omkarux/vela'\nexport const X = () => (${snippet})\n`)
+      `import { Button, ContextualAlert, Input, RiskPill, StatusIndicator, Tabs, Toggle } from '@omkarux/vela'\nexport const X = () => (${snippet})\n`)
     let rejected = false
     try { run(tsc, ['--noEmit', '-p', 'tsconfig.json'], app) } catch { rejected = true }
     check(rejected, `compiler rejects: ${name}  [${id}]`)
