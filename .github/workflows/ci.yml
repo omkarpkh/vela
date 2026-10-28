@@ -60,14 +60,37 @@ jobs:
   # On a failure the diff report is uploaded so the change can be judged, not guessed.
   visual:
     runs-on: ubuntu-latest
+    # On a pull request the job may commit missing Linux baselines to the PR branch (below).
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          # The PR head, not the synthetic merge commit, so new baselines can be pushed back.
+          ref: ${{ github.head_ref || github.ref }}
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
+      # A new section or a new width has no baseline yet. Only the runner may write a -linux
+      # baseline (a laptop writes -darwin; a fontless container writes the wrong face), so on a
+      # pull request the runner writes the MISSING ones, commits them to the branch for review
+      # in the PR diff, and then gates against them below. Existing baselines are never rewritten
+      # here: that is a deliberate act via the "Visual baselines" workflow with mode=all.
+      - name: Write missing Linux baselines (pull requests only)
+        if: github.event_name == 'pull_request'
+        run: |
+          npm run test:visual:update:missing || true
+          git add tests/visual/*-snapshots/*-linux.png
+          if git diff --cached --quiet; then echo "No missing baseline."; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          n=$(git diff --cached --name-only | wc -l | tr -d ' ')
+          git commit -m "Visual baselines (missing): ${n} Linux screenshots written by the CI runner" \
+                     -m "Written by the visual job of run ${{ github.run_id }} for review in this PR."
+          git push origin HEAD:${{ github.head_ref }}
       - run: npm run test:e2e
       - uses: actions/upload-artifact@v4
         if: always()
