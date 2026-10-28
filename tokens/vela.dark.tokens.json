@@ -1,0 +1,277 @@
+{
+  "$schema": "https://www.designtokens.org/schemas/2025.10/format.json",
+  "$description": "Vela dark theme. An OVERLAY, not a theme: only the semantic colours whose alias differs from the light value in vela.tokens.json appear here, and each carries only its dark $value — type, description and Figma name come from the base token. Applied by vela.resolver.json as the `dark` context of the `theme` modifier; a token absent here keeps its light value. Not one primitive is redefined: dark mode is the semantic layer re-pointed onto the same scale.",
+  "color": {
+    "$type": "color",
+    "bg-global": {
+      "$value": "{primitives.grey-950}"
+    },
+    "bg-container": {
+      "$value": "{primitives.grey-900}"
+    },
+    "bg-raised": {
+      "$value": "{primitives.grey-850}"
+    },
+    "bg-hover": {
+      "$value": "{primitives.grey-850}"
+    },
+    "bg-tooltip": {
+      "$value": "{primitives.grey-700}"
+    },
+    "bg-inactive": {
+      "$value": "{primitives.grey-900}"
+    },
+    "bg-selected": {
+      "$value": "{primitives.blue-950}"
+    },
+    "primary-tint": {
+      "$value": "{primitives.blue-950}"
+    },
+    "border-default": {
+      "$value": "{primitives.grey-600}"
+    },
+    "border-subtle": {
+      "$value": "{primitives.grey-850}"
+    },
+    "border-active": {
+      "$value": "{primitives.primary-400}"
+    },
+    "border-inactive": {
+      "$value": "{primitives.grey-850}"
+    },
+    "border-action": {
+      "$value": "{primitives.grey-500}"
+    },
+    "text-default": {
+      "$value": "{primitives.grey-300}"
+    },
+    "text-heading": {
+      "$value": "{primitives.grey-50}"
+    },
+    "text-de-emphasized": {
+      "$value": "{primitives.grey-500}"
+    },
+    "text-inactive": {
+      "$value": "{primitives.grey-700}"
+    },
+    "text-link": {
+      "$value": "{primitives.primary-400}"
+    },
+    "text-on-tint": {
+      "$value": "{primitives.grey-300}"
+    },
+    "text-error": {
+      "$value": "{primitives.red-300}"
+    },
+    "icon-strong": {
+      "$value": "{primitives.grey-300}"
+    },
+    "icon-selected": {
+      "$value": "{primitives.primary-400}"
+    },
+    "icon-disabled": {
+      "$value": "{primitives.grey-700}"
+    },
+    "btn-primary-hover-bg": {
+      "$value": "{primitives.primary-450}"
+    },
+    "btn-standard-bg": {
+      "$value": "{primitives.grey-850}"
+    },
+    "btn-standard-hover-bg": {
+      "$value": "{primitives.grey-800}"
+    },
+    "btn-standard-text": {
+      "$value": "{primitives.grey-300}"
+    },
+    "btn-hollow-primary-text": {
+      "$value": "{primitives.primary-300}"
+    },
+    "btn-hollow-primary-border": {
+      "$value": "{primitives.primary-400}"
+    },
+    "btn-disabled-bg": {
+      "$value": "{primitives.grey-850}"
+    },
+    "btn-disabled-text": {
+      "$value": "{primitives.grey-700}"
+    },
+    "btn-destructive-hover-bg": {
+      "$value": "{primitives.red-600}"
+    },
+    "btn-destructive-hollow-text": {
+      "$value": "{primitives.red-300}"
+    },
+    "btn-standard-border": {
+      "$value": "{primitives.grey-500}"
+    },
+    "control-bg": {
+      "$value": "{primitives.grey-900}"
+    },
+    "control-border": {
+      "$value": "{primitives.grey-600}"
+    },
+    "control-border-active": {
+      "$value": "{primitives.primary-400}"
+    },
+    "control-bg-disabled": {
+      "$value": "{primitives.grey-900}"
+    },
+    "control-placeholder": {
+      "$value": "{primitives.grey-500}"
+    },
+    "toggle-off-bg": {
+      "$value": "{primitives.grey-700}"
+    },
+    "bg-severity-success": {
+      "$value": "{primitives.green-950}"
+    },
+    "border-severity-success": {
+      "$value": "{primitives.green-700}"
+    },
+    "icon-severity-success": {
+      "$value": "{primitives.green-300}"
+    },
+    "text-severity-success": {
+      "$value": "{primitives.green-300}"
+    },
+    "border-severity-success-indicator": {
+      "$value": "{primitives.green-500}"
+    },
+    "bg-severity-info": {
+      "$value": "{primitives.blue-950}"
+    },
+    "border-severity-info": {
+      "$value": "{primitives.blue-700}"
+    },
+    "icon-severity-info": {
+      "$value": "{primitives.blue-300}"
+    },
+    "text-severity-info": {
+      "$value": "{primitives.blue-300}"
+    },
+    "border-severity-info-indicator": {
+      "$value": "{primitives.blue-500}"
+    },
+    "bg-severity-warning": {
+      "$value": "{primitives.yellow-950}"
+    },
+    "border-severity-warning": {
+      "$value": "{primitives.yellow-700}"
+    },
+    "icon-severity-warning": {
+      "$value": "{primitives.yellow-300}"
+    },
+    "text-severity-warning": {
+      "$value": "{primitives.yellow-300}"
+    },
+    "border-severity-warning-indicator": {
+      "$value": "{primitives.yellow-500}"
+    },
+    "bg-severity-minor": {
+      "$value": "{primitives.orange-950}"
+    },
+    "border-severity-minor": {
+      "$value": "{primitives.orange-700}"
+    },
+    "icon-severity-minor": {
+      "$value": "{primitives.orange-300}"
+    },
+    "text-severity-minor": {
+      "$value": "{primitives.orange-300}"
+    },
+    "border-severity-minor-indicator": {
+      "$value": "{primitives.orange-500}"
+    },
+    "bg-severity-major": {
+      "$value": "{primitives.red-950}"
+    },
+    "border-severity-major": {
+      "$value": "{primitives.red-700}"
+    },
+    "icon-severity-major": {
+      "$value": "{primitives.red-300}"
+    },
+    "text-severity-major": {
+      "$value": "{primitives.red-300}"
+    },
+    "border-severity-major-indicator": {
+      "$value": "{primitives.red-500}"
+    },
+    "bg-severity-critical": {
+      "$value": "{primitives.critical-950}"
+    },
+    "border-severity-critical": {
+      "$value": "{primitives.critical-500}"
+    },
+    "signal-severity-critical": {
+      "$value": "{primitives.critical-300}"
+    },
+    "icon-severity-critical": {
+      "$value": "{primitives.critical-300}"
+    },
+    "text-severity-critical": {
+      "$value": "{primitives.critical-300}"
+    },
+    "border-severity-critical-indicator": {
+      "$value": "{primitives.critical-300}"
+    },
+    "bg-risk-low": {
+      "$value": "{primitives.green-950}"
+    },
+    "border-risk-low": {
+      "$value": "{primitives.green-700}"
+    },
+    "icon-risk-low": {
+      "$value": "{primitives.green-300}"
+    },
+    "text-risk-low": {
+      "$value": "{primitives.green-300}"
+    },
+    "border-risk-low-indicator": {
+      "$value": "{primitives.green-500}"
+    },
+    "bg-risk-medium": {
+      "$value": "{primitives.yellow-950}"
+    },
+    "border-risk-medium": {
+      "$value": "{primitives.yellow-700}"
+    },
+    "icon-risk-medium": {
+      "$value": "{primitives.yellow-300}"
+    },
+    "text-risk-medium": {
+      "$value": "{primitives.yellow-300}"
+    },
+    "border-risk-medium-indicator": {
+      "$value": "{primitives.yellow-500}"
+    },
+    "bg-risk-high": {
+      "$value": "{primitives.red-950}"
+    },
+    "border-risk-high": {
+      "$value": "{primitives.red-700}"
+    },
+    "icon-risk-high": {
+      "$value": "{primitives.red-300}"
+    },
+    "text-risk-high": {
+      "$value": "{primitives.red-300}"
+    },
+    "border-risk-high-indicator": {
+      "$value": "{primitives.red-500}"
+    },
+    "signal-status-healthy": {
+      "$value": "{primitives.green-500}"
+    },
+    "signal-status-warning": {
+      "$value": "{primitives.yellow-500}"
+    },
+    "signal-status-medium": {
+      "$value": "{primitives.orange-500}"
+    },
+    "focus-ring-color": {
+      "$value": "{primitives.primary-400}"
+    }
+  }
+}
