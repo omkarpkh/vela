@@ -51,6 +51,18 @@ Trigger rest `--vela-text-de-emphasized`; hover `--vela-text-default`; selected
 `--vela-text-link` with a 2px `--vela-border-active` underline. List rule
 `--vela-border-subtle`.
 
+## Responsive behaviour
+
+The tab list is a single row that **scrolls horizontally** when the triggers no longer fit
+(`overflow-x: auto`); triggers never wrap or shrink (`white-space: nowrap`), because a tab
+label broken over two lines reads as two tabs. Keyboard users reach every tab regardless of
+scroll position (arrow keys move the roving tab stop and the browser scrolls the focused
+trigger into view). What is **not** yet done: there is no visual cue that more tabs exist off
+the edge, and no collapse into a menu on narrow hosts; both are spec gaps tracked for the
+headless migration in Phase 1 — name them rather than inventing a pattern. The panel fills its
+container and reflows its own content. Density tokens do not exist yet (see `DESIGN.md`,
+*Responsive and density*); until they do, the two sizes are the only density control.
+
 ## Accessibility
 
 This is the reason Tabs is more than a styled list:

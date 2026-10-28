@@ -39,6 +39,17 @@ components allowed to.
 In light mode `warning` binds `yellow-700` and `medium` binds `orange-600` rather than the
 500s, so both clear 3:1 against the page. See `foundations/color.md`.
 
+## Responsive behaviour
+
+A Status Indicator is inline (`inline-flex`): the dot is fixed geometry (`flex: none`) and
+only the label flexes. In a narrow table cell the label **wraps after the dot**, never before
+it, and never truncates — the dot without its word is colour alone, which the kit forbids.
+Where only the dot fits (a dense grid cell), omit `label` and the component supplies the
+accessible name itself (`role="img"`), so meaning survives the squeeze for assistive
+technology; a visible legend is then the host's responsibility. Density tokens do not exist
+yet (see `DESIGN.md`, *Responsive and density*); until they do, the two sizes are the only
+density control.
+
 ## Figma mapping
 
 Library file: **Vela Design System** → page `Status Indicator`. Ten variants: `Status` (5) x

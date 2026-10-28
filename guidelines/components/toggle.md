@@ -38,6 +38,16 @@ Track off `--vela-toggle-off-bg`; on `--vela-toggle-on-bg`; knob `--vela-toggle-
 disabled track `--vela-border-inactive`. Track radius is `--vela-radius-full` — one of only
 two components allowed to use it.
 
+## Responsive behaviour
+
+The track and knob are fixed geometry (`regular` and `tiny`) and never scale with the viewport;
+only the **label flexes**. In a narrow container the label wraps beside the track, which stays
+on the first line (`flex: none`) so the control is always findable at the start of the row;
+with `labelPosition="left"` the same holds mirrored. The label never truncates. The minimum
+hit area is the track plus the gap to the label, so on touch viewports prefer `regular`. Density
+tokens do not exist yet (see `DESIGN.md`, *Responsive and density*); until they do, the two
+sizes are the only density control.
+
 ## Accessibility
 
 - Renders a native `<button role="switch">` with `aria-checked`.

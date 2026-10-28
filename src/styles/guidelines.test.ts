@@ -21,7 +21,9 @@ describe('component specs → Figma descriptions', () => {
     const md = readFileSync(resolve(root, 'guidelines/components', file), 'utf8')
     // A compound component documents its API under "Composition", not "Props".
     expect(md, `${file} has no API section`).toMatch(/^## (Props|Composition)/m)
-    for (const h of ['## Hard constraints', '## Figma mapping', '## Anti-patterns'])
+    // "Responsive behaviour" is required since Phase 0 (28 Oct 2026): every component states what
+    // flexes, what is fixed, and what it does in a narrow host — or names the gap.
+    for (const h of ['## Hard constraints', '## Responsive behaviour', '## Figma mapping', '## Anti-patterns'])
       expect(md, `${file} is missing ${h}`).toContain(h)
     expect(md, `${file} has no tsx example`).toMatch(/```tsx/)
     expect(md, `${file} does not name its Figma page`).toMatch(/page `[^`]+`/)

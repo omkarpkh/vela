@@ -125,6 +125,17 @@ apply. Nothing about the API, the markup or the accessibility changes between th
 
 Colour is deliberately not part of the press. `filter: brightness()` scales the label and the background by the same factor, so it dims figure and ground together and the contrast a person actually reads barely moves — measured, 6.08:1 to 6.00:1 at 2%, and 5.69:1 at 10%, which is *worse*. A press that reads through colour needs its own token per variant per theme, asserted in `PAIRS`; the geometry and the timing carry it instead. Hover colours apply only where hover exists (`@media (hover: hover)`); touch gets the press feedback instead of a hover state that sticks after the tap. Under `prefers-reduced-motion` every duration collapses and the spinner is a static arc: still a signal, no motion. See [Motion](../foundations/motion.md).
 
+## Responsive behaviour
+
+A Button hugs its content (`width: auto`) and is never given a fixed width, so it is as wide as its
+label at every viewport and in every host. In a container narrower than the label, the label
+**wraps onto a second line** and the button grows in height; it does not truncate, because a cut
+label is a different instruction ("Delete acc…"). Icon, spinner and padding are fixed by size
+tokens and do not shrink. On touch viewports the pointer-anchored press is simply not applied
+(the CSS press stands alone, see *Motion*), and the minimum hit area is the size's control height,
+so `tiny` is for dense desktop tables only. Density tokens do not exist yet (see `DESIGN.md`,
+*Responsive and density*); until they do, sizes are the only density control.
+
 ## Figma mapping
 
 Library file: **Vela Design System** → page `Button`. The component set is 24 variants:

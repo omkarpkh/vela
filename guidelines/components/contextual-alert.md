@@ -43,6 +43,17 @@ Every level binds its own complete row: `--vela-bg-severity-*`,
 `--vela-border-severity-*`, `--vela-icon-severity-*`, `--vela-text-severity-*`.
 Never mix a severity background with a risk text colour.
 
+## Responsive behaviour
+
+A Contextual Alert is a block that **fills its container** and reflows its body: the severity
+mark stays on the first line at the left, the dismiss button stays on the first line at the
+right, and the title and message wrap between them (`.vela-alert__body` has `min-width: 0`,
+so long words and URLs wrap instead of pushing the dismiss button out). It has no minimum
+width of its own; below about 24 characters the message is still complete, only tall. It is an
+embeddable component, so it must never depend on the viewport width — only on its container.
+Container-query breakpoints and density tokens do not exist yet (see `DESIGN.md`,
+*Responsive and density*); until they do, the alert has one layout at every width.
+
 ## Accessibility
 
 - Colour is never the only signal: each severity has a distinct icon **and** its label text.
