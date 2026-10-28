@@ -23,7 +23,9 @@
 }
 .vela-tabs--large .vela-tabs__trigger { font-size: var(--vela-text-tab-large-size); line-height: var(--vela-text-tab-large-line-height); }
 
-.vela-tabs__trigger:hover:not(:disabled) { color: var(--vela-text-default); }
+@media (hover: hover) {
+  .vela-tabs__trigger:hover:not(:disabled) { color: var(--vela-text-default); }
+}
 .vela-tabs__trigger[aria-selected='true'] { color: var(--vela-text-link); border-bottom-color: var(--vela-border-active); }
 .vela-tabs__trigger:disabled { color: var(--vela-text-inactive); cursor: not-allowed; }
 

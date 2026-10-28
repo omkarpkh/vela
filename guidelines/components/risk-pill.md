@@ -71,6 +71,18 @@ None. A Risk Pill has no hover, no focus, no pressed and no disabled state — a
 cannot be acted on must not pretend to react. If it changes level, the colour row re-points;
 nothing animates.
 
+## Responsive behaviour
+
+A Risk Pill is inline text and behaves like it. It has no minimum width of its own: in a narrow
+table cell or a host-given widget width it **wraps with its label** — pill and label move to the
+next line as one unit (`white-space: nowrap` keeps the label from breaking inside the pill), the
+way a word wraps — and it **never truncates**: an ellipsis would hide the level word, which is
+the signal.
+At both densities (comfortable and compact) it keeps its minimum height: `regular` stays
+`--vela-control-height-24`, `small` stays its line-height plus the border. Density tokens do not
+exist yet (see `DESIGN.md`, *Responsive and density*); until they do, nothing here changes
+between densities.
+
 ## Accessibility
 
 - The visible text is the accessible name. There is no `aria-label`, no `role`: a pill is text.

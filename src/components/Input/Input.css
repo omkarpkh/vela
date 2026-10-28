@@ -19,7 +19,9 @@
 .vela-input--large   { height: var(--vela-control-height-35); padding: 0 var(--vela-space-10); }
 
 .vela-input::placeholder { color: var(--vela-control-placeholder); }
-.vela-input:hover:not(:disabled):not([aria-invalid='true']) { border-color: var(--vela-control-border-hover); }
+@media (hover: hover) {
+  .vela-input:hover:not(:disabled):not([aria-invalid='true']) { border-color: var(--vela-control-border-hover); }
+}
 .vela-input:focus { border-color: var(--vela-control-border-active); }
 .vela-input[aria-invalid='true'] { border-color: var(--vela-control-border-error); }
 .vela-input:disabled { background: var(--vela-control-bg-disabled); color: var(--vela-text-inactive); border-color: var(--vela-border-inactive); cursor: not-allowed; }
