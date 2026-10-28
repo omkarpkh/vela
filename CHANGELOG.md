@@ -3,6 +3,65 @@
 All notable changes to this project are documented here.
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **The project files a public library carries.** `CONTRIBUTING.md` (the one path in: spec,
+  tokens, tests, Figma, changelog, PR), `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1),
+  `SECURITY.md` (private reporting by email; one maintainer, so 7 days to acknowledge and 30 to
+  assess, no bounty), `SUPPORT.md`, `GOVERNANCE.md` (single maintainer; the component lifecycle
+  labels Approved, Known bugs, Experimental and Retired, with "Main components — do not touch"
+  on the Figma sources; what counts as breaking), `VERSIONING.md` (semver for a design system:
+  token, prop, taxonomy, class and Figma renames are breaking; a two-minor deprecation window;
+  `$deprecated` on tokens and `@deprecated` on exports with a dev-only warning), `RELEASING.md`
+  (the checklist, tag-driven), `NOTICE` (Open Sans and Oswald under OFL 1.1, the Covenant under
+  CC BY 4.0, and Base UI and Lucide listed as planned and not yet included) and
+  `LICENSE-DESIGN.md` (the Figma library on Figma Community under CC BY 4.0 and additionally
+  MIT; attribution "Vela by Omkar Khadamkar (omkarux.com)"). GitHub issue forms for a bug, a
+  component request (it asks for the closest existing component and why it does not fit) and a
+  token request, a PR template that mirrors `CONTRIBUTING.md`, and a contact config pointing
+  questions at Discussions.
+- **Decision records have an index and a template.** `decisions/README.md` numbers the existing
+  press-feedback record 001 without renaming its folder, and `decisions/TEMPLATE.md` carries its
+  headings. `decisions/002-agent-ready-direction` records the 28 October decisions: extend rather
+  than restart; React first, then the framework-agnostic contract; Base UI for behaviour under
+  Vela's CSS and tokens, no Tailwind; a second entry point `@omkarux/vela/headless` with Base UI
+  as an optional peer while `@omkarux/vela` stays zero-dependency; a security-console agentic
+  component set as the differentiator; zero spend; approval gates on `main`, npm and the Figma
+  library. The rejected options and their reasons are in the record.
+- CI's `verify` job now runs `npm run tokens:check` and `npm run checks:check` after the
+  typecheck, in the order the local `npm run verify` runs them. Until now a hand-edited generated
+  file or a stale `demo/checks.json` failed locally and passed in CI.
+
+### Fixed
+- **Correction to the 0.3.0 entry, 28 October 2026.** It says Code Connect "requires an
+  Organization or Enterprise Figma plan". Figma's Code Connect help page now lists the
+  Professional plan too, with a Full or Dev seat, limited to one active library and one active
+  framework. The 0.3.0 statement was Figma's position at the time and the entry is left as
+  written; this note is the correction. The related statement in 0.5.0, that writing variables
+  through the REST API needs an Enterprise plan, still holds: Figma's variables endpoints say
+  "available to full members of Enterprise orgs", so the generated-script route stays.
+- **The npm `description` and the README now say the same thing about enforcement.** The README
+  and `llms.txt` have said "11 of the 27 rules by the TypeScript compiler, the rest at runtime, in
+  a real browser, or by review" since the rule-coverage gate landed; the description said nothing
+  about how rules are enforced, which left the registry listing open to being read as "all of
+  them". It now carries the same hedged sentence. `homepage` points at the docs site,
+  https://omkarpkh.github.io/vela/, instead of the GitHub README.
+- **Stale counts in the README.** The Scripts block said `npm test` runs 188 unit tests;
+  `demo/checks.json`, which `scripts/count-checks.mjs` writes from the runners' output, says 208
+  unit and 238 in all at 0.12.1. The README now quotes the generated numbers and says where they
+  come from. The packed size moves from 67.6 kB to 72.3 kB (53 files, unchanged) because
+  `README.md` and `CHANGELOG.md` ship in the tarball and both grew in this entry; the row now
+  says so.
+- **`.claude/launch.json` carried a personal macOS path** in a second launch configuration that
+  had nothing to do with Vela. It is removed; the file keeps the one generic entry, which starts
+  the demo on port 5174.
+
+### Changed
+- README: shields.io badges for CI, the npm version and the licence (static badge URLs, no new
+  service), a "Project files" section linking the files above, and a status line stating that
+  the lifecycle labels exist and every component is currently Approved.
+
 ## [0.12.1] — 2026-10-09
 
 ### Fixed
