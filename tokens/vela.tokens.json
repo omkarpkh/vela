@@ -2416,6 +2416,144 @@
           "figma": "focus/ring-offset"
         }
       }
+    },
+    "stroke-2": {
+      "$type": "dimension",
+      "$value": {
+        "value": 2,
+        "unit": "px"
+      },
+      "$description": "Strokes that are not borders: the Button spinner arc and the selected-tab underline. Hairline borders stay 1px and need no token.",
+      "$extensions": {
+        "com.omkarux.vela": {
+          "figma": "stroke/2"
+        }
+      }
+    },
+    "field-mark-gap": {
+      "$type": "dimension",
+      "$value": {
+        "value": 2,
+        "unit": "px"
+      },
+      "$description": "Gap between a field label and its required mark. Not a step of the spacing scale, which starts at 5.",
+      "$extensions": {
+        "com.omkarux.vela": {
+          "figma": "field/mark-gap"
+        }
+      }
+    },
+    "toggle-track-width": {
+      "$type": "dimension",
+      "$value": {
+        "value": 34,
+        "unit": "px"
+      },
+      "$description": "Regular track. The knob travel is track width minus knob size minus twice the inset, so these four tokens move together.",
+      "$extensions": {
+        "com.omkarux.vela": {
+          "figma": "toggle/track-width"
+        }
+      }
+    },
+    "toggle-track-height": {
+      "$type": "dimension",
+      "$value": {
+        "value": 20,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.omkarux.vela": {
+          "figma": "toggle/track-height"
+        }
+      }
+    },
+    "toggle-track-width-tiny": {
+      "$type": "dimension",
+      "$value": {
+        "value": 26,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.omkarux.vela": {
+          "figma": "toggle/track-width-tiny"
+        }
+      }
+    },
+    "toggle-track-height-tiny": {
+      "$type": "dimension",
+      "$value": {
+        "value": 15,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.omkarux.vela": {
+          "figma": "toggle/track-height-tiny"
+        }
+      }
+    },
+    "toggle-knob-size": {
+      "$type": "dimension",
+      "$value": {
+        "value": 16,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.omkarux.vela": {
+          "figma": "toggle/knob-size"
+        }
+      }
+    },
+    "toggle-knob-size-tiny": {
+      "$type": "dimension",
+      "$value": {
+        "value": 11,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.omkarux.vela": {
+          "figma": "toggle/knob-size-tiny"
+        }
+      }
+    },
+    "toggle-knob-inset": {
+      "$type": "dimension",
+      "$value": {
+        "value": 2,
+        "unit": "px"
+      },
+      "$description": "Distance from the track edge to the knob, both sizes.",
+      "$extensions": {
+        "com.omkarux.vela": {
+          "figma": "toggle/knob-inset"
+        }
+      }
+    },
+    "status-dot": {
+      "$type": "dimension",
+      "$value": {
+        "value": 10,
+        "unit": "px"
+      },
+      "$description": "Status Indicator dot, regular.",
+      "$extensions": {
+        "com.omkarux.vela": {
+          "figma": "status/dot"
+        }
+      }
+    },
+    "status-dot-small": {
+      "$type": "dimension",
+      "$value": {
+        "value": 8,
+        "unit": "px"
+      },
+      "$description": "Status Indicator dot, small — for dense tables.",
+      "$extensions": {
+        "com.omkarux.vela": {
+          "figma": "status/dot-small"
+        }
+      }
     }
   },
   "typography": {
@@ -2942,6 +3080,19 @@
         }
       },
       "$description": "The only curve. Never a bare ease."
+    },
+    "blur-materialize": {
+      "$type": "dimension",
+      "$value": {
+        "value": 2,
+        "unit": "px"
+      },
+      "$description": "The spinner appearing. The only blur in the kit: motion is feedback, never decoration.",
+      "$extensions": {
+        "com.omkarux.vela": {
+          "figma": "blur/materialize"
+        }
+      }
     }
   }
 }

@@ -96,9 +96,9 @@ describe('token source', () => {
     // library has size/h1. Values matched, names did not, and nothing had checked the names.
     const RULE: Record<string, RegExp> = {
       color: /^(surface|border|text|icon|button|control|severity|risk|status|focus)\//,
-      sizing: /^(space|icon|control-height|radius|focus)\//,
+      sizing: /^(space|icon|control-height|radius|focus|stroke|field|toggle|status)\//,
       typography: /^(size|line-height|weight|tracking)\//,
-      motion: /^(duration|easing)\//,
+      motion: /^(duration|easing|blur)\//,
     }
     const bad: string[] = []
     for (const [group, re] of Object.entries(RULE))

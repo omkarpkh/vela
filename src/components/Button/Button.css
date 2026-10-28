@@ -146,7 +146,7 @@
 .vela-btn__spinner {
   display: inline-block; flex: none;
   width: var(--vela-icon-12); height: var(--vela-icon-12);
-  border: 2px solid currentColor; /* vela-allow: needs stroke token (spinner arc), tracked in Phase 0 */
+  border: var(--vela-stroke-2) solid currentColor;
   border-right-color: transparent;
   border-radius: var(--vela-radius-full);
   /* Appearing is a state change worth acknowledging (opacity + scale + blur, one beat);
@@ -159,4 +159,4 @@
 .vela-btn--large .vela-btn__spinner,
 .vela-btn--huge .vela-btn__spinner { width: var(--vela-icon-16); height: var(--vela-icon-16); }
 @keyframes vela-spin { to { rotate: 360deg; } }
-@keyframes vela-materialize { from { opacity: 0; scale: 0.8; filter: blur(2px); } to { opacity: 1; scale: 1; filter: blur(0); } } /* vela-allow: needs motion blur token, tracked in Phase 0 */
+@keyframes vela-materialize { from { opacity: 0; scale: 0.8; filter: blur(var(--vela-blur-materialize)); } to { opacity: 1; scale: 1; filter: blur(0); } }

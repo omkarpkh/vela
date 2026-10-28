@@ -24,9 +24,10 @@ describe('component CSS binds tokens', () => {
     for (const r of report) for (const w of r.waivers) expect(w.reason, `${r.file} line ${w.line}`).not.toBe('')
   })
 
-  it('only the stylesheets with recorded literal geometry carry waivers', () => {
+  it('no stylesheet carries a waiver — the literal geometry recorded in Phase 0 is tokenised', () => {
+    // A new waiver is a new token request: add the token, bind it, and this stays empty.
     const waiving = report.filter((r) => r.waivers.length).map((r) => r.file.split('/')[2]).sort()
-    expect(waiving).toEqual(['Button', 'Input', 'StatusIndicator', 'Tabs', 'Toggle'])
+    expect(waiving).toEqual([])
   })
 })
 

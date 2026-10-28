@@ -289,9 +289,23 @@
   @focus-ring-offset
   @focus-ring-color
 
+  /* ---- Strokes and component geometry (named so no component carries a bare number) ---- */
+  @stroke-2
+  @field-mark-gap
+  @toggle-track-width
+  @toggle-track-height
+  @toggle-track-width-tiny
+  @toggle-track-height-tiny
+  @toggle-knob-size
+  @toggle-knob-size-tiny
+  @toggle-knob-inset
+  @status-dot
+  @status-dot-small
+
   /* ---- Motion (respects reduced-motion in components.css) ---- */
   @duration-instant
   @duration-fast
   @duration-base
   @ease-standard
+  @blur-materialize
 }

@@ -170,6 +170,8 @@ export function generateDart(set, version) {
     deprecated(t)
     if (t.$type === 'duration') w(`  static const Duration ${id} = ${ms(t.$value, name)};`)
     else if (t.$type === 'cubicBezier') w(`  static const Cubic ${id} = Cubic(${cubicBezierOf(t.$value, name).join(', ')});`)
+    // A motion-group dimension (the materialise blur) is a logical-pixel double, like sizing.
+    else if (t.$type === 'dimension') w(`  static const double ${id} = ${pxOf(t.$value, name)};`)
     else throw new Error(`unmapped motion type ${t.$type} on ${name}`)
   }
   w(`}`)

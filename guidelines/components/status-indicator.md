@@ -61,7 +61,7 @@ Library file: **Vela Design System** → page `Status Indicator`. Ten variants: 
 | `Size` | `size` |
 | `Label` (boolean) | `label` — hiding it in Figma means the code must supply the `aria-label` fallback |
 
-Dot diameters (10px / 8px) are **literal in both Figma and CSS**, not tokenised. Known gap.
+Dot diameters are tokenised in CSS since 0.13: `--vela-status-dot` (10) and `--vela-status-dot-small` (8). The Figma component still draws them as literal sizes — the remaining half of this gap.
 
 ## Anti-patterns
 

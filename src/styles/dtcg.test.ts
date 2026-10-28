@@ -13,12 +13,21 @@ import { generateMui } from '../../scripts/build-tokens-mui.mjs'
 // $deprecated — a deprecated token must still emit, with a note, in every target.
 const root = resolve(process.cwd())
 
+// Counts come from the source files, so adding a token does not mean editing a test; the
+// shape rules below are what matter, and tokens.test.ts asserts every token's form.
+const countTokens = (doc: Record<string, any>): number =>
+  Object.entries(doc)
+    .filter(([k]) => !k.startsWith('$'))
+    .reduce((n, [, v]) => n + (v && typeof v === 'object' && '$value' in v ? 1 : countTokens(v)), 0)
+const TOKEN_COUNT = countTokens(JSON.parse(readFileSync(resolve(root, 'tokens/vela.tokens.json'), 'utf8')))
+const DARK_COUNT = countTokens(JSON.parse(readFileSync(resolve(root, 'tokens/vela.dark.tokens.json'), 'utf8')))
+
 describe('DTCG 2025.10 conformance', () => {
   it('npm run tokens:validate passes: @terrazzo/parser reports 0 errors and 0 warnings, and Vela’s stricter rules hold', () => {
     const r = spawnSync('node', ['scripts/validate-tokens.mjs'], { cwd: root, encoding: 'utf8' })
     expect(r.status, r.stderr + r.stdout).toBe(0)
     expect(r.stdout).toContain('0 errors, 0 warnings')
-    expect(r.stdout).toMatch(/242 tokens, 90 dark overrides/)
+    expect(r.stdout).toMatch(new RegExp(`${TOKEN_COUNT} tokens, ${DARK_COUNT} dark overrides`))
   })
 
   it('the shared reader loads the resolver, the base set and the dark overlay, and refuses legacy shapes', () => {
@@ -26,7 +35,7 @@ describe('DTCG 2025.10 conformance', () => {
     const set: any = loadTokenSet(root)
     expect(set.contexts).toEqual(['light', 'dark'])
     expect(set.defaultContext).toBe('light')
-    expect(set.order).toHaveLength(242)
+    expect(set.order).toHaveLength(TOKEN_COUNT)
     expect(set.terminal('text-default', 'light')).toBe('grey-700')
     expect(set.terminal('text-default', 'dark')).toBe('grey-300')
     // a two-hop alias: btn-disabled-text → text-inactive → grey-400 in light; re-pointed directly in dark
