@@ -37,7 +37,7 @@ public, not scored. There were three decisions and two or three options each.
 **How to get behaviour**
 
 - C. Write it by hand, as the six existing components were.
-- D. Base UI (`@base-ui-components/react`, MIT, from the MUI team): unstyled behaviour primitives,
+- D. Base UI (`@base-ui/react` — written `@base-ui-components/react` here on 28 Oct, corrected the same day; MIT, from the MUI team): unstyled behaviour primitives,
   styled by Vela's CSS and bound to Vela's tokens.
 - E. A styled system with its own tokens, Tailwind-based, re-themed to Vela.
 
@@ -104,7 +104,7 @@ the spec for a component does not know which entry point implements it.
   styles of its own; every class on a Vela component is a `vela-*` class bound to semantic tokens,
   and the existing tests (no primitive in the dark block, every pair in `PAIRS`) apply unchanged.
 - **Two entry points, one playground.** `@omkarux/vela` stays zero-dependency.
-  `@omkarux/vela/headless` lists `@base-ui-components/react` as an optional peer dependency. The
+  `@omkarux/vela/headless` lists `@base-ui/react` as an optional peer dependency. The
   playground renders both, from the same registry.
 - **The differentiator is a security-console agentic component set**: the components a security
   console needs when an agent is doing part of the work, specced with the same closed props,
@@ -127,3 +127,7 @@ the spec for a component does not know which entry point implements it.
 - What "framework-agnostic" delivers beyond the contract: a Web Components build, an Angular
   port, or only the tokens and specs as today. Not decided, deliberately.
 - How the Base UI peer is pinned, and what a Base UI breaking release does to Vela's semver.
+  *Answered 28 Oct, with the Tabs proving case:* peer range `1.9.x` (patch range), devDependency
+  exact `1.9.0`, and the pack-and-consume gate installs the devDependency version so the pairing
+  proven is the one developed against. A Base UI minor that changes behaviour is a Vela minor,
+  taken deliberately; a Base UI major is a Vela decision record first.
