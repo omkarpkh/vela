@@ -144,6 +144,8 @@
   --vela-toggle-off-bg: var(--vela-grey-400);
   --vela-toggle-on-bg: var(--vela-primary-500);
   --vela-toggle-knob: var(--vela-white);
+  --vela-control-check-bg-checked: var(--vela-primary-500);
+  --vela-control-check-mark: var(--vela-white);
 
   /* ============================================================================
      SEVERITY — 6 levels. Describes events and alerts.
@@ -299,6 +301,10 @@
   --vela-toggle-knob-size: 16px;
   --vela-toggle-knob-size-tiny: 11px;
   --vela-toggle-knob-inset: 2px;
+  --vela-control-checkbox-size: 16px;
+  --vela-control-checkbox-size-tiny: 12px;
+  --vela-control-radio-size: 16px;
+  --vela-control-radio-dot: 6px;
   --vela-status-dot: 10px;
   --vela-status-dot-small: 8px;
 

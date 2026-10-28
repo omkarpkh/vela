@@ -101,6 +101,12 @@ describe('Figma sync: variable scopes match the property each token is for', () 
     ['blur-materialize', ['EFFECT_FLOAT']],
     ['toggle-track-width', ['WIDTH_HEIGHT']],
     ['status-dot', ['WIDTH_HEIGHT']],
+    // Phase 1 geometry under the `control/` head: the sizing default is width/height; the check mark
+    // is a glyph (shape fill, stroke), and the checked fill is a frame or shape fill.
+    ['control-checkbox-size', ['WIDTH_HEIGHT']],
+    ['control-radio-dot', ['WIDTH_HEIGHT']],
+    ['control-check-mark', ['SHAPE_FILL', 'STROKE_COLOR']],
+    ['control-check-bg-checked', ['FRAME_FILL', 'SHAPE_FILL']],
     ['space-10', ['WIDTH_HEIGHT', 'GAP']],
     ['radius-4', ['CORNER_RADIUS']],
   ])('%s → %j', (css, scopes) => {
