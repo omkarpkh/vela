@@ -174,7 +174,7 @@ the widths every layout and every component is judged against:
 | Surface | Width | What changes |
 |---|---|---|
 | Laptop | 1280 | the floor for a full console: tables keep every column, side panels overlay |
-| Desktop | 1440 | the reference; the visual baselines are taken here (`playwright.config.ts`) |
+| Desktop | 1440 | the reference; the full visual suite runs here (`playwright.config.ts`) |
 | Wide | 1920 | more rows and columns on screen, never larger type or looser spacing |
 | SOC wall display | 2560 and up, read from metres away | larger type and signals, higher contrast margins, fewer things per screen |
 | Embeddable widget | whatever the host gives it | the component, not the viewport, decides |
@@ -193,7 +193,11 @@ Rules that hold now, with the tokens they are waiting on named plainly:
   changing type size or touch targets below 24px. Density is a property of a subtree, set the way
   a theme is, and it will be expressed as tokens — not as a prop on every component.
 - **Every component spec carries a "Responsive behaviour" section** stating its minimum width,
-  what it does below it, how it wraps, and what changes at each density.
+  what it does below it, how it wraps, and what changes at each density. The heading test
+  (`src/styles/guidelines.test.ts`) requires it.
+- **Every component section is screenshotted at four widths** — 1440 (the full suite), 1280,
+  1920 and 400 (the embeddable check) — against Linux baselines that only the CI runner writes
+  (`.github/workflows/visual-baselines.yml`). A layout that breaks at a console width fails CI.
 
 **Breakpoint and density tokens do not exist yet.** `--vela-breakpoint-*` and the compact
 density values are being added in Phase 0 by the token stream; until they land, components

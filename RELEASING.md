@@ -22,7 +22,7 @@ Commit nothing yet.
 
 ```bash
 npm run verify     # tokens:check + rules:check + typecheck + tests + checks:check + build + pack-and-consume gate
-npm run test:e2e   # 18 screenshots against the Linux baselines, plus the playground behaviour tests
+npm run test:e2e   # 68 screenshots at four widths against the Linux baselines, plus the playground behaviour tests
 ```
 
 Both green, with no baseline updated in this step. If a baseline must move, that happened in a

@@ -1,0 +1,59 @@
+# Generates the Linux visual baselines on the same runner image that gates them.
+#
+# Why a workflow: the -linux baselines must come from one rendering environment. A laptop
+# renders -darwin baselines; a build container without Google Fonts access renders a fallback
+# face. Only the CI runner is the truth for the -linux set, so the runner writes them.
+#
+# How: Actions → "Visual baselines" → Run workflow. Choose the branch and whether to write
+# only baselines that do not exist yet (the default, safe after adding a section or a width)
+# or regenerate every baseline (after a deliberate visual change — say so in the PR).
+# The run commits the PNGs to the branch; the next CI run then gates against them.
+name: Visual baselines
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'missing = write only baselines that do not exist; all = regenerate every baseline'
+        type: choice
+        options: [missing, all]
+        default: missing
+
+permissions:
+  contents: write
+
+concurrency:
+  group: visual-baselines-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  baselines:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Write baselines
+        env:
+          MODE: ${{ inputs.mode }}
+        run: |
+          if [ "$MODE" = "all" ]; then npm run test:visual:update; else npm run test:visual:update:missing; fi
+      - name: Commit baselines to the branch
+        run: |
+          git add tests/visual/*-snapshots/*-linux.png
+          if git diff --cached --quiet; then
+            echo "No baseline changed."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          n=$(git diff --cached --name-only | wc -l | tr -d ' ')
+          git commit -m "Visual baselines (${{ inputs.mode }}): ${n} Linux screenshots written by the CI runner" \
+                     -m "Workflow: visual-baselines.yml, run ${{ github.run_id }}. Review the PNGs in the PR before merging."
+          git push

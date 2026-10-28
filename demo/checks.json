@@ -2,11 +2,11 @@
   "version": "0.12.1",
   "unit": 266,
   "browser": {
-    "visual": 18,
+    "visual": 68,
     "e2e": 7,
     "docs": 2,
-    "total": 27
+    "total": 77
   },
   "flutter": 3,
-  "total": 296
+  "total": 346
 }

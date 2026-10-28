@@ -16,5 +16,5 @@ Vela is a design system and its rules are load-bearing. Read, in this order, the
 ## Before you claim it works
 ```bash
 npm run verify        # tokens + rules + typecheck + tests (incl. css:check) + build + pack-and-consume gate
-npm run test:e2e      # screenshots vs committed baselines + playground behaviour; update baselines only with test:visual:update
+npm run test:e2e      # screenshots at four widths vs committed baselines + playground behaviour; Linux baselines are written by the "Visual baselines" workflow, never locally
 ```
