@@ -8,6 +8,7 @@ import { execFileSync } from 'node:child_process'
 // token, every type variant to the ramp, and regenerating changes nothing.
 const root = resolve(process.cwd())
 const doc = JSON.parse(readFileSync(resolve(root, 'tokens/vela.tokens.json'), 'utf8'))
+const overlay = JSON.parse(readFileSync(resolve(root, 'tokens/vela.dark.tokens.json'), 'utf8'))
 const bridgePath = resolve(root, 'bridges/vela.mui-theme.json')
 const bridge = JSON.parse(readFileSync(bridgePath, 'utf8'))
 
@@ -16,13 +17,15 @@ for (const [g, toks] of Object.entries(doc)) {
   if (g.startsWith('$')) continue
   for (const [n, t] of Object.entries(toks as Record<string, any>)) all[n] = t
 }
+const dark: Record<string, any> = overlay.color
 type Mode = 'light' | 'dark'
 const MODES: Mode[] = ['light', 'dark']
+// The alias walk, independent of scripts/tokens-core.mjs: dark from the overlay, full-path
+// aliases by their last segment, and the colour object's components → the hex the bridge ships.
 const hex = (name: string, mode: Mode): string => {
-  const t = all[name]
-  let v = t.$value
-  if (mode === 'dark' && t.$extensions?.vela?.dark) v = t.$extensions.vela.dark
-  return /^\{.+\}$/.test(v) ? hex(v.slice(1, -1), mode) : v
+  const v = mode === 'dark' && dark[name] ? dark[name].$value : all[name].$value
+  if (typeof v === 'string') return hex(v.slice(1, -1).split('.').pop()!, mode)
+  return '#' + (v.components as number[]).map((x) => Math.round(x * 255).toString(16).padStart(2, '0')).join('')
 }
 const get = (o: any, p: string) => p.split('.').reduce((a, k) => a?.[k], o)
 const px = (n: string): number => all[n].$value.value
@@ -65,7 +68,7 @@ describe('MUI theme bridge', () => {
   })
 
   it('carries the motion tokens: two durations onto Material\'s slots, one curve everywhere', () => {
-    const ms = (n: string) => parseInt(all[n].$value)
+    const ms = (n: string) => all[n].$value.value * (all[n].$value.unit === 's' ? 1000 : 1)
     const curve = `cubic-bezier(${all['ease-standard'].$value.join(', ')})`
     for (const mode of MODES) {
       const { duration, easing } = bridge[mode].transitions

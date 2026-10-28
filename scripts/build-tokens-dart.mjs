@@ -5,9 +5,11 @@
  * library are generated from, as Flutter types. One edit, four targets.
  *
  * What maps to what:
- *   color                 Color(0xFFrrggbb). Semantics become a ThemeExtension with a light
- *                         and a dark instance; aliases resolve to the primitive per mode —
- *                         the same walk the CSS custom properties make.
+ *   color                 Color(0xAArrggbb) from the sRGB components (alpha FF when opaque).
+ *                         Semantics become a ThemeExtension with a light and a dark instance;
+ *                         aliases resolve to the primitive per mode — the same walk the CSS
+ *                         custom properties make, with the dark values coming from
+ *                         tokens/vela.dark.tokens.json through the resolver.
  *   dimension (px)        double. Flutter's logical pixel is 1:1 with CSS px.
  *   text-*-line-height    TextStyle.height = line-height ÷ size; Flutter takes a ratio.
  *   text-*-tracking       TextStyle.letterSpacing, logical px.
@@ -15,23 +17,15 @@
  *   fontFamily            fontFamily + fontFamilyFallback; CSS generic keywords dropped.
  *   duration              Duration(milliseconds:)
  *   cubicBezier           Cubic(x1, y1, x2, y2)
+ *   $deprecated           the member still exists, with a `/// Deprecated…` doc comment
  *
  * What it deliberately does not do: generate widgets. The tokens travel; components are
  * built per stack against guidelines/, which is written to be implementation-independent.
  */
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
 import { join, dirname } from 'node:path'
-import { fileURLToPath } from 'node:url'
-
-const root = join(dirname(fileURLToPath(import.meta.url)), '..')
-const doc = JSON.parse(readFileSync(join(root, 'tokens/vela.tokens.json'), 'utf8'))
-const { version } = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'))
-
-const all = {}
-for (const [group, tokens] of Object.entries(doc)) {
-  if (group.startsWith('$')) continue
-  for (const [name, t] of Object.entries(tokens)) all[name] = { ...t, group }
-}
+import { fileURLToPath, pathToFileURL } from 'node:url'
+import { loadTokenSet, hexOf, alphaOf, pxOf, msOf, cubicBezierOf, deprecationNote } from './tokens-core.mjs'
 
 // ---------- names ----------
 const RESERVED = new Set(
@@ -48,224 +42,221 @@ const ident = (name) => {
 }
 
 // ---------- values ----------
-const isAlias = (v) => typeof v === 'string' && /^\{.+\}$/.test(v)
-const terminal = (name, mode, seen = new Set()) => {
-  const t = all[name]
-  if (!t) throw new Error('unknown token ' + name)
-  let v = t.$value
-  if (mode === 'dark' && t.$extensions?.vela?.dark) v = t.$extensions.vela.dark
-  if (!isAlias(v)) return name
-  const target = v.slice(1, -1)
-  if (seen.has(target)) throw new Error('alias cycle at ' + name)
-  seen.add(target)
-  return terminal(target, mode, seen)
-}
-const primitiveOf = (name, mode) => {
-  const p = terminal(name, mode)
-  if (all[p].group !== 'primitives') throw new Error(`${name} (${mode}) resolves to ${p}, which is not a primitive`)
-  return `VelaPrimitives.${ident(p)}`
-}
-const color = (hex, name) => {
-  if (!/^#[0-9a-f]{6}$/.test(hex)) throw new Error(`${name}: expected 6-digit hex, got ${hex}`)
-  return `Color(0xFF${hex.slice(1).toUpperCase()})`
-}
-const px = (t, name) => {
-  if (t.$type !== 'dimension' || t.$value.unit !== 'px') throw new Error(`${name}: only px dimensions map to logical pixels`)
-  return String(t.$value.value)
+const color = (v, name) => {
+  const a = Math.round(alphaOf(v, name) * 255).toString(16).padStart(2, '0')
+  return `Color(0x${a.toUpperCase()}${hexOf(v, name).slice(1).toUpperCase()})`
 }
 const weight = (n, name) => {
   if (!Number.isInteger(n) || n % 100 || n < 100 || n > 900) throw new Error(`${name}: ${n} is not a FontWeight`)
   return `FontWeight.w${n}`
 }
-const ms = (s, name) => {
-  const m = /^(\d+)ms$/.exec(s)
-  if (!m) throw new Error(`${name}: duration must be <n>ms, got ${s}`)
-  return `Duration(milliseconds: ${Number(m[1])})`
-}
+const ms = (v, name) => `Duration(milliseconds: ${msOf(v, name)})`
 const GENERIC = new Set(['sans-serif', 'serif', 'monospace', 'system-ui', 'ui-sans-serif', 'ui-serif', 'ui-monospace', '-apple-system', 'BlinkMacSystemFont'])
-const families = (stack) => stack.split(',').map((s) => s.trim().replace(/^["']|["']$/g, '')).filter((f) => f && !GENERIC.has(f))
+const families = (v) => (Array.isArray(v) ? v : v.split(',').map((s) => s.trim().replace(/^["']|["']$/g, ''))).filter((f) => f && !GENERIC.has(f))
 const str = (s) => `'${s.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`
-const need = (name) => {
-  if (!all[name]) throw new Error(`theme mapping references a token that does not exist: ${name}`)
-  return ident(name)
-}
 
-const out = []
-const w = (s = '') => out.push(s)
+/** The Dart source and pubspec for a token set. */
+export function generateDart(set, version) {
+  const { all } = set
+  // a group's own $type / $description / $deprecated are not tokens
+  const groupEntries = (group) => Object.keys(set.base[group]).filter((k) => !k.startsWith('$')).map((name) => [name, all[name]])
+  const primitiveOf = (name, mode) => {
+    const p = set.terminal(name, mode)
+    if (all[p].group !== 'primitives') throw new Error(`${name} (${mode}) resolves to ${p}, which is not a primitive`)
+    return `VelaPrimitives.${ident(p)}`
+  }
+  const need = (name) => {
+    if (!all[name]) throw new Error(`theme mapping references a token that does not exist: ${name}`)
+    return ident(name)
+  }
+  const deprecated = (t) => {
+    const n = deprecationNote(t)
+    if (n) w(`  /// ${n[0].toUpperCase()}${n.slice(1)}`)
+  }
 
-// ---------- header ----------
-w(`// GENERATED by scripts/build-tokens-dart.mjs from tokens/vela.tokens.json — do not edit.`)
-w(`// @omkarux/vela ${version}. Edit the JSON and run \`npm run tokens\`: tokens.css, the Figma`)
-w(`// library and this file are all compiled from the same source.`)
-w(`//`)
-w(`// Bind semantics ([VelaColors]) in widgets. Primitives exist only to be aliased — the same`)
-w(`// rule the CSS and the Figma library follow. Sizes are logical pixels, 1:1 with the CSS px.`)
-w()
-w(`import 'package:flutter/material.dart';`)
-w()
+  const out = []
+  const w = (s = '') => out.push(s)
 
-// ---------- primitives ----------
-w(`/// Primitive palette. Do not use directly in widgets — bind a semantic from [VelaColors].`)
-w(`abstract final class VelaPrimitives {`)
-for (const [name, t] of Object.entries(doc.primitives)) w(`  static const Color ${ident(name)} = ${color(t.$value, name)};`)
-w(`}`)
-w()
-
-// ---------- semantics ----------
-const sem = Object.entries(doc.color).map(([name, t]) => ({ name, id: ident(name), t }))
-w(`/// Semantic colours — one field per token, with the light and dark values the CSS ships.`)
-w(`///`)
-w(`/// Read with \`Theme.of(context).extension<VelaColors>()!\`, or use [VelaColors.light] and`)
-w(`/// [VelaColors.dark] directly. [velaThemeData] installs the right one for a [Brightness].`)
-w(`@immutable`)
-w(`class VelaColors extends ThemeExtension<VelaColors> {`)
-w(`  const VelaColors({`)
-for (const s of sem) w(`    required this.${s.id},`)
-w(`  });`)
-w()
-for (const s of sem) {
-  const figma = s.t.$extensions?.vela?.figma
-  w(`  /// \`--vela-${s.name}\`${figma ? ` · Figma \`${figma}\`` : ''}`)
-  if (s.t.$description) w(`  /// ${s.t.$description}`)
-  w(`  final Color ${s.id};`)
-}
-w()
-for (const mode of ['light', 'dark']) {
-  w(`  /// The ${mode} theme, resolved to primitives exactly as tokens.css resolves it.`)
-  w(`  static const VelaColors ${mode} = VelaColors(`)
-  for (const s of sem) w(`    ${s.id}: ${primitiveOf(s.name, mode)},`)
-  w(`  );`)
+  // ---------- header ----------
+  w(`// GENERATED by scripts/build-tokens-dart.mjs from tokens/vela.tokens.json — do not edit.`)
+  w(`// @omkarux/vela ${version}. Edit the JSON and run \`npm run tokens\`: tokens.css, the Figma`)
+  w(`// library and this file are all compiled from the same source.`)
+  w(`//`)
+  w(`// Bind semantics ([VelaColors]) in widgets. Primitives exist only to be aliased — the same`)
+  w(`// rule the CSS and the Figma library follow. Sizes are logical pixels, 1:1 with the CSS px.`)
   w()
-}
-w(`  @override`)
-w(`  VelaColors copyWith({`)
-for (const s of sem) w(`    Color? ${s.id},`)
-w(`  }) {`)
-w(`    return VelaColors(`)
-for (const s of sem) w(`      ${s.id}: ${s.id} ?? this.${s.id},`)
-w(`    );`)
-w(`  }`)
-w()
-w(`  @override`)
-w(`  VelaColors lerp(ThemeExtension<VelaColors>? other, double t) {`)
-w(`    if (other is! VelaColors) return this;`)
-w(`    return VelaColors(`)
-for (const s of sem) w(`      ${s.id}: Color.lerp(${s.id}, other.${s.id}, t)!,`)
-w(`    );`)
-w(`  }`)
-w(`}`)
-w()
+  w(`import 'package:flutter/material.dart';`)
+  w()
 
-// ---------- sizing ----------
-w(`/// Spacing, icon, control-height, radius and focus scales in logical pixels.`)
-w(`abstract final class VelaSizing {`)
-for (const [name, t] of Object.entries(doc.sizing)) {
-  const id = ident(name)
-  if (t.$description) w(`  /// ${t.$description}`)
-  if (t.$type === 'dimension') w(`  static const double ${id} = ${px(t, name)};`)
-  else if (t.$type === 'duration') w(`  static const Duration ${id} = ${ms(t.$value, name)};`)
-  else if (t.$type === 'cubicBezier') w(`  static const Cubic ${id} = Cubic(${t.$value.join(', ')});`)
-  else throw new Error(`unmapped sizing type ${t.$type} on ${name}`)
-}
-w(`}`)
-w()
+  // ---------- primitives ----------
+  w(`/// Primitive palette. Do not use directly in widgets — bind a semantic from [VelaColors].`)
+  w(`abstract final class VelaPrimitives {`)
+  for (const [name, t] of groupEntries('primitives')) {
+    deprecated(t)
+    w(`  static const Color ${ident(name)} = ${color(t.$value, name)};`)
+  }
+  w(`}`)
+  w()
 
-// ---------- motion ----------
-w(`/// Motion: three durations and the one curve. A press lands on [durationInstant]; pointer`)
-w(`/// answers and exits use [durationFast]; anything that settles or enters uses`)
-w(`/// [durationBase]. Same values as tokens.css.`)
-w(`abstract final class VelaMotion {`)
-for (const [name, t] of Object.entries(doc.motion)) {
-  const id = ident(name)
-  if (t.$description) w(`  /// ${t.$description}`)
-  if (t.$type === 'duration') w(`  static const Duration ${id} = ${ms(t.$value, name)};`)
-  else if (t.$type === 'cubicBezier') w(`  static const Cubic ${id} = Cubic(${t.$value.join(', ')});`)
-  else throw new Error(`unmapped motion type ${t.$type} on ${name}`)
-}
-w(`}`)
-w()
+  // ---------- semantics ----------
+  const sem = groupEntries('color').map(([name, t]) => ({ name, id: ident(name), t }))
+  w(`/// Semantic colours — one field per token, with the light and dark values the CSS ships.`)
+  w(`///`)
+  w(`/// Read with \`Theme.of(context).extension<VelaColors>()!\`, or use [VelaColors.light] and`)
+  w(`/// [VelaColors.dark] directly. [velaThemeData] installs the right one for a [Brightness].`)
+  w(`@immutable`)
+  w(`class VelaColors extends ThemeExtension<VelaColors> {`)
+  w(`  const VelaColors({`)
+  for (const s of sem) w(`    required this.${s.id},`)
+  w(`  });`)
+  w()
+  for (const s of sem) {
+    const figma = set.vendor(s.t).figma
+    w(`  /// \`--vela-${s.name}\`${figma ? ` · Figma \`${figma}\`` : ''}`)
+    if (s.t.$description) w(`  /// ${s.t.$description}`)
+    deprecated(s.t)
+    w(`  final Color ${s.id};`)
+  }
+  w()
+  for (const mode of ['light', 'dark']) {
+    w(`  /// The ${mode} theme, resolved to primitives exactly as tokens.css resolves it.`)
+    w(`  static const VelaColors ${mode} = VelaColors(`)
+    for (const s of sem) w(`    ${s.id}: ${primitiveOf(s.name, mode)},`)
+    w(`  );`)
+    w()
+  }
+  w(`  @override`)
+  w(`  VelaColors copyWith({`)
+  for (const s of sem) w(`    Color? ${s.id},`)
+  w(`  }) {`)
+  w(`    return VelaColors(`)
+  for (const s of sem) w(`      ${s.id}: ${s.id} ?? this.${s.id},`)
+  w(`    );`)
+  w(`  }`)
+  w()
+  w(`  @override`)
+  w(`  VelaColors lerp(ThemeExtension<VelaColors>? other, double t) {`)
+  w(`    if (other is! VelaColors) return this;`)
+  w(`    return VelaColors(`)
+  for (const s of sem) w(`      ${s.id}: Color.lerp(${s.id}, other.${s.id}, t)!,`)
+  w(`    );`)
+  w(`  }`)
+  w(`}`)
+  w()
 
-// ---------- typography ----------
-const typ = Object.entries(doc.typography)
-w(`/// Type ramp. Sizes and line-heights in logical pixels; each composed [TextStyle] sets`)
-w(`/// \`height\` to line-height ÷ size, which is how Flutter expresses a line-height.`)
-w(`abstract final class VelaTypography {`)
-for (const [name, t] of typ) {
-  const id = ident(name)
-  if (t.$description) w(`  /// ${t.$description}`)
-  if (t.$type === 'fontFamily') {
-    const [family, ...fallback] = families(t.$value)
-    w(`  static const String ${id} = ${str(family)};`)
-    w(`  static const List<String> ${id}Fallback = <String>[${fallback.map(str).join(', ')}];`)
-  } else if (t.$type === 'number') w(`  static const FontWeight ${id} = ${weight(t.$value, name)};`)
-  else if (t.$type === 'dimension') w(`  static const double ${id} = ${px(t, name)};`)
-  else throw new Error(`unmapped typography type ${t.$type} on ${name}`)
-}
-w()
-// One composed style per text-<style>-size. Button and tab labels have no weight token of
-// their own; Button.css and Tabs.css bind font-weight-regular, so the styles do too.
-const FAMILY = 'font-family-primary'
-const styles = typ.filter(([n]) => /^text-.+-size$/.test(n)).map(([n]) => n.slice(5, -5))
-w(`  // Composed styles — one per size in the ramp. All use ${ident(FAMILY)}; ${ident('font-family-display')}`)
-w(`  // (Oswald) is for large stat displays only and has no text style of its own, as in the CSS.`)
-for (const s of styles) {
-  const size = `text-${s}-size`, lh = `text-${s}-line-height`, wt = `text-${s}-weight`, tr = `text-${s}-tracking`
-  if (!all[lh]) throw new Error(`${size} has no matching line-height token`)
-  const weightTok = all[wt] ? wt : /^(button|tab)/.test(s) ? 'font-weight-regular' : null
-  if (!weightTok) throw new Error(`${s}: no weight token and no component rule to fall back on`)
-  w(`  static const TextStyle ${ident(s)} = TextStyle(`)
-  w(`    fontFamily: ${ident(FAMILY)},`)
-  w(`    fontFamilyFallback: ${ident(FAMILY)}Fallback,`)
-  w(`    fontSize: ${ident(size)},`)
-  w(`    fontWeight: ${ident(weightTok)},`)
-  w(`    height: ${ident(lh)} / ${ident(size)},`)
-  if (all[tr]) w(`    letterSpacing: ${ident(tr)},`)
+  // ---------- sizing ----------
+  w(`/// Spacing, icon, control-height, radius and focus scales in logical pixels.`)
+  w(`abstract final class VelaSizing {`)
+  for (const [name, t] of groupEntries('sizing')) {
+    const id = ident(name)
+    if (t.$description) w(`  /// ${t.$description}`)
+    deprecated(t)
+    if (t.$type === 'dimension') w(`  static const double ${id} = ${pxOf(t.$value, name)};`)
+    else if (t.$type === 'duration') w(`  static const Duration ${id} = ${ms(t.$value, name)};`)
+    else if (t.$type === 'cubicBezier') w(`  static const Cubic ${id} = Cubic(${cubicBezierOf(t.$value, name).join(', ')});`)
+    else throw new Error(`unmapped sizing type ${t.$type} on ${name}`)
+  }
+  w(`}`)
+  w()
+
+  // ---------- motion ----------
+  w(`/// Motion: three durations and the one curve. A press lands on [durationInstant]; pointer`)
+  w(`/// answers and exits use [durationFast]; anything that settles or enters uses`)
+  w(`/// [durationBase]. Same values as tokens.css.`)
+  w(`abstract final class VelaMotion {`)
+  for (const [name, t] of groupEntries('motion')) {
+    const id = ident(name)
+    if (t.$description) w(`  /// ${t.$description}`)
+    deprecated(t)
+    if (t.$type === 'duration') w(`  static const Duration ${id} = ${ms(t.$value, name)};`)
+    else if (t.$type === 'cubicBezier') w(`  static const Cubic ${id} = Cubic(${cubicBezierOf(t.$value, name).join(', ')});`)
+    else throw new Error(`unmapped motion type ${t.$type} on ${name}`)
+  }
+  w(`}`)
+  w()
+
+  // ---------- typography ----------
+  const typ = groupEntries('typography')
+  w(`/// Type ramp. Sizes and line-heights in logical pixels; each composed [TextStyle] sets`)
+  w(`/// \`height\` to line-height ÷ size, which is how Flutter expresses a line-height.`)
+  w(`abstract final class VelaTypography {`)
+  for (const [name, t] of typ) {
+    const id = ident(name)
+    if (t.$description) w(`  /// ${t.$description}`)
+    deprecated(t)
+    if (t.$type === 'fontFamily') {
+      const [family, ...fallback] = families(t.$value)
+      w(`  static const String ${id} = ${str(family)};`)
+      w(`  static const List<String> ${id}Fallback = <String>[${fallback.map(str).join(', ')}];`)
+    } else if (t.$type === 'number') w(`  static const FontWeight ${id} = ${weight(t.$value, name)};`)
+    else if (t.$type === 'dimension') w(`  static const double ${id} = ${pxOf(t.$value, name)};`)
+    else throw new Error(`unmapped typography type ${t.$type} on ${name}`)
+  }
+  w()
+  // One composed style per text-<style>-size. Button and tab labels have no weight token of
+  // their own; Button.css and Tabs.css bind font-weight-regular, so the styles do too.
+  const FAMILY = 'font-family-primary'
+  const styles = typ.filter(([n]) => /^text-.+-size$/.test(n)).map(([n]) => n.slice(5, -5))
+  w(`  // Composed styles — one per size in the ramp. All use ${ident(FAMILY)}; ${ident('font-family-display')}`)
+  w(`  // (Oswald) is for large stat displays only and has no text style of its own, as in the CSS.`)
+  for (const s of styles) {
+    const size = `text-${s}-size`, lh = `text-${s}-line-height`, wt = `text-${s}-weight`, tr = `text-${s}-tracking`
+    if (!all[lh]) throw new Error(`${size} has no matching line-height token`)
+    const weightTok = all[wt] ? wt : /^(button|tab)/.test(s) ? 'font-weight-regular' : null
+    if (!weightTok) throw new Error(`${s}: no weight token and no component rule to fall back on`)
+    w(`  static const TextStyle ${ident(s)} = TextStyle(`)
+    w(`    fontFamily: ${ident(FAMILY)},`)
+    w(`    fontFamilyFallback: ${ident(FAMILY)}Fallback,`)
+    w(`    fontSize: ${ident(size)},`)
+    w(`    fontWeight: ${ident(weightTok)},`)
+    w(`    height: ${ident(lh)} / ${ident(size)},`)
+    if (all[tr]) w(`    letterSpacing: ${ident(tr)},`)
+    w(`  );`)
+  }
+  w(`}`)
+  w()
+
+  // ---------- theme ----------
+  w(`/// A [ThemeData] seeded from the semantic tokens.`)
+  w(`///`)
+  w(`/// The [ColorScheme] mapping is a starting point — Material's colour roles and Vela's`)
+  w(`/// semantics are different vocabularies. The full palette is always available through`)
+  w(`/// [VelaColors], which this installs as a theme extension.`)
+  w(`ThemeData velaThemeData(Brightness brightness) {`)
+  w(`  final VelaColors c = brightness == Brightness.dark ? VelaColors.dark : VelaColors.light;`)
+  w(`  return ThemeData(`)
+  w(`    useMaterial3: true,`)
+  w(`    brightness: brightness,`)
+  w(`    colorScheme: ColorScheme(`)
+  w(`      brightness: brightness,`)
+  w(`      primary: c.${need('btn-primary-bg')},`)
+  w(`      onPrimary: c.${need('btn-primary-text')},`)
+  w(`      secondary: c.${need('primary-tint')},`)
+  w(`      onSecondary: c.${need('text-on-tint')},`)
+  w(`      error: c.${need('text-error')},`)
+  w(`      onError: c.${need('text-on-brand')},`)
+  w(`      surface: c.${need('bg-global')},`)
+  w(`      onSurface: c.${need('text-default')},`)
+  w(`    ),`)
+  w(`    scaffoldBackgroundColor: c.${need('bg-global')},`)
+  w(`    canvasColor: c.${need('bg-global')},`)
+  w(`    cardColor: c.${need('bg-raised')},`)
+  w(`    dividerColor: c.${need('border-subtle')},`)
+  w(`    focusColor: c.${need('focus-ring-color')},`)
+  w(`    hoverColor: c.${need('bg-hover')},`)
+  w(`    disabledColor: c.${need('text-inactive')},`)
+  w(`    fontFamily: VelaTypography.${ident(FAMILY)},`)
+  w(`    textTheme: const TextTheme(`)
+  for (const [role, s] of [['headlineLarge', 'h1'], ['headlineMedium', 'h2'], ['headlineSmall', 'h3'], ['titleLarge', 'h4'], ['titleMedium', 'h5'], ['titleSmall', 'h6'], ['bodyMedium', 'body'], ['labelSmall', 'meta'], ['labelLarge', 'button-regular']]) {
+    if (!styles.includes(s)) throw new Error(`textTheme mapping references a style that does not exist: ${s}`)
+    w(`      ${role}: VelaTypography.${ident(s)},`)
+  }
+  w(`    ),`)
+  w(`    extensions: <ThemeExtension<dynamic>>[c],`)
   w(`  );`)
-}
-w(`}`)
-w()
+  w(`}`)
 
-// ---------- theme ----------
-w(`/// A [ThemeData] seeded from the semantic tokens.`)
-w(`///`)
-w(`/// The [ColorScheme] mapping is a starting point — Material's colour roles and Vela's`)
-w(`/// semantics are different vocabularies. The full palette is always available through`)
-w(`/// [VelaColors], which this installs as a theme extension.`)
-w(`ThemeData velaThemeData(Brightness brightness) {`)
-w(`  final VelaColors c = brightness == Brightness.dark ? VelaColors.dark : VelaColors.light;`)
-w(`  return ThemeData(`)
-w(`    useMaterial3: true,`)
-w(`    brightness: brightness,`)
-w(`    colorScheme: ColorScheme(`)
-w(`      brightness: brightness,`)
-w(`      primary: c.${need('btn-primary-bg')},`)
-w(`      onPrimary: c.${need('btn-primary-text')},`)
-w(`      secondary: c.${need('primary-tint')},`)
-w(`      onSecondary: c.${need('text-on-tint')},`)
-w(`      error: c.${need('text-error')},`)
-w(`      onError: c.${need('text-on-brand')},`)
-w(`      surface: c.${need('bg-global')},`)
-w(`      onSurface: c.${need('text-default')},`)
-w(`    ),`)
-w(`    scaffoldBackgroundColor: c.${need('bg-global')},`)
-w(`    canvasColor: c.${need('bg-global')},`)
-w(`    cardColor: c.${need('bg-raised')},`)
-w(`    dividerColor: c.${need('border-subtle')},`)
-w(`    focusColor: c.${need('focus-ring-color')},`)
-w(`    hoverColor: c.${need('bg-hover')},`)
-w(`    disabledColor: c.${need('text-inactive')},`)
-w(`    fontFamily: VelaTypography.${ident(FAMILY)},`)
-w(`    textTheme: const TextTheme(`)
-for (const [role, s] of [['headlineLarge', 'h1'], ['headlineMedium', 'h2'], ['headlineSmall', 'h3'], ['titleLarge', 'h4'], ['titleMedium', 'h5'], ['titleSmall', 'h6'], ['bodyMedium', 'body'], ['labelSmall', 'meta'], ['labelLarge', 'button-regular']]) {
-  if (!styles.includes(s)) throw new Error(`textTheme mapping references a style that does not exist: ${s}`)
-  w(`      ${role}: VelaTypography.${ident(s)},`)
-}
-w(`    ),`)
-w(`    extensions: <ThemeExtension<dynamic>>[c],`)
-w(`  );`)
-w(`}`)
-
-const pubspec = `# GENERATED by scripts/build-tokens-dart.mjs — do not edit. The version tracks @omkarux/vela.
+  const pubspec = `# GENERATED by scripts/build-tokens-dart.mjs — do not edit. The version tracks @omkarux/vela.
 name: vela_tokens
 description: Vela design tokens for Flutter, generated from tokens/vela.tokens.json — the same source as the CSS and the Figma library.
 version: ${version}
@@ -280,8 +271,16 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 `
+  return { dart: out.join('\n') + '\n', pubspec, semantics: sem.length, styles: styles.length }
+}
 
-mkdirSync(join(root, 'flutter/lib'), { recursive: true })
-writeFileSync(join(root, 'flutter/lib/vela_tokens.dart'), out.join('\n') + '\n')
-writeFileSync(join(root, 'flutter/pubspec.yaml'), pubspec)
-console.log(`build:tokens:dart  ${Object.keys(all).length} tokens → flutter/lib/vela_tokens.dart (${sem.length} semantics, ${styles.length} text styles)`)
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  const root = join(dirname(fileURLToPath(import.meta.url)), '..')
+  const set = loadTokenSet(root)
+  const { version } = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'))
+  const { dart, pubspec, semantics, styles } = generateDart(set, version)
+  mkdirSync(join(root, 'flutter/lib'), { recursive: true })
+  writeFileSync(join(root, 'flutter/lib/vela_tokens.dart'), dart)
+  writeFileSync(join(root, 'flutter/pubspec.yaml'), pubspec)
+  console.log(`build:tokens:dart  ${set.order.length} tokens → flutter/lib/vela_tokens.dart (${semantics} semantics, ${styles} text styles)`)
+}

@@ -19,7 +19,8 @@ describe('Figma sync: the motion tokens use Figma\'s own motion types', () => {
       expect(e, css).toBeDefined()
       expect(e.collection).toBe('Motion')
       expect(e.type).toBe('TIMING')
-      expect(e.light).toBeCloseTo(parseInt(t.$value) / 1000, 6)
+      expect(t.$value.unit).toBe('ms')
+      expect(e.light).toBeCloseTo(t.$value.value / 1000, 6)
     }
     expect(byCss['duration-fast'].light).toBe(0.12)
   })
@@ -64,5 +65,25 @@ describe('Figma sync: --only narrows the output, never the alias lookup', () => 
     }
     expect(colour.some((e) => e.light?.collection === 'Primitives')).toBe(true)
     expect(colour.find((e) => e.css === 'btn-primary-hover-bg').dark).toEqual({ alias: 'primary/450', collection: 'Primitives' })
+  })
+})
+
+describe('Figma sync: colours arrive as the hex the Plugin API script converts', () => {
+  it('a primitive carries its 6-digit hex in both modes, matching the sRGB components in the JSON', () => {
+    for (const [css, t] of Object.entries<any>(doc.primitives)) {
+      const hex = '#' + (t.$value.components as number[]).map((x) => Math.round(x * 255).toString(16).padStart(2, '0')).join('')
+      expect(byCss[css].light, css).toBe(hex)
+      expect(byCss[css].dark, css).toBe(hex)
+    }
+  })
+  it('a semantic colour is an alias in both modes — the dark one from the overlay when it differs', () => {
+    const overlay = JSON.parse(readFileSync(resolve(root, 'tokens/vela.dark.tokens.json'), 'utf8')).color
+    for (const css of Object.keys(doc.color)) {
+      const e = byCss[css]
+      expect(typeof e.light.alias, css).toBe('string')
+      const darkPath = (overlay[css]?.$value ?? doc.color[css].$value).slice(1, -1)
+      const target = darkPath.split('.').pop()
+      expect(e.dark.alias, css).toBe(byCss[target].name)
+    }
   })
 })

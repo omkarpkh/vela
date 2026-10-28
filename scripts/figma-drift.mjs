@@ -4,7 +4,7 @@
  * tokens:figma pushes the JSON into Figma. Nothing stopped someone editing a
  * variable in the Figma UI afterwards, and nothing would have noticed. This
  * closes that: it reads every variable back out of the library and diffs the
- * resolved values against tokens/vela.tokens.json.
+ * resolved values against tokens/vela.tokens.json (dark via tokens/vela.dark.tokens.json).
  *
  * Two steps, because Figma's REST API only lets Enterprise plans READ variables
  * too — so the read runs inside the file, like the write:
@@ -20,43 +20,29 @@
 import { readFileSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { loadTokenSet, hexOf, pxOf, msOf, cubicBezierOf } from './tokens-core.mjs'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
-const doc = JSON.parse(readFileSync(join(root, 'tokens/vela.tokens.json'), 'utf8'))
+const set = loadTokenSet(root)
 
 // ---------- what the JSON says the library should contain ----------
-const all = {}
-for (const [group, tokens] of Object.entries(doc)) {
-  if (group.startsWith('$')) continue
-  for (const [name, t] of Object.entries(tokens)) all[name] = { ...t, group }
-}
+// `set` resolves aliases per mode: the dark values come from tokens/vela.dark.tokens.json through
+// the resolver, the same walk the CSS and the Figma sync make.
 const collectionOf = { primitives: 'Primitives', color: 'Color', sizing: 'Sizing', typography: 'Typography', motion: 'Motion' }
-
-const resolveColor = (name, mode, seen = new Set()) => {
-  const t = all[name]
-  if (!t) throw new Error('unknown token ' + name)
-  let v = t.$value
-  if (mode === 'dark' && t.$extensions?.vela?.dark) v = t.$extensions.vela.dark
-  if (typeof v === 'string' && /^\{.+\}$/.test(v)) {
-    const target = v.slice(1, -1)
-    if (seen.has(target)) throw new Error('alias cycle at ' + name)
-    seen.add(target)
-    return resolveColor(target, mode, seen)
-  }
-  return v
-}
+const resolveColor = (name, mode) => hexOf(set.resolved(name, mode), name)
 
 const expected = {}
-for (const [name, t] of Object.entries(all)) {
-  const figma = t.$extensions?.vela?.figma
+for (const name of set.order) {
+  const t = set.all[name]
+  const figma = set.vendor(t).figma
   if (!figma) continue
   const key = collectionOf[t.group] + '|' + figma
   if (t.$type === 'color') expected[key] = { css: name, light: resolveColor(name, 'light'), dark: resolveColor(name, 'dark') }
-  else if (t.$type === 'dimension') expected[key] = { css: name, value: t.$value.value }
+  else if (t.$type === 'dimension') expected[key] = { css: name, value: pxOf(t.$value, name) }
   else if (t.$type === 'number') expected[key] = { css: name, value: t.$value }
   // Figma keeps timing in seconds and an easing as a bezier object (see sync-figma.mjs)
-  else if (t.$type === 'duration') expected[key] = { css: name, value: Number(String(t.$value).replace(/ms$/, '')) / 1000 }
-  else if (t.$type === 'cubicBezier') expected[key] = { css: name, bezier: t.$value.map(Number) }
+  else if (t.$type === 'duration') expected[key] = { css: name, value: msOf(t.$value, name) / 1000 }
+  else if (t.$type === 'cubicBezier') expected[key] = { css: name, bezier: cubicBezierOf(t.$value, name) }
 }
 
 // ---------- mode 1: print the read script ----------
