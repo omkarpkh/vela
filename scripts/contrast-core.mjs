@@ -82,6 +82,9 @@ export const PAIRS = [
   ...['success', 'info', 'warning', 'minor', 'major', 'critical'].flatMap((s) => [
     [`--vela-text-severity-${s}`, `--vela-bg-severity-${s}`, `Severity ${s} text`, 'text'],
     [`--vela-icon-severity-${s}`, `--vela-bg-severity-${s}`, `Severity ${s} icon`, 'ui'],
+    // The alert's dismiss glyph inherits the severity text colour and sits on --vela-bg-hover
+    // while hovered (it used to sit on an unasserted rgb(0 0 0 / 0.06)). A glyph is non-text.
+    [`--vela-text-severity-${s}`, '--vela-bg-hover', `Severity ${s} dismiss glyph, hovered`, 'ui'],
   ]),
   ...['low', 'medium', 'high'].flatMap((r) => [
     [`--vela-text-risk-${r}`, `--vela-bg-risk-${r}`, `Risk ${r} text`, 'text'],

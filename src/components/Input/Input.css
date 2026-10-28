@@ -1,7 +1,7 @@
 /* ----------------------------------------------------------------- Input -- */
 .vela-field { display: flex; flex-direction: column; gap: var(--vela-space-5); }
 .vela-field__label { font-size: var(--vela-text-h6-size); font-weight: var(--vela-font-weight-semibold); line-height: var(--vela-text-h6-line-height); color: var(--vela-text-default); }
-.vela-field__required { color: var(--vela-text-error); margin-left: 2px; }
+.vela-field__required { color: var(--vela-text-error); margin-left: 2px; } /* vela-allow: needs sizing token, tracked in Phase 0 */
 
 .vela-input {
   width: 100%;

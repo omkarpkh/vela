@@ -59,6 +59,7 @@
     "components:figma:check": "node scripts/figma/check-components.mjs",
     "tokens:check": "npm run tokens && git diff --exit-code -- src/styles/tokens.light.css src/styles/tokens.dark.body.css flutter/lib/vela_tokens.dart flutter/pubspec.yaml bridges/vela.mui-theme.json",
     "rules:check": "node scripts/check-rules.mjs",
+    "css:check": "node scripts/check-css.mjs",
     "build": "npm run clean && npm run tokens && npm run build:js && npm run build:css",
     "build:js": "vite build",
     "build:css": "node scripts/build-css.mjs",
