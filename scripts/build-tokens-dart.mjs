@@ -58,7 +58,8 @@ const str = (s) => `'${s.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`
 /** The Dart source and pubspec for a token set. */
 export function generateDart(set, version) {
   const { all } = set
-  const groupEntries = (group) => Object.entries(set.base[group]).map(([name]) => [name, all[name]])
+  // a group's own $type / $description / $deprecated are not tokens
+  const groupEntries = (group) => Object.keys(set.base[group]).filter((k) => !k.startsWith('$')).map((name) => [name, all[name]])
   const primitiveOf = (name, mode) => {
     const p = set.terminal(name, mode)
     if (all[p].group !== 'primitives') throw new Error(`${name} (${mode}) resolves to ${p}, which is not a primitive`)

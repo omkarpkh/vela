@@ -16,7 +16,8 @@ type StageView = 'both' | Mode
 const VENDOR = 'com.omkarux.vela'
 type Tok = { $type: string; $value: unknown; $extensions?: { [VENDOR]?: { figma?: string } } }
 const ALL: Record<string, Tok> = {}
-for (const [g, toks] of Object.entries(tokensJson as Record<string, unknown>)) if (!g.startsWith('$')) Object.assign(ALL, toks as Record<string, Tok>)
+for (const [g, toks] of Object.entries(tokensJson as Record<string, unknown>))
+  if (!g.startsWith('$')) for (const [n, t] of Object.entries(toks as Record<string, Tok>)) if (!n.startsWith('$')) ALL[n] = t
 const DARK: Record<string, unknown> = {}
 for (const [g, toks] of Object.entries(darkJson as Record<string, unknown>))
   if (!g.startsWith('$')) for (const [n, t] of Object.entries(toks as Record<string, { $value?: unknown }>)) if (!n.startsWith('$')) DARK[n] = t.$value

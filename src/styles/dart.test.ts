@@ -8,6 +8,7 @@ import { execFileSync, spawnSync } from 'node:child_process'
 // the CSS: every token present, every value identical, never edited by hand.
 const root = resolve(process.cwd())
 const doc = JSON.parse(readFileSync(resolve(root, 'tokens/vela.tokens.json'), 'utf8'))
+const overlay = JSON.parse(readFileSync(resolve(root, 'tokens/vela.dark.tokens.json'), 'utf8'))
 const dartPath = resolve(root, 'flutter/lib/vela_tokens.dart')
 const dart = readFileSync(dartPath, 'utf8')
 
@@ -17,13 +18,15 @@ for (const [g, toks] of Object.entries(doc)) {
   if (g.startsWith('$')) continue
   for (const [n, t] of Object.entries(toks as Record<string, any>)) all[n] = { ...t, group: g }
 }
-// Follow aliases to the primitive, per mode — the same walk the CSS custom properties make.
+const dark: Record<string, any> = overlay.color
+// Follow aliases to the primitive, per mode — the same walk the CSS custom properties make. The
+// dark value is the overlay's when it has one; an alias is a full path, and its last segment is
+// the short name the Dart identifiers are built from.
 const terminal = (name: string, mode: 'light' | 'dark'): string => {
-  const t = all[name]
-  let v = t.$value
-  if (mode === 'dark' && t.$extensions?.vela?.dark) v = t.$extensions.vela.dark
-  return typeof v === 'string' && /^\{.+\}$/.test(v) ? terminal(v.slice(1, -1), mode) : name
+  const v = mode === 'dark' && dark[name] ? dark[name].$value : all[name].$value
+  return typeof v === 'string' && /^\{.+\}$/.test(v) ? terminal(v.slice(1, -1).split('.').pop()!, mode) : name
 }
+const hexOf = (c: { components: number[] }) => c.components.map((x) => Math.round(x * 255).toString(16).padStart(2, '0')).join('').toUpperCase()
 // `static const VelaColors light = VelaColors(\n    bgGlobal: VelaPrimitives.white,\n …);`
 const instance = (which: 'light' | 'dark') => {
   const m = new RegExp(`static const VelaColors ${which} = VelaColors\\(([\\s\\S]*?)\\);`).exec(dart)
@@ -32,9 +35,9 @@ const instance = (which: 'light' | 'dark') => {
 }
 
 describe('Dart target', () => {
-  it('declares every primitive with the hex the JSON holds', () => {
+  it('declares every primitive with the colour the JSON holds (opaque: alpha FF, then the sRGB components as a byte each)', () => {
     for (const [name, t] of Object.entries(doc.primitives as Record<string, any>))
-      expect(dart, name).toContain(`static const Color ${ident(name)} = Color(0xFF${t.$value.slice(1).toUpperCase()});`)
+      expect(dart, name).toContain(`static const Color ${ident(name)} = Color(0xFF${hexOf(t.$value)});`)
   })
 
   it('gives every semantic a field, and light/dark instances that resolve to the same primitives as the CSS', () => {
@@ -53,7 +56,7 @@ describe('Dart target', () => {
     for (const [name, t] of Object.entries({ ...doc.sizing, ...doc.typography, ...doc.motion } as Record<string, any>)) {
       if (t.$type === 'dimension') expect(dart, name).toContain(`static const double ${ident(name)} = ${t.$value.value};`)
       else if (t.$type === 'number') expect(dart, name).toContain(`static const FontWeight ${ident(name)} = FontWeight.w${t.$value};`)
-      else if (t.$type === 'duration') expect(dart, name).toContain(`static const Duration ${ident(name)} = Duration(milliseconds: ${parseInt(t.$value)});`)
+      else if (t.$type === 'duration') expect(dart, name).toContain(`static const Duration ${ident(name)} = Duration(milliseconds: ${t.$value.unit === 's' ? t.$value.value * 1000 : t.$value.value});`)
       else if (t.$type === 'cubicBezier') expect(dart, name).toContain(`static const Cubic ${ident(name)} = Cubic(${t.$value.join(', ')});`)
       else if (t.$type === 'fontFamily') expect(dart, name).toContain(`static const String ${ident(name)} = `)
       else throw new Error(`unmapped token type ${t.$type} on ${name}`)

@@ -61,6 +61,7 @@ const entries = []
 for (const [group, tokens] of Object.entries(set.base)) {
   if (group.startsWith('$')) continue
   for (const css of Object.keys(tokens)) {
+    if (css.startsWith('$')) continue // a group's own $type / $description / $deprecated
     const t = set.all[css]
     const figma = set.vendor(t).figma
     if (!figma) continue
