@@ -16,7 +16,7 @@ test('the Button page constrains text-link the way the type does, and the code f
 test('navigation reaches every component and each page lists its tokens', async ({ page }) => {
   await page.goto('/')
   const nav = page.getByRole('navigation', { name: 'Site' })
-  for (const name of ['Button', 'Toggle', 'Input', 'Contextual Alert', 'Status Indicator', 'Tabs']) {
+  for (const name of ['Button', 'Toggle', 'Input', 'Contextual Alert', 'Status Indicator', 'Risk Pill', 'Tabs']) {
     await nav.getByRole('link', { name, exact: true }).click()
     await expect(page.getByRole('heading', { level: 1, name })).toBeVisible()
     await expect(page.getByRole('tab', { name: /^Tokens/ })).not.toHaveText(/Tokens\s*0$/)

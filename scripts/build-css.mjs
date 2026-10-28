@@ -44,6 +44,7 @@ const COMPONENTS = [
   'src/components/Input/Input.css',
   'src/components/ContextualAlert/ContextualAlert.css',
   'src/components/StatusIndicator/StatusIndicator.css',
+  'src/components/RiskPill/RiskPill.css',
   'src/components/Tabs/Tabs.css',
 ]
 

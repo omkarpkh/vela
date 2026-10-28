@@ -52,4 +52,5 @@ behaviour has no Figma expression at all.
 - [Input](components/input.md)
 - [Contextual Alert](components/contextual-alert.md)
 - [Status Indicator](components/status-indicator.md)
+- [Risk Pill](components/risk-pill.md)
 - [Tabs](components/tabs.md)

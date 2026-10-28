@@ -7,7 +7,7 @@ next to an object name.
 
 - An object's ongoing health → **Status Indicator**.
 - An event the user must read → **Contextual Alert**.
-- A risk score → the Risk taxonomy, on a Token Pill (**not in this kit**). Flag the gap.
+- A risk score → **Risk Pill** (the Risk taxonomy, three levels).
 
 ## Props
 
