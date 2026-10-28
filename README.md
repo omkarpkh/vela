@@ -143,11 +143,19 @@ npm run verify     # typecheck + tests + build + pack-and-consume gate
 
 ## Editing tokens — one source, five targets
 
-`tokens/vela.tokens.json` is the only place a value is written. It uses the W3C Design Tokens
-format (2025.10), ships inside the package as `@omkarux/vela/tokens.json`, and everything else is
-generated from it:
+`tokens/vela.tokens.json` is the only place a value is written. `tokens/vela.dark.tokens.json` is
+an overlay holding only the semantic colours that re-point in dark mode, and
+`tokens/vela.resolver.json` says how the two combine. Conforms to DTCG Format, Color and Resolver
+Modules 2025.10 (Final CG Reports, 28 Oct 2025); validated in CI with `npm run tokens:validate`.
+That check parses all three files with `@terrazzo/parser` 2.10.0 — the one third-party reader
+actually tested here, at 0 errors and 0 warnings — then applies Vela's stricter rules (sRGB colour
+objects with a matching `hex`, full-path aliases, `{ value, unit }` durations, one vendor key).
+Other readers are not claimed until they are tested the same way. The files ship inside the
+package as `@omkarux/vela/tokens.json`, `tokens.dark.json` and `tokens.resolver.json`, and
+everything else is generated from them:
 
 ```bash
+npm run tokens:validate # → fails on any DTCG error or warning, and on any legacy shape
 npm run tokens          # → tokens.*.css + flutter/lib/vela_tokens.dart (Flutter) + bridges/vela.mui-theme.json (MUI)
 npm run tokens:figma    # → a Plugin API script that creates-or-updates every Figma variable
 npm run styles:figma    # → a script that creates-or-updates every Figma text style, bound to those variables
