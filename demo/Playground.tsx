@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Button, Toggle, Input, Tabs, cn } from '../src'
 import tokensJson from '../tokens/vela.tokens.json'
+import darkJson from '../tokens/vela.dark.tokens.json'
 import { REGISTRY, type Values } from './playground/registry'
 import { parseSpec, sectionOf, type Control } from './playground/spec'
 import { Markdown } from './playground/Markdown'
@@ -9,23 +10,31 @@ import './playground.css'
 
 type Mode = 'light' | 'dark'
 type StageView = 'both' | Mode
-type Tok = { $type: string; $value: unknown; $extensions?: { vela?: { dark?: string; figma?: string } } }
+// DTCG 2025.10: colours are { colorSpace, components, hex } objects, aliases are full paths
+// ({primitives.grey-700}), the vendor data sits under the reverse-domain key, and the dark
+// values live in tokens/vela.dark.tokens.json — the overlay tokens/vela.resolver.json applies.
+const VENDOR = 'com.omkarux.vela'
+type Tok = { $type: string; $value: unknown; $extensions?: { [VENDOR]?: { figma?: string } } }
 const ALL: Record<string, Tok> = {}
 for (const [g, toks] of Object.entries(tokensJson as Record<string, unknown>)) if (!g.startsWith('$')) Object.assign(ALL, toks as Record<string, Tok>)
+const DARK: Record<string, unknown> = {}
+for (const [g, toks] of Object.entries(darkJson as Record<string, unknown>))
+  if (!g.startsWith('$')) for (const [n, t] of Object.entries(toks as Record<string, { $value?: unknown }>)) if (!n.startsWith('$')) DARK[n] = t.$value
 const KNOWN = Object.keys(ALL).map((n) => `--vela-${n}`)
 
 // The same alias walk the CSS makes, so the pane shows what the browser resolves.
 function resolve(name: string, mode: Mode): string {
   const t = ALL[name]
   if (!t) return '?'
-  let v = t.$value
-  if (mode === 'dark' && t.$extensions?.vela?.dark) v = t.$extensions.vela.dark
-  if (typeof v === 'string' && /^\{.+\}$/.test(v)) return resolve(v.slice(1, -1), mode)
+  const v = mode === 'dark' && name in DARK ? DARK[name] : t.$value
+  if (typeof v === 'string' && /^\{.+\}$/.test(v)) return resolve(v.slice(1, -1).split('.').pop()!, mode)
+  if (t.$type === 'color') { const c = v as { components: number[]; hex?: string }; return c.hex ?? `#${c.components.map((x) => Math.round(x * 255).toString(16).padStart(2, '0')).join('')}` }
   if (t.$type === 'dimension') { const d = v as { value: number; unit: string }; return `${d.value}${d.unit}` }
+  if (t.$type === 'duration') { const d = v as { value: number; unit: string }; return `${d.value}${d.unit}` }
   if (t.$type === 'cubicBezier') return `cubic-bezier(${(v as number[]).join(', ')})`
   return String(v)
 }
-const figmaOf = (name: string) => ALL[name]?.$extensions?.vela?.figma ?? '—'
+const figmaOf = (name: string) => ALL[name]?.$extensions?.[VENDOR]?.figma ?? '—'
 const isColor = (name: string) => ALL[name]?.$type === 'color'
 
 function Field({ c, value, unavailable, onChange }: { c: Control; value: Values[string]; unavailable: string[]; onChange: (v: string | boolean) => void }) {
