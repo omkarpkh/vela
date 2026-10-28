@@ -21,6 +21,8 @@ jobs:
       - run: npm run typecheck
       # The generated targets (CSS, Dart, MUI theme) must match the token source. A hand edit fails here.
       - run: npm run tokens:check
+      # DTCG 2025.10 conformance (Format, Color, Resolver modules) via @terrazzo/parser; a warning fails.
+      - run: npm run tokens:validate
       # Every documented rule carries a proof, or this fails. See scripts/check-rules.mjs.
       - run: npm run rules:check
       - run: npm test
