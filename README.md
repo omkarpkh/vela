@@ -17,6 +17,11 @@ Retired, defined in [`GOVERNANCE.md`](GOVERNANCE.md). All six are currently **Ap
 npm install @omkarux/vela
 ```
 
+The core entry point, `@omkarux/vela`, has zero runtime dependencies. A second, Experimental
+entry point, `@omkarux/vela/headless`, builds the same specs on [Base UI](https://base-ui.com)
+and needs one optional peer: `npm install @base-ui/react@1.9` — only if you import from it. Its
+first component is Tabs; the spec's "Implementations" section says how the two compare.
+
 ```tsx
 import '@omkarux/vela/styles.css'
 import { Button, ContextualAlert, Tabs } from '@omkarux/vela'
