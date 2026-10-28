@@ -5,6 +5,7 @@ import darkJson from '../tokens/vela.dark.tokens.json'
 import { REGISTRY, type Values } from './playground/registry'
 import { parseSpec, sectionOf, type Control } from './playground/spec'
 import { Markdown } from './playground/Markdown'
+import { dependenciesOf } from './pages/Status'
 import { LINKS, figmaUrl } from './links'
 import './playground.css'
 
@@ -100,6 +101,12 @@ function PlaygroundFor({ entry }: { entry: (typeof REGISTRY)[number] }) {
   const v = entry.constrain ? entry.constrain(values) : values
   const unavailable = entry.unavailable?.(v) ?? {}
   const code = entry.code(v, spec)
+  // Two entry points, one playground: the import line and the "Dependencies" line follow the chosen
+  // implementation; a component with one implementation reads its dependencies from the spec.
+  const impl = entry.implementations?.find((i) => i.id === v.implementation) ?? entry.implementations?.[0]
+  const importPath = impl?.entry ?? '@omkarux/vela'
+  const dependencies = impl?.dependencies ?? dependenciesOf(entry.spec)
+  const sourcePath = impl && impl.id !== 'core' ? `src/${impl.id}/${entry.src}/${entry.src}.tsx` : `src/components/${entry.src}/${entry.src}.tsx`
   const bound = entry.bindingKey ? spec.bindings[entry.bindingKey(v)] : undefined
   const boundTokens = new Set(Object.values(bound ?? {}))
   const isBound = entry.highlight ? entry.highlight(v) : (t: string) => boundTokens.has(t)
@@ -122,7 +129,7 @@ function PlaygroundFor({ entry }: { entry: (typeof REGISTRY)[number] }) {
         </div>
         <div className="pg-head__links">
           <a className="vela-meta" href={`https://github.com/omkarpkh/vela/blob/main/guidelines/components/${entry.file}`}>Spec on GitHub</a>
-          <a className="vela-meta" href={`https://github.com/omkarpkh/vela/blob/main/src/components/${entry.src}/${entry.src}.tsx`}>Source</a>
+          <a className="vela-meta" href={`https://github.com/omkarpkh/vela/blob/main/${sourcePath}`}>Source</a>
           <a className="vela-meta" href={figmaUrl(entry.figma)}>Figma</a>
         </div>
       </header>
@@ -137,6 +144,15 @@ function PlaygroundFor({ entry }: { entry: (typeof REGISTRY)[number] }) {
                 </Button>
               ))}
             </div>
+            {entry.implementations && (
+              <div className="pg-toolbar__group" role="group" aria-label="Implementation">
+                {entry.implementations.map((i) => (
+                  <Button key={i.id} size="tiny" variant={impl?.id === i.id ? 'primary' : 'standard'} appearance={impl?.id === i.id ? 'filled' : 'hollow'} onClick={() => setValues((s) => ({ ...s, implementation: i.id }))}>
+                    {i.id}
+                  </Button>
+                ))}
+              </div>
+            )}
             <div className="pg-toolbar__spacer" />
             <Toggle label="Reduced motion" size="tiny" checked={reduced} onChange={setReduced} />
           </div>
@@ -162,6 +178,11 @@ function PlaygroundFor({ entry }: { entry: (typeof REGISTRY)[number] }) {
                   <pre className="pg-code">{code}</pre>
                   <CopyButton text={code} />
                 </div>
+                <p className="pg-p pg-install">
+                  <code>{`import { ${entry.src} } from '${importPath}'`}</code>
+                  {' · '}
+                  <span className="pg-dependencies">Dependencies: {dependencies}</span>
+                </p>
                 <p className="pg-p">Defaults from the Props table are omitted, exactly as the spec's own example writes them.</p>
               </Tabs.Panel>
               <Tabs.Panel value="tokens">
