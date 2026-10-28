@@ -22,7 +22,8 @@ describe('DTCG 2025.10 conformance', () => {
   })
 
   it('the shared reader loads the resolver, the base set and the dark overlay, and refuses legacy shapes', () => {
-    const set = loadTokenSet(root)
+    // the reader is plain JS; `any` keeps TS from inferring `{}` for its token map
+    const set: any = loadTokenSet(root)
     expect(set.contexts).toEqual(['light', 'dark'])
     expect(set.defaultContext).toBe('light')
     expect(set.order).toHaveLength(242)
@@ -48,7 +49,7 @@ describe('$deprecated travels to every target', () => {
   base.primitives['grey-50'].$deprecated = true
   base.motion.$deprecated = true
   base.motion['ease-standard'].$deprecated = false
-  const set = createTokenSet({ base, overlays: { dark: [overlay] } })
+  const set: any = createTokenSet({ base, overlays: { dark: [overlay] } })
 
   it('is read from the token or inherited from its group, and `false` on the token overrides the group', () => {
     expect(set.all['bg-raised'].deprecated).toBe('use bg-container')
