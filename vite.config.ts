@@ -13,12 +13,17 @@ export default defineConfig({
   ],
   build: {
     lib: {
-      entry: './src/index.ts',
+      // Two entry points, one package (decisions/002-agent-ready-direction): `.` is the
+      // zero-dependency core, `./headless` the Base UI-backed one. With preserveModules each
+      // module keeps its path, so the second entry lands at dist/headless/index.js.
+      entry: { index: './src/index.ts', 'headless/index': './src/headless/index.ts' },
       formats: ['es'],
     },
     rollupOptions: {
-      // Never bundle the consumer's React. This is what peerDependencies buys us.
-      external: ['react', 'react-dom', 'react/jsx-runtime'],
+      // Never bundle the consumer's React. This is what peerDependencies buys us. Base UI is the
+      // headless entry's optional peer and is left external for the same reason; verify-pack
+      // asserts the core entry never imports it.
+      external: ['react', 'react-dom', 'react/jsx-runtime', /^@base-ui\//],
       output: {
         preserveModules: true,
         preserveModulesRoot: 'src',

@@ -1,17 +1,20 @@
 /**
  * Publish gate.
  *
- * Builds the real tarball, installs it into a throwaway app, and proves four
+ * Builds the real tarball, installs it into a throwaway app, and proves five
  * things that a green `npm run build` does NOT prove:
- *   1. the exports map resolves (`import { Button } from '@omkarux/vela'`)
+ *   1. the exports map resolves (`import { Button } from '@omkarux/vela'`, and
+ *      `import { Tabs } from '@omkarux/vela/headless'` once the optional peer is installed)
  *   2. the shipped .d.ts typechecks under `strict`
- *   3. the closed prop sets are enforced by the COMPILER, not by review
+ *   3. the closed prop sets are enforced by the COMPILER, not by review — on both entry points
  *   4. no source or test files leaked into the tarball
+ *   5. the core entry point imports no peer but React: "zero runtime dependencies" is asserted
+ *      against the built module graph, not promised in prose
  */
 import { execFileSync } from 'node:child_process'
 import { mkdtempSync, writeFileSync, readFileSync, rmSync, mkdirSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join, dirname } from 'node:path'
+import { join, dirname, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
@@ -46,6 +49,8 @@ const files = packed.files.map((f) => f.path)
 
 check(files.includes('dist/index.js'), 'tarball contains dist/index.js')
 check(files.includes('dist/index.d.ts'), 'tarball contains dist/index.d.ts')
+check(files.includes('dist/headless/index.js'), 'tarball contains dist/headless/index.js')
+check(files.includes('dist/headless/index.d.ts'), 'tarball contains dist/headless/index.d.ts')
 check(files.includes('dist/vela.css'), 'tarball contains dist/vela.css')
 check(files.includes('dist/tokens.css'), 'tarball contains dist/tokens.css')
 check(files.includes('tokens/vela.tokens.json'), 'tarball contains tokens/vela.tokens.json')
@@ -55,6 +60,37 @@ check(files.some((f) => f.startsWith('guidelines/')), 'tarball contains guidelin
 check(!files.some((f) => f.startsWith('src/')), 'no src/ leaked into the tarball')
 check(!files.some((f) => f.includes('.test.')), 'no test files leaked into the tarball')
 console.log(`  ....  ${files.length} files, ${(packed.size / 1024).toFixed(1)} kB packed`)
+
+// 1b. the core entry's module graph ------------------------------------------
+// `@omkarux/vela` promises zero runtime dependencies (README, llms.txt, setup.md, the npm
+// description, decisions/002). The headless entry carries Base UI as an optional peer, and with
+// preserveModules both entries sit in one dist/, so the promise is only as good as the imports
+// reachable from dist/index.js. Walk them: every bare specifier must be React.
+function importGraph(entry) {
+  const seen = new Set()
+  const bare = new Set()
+  const walk = (file) => {
+    if (seen.has(file)) return
+    seen.add(file)
+    const src = readFileSync(file, 'utf8')
+    for (const m of src.matchAll(/^\s*(?:import|export)\b[^'"]*?from\s*['"]([^'"]+)['"]/gm)) {
+      const spec = m[1]
+      if (spec.startsWith('.')) walk(join(dirname(file), spec))
+      else bare.add(spec)
+    }
+  }
+  walk(entry)
+  return { modules: seen, bare }
+}
+const CORE_PEERS_ONLY = ['react', 'react-dom', 'react/jsx-runtime']
+const core = importGraph(join(root, 'dist/index.js'))
+const corePeerLeak = [...core.bare].filter((s) => !CORE_PEERS_ONLY.includes(s))
+check(corePeerLeak.length === 0,
+  `core entry imports no peer${corePeerLeak.length ? `: found ${corePeerLeak.join(', ')}` : ` (${core.modules.size} modules, bare imports: ${[...core.bare].join(', ')})`}`)
+check(![...core.modules].some((f) => f.includes(`${sep}headless${sep}`)), 'core entry reaches nothing under dist/headless/')
+const headless = importGraph(join(root, 'dist/headless/index.js'))
+check([...headless.bare].some((s) => s.startsWith('@base-ui/react/')),
+  `headless entry imports Base UI by per-component subpath (${[...headless.bare].filter((s) => s.startsWith('@base-ui')).join(', ')})`)
 
 // 2. throwaway consumer -----------------------------------------------------
 const app = mkdtempSync(join(tmpdir(), 'vela-consumer-'))
@@ -71,9 +107,13 @@ try {
     include: ['*.tsx'],
   }, null, 2))
 
-  run('npm', ['install', tarball, 'react@19', 'react-dom@19', '@types/react@19',
+  // The optional peer is installed too, as a consumer of `/headless` would install it. The same
+  // pinned version the repository develops against (package.json devDependencies), so the gate
+  // proves the pairing that was actually tested rather than whatever 1.9.x npm resolves today.
+  const baseUi = `@base-ui/react@${JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).devDependencies['@base-ui/react']}`
+  run('npm', ['install', tarball, 'react@19', 'react-dom@19', '@types/react@19', baseUi,
     '--no-audit', '--no-fund', '--silent'], app, { stdio: 'ignore' })
-  check(true, 'npm install of the tarball succeeded')
+  check(true, `npm install of the tarball succeeded (with ${baseUi} for the headless entry)`)
 
   // -- valid usage must compile --
   mkdirSync(join(app, 'src'), { recursive: true })
@@ -114,6 +154,37 @@ export const props: ButtonProps = { variant: 'standard', children: 'OK' }
   }
   check(validOk, 'valid usage typechecks against the shipped .d.ts')
 
+  // -- the headless entry resolves and carries the same API --
+  // Same spec, same prop types: what compiles against `@omkarux/vela` compiles against
+  // `@omkarux/vela/headless`, and a TabsProps from one is assignable to the other.
+  writeFileSync(join(app, 'valid-headless.tsx'), `
+import { Tabs } from '@omkarux/vela/headless'
+import type { TabsProps as CoreTabsProps } from '@omkarux/vela'
+import type { TabsProps as HeadlessTabsProps } from '@omkarux/vela/headless'
+
+export const H = () => (
+  <Tabs defaultValue="a" size="large">
+    <Tabs.List aria-label="Views"><Tabs.Trigger value="a" count={3}>Alerts</Tabs.Trigger><Tabs.Trigger value="b" disabled>Audit</Tabs.Trigger></Tabs.List>
+    <Tabs.Panel value="a">Panel</Tabs.Panel>
+  </Tabs>
+)
+export const I = () => (
+  <Tabs value="a" onValueChange={(v: string) => v}>
+    <Tabs.List aria-label="Views"><Tabs.Trigger value="a">Alerts</Tabs.Trigger></Tabs.List>
+    <Tabs.Panel value="a">Panel</Tabs.Panel>
+  </Tabs>
+)
+export const same = (p: CoreTabsProps): HeadlessTabsProps => p
+export const back = (p: HeadlessTabsProps): CoreTabsProps => p
+`)
+  let headlessOk = true
+  try { run(tsc, ['--noEmit', '-p', 'tsconfig.json'], app) } catch (e) {
+    headlessOk = false
+    console.log((e.stdout || '').toString().split('\n').slice(0, 8).join('\n'))
+  }
+  check(headlessOk, 'headless entry resolves, typechecks, and its Tabs API is the core API')
+  rmSync(join(app, 'valid-headless.tsx'))
+
   // -- invalid usage must NOT compile --
   // Each of these is a rule from the guidelines. If any compiles, the design
   // constraint is documentation only, which is how systems drift.
@@ -148,6 +219,15 @@ export const props: ButtonProps = { variant: 'standard', children: 'OK' }
     let rejected = false
     try { run(tsc, ['--noEmit', '-p', 'tsconfig.json'], app) } catch { rejected = true }
     check(rejected, `compiler rejects: ${name}  [${id}]`)
+  }
+  // The same Tabs fixtures against the headless export. One spec, two implementations: a rule the
+  // core's types reject and the headless types accept would be a rule enforced by one entry point.
+  for (const [id, name, snippet] of violations.filter(([id]) => id.startsWith('tabs-'))) {
+    writeFileSync(join(app, 'invalid.tsx'),
+      `import { Tabs } from '@omkarux/vela/headless'\nexport const X = () => (${snippet})\n`)
+    let rejected = false
+    try { run(tsc, ['--noEmit', '-p', 'tsconfig.json'], app) } catch { rejected = true }
+    check(rejected, `compiler rejects on the headless entry too: ${name}  [${id}]`)
   }
   rmSync(join(app, 'invalid.tsx'))
 
