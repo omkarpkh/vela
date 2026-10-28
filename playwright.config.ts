@@ -52,7 +52,7 @@ export default defineConfig({
   outputDir: 'test-results',
   // No {-projectName} in the template: the width is part of the screenshot name the test
   // builds, so the 1440 baselines keep the names they had before projects existed.
-  snapshotPathTemplate: '{testFileDir}/{testFileName}-snapshots/{arg}{-snapshotSuffix}{ext}',
+  snapshotPathTemplate: '{snapshotDir}/{testFileDir}/{testFileName}-snapshots/{arg}{-snapshotSuffix}{ext}',
   use: {
     baseURL: 'http://localhost:4173',
     deviceScaleFactor: 1,
