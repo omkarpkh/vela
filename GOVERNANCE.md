@@ -49,8 +49,9 @@ through the pipeline.
   marks the exports `@deprecated` and the tokens `$deprecated`. Removal is a major (or, under
   0.x, a minor announced as breaking) at least two minors later.
 
-Today every component is Approved. The six are Button, Toggle, Input, Contextual Alert, Status
-Indicator and Tabs.
+Six components are Approved: Button, Toggle, Input, Contextual Alert, Status Indicator and
+Tabs. Risk Pill is Experimental until its Figma set is published. The docs site lists every
+component's label on its Status page, read from the spec.
 
 ## Breaking changes
 

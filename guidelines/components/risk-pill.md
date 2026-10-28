@@ -3,6 +3,10 @@
 A small read-only pill carrying one of exactly three risk levels, usually in a table cell or
 next to the thing that was scored — a user, an asset, a finding.
 
+**Status:** Experimental — specced, built and tested, but its Figma set is not in the library
+yet (the builder is `scripts/figma/components/risk-pill.figma.js`). Approved once the set is
+published; see `GOVERNANCE.md`.
+
 ## When to use Risk Pill
 
 - A risk **score** on an object → **Risk Pill**.

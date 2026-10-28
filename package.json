@@ -77,7 +77,7 @@
     "test:e2e": "playwright test",
     "test:visual": "playwright test tests/visual",
     "test:visual:update": "playwright test tests/visual --update-snapshots",
-    "test:visual:update:missing": "playwright test tests/visual --update-snapshots=missing",
+    "test:visual:update:missing": "playwright test tests/visual --update-snapshots missing",
     "screenshots": "DOCS=1 playwright test tests/visual/docs.spec.ts",
     "typecheck": "tsc --noEmit",
     "contrast": "node scripts/contrast-report.mjs",

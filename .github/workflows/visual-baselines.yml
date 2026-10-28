@@ -43,7 +43,8 @@ jobs:
         env:
           MODE: ${{ inputs.mode }}
         run: |
-          if [ "$MODE" = "all" ]; then npm run test:visual:update; else npm run test:visual:update:missing; fi
+          # CI= so the config's "never write on CI" rule does not apply to the one job whose purpose is to write.
+          if [ "$MODE" = "all" ]; then CI= npm run test:visual:update; else CI= npm run test:visual:update:missing; fi
       - name: Commit baselines to the branch
         run: |
           git add tests/visual/*-snapshots/*-linux.png

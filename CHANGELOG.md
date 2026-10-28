@@ -6,6 +6,40 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Unreleased]
 
 ### Added
+- **The docs site carries the project record.** New routes: `#/status` (every component's
+  lifecycle label, read from the `**Status:**` line in its spec, so site and spec cannot
+  disagree), `#/changelog`, `#/roadmap`, `#/contributing` and `#/accessibility`, each rendered
+  from the markdown the repository ships. `ROADMAP.md` is the public plan; `ACCESSIBILITY.md`
+  says what is asserted by a machine, what a person checks per release, and what is not yet
+  checked, each with its method.
+- **Risk Pill** — the Risk taxonomy becomes a component. Three levels (`low`, `medium`,
+  `high`), two sizes, closed props with compiler fixtures (`risk-closed-set`,
+  `risk-pill-sizes-closed`), a Figma builder and a playground page. Status: Experimental until
+  its Figma set is published.
+- **DESIGN.md** is the one global-rules document (tokens, the three taxonomies, closed props,
+  states, motion, theming, responsive and density, accessibility, anti-patterns, the
+  not-in-kit list, how to add a component). `AGENTS.md` is now a router to it.
+- **Every spec states its responsive behaviour.** A "Responsive behaviour" section in all
+  seven specs, required by the heading test: what flexes, what is fixed, what wraps, what
+  scrolls, and the gaps named (Tabs has no off-edge cue; breakpoint and density tokens do not
+  exist yet).
+- **Visual CI at four widths.** The component sections are screenshotted at 1440 (the full
+  suite), 1280, 1920 and 400 — 68 screenshots, was 18. Only the CI runner writes the Linux
+  baselines: the pull-request job writes missing ones and commits them for review; the
+  "Visual baselines" workflow regenerates all of them on request. On CI the gate itself never
+  writes a baseline, so a missing screenshot fails instead of passing on a retry.
+- **Tokens conform to DTCG 2025.10** (Format, Color and Resolver modules, Final CG Reports,
+  28 Oct 2025): colours as `{colorSpace, components, hex}` objects, durations as
+  `{value, unit}`, aliases as full paths, vendor data under `com.omkarux.vela`, dark mode as a
+  resolver overlay (`tokens/vela.dark.tokens.json`, `tokens/vela.resolver.json`) instead of a
+  vendor extension. Every generated target is byte-identical to before. `npm run
+  tokens:validate` parses both files with `@terrazzo/parser` and fails on a warning; it runs
+  in `npm test` and as its own CI step.
+- **Thirteen geometry tokens** replace every bare number in component CSS: `stroke-2`,
+  `field-mark-gap`, the seven Toggle track and knob dimensions (knob travel is derived from
+  them), the two Status Indicator dots, and `blur-materialize`. A CSS lint (`npm run
+  css:check`, in `npm test`) fails on a raw colour or a bare length in `src/components`
+  unless waived inline with a reason; no stylesheet carries a waiver.
 - **The project files a public library carries.** `CONTRIBUTING.md` (the one path in: spec,
   tokens, tests, Figma, changelog, PR), `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1),
   `SECURITY.md` (private reporting by email; one maintainer, so 7 days to acknowledge and 30 to

@@ -82,7 +82,8 @@ jobs:
       - name: Write missing Linux baselines (pull requests only)
         if: github.event_name == 'pull_request'
         run: |
-          npm run test:visual:update:missing || true
+          CI= npx playwright test tests/visual --update-snapshots missing --reporter=line || true
+          echo "Baselines written:"; git status --short tests/visual | sed 's/^/  /'
           git add tests/visual/*-snapshots/*-linux.png
           if git diff --cached --quiet; then echo "No missing baseline."; exit 0; fi
           git config user.name "github-actions[bot]"

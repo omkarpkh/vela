@@ -43,6 +43,11 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
+  // Playwright's default is to write a missing baseline and fail that attempt — which a retry
+  // then passes against, so a new width would gate itself on a screenshot nobody reviewed.
+  // On CI the gate never writes: a missing baseline fails until the runner writes it through
+  // the step or workflow that commits it to the branch for review.
+  updateSnapshots: process.env.CI ? 'none' : 'missing',
   reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : [['list']],
   outputDir: 'test-results',
   // No {-projectName} in the template: the width is part of the screenshot name the test
