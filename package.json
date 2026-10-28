@@ -1,7 +1,7 @@
 {
   "name": "@omkarux/vela",
   "version": "0.12.1",
-  "description": "A token-first design system: framework-agnostic tokens and component specs with a React implementation. Tokens compile to CSS, a Figma library, a Flutter theme and a Material UI theme from one source. Two-layer color architecture, separate severity and risk taxonomies, light and dark theming, WCAG AA asserted in CI, zero runtime dependencies.",
+  "description": "A token-first design system: framework-agnostic tokens and component specs with a React implementation. Tokens compile to CSS, a Figma library, a Flutter theme and a Material UI theme from one source. Two-layer colour architecture, separate severity, risk and status taxonomies, light and dark theming, WCAG AA asserted in CI, zero runtime dependencies. Every design rule is tagged with how it is enforced: 11 of 27 by the TypeScript compiler, the rest at runtime, in a browser, or by review.",
   "type": "module",
   "license": "MIT",
   "author": "Omkar Khadamkar",
@@ -9,7 +9,7 @@
     "type": "git",
     "url": "git+https://github.com/omkarpkh/vela.git"
   },
-  "homepage": "https://github.com/omkarpkh/vela#readme",
+  "homepage": "https://omkarpkh.github.io/vela/",
   "bugs": {
     "url": "https://github.com/omkarpkh/vela/issues"
   },

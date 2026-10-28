@@ -19,9 +19,13 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run typecheck
+      # The generated targets (CSS, Dart, MUI theme) must match the token source. A hand edit fails here.
+      - run: npm run tokens:check
       # Every documented rule carries a proof, or this fails. See scripts/check-rules.mjs.
       - run: npm run rules:check
       - run: npm test
+      # demo/checks.json is written from the runners' output and committed; a stale count fails here.
+      - run: npm run checks:check
       - run: npm run contrast
       - run: npm run build
       # Packs the real tarball, installs it into a scratch app, and proves the

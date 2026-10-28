@@ -1,9 +1,16 @@
 # Vela
 
+[![CI](https://img.shields.io/github/actions/workflow/status/omkarpkh/vela/ci.yml?branch=main&label=CI)](https://github.com/omkarpkh/vela/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/%40omkarux%2Fvela?label=npm)](https://www.npmjs.com/package/@omkarux/vela)
+[![Licence: MIT](https://img.shields.io/badge/licence-MIT-blue)](LICENSE)
+
 A token-first design system. The tokens and the component specs are framework-agnostic;
 this repository is a **React implementation** of them. Six components, two themes, zero runtime
 dependencies — and every design rule in the documentation is tagged with how it is enforced: 11 of the
 27 by the TypeScript compiler, the rest at runtime, in a real browser, or by review.
+
+**Status:** every component carries a lifecycle label — Approved, Known bugs, Experimental or
+Retired, defined in [`GOVERNANCE.md`](GOVERNANCE.md). All six are currently **Approved**.
 
 ```bash
 npm install @omkarux/vela
@@ -40,7 +47,7 @@ link to each, and the number of automated checks, written by the test runners ra
 | **Dependencies** | None. `react` / `react-dom` are peers (18.3 or 19) |
 | **Format** | ESM, `preserveModules` for tree-shaking, full `.d.ts` |
 | **Tests** | 238 automated checks — 208 unit and contract (42 contrast pairs, each asserted in both themes), 27 browser, 3 Flutter — counted by `npm run checks` |
-| **Packed size** | 67.6 kB, 53 files, as `npm run verify` measures it |
+| **Packed size** | 72.3 kB, 53 files, as `npm run verify` measures it (README and CHANGELOG ship in the tarball, so this moves when they do) |
 
 ## The three ideas worth stealing
 
@@ -135,11 +142,15 @@ document.documentElement.removeAttribute('data-theme')        // follow the OS
 
 ```bash
 npm run dev        # demo showcase at localhost:5174
-npm test           # 188 unit and contract tests
+npm test           # 208 unit and contract tests, of 238 checks in all — the numbers are generated into demo/checks.json
 npm run checks     # counts every automated check into demo/checks.json (diffed in verify)
 npm run contrast   # WCAG report for both themes
-npm run verify     # typecheck + tests + build + pack-and-consume gate
+npm run verify     # tokens:check + rules:check + typecheck + tests + checks:check + build + pack-and-consume gate
 ```
+
+The counts are copied from `demo/checks.json`, which `scripts/count-checks.mjs` writes from the
+test runners' own output and `verify` diffs, so that file cannot go stale. This README copy is
+checked at each release; the numbers here are for 0.12.1.
 
 ## Editing tokens — one source, five targets
 
@@ -201,6 +212,23 @@ specced: Checkbox, Radio, Dropdown List, Select List, Token Pill, Number Stepper
 Modal, Tooltip, Icon Button, Actions Dropdown, View Switcher. The guidelines name these
 explicitly so an agent flags the gap instead of inventing one.
 
+## Project files
+
+| File | What it settles |
+|---|---|
+| [`CONTRIBUTING.md`](CONTRIBUTING.md) | The one path in: spec, tokens, tests, Figma, changelog, PR |
+| [`DESIGN.md`](DESIGN.md) | Why the system looks the way it does |
+| [`GOVERNANCE.md`](GOVERNANCE.md) | Who decides; the component lifecycle labels; what counts as breaking |
+| [`VERSIONING.md`](VERSIONING.md) | Semver for a design system, and the two-minor deprecation window |
+| [`RELEASING.md`](RELEASING.md) | The release checklist, in order |
+| [`SECURITY.md`](SECURITY.md) | How to report a vulnerability privately |
+| [`SUPPORT.md`](SUPPORT.md) | Where to ask, and what is not supported |
+| [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) | Contributor Covenant 2.1 |
+| [`decisions/`](decisions/README.md) | Decision records, indexed, with a template |
+| [`NOTICE`](NOTICE) · [`LICENSE-DESIGN.md`](LICENSE-DESIGN.md) | Third-party notices; the Figma library's licence |
+
 ## License
 
-MIT
+MIT for the code, tokens and documentation ([`LICENSE`](LICENSE)). The Figma library is
+published on Figma Community under CC BY 4.0 and additionally under MIT; see
+[`LICENSE-DESIGN.md`](LICENSE-DESIGN.md).
