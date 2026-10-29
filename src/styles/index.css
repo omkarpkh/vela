@@ -12,3 +12,6 @@
 @import '../components/Tabs/Tabs.css';
 @import '../headless/Checkbox/Checkbox.css';
 @import '../headless/RadioGroup/RadioGroup.css';
+@import '../headless/Popover/Popover.css';
+@import '../headless/Tooltip/Tooltip.css';
+@import '../headless/Dialog/Dialog.css';

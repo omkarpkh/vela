@@ -50,6 +50,10 @@ const COMPONENTS = [
   // ships in the one bundle like every other — the styles carry no dependency, only the JS does.
   'src/headless/Checkbox/Checkbox.css',
   'src/headless/RadioGroup/RadioGroup.css',
+  // The overlays: Popover.css also carries the shared portal rule, so it comes first.
+  'src/headless/Popover/Popover.css',
+  'src/headless/Tooltip/Tooltip.css',
+  'src/headless/Dialog/Dialog.css',
 ]
 
 const banner = `/*! @omkarux/vela — design tokens + component styles. MIT. */\n`

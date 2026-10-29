@@ -114,6 +114,11 @@ export const PAIRS = [
   ['--vela-text-default',       '--vela-bg-raised',    'Overlay body on raised surface',   'text'],
   ['--vela-border-default',     '--vela-bg-container', 'Overlay edge on container',        'ui'],
   ['--vela-text-tooltip',       '--vela-bg-tooltip',   'Tooltip text',                     'text'],
+  // The Dialog's close glyph is icon-strong, at rest on the raised surface and, hovered, on the
+  // standard button's hover fill — not bg-hover, which in dark IS the raised surface (grey-850) and
+  // would give the hover nothing to show.
+  ['--vela-icon-strong',        '--vela-bg-raised',             'Dialog close glyph',          'ui'],
+  ['--vela-icon-strong',        '--vela-btn-standard-hover-bg', 'Dialog close glyph, hovered', 'ui'],
   ['--vela-btn-standard-border','--vela-btn-standard-bg', 'Standard button border', 'ui'],
   ['--vela-border-default',     '--vela-bg-global',       'Default border on page', 'ui'],
   ['--vela-border-active',  '--vela-bg-global',  'Focus ring',          'ui'],

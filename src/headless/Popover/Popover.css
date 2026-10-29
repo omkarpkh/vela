@@ -1,0 +1,59 @@
+/* --------------------------------------------------------------- Overlays -- */
+/* Shared by Popover, Tooltip and Dialog (headless). The portal element carries .vela-root so the
+   kit's base styles, focus ring and reduced-motion collapse reach a popup portalled to <body>;
+   .vela-root paints --vela-bg-global, which a zero-height portal must not. */
+.vela-overlay-portal { background: transparent; }
+
+/* ---------------------------------------------------------------- Popover -- */
+/* guidelines/components/popover.md. Keys on Base UI's transition attributes (data-starting-style,
+   data-ending-style) and its data-side, which are the only signals the positioner gives; the
+   contract never depends on them. */
+/* The gap to the trigger is padding on the side facing it: the spacing scale writes the value, not JS. */
+.vela-popover__positioner { z-index: var(--vela-layer-overlay); }
+.vela-popover__positioner[data-side='bottom'] { padding-top: var(--vela-space-5); }
+.vela-popover__positioner[data-side='top'] { padding-bottom: var(--vela-space-5); }
+.vela-popover__positioner[data-side='inline-start'] { padding-inline-end: var(--vela-space-5); }
+.vela-popover__positioner[data-side='inline-end'] { padding-inline-start: var(--vela-space-5); }
+.vela-popover__positioner[data-side='left'] { padding-right: var(--vela-space-5); }
+.vela-popover__positioner[data-side='right'] { padding-left: var(--vela-space-5); }
+
+.vela-popover {
+  display: flex; flex-direction: column; gap: var(--vela-space-10);
+  width: var(--vela-popover-width);
+  /* Never wider or taller than the room beside the trigger; the body scrolls, the title stays. */
+  max-width: var(--available-width);
+  max-height: var(--available-height);
+  padding: var(--vela-space-15);
+  background: var(--vela-bg-raised);
+  color: var(--vela-text-default);
+  /* No shadow: no elevation token exists. The edge is the border, asserted against page and container. */
+  border: 1px solid var(--vela-border-default);
+  border-radius: var(--vela-radius-4);
+  transform-origin: var(--transform-origin);
+  transition: opacity var(--vela-duration-base) var(--vela-ease-standard),
+              transform var(--vela-duration-base) var(--vela-ease-standard);
+}
+.vela-popover--wide { width: var(--vela-popover-width-wide); }
+
+/* Appearing: a fade and a step of travel from the trigger. Leaving: the fade only, softer. */
+.vela-popover[data-starting-style] { opacity: 0; transform: translateY(calc(var(--vela-space-5) * -1)); }
+.vela-popover[data-side='top'][data-starting-style] { transform: translateY(var(--vela-space-5)); }
+.vela-popover[data-side='inline-start'][data-starting-style],
+.vela-popover[data-side='inline-end'][data-starting-style],
+.vela-popover[data-side='left'][data-starting-style],
+.vela-popover[data-side='right'][data-starting-style] { transform: none; }
+.vela-popover[data-ending-style] { opacity: 0; }
+/* From the keyboard, nothing animates (foundations/motion.md). */
+.vela-popover[data-instant],
+.vela-popover[data-vela-instant] { transition: none; }
+
+.vela-popover__title {
+  margin: 0;
+  font-size: var(--vela-text-h5-size); font-weight: var(--vela-text-h5-weight); line-height: var(--vela-text-h5-line-height);
+  color: var(--vela-text-heading);
+}
+.vela-popover__body {
+  min-height: 0; overflow-y: auto;
+  font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height);
+  overflow-wrap: break-word;
+}

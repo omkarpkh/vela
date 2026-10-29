@@ -1,0 +1,27 @@
+/* ---------------------------------------------------------------- Tooltip -- */
+/* guidelines/components/tooltip.md. The one inverted surface in the kit: text-tooltip on
+   bg-tooltip, asserted in PAIRS. The gap to the trigger is positioner padding, as on Popover. */
+.vela-tooltip__positioner { z-index: var(--vela-layer-overlay); }
+.vela-tooltip__positioner[data-side='bottom'] { padding-top: var(--vela-space-5); }
+.vela-tooltip__positioner[data-side='top'] { padding-bottom: var(--vela-space-5); }
+.vela-tooltip__positioner[data-side='inline-start'] { padding-inline-end: var(--vela-space-5); }
+.vela-tooltip__positioner[data-side='inline-end'] { padding-inline-start: var(--vela-space-5); }
+.vela-tooltip__positioner[data-side='left'] { padding-right: var(--vela-space-5); }
+.vela-tooltip__positioner[data-side='right'] { padding-left: var(--vela-space-5); }
+
+.vela-tooltip {
+  max-width: min(var(--vela-tooltip-width-max), var(--available-width, 100vw));
+  padding: var(--vela-space-5) var(--vela-space-10);
+  background: var(--vela-bg-tooltip);
+  color: var(--vela-text-tooltip);
+  border-radius: var(--vela-radius-4);
+  font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height);
+  overflow-wrap: break-word;
+  transition: opacity var(--vela-duration-base) var(--vela-ease-standard);
+}
+.vela-tooltip[data-starting-style],
+.vela-tooltip[data-ending-style] { opacity: 0; }
+/* From the keyboard nothing animates: Base UI marks a focus-opened tooltip data-instant, and the
+   component marks an Escape or keyboard close data-vela-instant. */
+.vela-tooltip[data-instant],
+.vela-tooltip[data-vela-instant] { transition: none; }
