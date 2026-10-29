@@ -51,6 +51,16 @@ Background `--vela-control-bg`; border `--vela-control-border`; hover
 These are the **input family** heights and do not match Button's ramp. See
 `foundations/sizing.md`.
 
+## Responsive behaviour
+
+An Input **fills its container** (`width: 100%`) — the container decides the width, never the
+component, so a form sets the column and the field follows it at every breakpoint. Label, hint
+and error sit above and below in a column and wrap at the container width; the error message
+is never clipped, because a hidden reason is the worst state a field can be in. The control
+height is fixed per size and does not change with width. In a host narrower than about 20
+characters the field is still correct, only short. Density tokens do not exist yet (see
+`DESIGN.md`, *Responsive and density*); until they do, sizes are the only density control.
+
 ## Accessibility
 
 - Label is a real `<label htmlFor>`.

@@ -7,6 +7,8 @@ import { FOUNDATIONS, COMPONENTS } from './nav'
 import { LINKS, figmaUrl } from './links'
 import { Overview } from './pages/Overview'
 import { Foundation } from './pages/Foundation'
+import { Doc, DOCS } from './pages/Doc'
+import { Status } from './pages/Status'
 import { Adopt } from './Adopt'
 import { Playground } from './Playground'
 import { How } from './pages/How'
@@ -35,6 +37,8 @@ const titleFor = (r: Route) =>
   : r.kind === 'foundation' ? FOUNDATIONS.find((f) => f.id === r.id)?.title
   : r.kind === 'adopt' ? 'Adopt without rewrite'
   : r.kind === 'how' ? 'How it is made'
+  : r.kind === 'status' ? 'Component status'
+  : r.kind === 'doc' ? DOCS.find((d) => d.id === r.id)?.title
   : 'Overview'
 
 export function App() {
@@ -122,6 +126,14 @@ export function App() {
             <h3>Demos</h3>
             <NavLink to={{ kind: 'adopt' }} current={route}>Adopt without rewrite</NavLink>
           </div>
+          <div className="sitenav__group">
+            <h3>Project</h3>
+            <NavLink to={{ kind: 'status' }} current={route}>Component status</NavLink>
+            <NavLink to={{ kind: 'doc', id: 'changelog' }} current={route}>Changelog</NavLink>
+            <NavLink to={{ kind: 'doc', id: 'roadmap' }} current={route}>Roadmap</NavLink>
+            <NavLink to={{ kind: 'doc', id: 'contributing' }} current={route}>Contributing</NavLink>
+            <NavLink to={{ kind: 'doc', id: 'accessibility' }} current={route}>Accessibility</NavLink>
+          </div>
           <p className="vela-meta sitenav__foot">Pages and controls are generated from <code>guidelines/</code> and the token file.</p>
         </nav>
 
@@ -131,6 +143,8 @@ export function App() {
           {route.kind === 'foundation' && <Foundation id={route.id} />}
           {route.kind === 'adopt' && <Adopt mode={theme} />}
           {route.kind === 'how' && <How />}
+          {route.kind === 'status' && <Status />}
+          {route.kind === 'doc' && <Doc key={route.id} id={route.id} />}
           <footer className="demo-footer vela-meta">
             Zero runtime dependencies · ESM · light + dark · WCAG 2.1 AA asserted in CI
           </footer>

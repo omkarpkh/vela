@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question or idea
+    url: https://github.com/omkarpkh/vela/discussions
+    about: How to use a component, token or bridge, or an idea that is not yet a request. Issues are for defects and requests with the form filled in.
+  - name: Security vulnerability
+    url: https://github.com/omkarpkh/vela/blob/main/SECURITY.md
+    about: Report privately by email, as SECURITY.md says. Never in a public issue.

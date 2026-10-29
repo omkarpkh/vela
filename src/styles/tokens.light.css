@@ -289,9 +289,23 @@
   --vela-focus-ring-offset: 2px;
   --vela-focus-ring-color: var(--vela-border-active);
 
+  /* ---- Strokes and component geometry (named so no component carries a bare number) ---- */
+  --vela-stroke-2: 2px;
+  --vela-field-mark-gap: 2px;
+  --vela-toggle-track-width: 34px;
+  --vela-toggle-track-height: 20px;
+  --vela-toggle-track-width-tiny: 26px;
+  --vela-toggle-track-height-tiny: 15px;
+  --vela-toggle-knob-size: 16px;
+  --vela-toggle-knob-size-tiny: 11px;
+  --vela-toggle-knob-inset: 2px;
+  --vela-status-dot: 10px;
+  --vela-status-dot-small: 8px;
+
   /* ---- Motion (respects reduced-motion in components.css) ---- */
   --vela-duration-instant: 70ms;
   --vela-duration-fast: 120ms;
   --vela-duration-base: 180ms;
   --vela-ease-standard: cubic-bezier(0.2, 0, 0.2, 1);
+  --vela-blur-materialize: 2px;
 }

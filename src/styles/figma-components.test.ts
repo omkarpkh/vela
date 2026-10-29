@@ -17,7 +17,7 @@ const cli = (...args: string[]) => {
 const lintReport: Record<string, { problems: { rule: string; node: string; what: string; waived: boolean }[]; allow: { rule: string; reason: string }[] }> = JSON.parse(cli('--lint'))
 const dump = (name: string) => JSON.parse(cli('--dump', name))
 const styles: any[] = JSON.parse(execFileSync('node', ['scripts/figma/text-styles.mjs', '--json'], { cwd: root, encoding: 'utf8' }))
-const BUILDERS = ['button', 'contextual-alert', 'input', 'status-indicator', 'tabs', 'toggle']
+const BUILDERS = ['button', 'contextual-alert', 'input', 'risk-pill', 'status-indicator', 'tabs', 'toggle']
 
 describe('Figma builders, built in the mock Plugin API', () => {
   it('runs every builder', () => {
@@ -85,6 +85,39 @@ describe('Contextual Alert, as the library has it', () => {
     expect(entries.find((e) => e.set === 'Contextual Alert').description).toContain(
       'The status mark is a simple shape: a circle for success and info, a triangle for warning, minor and major, an octagon for critical. It stays until Vela has an icon set. Severity is also carried by the title text, never by colour alone.',
     )
+  })
+})
+
+describe('Risk Pill, as the builder creates it', () => {
+  const pill = dump('risk-pill')
+  const RISK = ['low', 'medium', 'high']
+
+  it('has Risk × Size variants and the Label text property, nothing literal', () => {
+    expect(pill.variants.map((v: any) => v.n)).toEqual(RISK.flatMap((r) => ['regular', 'small'].map((s) => `Risk=${r}, Size=${s}`)))
+    expect(Object.keys(pill.defs).map((k) => k.replace(/#.*$/, '')).sort()).toEqual(['Label text', 'Risk', 'Size'])
+    expect(lintReport['risk-pill'].allow).toEqual([])
+  })
+
+  it('binds every fill, stroke and label to that level’s own risk row — never severity, never status', () => {
+    for (const v of pill.variants) {
+      const risk = v.n.match(/Risk=(\w+)/)![1]
+      expect(v.fill).toEqual([`risk/${risk}/bg`])
+      expect(v.stroke).toEqual([`risk/${risk}/border`])
+      expect(v.sw).toBe(1)
+      expect(v.rad[1]).toBe('radius/3')
+      const label = v.ch.find((c: any) => c.t === 'TEXT')
+      expect([label.n, label.style, label.fill]).toEqual(['Label', 'Body/Meta', [`risk/${risk}/text`]])
+      expect(Object.keys(label.ref)).toEqual(['characters'])
+    }
+  })
+
+  it('regular binds control-height/24 and pads space/10; small hugs its text and pads space/5', () => {
+    for (const v of pill.variants) {
+      const small = v.n.endsWith('Size=small')
+      expect(v.sz).toBe(small ? 'AUTO/AUTO' : 'AUTO/FIXED')
+      expect(v.wh[3]).toBe(small ? null : 'control-height/24')
+      expect(v.pad.map((p: any) => p[1])).toEqual(small ? [null, 'space/5', null, 'space/5'] : [null, 'space/10', null, 'space/10'])
+    }
   })
 })
 

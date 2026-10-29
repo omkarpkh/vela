@@ -12,6 +12,7 @@ below, then open the per-component file for props, tokens, and anti-patterns.
 | Input | Single-line text entry | `components/input.md` |
 | Contextual Alert | Inline severity banner (success/info/warning/minor/major/critical) | `components/contextual-alert.md` |
 | Status Indicator | A health dot for one of five states | `components/status-indicator.md` |
+| Risk Pill | A read-only risk score (low/medium/high) on an object | `components/risk-pill.md` |
 | Tabs | Navigate between different content panels | `components/tabs.md` |
 
 ## Disambiguations (where AI usually picks wrong)
@@ -21,11 +22,13 @@ below, then open the per-component file for props, tokens, and anti-patterns.
 - **Tabs vs View Switcher** — different content sections → **Tabs**. The *same* dataset
   rendered differently (Grid / Dashboard / Chart) → **View Switcher**, which is not in this
   kit. If only the presentation of one dataset changes, do not reach for Tabs.
-- **Contextual Alert vs Status Indicator** — an event the user must read → **Alert**.
-  An object's ongoing health, usually in a table cell → **Status Indicator**.
+- **Contextual Alert vs Status Indicator vs Risk Pill** — an event the user must read →
+  **Alert**. An object's ongoing health, usually in a table cell → **Status Indicator**. A
+  risk *score* on an object → **Risk Pill**. A removable filter chip → Token Pill, not in this kit.
 - **Severity vs Risk vs Status** — three taxonomies, never interchangeable.
-  Severity (6 levels) describes *events*. Risk (3 levels) describes *scoring*. Status
-  (5 states) is the dot only. There is no "high severity" and no "critical risk".
+  Severity (6 levels) describes *events* and is Contextual Alert's. Risk (3 levels) describes
+  *scoring* and is Risk Pill's. Status (5 states) is the Status Indicator dot only. There is no
+  "high severity" and no "critical risk".
 
 ## If no component fits
 

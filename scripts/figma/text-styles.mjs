@@ -19,6 +19,7 @@
 import { readFileSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
+import { VENDOR, pxOf } from '../tokens-core.mjs'
 
 export const FAMILY = 'Open Sans'
 export const WEIGHT_STYLE = { 300: 'Light', 400: 'Regular', 600: 'SemiBold' }
@@ -41,15 +42,16 @@ const EXTRA = [
     description: 'The count beside a large tab label. Same size and line height as Tab/Large, semibold.' },
 ]
 
-const px = (t) => (t.$value && typeof t.$value === 'object' ? t.$value.value : t.$value)
+// A dimension is { value, unit: "px" }; a weight is a plain number.
+const px = (t, css) => (t.$type === 'dimension' ? pxOf(t.$value, css) : t.$value)
 
-/** The style list, resolved against the token document: names, values, and the variables to bind. */
+/** The style list, resolved against the token document (tokens/vela.tokens.json as parsed): names, values, and the variables to bind. */
 export function textStyles(doc) {
   const typ = doc.typography
   const tok = (css) => {
     const t = typ[css]
     if (!t) throw new Error(`text-styles: no token ${css}`)
-    return { css, figma: t.$extensions?.vela?.figma, value: px(t) }
+    return { css, figma: t.$extensions?.[VENDOR]?.figma, value: px(t, css) }
   }
   const compose = (name, s, weightCss, description = '') => {
     const size = tok(`text-${s}-size`), lineHeight = tok(`text-${s}-line-height`), weight = tok(weightCss)

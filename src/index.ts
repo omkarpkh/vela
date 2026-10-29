@@ -31,6 +31,9 @@ export type { ContextualAlertProps, Severity } from './components/ContextualAler
 export { StatusIndicator } from './components/StatusIndicator'
 export type { StatusIndicatorProps, Status } from './components/StatusIndicator'
 
+export { RiskPill } from './components/RiskPill'
+export type { RiskPillProps, Risk } from './components/RiskPill'
+
 export { Tabs } from './components/Tabs'
 export type { TabsProps, TabListProps, TabTriggerProps, TabPanelProps } from './components/Tabs'
 

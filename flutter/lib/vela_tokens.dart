@@ -1111,6 +1111,23 @@ abstract final class VelaSizing {
   static const double radiusFull = 9999;
   static const double focusRingWidth = 2;
   static const double focusRingOffset = 2;
+  /// Strokes that are not borders: the Button spinner arc and the selected-tab underline. Hairline borders stay 1px and need no token.
+  static const double stroke2 = 2;
+  /// Gap between a field label and its required mark. Not a step of the spacing scale, which starts at 5.
+  static const double fieldMarkGap = 2;
+  /// Regular track. The knob travel is track width minus knob size minus twice the inset, so these four tokens move together.
+  static const double toggleTrackWidth = 34;
+  static const double toggleTrackHeight = 20;
+  static const double toggleTrackWidthTiny = 26;
+  static const double toggleTrackHeightTiny = 15;
+  static const double toggleKnobSize = 16;
+  static const double toggleKnobSizeTiny = 11;
+  /// Distance from the track edge to the knob, both sizes.
+  static const double toggleKnobInset = 2;
+  /// Status Indicator dot, regular.
+  static const double statusDot = 10;
+  /// Status Indicator dot, small — for dense tables.
+  static const double statusDotSmall = 8;
 }
 
 /// Motion: three durations and the one curve. A press lands on [durationInstant]; pointer
@@ -1125,6 +1142,8 @@ abstract final class VelaMotion {
   static const Duration durationBase = Duration(milliseconds: 180);
   /// The only curve. Never a bare ease.
   static const Cubic easeStandard = Cubic(0.2, 0, 0.2, 1);
+  /// The spinner appearing. The only blur in the kit: motion is feedback, never decoration.
+  static const double blurMaterialize = 2;
 }
 
 /// Type ramp. Sizes and line-heights in logical pixels; each composed [TextStyle] sets

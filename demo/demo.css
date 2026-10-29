@@ -77,3 +77,15 @@ body { margin: 0; background: var(--vela-bg-global); }
 .how-table code, .how-list code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.92em; }
 .how-list { margin: 0 0 var(--vela-space-20); padding-left: 1.2em; }
 .how-list li { margin: 0 0 var(--vela-space-10); }
+
+/* ---------------------------------------------------------- Status page -- */
+.status-table { width: 100%; border-collapse: collapse; font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height); }
+.status-table th, .status-table td { text-align: left; vertical-align: top; padding: var(--vela-space-10) var(--vela-space-10) var(--vela-space-10) 0; border-bottom: 1px solid var(--vela-border-default); }
+.status-table thead th { font-size: var(--vela-text-meta-size); font-weight: var(--vela-font-weight-semibold); color: var(--vela-text-de-emphasized); letter-spacing: var(--vela-text-meta-tracking); text-transform: uppercase; }
+.status-table tbody th { font-weight: var(--vela-font-weight-semibold); white-space: nowrap; }
+.status-label { display: inline-block; padding: 0 var(--vela-space-5); border: 1px solid var(--vela-border-default); border-radius: var(--vela-radius-4); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); }
+.status-label--experimental { border-color: var(--vela-border-severity-warning); color: var(--vela-text-severity-warning); background: var(--vela-bg-severity-warning); }
+.status-label--known-bugs { border-color: var(--vela-border-severity-minor); color: var(--vela-text-severity-minor); background: var(--vela-bg-severity-minor); }
+.status-label--retired { color: var(--vela-text-inactive); }
+.status-note { display: block; margin-top: var(--vela-space-5); max-width: 42ch; }
+@media (max-width: 900px) { .status-table { display: block; overflow-x: auto; } }

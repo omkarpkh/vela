@@ -1,0 +1,67 @@
+name: Component request
+description: A need no component in the kit covers.
+title: "[Component] "
+labels: [component-request]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Vela's rule is never to invent a component: name the closest match and flag the gap. This form is the flag. Read `guidelines/overview.md` first, including the disambiguations and the list of components not yet specced.
+  - type: textarea
+    id: need
+    attributes:
+      label: What the user is doing
+      description: The task, not the widget. "Choosing one of four scan schedules before saving", not "a radio group".
+    validations:
+      required: true
+  - type: dropdown
+    id: closest
+    attributes:
+      label: Closest existing component
+      description: The one you would reach for if you had to ship today.
+      options:
+        - Button
+        - Toggle
+        - Input
+        - Contextual Alert
+        - Status Indicator
+        - Tabs
+        - None comes close
+    validations:
+      required: true
+  - type: textarea
+    id: gap
+    attributes:
+      label: Why it does not fit
+      description: Which rule in its spec you would have to break, or which behaviour it lacks. Quote the spec.
+    validations:
+      required: true
+  - type: dropdown
+    id: listed
+    attributes:
+      label: Is it on the "not yet specced" list?
+      description: Checkbox, Radio, Dropdown List, Select List, Token Pill, Number Stepper, Text Area, Modal, Tooltip, Icon Button, Actions Dropdown, View Switcher.
+      options:
+        - "Yes"
+        - "No"
+    validations:
+      required: true
+  - type: textarea
+    id: taxonomy
+    attributes:
+      label: Taxonomies and tokens
+      description: Does it carry Severity, Risk or Status, and which one only? Which existing semantic tokens would it bind? A new colour pair means a new entry in `PAIRS`.
+  - type: textarea
+    id: spec
+    attributes:
+      label: Draft spec
+      description: Optional. Intent, when to use, a closed props table, hard constraints. The headings in `CONTRIBUTING.md` are the shape it must take to merge.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I searched existing issues and discussions.
+          required: true
+        - label: I read `guidelines/overview.md`, including the disambiguations.
+          required: true

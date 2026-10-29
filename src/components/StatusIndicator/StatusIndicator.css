@@ -2,10 +2,10 @@
 .vela-status { display: inline-flex; align-items: center; gap: var(--vela-space-5); }
 .vela-status__dot {
   flex: none;
-  width: 10px; height: 10px;
+  width: var(--vela-status-dot); height: var(--vela-status-dot);
   border-radius: var(--vela-radius-full);   /* the ONLY component that uses radius-full */
 }
-.vela-status--small .vela-status__dot { width: 8px; height: 8px; }
+.vela-status--small .vela-status__dot { width: var(--vela-status-dot-small); height: var(--vela-status-dot-small); }
 .vela-status__label { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
 
 .vela-status--unknown   .vela-status__dot { background: var(--vela-signal-status-unknown); }

@@ -15,15 +15,16 @@
  *
  * Idempotent: it looks variables up by collection + name and updates them, so
  * re-running never duplicates. The mapping from token name → Figma name lives
- * in each token's $extensions.vela.figma, extracted from the live file, so the
- * names here match the library exactly.
+ * in each token's $extensions["com.omkarux.vela"].figma, extracted from the live
+ * file, so the names here match the library exactly. The Dark mode values come
+ * from tokens/vela.dark.tokens.json through the resolver (scripts/tokens-core.mjs).
  */
-import { readFileSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { loadTokenSet, isAlias, aliasPath, hexOf, alphaOf, pxOf, msOf, cubicBezierOf, deprecationNote } from './tokens-core.mjs'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
-const doc = JSON.parse(readFileSync(join(root, 'tokens/vela.tokens.json'), 'utf8'))
+const set = loadTokenSet(root)
 
 const SCOPES = {
   primitive: [],
@@ -32,8 +33,14 @@ const SCOPES = {
   icon: ['SHAPE_FILL', 'STROKE_COLOR'],
   space: ['WIDTH_HEIGHT', 'GAP'], 'control-height': ['WIDTH_HEIGHT'], iconSize: ['WIDTH_HEIGHT'],
   radius: ['CORNER_RADIUS'], size: ['FONT_SIZE'], 'line-height': ['LINE_HEIGHT'], weight: ['FONT_WEIGHT'],
+  // Scopes decide which property picker offers a variable. Stroke weights (the focus ring, stroke/2)
+  // belong in the stroke-weight picker, not width/height; a gap in the gap picker; letter-spacing in
+  // its own; a motion-group float (the materialise blur) in the effect picker. The live library had
+  // three of these right by hand before the sync carried them — figma.test.ts pins them now.
+  stroke: ['STROKE_FLOAT'], focusSize: ['STROKE_FLOAT'], field: ['GAP'],
+  tracking: ['LETTER_SPACING'], effect: ['EFFECT_FLOAT'],
 }
-const scopesFor = (group, figmaName, cssName) => {
+const scopesFor = (group, figmaName, cssName, type) => {
   if (group === 'primitives') return SCOPES.primitive
   const head = figmaName.split('/')[0], last = figmaName.split('/').pop()
   if (group === 'color') {
@@ -47,9 +54,14 @@ const scopesFor = (group, figmaName, cssName) => {
     }
     return SCOPES[head] ?? SCOPES.bg
   }
-  if (group === 'sizing') return head === 'icon' ? SCOPES.iconSize : (SCOPES[head] ?? ['WIDTH_HEIGHT'])
-  // TIMING and EASING variables have no scopes — setting any throws — the type decides where Figma offers them
-  if (group === 'motion') return null
+  if (group === 'sizing') {
+    if (head === 'icon') return SCOPES.iconSize
+    if (head === 'focus') return SCOPES.focusSize
+    return SCOPES[head] ?? ['WIDTH_HEIGHT']
+  }
+  // TIMING and EASING variables have no scopes — setting any throws — the type decides where Figma
+  // offers them. A FLOAT in the motion group (a dimension such as the blur) does take scopes.
+  if (group === 'motion') return type === 'FLOAT' ? SCOPES.effect : null
   return SCOPES[head] ?? []
 }
 
@@ -57,10 +69,12 @@ const collectionOf = { primitives: 'Primitives', color: 'Color', sizing: 'Sizing
 // `--only <Collection>` limits the printed script to one collection (the MCP script cap is 50 KB).
 const only = process.argv.includes('--only') ? process.argv[process.argv.indexOf('--only') + 1] : null
 const entries = []
-for (const [group, tokens] of Object.entries(doc)) {
+for (const [group, tokens] of Object.entries(set.base)) {
   if (group.startsWith('$')) continue
-  for (const [css, t] of Object.entries(tokens)) {
-    const figma = t.$extensions?.vela?.figma
+  for (const css of Object.keys(tokens)) {
+    if (css.startsWith('$')) continue // a group's own $type / $description / $deprecated
+    const t = set.all[css]
+    const figma = set.vendor(t).figma
     if (!figma) continue
     // Colours become COLOR variables and numbers FLOAT. The motion tokens use Figma's own motion
     // types (Figma Motion, June 2026): a duration is a TIMING variable — Figma keeps timing in
@@ -68,23 +82,32 @@ for (const [group, tokens] of Object.entries(doc)) {
     // A Figma Motion timeline can bind them; a prototype transition still cannot (foundations/motion.md).
     if (t.$type === 'fontFamily') continue
     const type = t.$type === 'color' ? 'COLOR' : t.$type === 'duration' ? 'TIMING' : t.$type === 'cubicBezier' ? 'EASING' : 'FLOAT'
-    const value = (v) =>
-      t.$type === 'dimension' ? v.value
-      : t.$type === 'duration' ? Number(String(v).replace(/ms$/, '')) / 1000
-      : t.$type === 'cubicBezier' ? { type: 'CUSTOM_CUBIC_BEZIER', easingFunctionCubicBezier: { x1: v[0], y1: v[1], x2: v[2], y2: v[3] } }
-      : v
+    // An alias stays a `{path}` string here and becomes a VARIABLE_ALIAS below; a colour object
+    // becomes the hex the Plugin API script turns into RGB.
+    const value = (v) => {
+      if (isAlias(v)) return v
+      if (t.$type === 'color') {
+        if (alphaOf(v, css) < 1) throw new Error(`sync-figma: ${css} has alpha ${v.alpha}; the Figma sync carries opaque colours only`)
+        return hexOf(v, css)
+      }
+      if (t.$type === 'dimension') return pxOf(v, css)
+      if (t.$type === 'duration') return msOf(v, css) / 1000
+      if (t.$type === 'cubicBezier') { const [x1, y1, x2, y2] = cubicBezierOf(v, css); return { type: 'CUSTOM_CUBIC_BEZIER', easingFunctionCubicBezier: { x1, y1, x2, y2 } } }
+      return v
+    }
+    const note = deprecationNote(t)
     entries.push({
       collection: collectionOf[group], name: figma, css,
       type,
-      light: value(t.$value),
-      dark: t.$type === 'color' ? (t.$extensions?.vela?.dark ?? t.$value) : undefined,
-      scopes: scopesFor(group, figma, css),
-      description: t.$description ?? '',
+      light: value(set.valueOf(css, 'light')),
+      dark: t.$type === 'color' ? value(set.valueOf(css, 'dark')) : undefined,
+      scopes: scopesFor(group, figma, css, type),
+      description: note ? `${note[0].toUpperCase()}${note.slice(1)}.${t.$description ? ' ' + t.$description : ''}` : (t.$description ?? ''),
     })
   }
 }
 
-// `{name}` aliases refer to other tokens by CSS name → resolve to Figma names. Resolved over EVERY
+// `{path}` aliases refer to other tokens by full path → resolve to Figma names. Resolved over EVERY
 // token before `--only` narrows the output: a Color alias points into Primitives, and a lookup built
 // from the filtered list once turned every such value into `{}`.
 const figmaNameOf = Object.fromEntries(entries.map((e) => [e.css, e.name]))
@@ -92,9 +115,9 @@ const collOf = Object.fromEntries(entries.map((e) => [e.css, e.collection]))
 for (const e of entries) {
   for (const k of ['light', 'dark']) {
     const v = e[k]
-    if (typeof v === 'string' && /^\{.+\}$/.test(v)) {
-      const target = v.slice(1, -1)
-      if (!figmaNameOf[target]) throw new Error(`sync-figma: ${e.css} aliases {${target}}, which has no Figma name`)
+    if (isAlias(v)) {
+      const target = set.byPath[aliasPath(v)].name
+      if (!figmaNameOf[target]) throw new Error(`sync-figma: ${e.css} aliases {${aliasPath(v)}}, which has no Figma name`)
       e[k] = { alias: figmaNameOf[target], collection: collOf[target] }
     }
   }

@@ -3,6 +3,105 @@
 All notable changes to this project are documented here.
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **The docs site carries the project record.** New routes: `#/status` (every component's
+  lifecycle label, read from the `**Status:**` line in its spec, so site and spec cannot
+  disagree), `#/changelog`, `#/roadmap`, `#/contributing` and `#/accessibility`, each rendered
+  from the markdown the repository ships. `ROADMAP.md` is the public plan; `ACCESSIBILITY.md`
+  says what is asserted by a machine, what a person checks per release, and what is not yet
+  checked, each with its method.
+- **Risk Pill** — the Risk taxonomy becomes a component. Three levels (`low`, `medium`,
+  `high`), two sizes, closed props with compiler fixtures (`risk-closed-set`,
+  `risk-pill-sizes-closed`), a Figma builder and a playground page. Status: Experimental until
+  its Figma set is published.
+- **DESIGN.md** is the one global-rules document (tokens, the three taxonomies, closed props,
+  states, motion, theming, responsive and density, accessibility, anti-patterns, the
+  not-in-kit list, how to add a component). `AGENTS.md` is now a router to it.
+- **Every spec states its responsive behaviour.** A "Responsive behaviour" section in all
+  seven specs, required by the heading test: what flexes, what is fixed, what wraps, what
+  scrolls, and the gaps named (Tabs has no off-edge cue; breakpoint and density tokens do not
+  exist yet).
+- **Visual CI at four widths.** The component sections are screenshotted at 1440 (the full
+  suite), 1280, 1920 and 400 — 68 screenshots, was 18. Only the CI runner writes the Linux
+  baselines: the pull-request job writes missing ones and commits them for review; the
+  "Visual baselines" workflow regenerates all of them on request. On CI the gate itself never
+  writes a baseline, so a missing screenshot fails instead of passing on a retry.
+- **Tokens conform to DTCG 2025.10** (Format, Color and Resolver modules, Final CG Reports,
+  28 Oct 2025): colours as `{colorSpace, components, hex}` objects, durations as
+  `{value, unit}`, aliases as full paths, vendor data under `com.omkarux.vela`, dark mode as a
+  resolver overlay (`tokens/vela.dark.tokens.json`, `tokens/vela.resolver.json`) instead of a
+  vendor extension. Every generated target is byte-identical to before. `npm run
+  tokens:validate` parses both files with `@terrazzo/parser` and fails on a warning; it runs
+  in `npm test` and as its own CI step.
+- **Twelve geometry tokens** replace every bare number in component CSS: `stroke-2`,
+  `field-mark-gap`, the seven Toggle track and knob dimensions (knob travel is derived from
+  them), the two Status Indicator dots, and `blur-materialize`. A CSS lint (`npm run
+  css:check`, in `npm test`) fails on a raw colour or a bare length in `src/components`
+  unless waived inline with a reason; no stylesheet carries a waiver.
+- **The project files a public library carries.** `CONTRIBUTING.md` (the one path in: spec,
+  tokens, tests, Figma, changelog, PR), `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1),
+  `SECURITY.md` (private reporting by email; one maintainer, so 7 days to acknowledge and 30 to
+  assess, no bounty), `SUPPORT.md`, `GOVERNANCE.md` (single maintainer; the component lifecycle
+  labels Approved, Known bugs, Experimental and Retired, with "Main components — do not touch"
+  on the Figma sources; what counts as breaking), `VERSIONING.md` (semver for a design system:
+  token, prop, taxonomy, class and Figma renames are breaking; a two-minor deprecation window;
+  `$deprecated` on tokens and `@deprecated` on exports with a dev-only warning), `RELEASING.md`
+  (the checklist, tag-driven), `NOTICE` (Open Sans and Oswald under OFL 1.1, the Covenant under
+  CC BY 4.0, and Base UI and Lucide listed as planned and not yet included) and
+  `LICENSE-DESIGN.md` (the Figma library under CC BY 4.0 and additionally MIT; the Figma
+  Community listing is planned, not yet live; attribution "Vela by Omkar Khadamkar (omkarux.com)"). GitHub issue forms for a bug, a
+  component request (it asks for the closest existing component and why it does not fit) and a
+  token request, a PR template that mirrors `CONTRIBUTING.md`, and a contact config pointing
+  questions at Discussions.
+- **Decision records have an index and a template.** `decisions/README.md` numbers the existing
+  press-feedback record 001 without renaming its folder, and `decisions/TEMPLATE.md` carries its
+  headings. `decisions/002-agent-ready-direction` records the 28 October decisions: extend rather
+  than restart; React first, then the framework-agnostic contract; Base UI for behaviour under
+  Vela's CSS and tokens, no Tailwind; a second entry point `@omkarux/vela/headless` with Base UI
+  as an optional peer while `@omkarux/vela` stays zero-dependency; a security-console agentic
+  component set as the differentiator; zero spend; approval gates on `main`, npm and the Figma
+  library. The rejected options and their reasons are in the record.
+- CI's `verify` job now runs `npm run tokens:check` and `npm run checks:check` after the
+  typecheck, in the order the local `npm run verify` runs them. Until now a hand-edited generated
+  file or a stale `demo/checks.json` failed locally and passed in CI.
+
+### Fixed
+- **Correction to the 0.3.0 entry, 28 October 2026.** It says Code Connect "requires an
+  Organization or Enterprise Figma plan". Figma's Code Connect help page now lists the
+  Professional plan too, with a Full or Dev seat, limited to one active library and one active
+  framework. The 0.3.0 statement was Figma's position at the time and the entry is left as
+  written; this note is the correction. The related statement in 0.5.0, that writing variables
+  through the REST API needs an Enterprise plan, still holds: Figma's variables endpoints say
+  "available to full members of Enterprise orgs", so the generated-script route stays.
+  *Further correction, 29 October 2026:* Professional is listed, but Figma Community Support
+  states that on Professional, Code Connect mappings cannot be created through the MCP server
+  (forum thread 59258, 23–27 October 2026); the Figma thread's attempt was rejected with "only
+  Organization or Enterprise libraries". Mappings can still be made in Figma's Code Connect panel
+  by hand, or with the Code Connect CLI if the account's token carries the scope. The route is
+  decided in `requests/figma-thread-to-repo.md` (R7) and recorded here when it lands.
+- **The npm `description` and the README now say the same thing about enforcement.** The README
+  and `llms.txt` have said "11 of the 27 rules by the TypeScript compiler, the rest at runtime, in
+  a real browser, or by review" since the rule-coverage gate landed; the description said nothing
+  about how rules are enforced, which left the registry listing open to being read as "all of
+  them". It now carries the same hedged sentence. `homepage` points at the docs site,
+  https://omkarpkh.github.io/vela/, instead of the GitHub README.
+- **Stale counts in the README.** The Scripts block said `npm test` runs 188 unit tests;
+  `demo/checks.json`, which `scripts/count-checks.mjs` writes from the runners' output, says 208
+  unit and 238 in all at 0.12.1. The README now quotes the generated numbers and says where they
+  come from. The packed size moves from 67.6 kB to 72.3 kB (53 files, unchanged) because
+  `README.md` and `CHANGELOG.md` ship in the tarball and both grew in this entry; the row now
+  says so.
+- **`.claude/launch.json` carried a personal macOS path** in a second launch configuration that
+  had nothing to do with Vela. It is removed; the file keeps the one generic entry, which starts
+  the demo on port 5174.
+
+### Changed
+- README: shields.io badges for CI, the npm version and the licence (static badge URLs, no new
+  service), a "Project files" section linking the files above, and a status line stating that
+  the lifecycle labels exist and every component is currently Approved.
+
 ## [0.12.1] — 2026-10-09
 
 ### Fixed

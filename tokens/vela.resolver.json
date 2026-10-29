@@ -1,0 +1,38 @@
+{
+  "$schema": "https://www.designtokens.org/schemas/2025.10/resolver.json",
+  "name": "Vela",
+  "version": "2025.10",
+  "description": "How the Vela token files combine. Resolution order: the base set (every token, light values) then the `theme` modifier — `light` (the default) overlays nothing; `dark` overlays vela.dark.tokens.json, which re-points only the semantic colours that change. The spec prose disagrees with itself on `version` (2025-10-01 vs 2025-11-01); the published JSON Schema and Terrazzo both require \"2025.10\", which is used here.",
+  "sets": {
+    "base": {
+      "description": "Every Vela token with its light value: primitives, semantic colour, sizing, typography and motion.",
+      "sources": [
+        {
+          "$ref": "vela.tokens.json"
+        }
+      ]
+    }
+  },
+  "modifiers": {
+    "theme": {
+      "description": "Light is the base; dark re-points the semantic colour layer onto other primitives.",
+      "default": "light",
+      "contexts": {
+        "light": [],
+        "dark": [
+          {
+            "$ref": "vela.dark.tokens.json"
+          }
+        ]
+      }
+    }
+  },
+  "resolutionOrder": [
+    {
+      "$ref": "#/sets/base"
+    },
+    {
+      "$ref": "#/modifiers/theme"
+    }
+  ]
+}

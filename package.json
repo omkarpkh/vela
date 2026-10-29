@@ -1,7 +1,7 @@
 {
   "name": "@omkarux/vela",
   "version": "0.12.1",
-  "description": "A token-first design system: framework-agnostic tokens and component specs with a React implementation. Tokens compile to CSS, a Figma library, a Flutter theme and a Material UI theme from one source. Two-layer color architecture, separate severity and risk taxonomies, light and dark theming, WCAG AA asserted in CI, zero runtime dependencies.",
+  "description": "A token-first design system: framework-agnostic tokens and component specs with a React implementation. Tokens compile to CSS, a Figma library, a Flutter theme and a Material UI theme from one source. Two-layer colour architecture, separate severity, risk and status taxonomies, light and dark theming, WCAG AA asserted in CI, zero runtime dependencies. Every design rule is tagged with how it is enforced: 13 of 32 by the TypeScript compiler, the rest at runtime, in a browser, or by review.",
   "type": "module",
   "license": "MIT",
   "author": "Omkar Khadamkar",
@@ -9,7 +9,7 @@
     "type": "git",
     "url": "git+https://github.com/omkarpkh/vela.git"
   },
-  "homepage": "https://github.com/omkarpkh/vela#readme",
+  "homepage": "https://omkarpkh.github.io/vela/",
   "bugs": {
     "url": "https://github.com/omkarpkh/vela/issues"
   },
@@ -28,6 +28,8 @@
     "./guidelines/*": "./guidelines/*",
     "./package.json": "./package.json",
     "./tokens.json": "./tokens/vela.tokens.json",
+    "./tokens.dark.json": "./tokens/vela.dark.tokens.json",
+    "./tokens.resolver.json": "./tokens/vela.resolver.json",
     "./tokens.dart": "./flutter/lib/vela_tokens.dart",
     "./mui-theme.json": "./bridges/vela.mui-theme.json"
   },
@@ -58,7 +60,9 @@
     "components:figma:read": "node scripts/figma/check-components.mjs --read",
     "components:figma:check": "node scripts/figma/check-components.mjs",
     "tokens:check": "npm run tokens && git diff --exit-code -- src/styles/tokens.light.css src/styles/tokens.dark.body.css flutter/lib/vela_tokens.dart flutter/pubspec.yaml bridges/vela.mui-theme.json",
+    "tokens:validate": "node scripts/validate-tokens.mjs",
     "rules:check": "node scripts/check-rules.mjs",
+    "css:check": "node scripts/check-css.mjs",
     "build": "npm run clean && npm run tokens && npm run build:js && npm run build:css",
     "build:js": "vite build",
     "build:css": "node scripts/build-css.mjs",
@@ -73,6 +77,7 @@
     "test:e2e": "playwright test",
     "test:visual": "playwright test tests/visual",
     "test:visual:update": "playwright test tests/visual --update-snapshots",
+    "test:visual:update:missing": "playwright test tests/visual --update-snapshots missing",
     "screenshots": "DOCS=1 playwright test tests/visual/docs.spec.ts",
     "typecheck": "tsc --noEmit",
     "contrast": "node scripts/contrast-report.mjs",
@@ -88,6 +93,7 @@
     "@emotion/styled": "^11.14.1",
     "@mui/material": "^9.4.0",
     "@playwright/test": "^1.63.0",
+    "@terrazzo/parser": "2.10.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.1.0",
     "@testing-library/user-event": "^14.5.2",

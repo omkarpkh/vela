@@ -1,0 +1,49 @@
+Vela
+Copyright (c) 2026 Omkar Khadamkar
+
+Vela's code, tokens and documentation are licensed under the MIT License (see LICENSE).
+The Figma library is additionally licensed as LICENSE-DESIGN.md states.
+
+This file lists third-party material Vela uses or names. Licence texts are not copied here;
+each entry links to the canonical text.
+
+------------------------------------------------------------------------------------------
+
+INCLUDED OR REFERENCED
+
+Open Sans
+  Copyright 2020 The Open Sans Project Authors
+  Licence: SIL Open Font License 1.1 — https://openfontlicense.org/open-font-license-official-text/
+  Source: https://github.com/googlefonts/opensans
+  Use: named by the typography tokens as the UI face. Not bundled in the npm package; the demo
+  site loads it from Google Fonts, a consumer loads it however they choose.
+
+Oswald
+  Copyright 2016 The Oswald Project Authors
+  Licence: SIL Open Font License 1.1 — https://openfontlicense.org/open-font-license-official-text/
+  Source: https://github.com/googlefonts/OswaldFont
+  Use: named by the typography tokens for large stat displays. Not bundled.
+
+Contributor Covenant, version 2.1
+  Copyright Coraline Ada Ehmke and contributors
+  Licence: Creative Commons Attribution 4.0 — https://creativecommons.org/licenses/by/4.0/
+  Source: https://www.contributor-covenant.org/version/2/1/code_of_conduct/
+  Use: CODE_OF_CONDUCT.md is the Covenant text with the contact address filled in.
+
+------------------------------------------------------------------------------------------
+
+PLANNED — NOT YET INCLUDED
+
+Named in decisions/002-agent-ready-direction. Neither is a dependency of @omkarux/vela 0.12.1,
+and this section is corrected the day one lands.
+
+Base UI (@base-ui-components/react)
+  Licence: MIT — https://github.com/mui/base-ui/blob/master/LICENSE
+  Planned use: behaviour and accessibility primitives under Vela's own CSS, as an optional peer
+  dependency of a separate entry point (@omkarux/vela/headless). The default entry point stays
+  zero-dependency.
+
+Lucide
+  Licence: ISC, with portions of Feather Icons under MIT — https://github.com/lucide-icons/lucide/blob/main/LICENSE
+  Planned use: the icon set. Vela currently ships a handful of inline SVG glyphs of its own in
+  src/lib/icons.tsx.

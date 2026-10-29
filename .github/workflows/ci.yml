@@ -19,9 +19,15 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run typecheck
+      # The generated targets (CSS, Dart, MUI theme) must match the token source. A hand edit fails here.
+      - run: npm run tokens:check
+      # DTCG 2025.10 conformance (Format, Color, Resolver modules) via @terrazzo/parser; a warning fails.
+      - run: npm run tokens:validate
       # Every documented rule carries a proof, or this fails. See scripts/check-rules.mjs.
       - run: npm run rules:check
       - run: npm test
+      # demo/checks.json is written from the runners' output and committed; a stale count fails here.
+      - run: npm run checks:check
       - run: npm run contrast
       - run: npm run build
       # Packs the real tarball, installs it into a scratch app, and proves the
@@ -54,14 +60,38 @@ jobs:
   # On a failure the diff report is uploaded so the change can be judged, not guessed.
   visual:
     runs-on: ubuntu-latest
+    # On a pull request the job may commit missing Linux baselines to the PR branch (below).
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          # The PR head, not the synthetic merge commit, so new baselines can be pushed back.
+          ref: ${{ github.head_ref || github.ref }}
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
+      # A new section or a new width has no baseline yet. Only the runner may write a -linux
+      # baseline (a laptop writes -darwin; a fontless container writes the wrong face), so on a
+      # pull request the runner writes the MISSING ones, commits them to the branch for review
+      # in the PR diff, and then gates against them below. Existing baselines are never rewritten
+      # here: that is a deliberate act via the "Visual baselines" workflow with mode=all.
+      - name: Write missing Linux baselines (pull requests only)
+        if: github.event_name == 'pull_request'
+        run: |
+          CI= npx playwright test tests/visual --update-snapshots missing --reporter=line || true
+          echo "Baselines written:"; git status --short tests/visual | sed 's/^/  /'
+          git add tests/visual/*-snapshots/*-linux.png
+          if git diff --cached --quiet; then echo "No missing baseline."; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          n=$(git diff --cached --name-only | wc -l | tr -d ' ')
+          git commit -m "Visual baselines (missing): ${n} Linux screenshots written by the CI runner" \
+                     -m "Written by the visual job of run ${{ github.run_id }} for review in this PR."
+          git push origin HEAD:${{ github.head_ref }}
       - run: npm run test:e2e
       - uses: actions/upload-artifact@v4
         if: always()

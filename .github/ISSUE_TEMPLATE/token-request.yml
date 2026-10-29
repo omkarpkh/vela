@@ -1,0 +1,71 @@
+name: Token request
+description: A role no semantic token covers, or a value that should change.
+title: "[Token] "
+labels: [token-request]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Read `guidelines/tokens.md` first. Every token is `--vela-<layer>-<role>[-<modifier>]`; the decision tree there finds the one that covers most needs. Components bind semantic tokens only, so a request for a primitive needs a reason a semantic cannot give.
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind
+      options:
+        - New semantic token
+        - New primitive
+        - Change a value
+        - Rename or remove (breaking; see VERSIONING.md)
+    validations:
+      required: true
+  - type: input
+    id: name
+    attributes:
+      label: Proposed name
+      description: In the convention from `guidelines/tokens.md`, plus the Figma name in its collection's convention.
+      placeholder: "--vela-control-border-warning · control/border-warning"
+    validations:
+      required: true
+  - type: textarea
+    id: role
+    attributes:
+      label: The role it fills
+      description: What is being coloured or sized, in what context, in what state. Name the component that would bind it.
+    validations:
+      required: true
+  - type: textarea
+    id: existing
+    attributes:
+      label: Closest existing token and why it does not cover this
+      description: Name it. "None" needs the decision tree to have been walked.
+    validations:
+      required: true
+  - type: textarea
+    id: values
+    attributes:
+      label: Values
+      description: For a semantic, the primitive it aliases in light and in dark. For a primitive, the hex. For a change, before and after.
+      placeholder: "light: primary-500 · dark: primary-400"
+    validations:
+      required: true
+  - type: textarea
+    id: contrast
+    attributes:
+      label: Contrast pairs
+      description: Every foreground/background pair this creates, in both themes, with the ratio if you have it. Each goes in `PAIRS` in `scripts/contrast-core.mjs`. Text needs 4.5:1, UI boundaries and signals 3:1.
+    validations:
+      required: true
+  - type: textarea
+    id: targets
+    attributes:
+      label: Other targets
+      description: Anything the Dart, MUI or Figma targets need to know. Most tokens need nothing here.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I searched existing issues.
+          required: true
+        - label: I walked the decision tree in `guidelines/tokens.md`.
+          required: true

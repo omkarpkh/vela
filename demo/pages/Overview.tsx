@@ -1,10 +1,11 @@
 import { useState } from 'react'
-import { Button, Toggle, Input, ContextualAlert, StatusIndicator, Tabs } from '../../src'
-import type { Severity, Status } from '../../src'
+import { Button, Toggle, Input, ContextualAlert, StatusIndicator, RiskPill, Tabs } from '../../src'
+import type { Severity, Status, Risk } from '../../src'
 import { PlusIcon } from '../../src/lib/icons'
 
 const SEVERITIES: Severity[] = ['success', 'info', 'warning', 'minor', 'major', 'critical']
 const STATUSES: Status[] = ['unknown', 'healthy', 'warning', 'medium', 'unhealthy']
+const RISKS: Risk[] = ['low', 'medium', 'high']
 const SIZES = ['tiny', 'regular', 'large', 'huge'] as const
 
 function Section({ title, note, children }: { title: string; note?: string; children: React.ReactNode }) {
@@ -32,7 +33,7 @@ export function Overview() {
       <header className="page-head">
         <p className="vela-meta page-head__eyebrow">Overview</p>
         <h1 className="vela-h2">Every component, every state</h1>
-        <p className="vela-meta">6 components · 42 contrast pairs, each asserted in both themes · switch the theme in the top bar · <a href="#/how">how it is made</a></p>
+        <p className="vela-meta">7 components · 48 contrast pairs, each asserted in both themes · switch the theme in the top bar · <a href="#/how">how it is made</a></p>
       </header>
       <Section title="Button" note="variant encodes consequence · appearance encodes weight · sizes are a closed set of four">
         <div className="demo-row">
@@ -99,6 +100,19 @@ export function Overview() {
         <p className="vela-meta">Without a visible label the dot still carries a text alternative:</p>
         <div className="demo-row">
           {STATUSES.map((s) => <StatusIndicator key={s} status={s} />)}
+        </div>
+      </Section>
+
+      <Section title="Risk Pill" note="three risk levels — a score, not an event and not health · a label, never a control">
+        <div className="demo-row">
+          {RISKS.map((r) => <RiskPill key={r} risk={r} />)}
+          <RiskPill risk="high" label="High · 87" />
+        </div>
+        <p className="vela-meta">Small, for dense tables — the regular size shares Button tiny's height:</p>
+        <div className="demo-row">
+          {RISKS.map((r) => <RiskPill key={r} risk={r} size="small" />)}
+          <Button size="tiny" appearance="hollow">Review</Button>
+          <RiskPill risk="medium" />
         </div>
       </Section>
 

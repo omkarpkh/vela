@@ -2,7 +2,7 @@
 
 > A token-first design system. Two-layer colour architecture (primitives -> semantics), three
 > deliberately separate status taxonomies, full light and dark theming, zero runtime dependencies.
-> 11 of the 27 design rules are enforced by the TypeScript types; the rest are checked at runtime, in a
+> 13 of the 32 design rules are enforced by the TypeScript types; the rest are checked at runtime, in a
 > real browser, or by review. Each rule in the component guidelines is tagged with its level.
 >
 > THESE SPECS ARE FRAMEWORK-AGNOSTIC. The published package is a React implementation of them, and
@@ -16,8 +16,11 @@
 > `tokens.dart` (`VelaColors`, `VelaSizing`, `VelaTypography`, `velaThemeData`) — bind `VelaColors`
 > semantics, never `VelaPrimitives`.
 
-Read `overview.md` first: it maps a user need to a component and lists the choices agents
-most often get wrong. Then read the per-component file before generating any markup.
+Read **`DESIGN.md`** (repository root) first: it is the single global-rules document — the token
+grammar, the three taxonomies, closed prop sets, states, motion, theming, responsive and density
+rules, what CI asserts for accessibility, every anti-pattern, and what is not in the kit. Then
+`overview.md`, which maps a user need to a component and lists the choices agents most often get
+wrong. Then the per-component file before generating any markup.
 
 ## Hard rules (apply everywhere)
 - Bind SEMANTIC tokens (`var(--vela-text-default)`). Never a primitive (`--vela-grey-700`), never raw hex.
@@ -36,6 +39,7 @@ every variable carrying its `var(--vela-*)` name for Dev Mode. Each component's 
 behaviour has no Figma expression at all.
 
 ## Docs
+- [Global design rules — read first](../DESIGN.md)
 - [Component catalogue and disambiguations](overview.md)
 - [Install and theming](setup.md)
 - [Token naming and lookup](tokens.md)
@@ -52,4 +56,5 @@ behaviour has no Figma expression at all.
 - [Input](components/input.md)
 - [Contextual Alert](components/contextual-alert.md)
 - [Status Indicator](components/status-indicator.md)
+- [Risk Pill](components/risk-pill.md)
 - [Tabs](components/tabs.md)
