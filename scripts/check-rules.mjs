@@ -123,8 +123,8 @@ if (proven.length) {
     proven.forEach((f, i) => {
       writeFileSync(join(dir, `f${i}.tsx`),
         `import { Button, ContextualAlert, Input, RiskPill, StatusIndicator, Tabs, Toggle } from '${join(root, 'src')}'\n` +
-        // Checkbox, Radio Group, Popover, Tooltip and Dialog ship from the headless entry only.
-        `import { Checkbox, RadioGroup, Popover, Tooltip, Dialog } from '${join(root, 'src/headless')}'\n` +
+        // Checkbox, Radio Group, Popover, Tooltip, Dialog and Toast ship from the headless entry only.
+        `import { Checkbox, RadioGroup, Popover, Tooltip, Dialog, ToastProvider, useToast } from '${join(root, 'src/headless')}'\n` +
         `export const X = () => (${f.snippet})\n`)
     })
     writeFileSync(join(dir, 'tsconfig.json'), JSON.stringify({

@@ -268,6 +268,40 @@ export const props: [PopoverProps, TooltipProps, DialogProps, DialogProps, Dialo
   check(overlaysOk, 'headless Popover, Tooltip and Dialog (standard and alert) typecheck in every documented shape')
   rmSync(join(app, 'valid-overlays.tsx'))
 
+  // -- the headless Toast: every documented shape compiles --
+  // The Toast fixtures call `useToast().add(…)`; they prove nothing unless a valid call compiles, the
+  // Severity subset is assignable to the core's Severity, and the provider takes its closed props.
+  writeFileSync(join(app, 'valid-toast.tsx'), `
+import { Button } from '@omkarux/vela'
+import type { Severity } from '@omkarux/vela'
+import { ToastProvider, useToast } from '@omkarux/vela/headless'
+import type { ToastProviderProps, ToastOptions, ToastAction, ToastApi, ToastSeverity, ToastPlacement, ToastLimit } from '@omkarux/vela/headless'
+
+export const A = () => <ToastProvider><Button>Save</Button></ToastProvider>
+export const B = () => <ToastProvider placement="top-end" limit={1} label="Notifications" dismissLabel="Dismiss"><span /></ToastProvider>
+export const C = () => <ToastProvider placement="bottom-center" limit={2}><span /></ToastProvider>
+export function D() {
+  const toast: ToastApi = useToast()
+  const id: string = toast.add({ title: 'Policy saved' })
+  toast.add({ title: 'Policy saved', description: 'Applies to 14 tenants.', severity: 'success' })
+  toast.add({ title: 'Saved with 2 rules skipped', severity: 'warning' })
+  toast.add({ title: 'Policy archived', severity: 'info', action: { label: 'Undo', onClick: () => {} } })
+  toast.dismiss(id)
+  return null
+}
+export const sub = (s: ToastSeverity): Severity => s
+export const shapes: [ToastProviderProps, ToastOptions, ToastAction, ToastPlacement, ToastLimit] = [
+  { children: null }, { title: 'T' }, { label: 'Undo', onClick: () => {} }, 'bottom-end', 3,
+]
+`)
+  let toastOk = true
+  try { run(tsc, ['--noEmit', '-p', 'tsconfig.json'], app) } catch (e) {
+    toastOk = false
+    console.log((e.stdout || '').toString().split('\n').slice(0, 8).join('\n'))
+  }
+  check(toastOk, 'headless ToastProvider and useToast() typecheck in every documented shape, and ToastSeverity is a Severity')
+  rmSync(join(app, 'valid-toast.tsx'))
+
   // -- invalid usage must NOT compile --
   // Each of these is a rule from the guidelines. If any compiles, the design
   // constraint is documentation only, which is how systems drift.
@@ -334,11 +368,31 @@ export const props: [PopoverProps, TooltipProps, DialogProps, DialogProps, Dialo
     ['alert-dialog-requires-cancel-and-confirm', 'alert with no onConfirm', `<Dialog variant="alert" title="Delete policy?" cancelLabel="Keep Policy" confirmLabel="Delete Policy" />`],
     ['alert-dialog-actions-are-fixed', 'alert with its own footer', `<Dialog variant="alert" title="Delete policy?" cancelLabel="Keep" confirmLabel="Delete Policy" onConfirm={() => {}} footer={<Button>Delete</Button>} />`],
     ['alert-dialog-actions-are-fixed', 'alert with a close button label', `<Dialog variant="alert" title="Delete policy?" cancelLabel="Keep" confirmLabel="Delete Policy" onConfirm={() => {}} closeLabel="Close" />`],
+    // Toast ships from `@omkarux/vela/headless` only. `add` is called on the hook's result, so each
+    // fixture is an expression; every one carries a valid title unless the title is the point.
+    ['toast-title-required', 'toast with no title', `useToast().add({ severity: "success" })`],
+    ['toast-title-required', 'toast title as a node', `useToast().add({ title: <b>Policy saved</b> })`],
+    ['toast-description-is-text', 'toast description holding a link', `useToast().add({ title: "Report ready", description: <a href="/reports">Open</a> })`],
+    ['toast-severity-closed', 'critical toast', `useToast().add({ title: "Data loss detected", severity: "critical" })`],
+    ['toast-severity-closed', 'major toast', `useToast().add({ title: "Scan failed", severity: "major" })`],
+    ['toast-severity-closed', 'invented toast severity', `useToast().add({ title: "Save failed", severity: "error" })`],
+    ['toast-severity-closed', 'risk used as a toast severity', `useToast().add({ title: "Policy saved", severity: "high" })`],
+    ['toast-severity-closed', 'status used as a toast severity', `useToast().add({ title: "Node restarted", severity: "unhealthy" })`],
+    ['toast-one-action-with-label', 'toast action with no label', `useToast().add({ title: "Policy archived", action: { onClick: () => {} } })`],
+    ['toast-one-action-with-label', 'toast with two actions', `useToast().add({ title: "Policy archived", action: [{ label: "Undo", onClick: () => {} }, { label: "View", onClick: () => {} }] })`],
+    ['toast-one-action-with-label', 'toast action label as an icon', `useToast().add({ title: "Policy archived", action: { label: <svg />, onClick: () => {} } })`],
+    ['toast-options-closed', 'toast with its own timeout', `useToast().add({ title: "Policy saved", timeout: 2000 })`],
+    ['toast-options-closed', 'toast with its own priority', `useToast().add({ title: "Policy saved", priority: "high" })`],
+    ['toast-options-closed', 'toast with its own id', `useToast().add({ title: "Policy saved", id: "saved" })`],
+    ['toast-placement-closed', 'physical toast placement', `<ToastProvider placement="bottom-right"><span /></ToastProvider>`],
+    ['toast-placement-closed', 'invented toast placement', `<ToastProvider placement="top-center"><span /></ToastProvider>`],
+    ['toast-limit-closed', 'toast limit above three', `<ToastProvider limit={5}><span /></ToastProvider>`],
+    ['toast-limit-closed', 'toast limit of zero', `<ToastProvider limit={0}><span /></ToastProvider>`],
   ]
   for (const [id, name, snippet] of violations) {
     writeFileSync(join(app, 'invalid.tsx'),
       `import { Button, ContextualAlert, Input, RiskPill, StatusIndicator, Tabs, Toggle } from '@omkarux/vela'\n` +
-      `import { Checkbox, RadioGroup, Popover, Tooltip, Dialog } from '@omkarux/vela/headless'\nexport const X = () => (${snippet})\n`)
+      `import { Checkbox, RadioGroup, Popover, Tooltip, Dialog, ToastProvider, useToast } from '@omkarux/vela/headless'\nexport const X = () => (${snippet})\n`)
     let rejected = false
     try { run(tsc, ['--noEmit', '-p', 'tsconfig.json'], app) } catch { rejected = true }
     check(rejected, `compiler rejects: ${name}  [${id}]`)
@@ -363,6 +417,8 @@ export const props: [PopoverProps, TooltipProps, DialogProps, DialogProps, Dialo
     'shipped CSS carries the headless-born Checkbox and Radio Group styles')
   check(css.includes('.vela-popover') && css.includes('.vela-tooltip') && css.includes('.vela-dialog__backdrop') && css.includes('--vela-layer-overlay:'),
     'shipped CSS carries the overlay styles and the tokens they bind')
+  check(css.includes('.vela-toast-region') && css.includes('--vela-toast-width:') && css.includes('--vela-duration-toast:'),
+    'shipped CSS carries the Toast styles, its width and its dwell')
 } finally {
   rmSync(app, { recursive: true, force: true })
   rmSync(tarball, { force: true })
