@@ -26,7 +26,7 @@ describe('Figma → code map', () => {
     for (const s of map.sets) {
       const name = s.write.split('.')[0]
       const fromHeadless = s.import.endsWith(`'@omkarux/vela/headless'`)
-      expect(fromHeadless ? headless : core, s.set).toMatch(new RegExp(`export \\{ ${name} \\}`))
+      expect(fromHeadless ? headless : core, s.set).toMatch(new RegExp(`export \\{ (?:\\w+, )*${name}(?:, \\w+)* \\}`))
       expect(s.import).toBe(`import { ${name} } from '@omkarux/vela${fromHeadless ? '/headless' : ''}'`)
     }
   })
@@ -89,7 +89,7 @@ describe('Figma → code map', () => {
     expect(pub).toEqual(['Button', 'Contextual Alert', 'Input', 'Status Indicator', 'Tab', 'Toggle'])
     // Risk Pill's set exists in the file but is being rebuilt: its node is null until the Figma thread posts it.
     expect(map.sets.find((s: any) => s.set === 'Risk Pill')).toMatchObject({ state: 'built', node: null })
-    expect(map.sets.filter((s: any) => s.state === 'none').map((s: any) => s.set).sort()).toEqual(['Checkbox', 'Dialog', 'Icon', 'Popover', 'Radio', 'Table Header Cell', 'Text Area', 'Tooltip'])
+    expect(map.sets.filter((s: any) => s.state === 'none').map((s: any) => s.set).sort()).toEqual(['Checkbox', 'Dialog', 'Icon', 'Popover', 'Radio', 'Table Header Cell', 'Text Area', 'Toast', 'Tooltip'])
   })
 
   it('maps the Tab set to Tabs.Trigger, because the set is one trigger', () => {

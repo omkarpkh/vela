@@ -180,7 +180,7 @@ function PlaygroundFor({ entry }: { entry: (typeof REGISTRY)[number] }) {
                   <CopyButton text={code} />
                 </div>
                 <p className="pg-p pg-install">
-                  <code>{`import { ${entry.src} } from '${importPath}'`}</code>
+                  <code>{`import { ${entry.imports ?? entry.src} } from '${importPath}'`}</code>
                   {' · '}
                   <span className="pg-dependencies">Dependencies: {dependencies}</span>
                 </p>

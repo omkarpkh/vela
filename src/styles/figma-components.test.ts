@@ -18,7 +18,7 @@ const cli = (...args: string[]) => {
 const lintReport: Record<string, { problems: { rule: string; node: string; what: string; waived: boolean }[]; allow: { rule: string; reason: string }[] }> = JSON.parse(cli('--lint'))
 const dump = (name: string, set?: string) => JSON.parse(set ? cli('--dump', name, `--set=${set}`) : cli('--dump', name))
 const styles: any[] = JSON.parse(execFileSync('node', ['scripts/figma/text-styles.mjs', '--json'], { cwd: root, encoding: 'utf8' }))
-const BUILDERS = ['button', 'checkbox', 'contextual-alert', 'dialog', 'icon', 'input', 'popover', 'radio-group', 'risk-pill', 'status-indicator', 'table', 'tabs', 'text-area', 'toggle', 'tooltip']
+const BUILDERS = ['button', 'checkbox', 'contextual-alert', 'dialog', 'icon', 'input', 'popover', 'radio-group', 'risk-pill', 'status-indicator', 'table', 'tabs', 'text-area', 'toast', 'toggle', 'tooltip']
 
 describe('Figma builders, built in the mock Plugin API', () => {
   it('runs every builder', () => {
@@ -442,6 +442,40 @@ describe('Popover, Tooltip and Dialog, as the builders draw them', () => {
       if (!alert) expect(footer.swx).toEqual([1, 0, 0, 0])
       expect(footer.ch.map((b: any) => b.fill[0])).toEqual(alert ? ['button/standard-bg', 'button/destructive-bg'] : ['button/standard-bg', 'button/primary-bg'])
       for (const b of footer.ch) expect(b.wh[3]).toBe('control-height/35')
+    }
+  })
+})
+
+// Toast (headless, Experimental): one toast — the region, the stack and the timer are code.
+describe('Toast, as the builder draws it', () => {
+  const t = dump('toast')
+
+  it('three severities only — success, info, warning — with Description and Action properties and no TEXT property', () => {
+    expect(t.variants.map((v: any) => v.n)).toEqual(['Severity=success', 'Severity=info', 'Severity=warning'])
+    expect(Object.keys(t.defs).map((k) => k.replace(/#.*$/, '')).sort()).toEqual(['Action', 'Description', 'Severity'])
+  })
+
+  it('surface/raised in a border/default edge at toast/width, radius/4, padded space/15', () => {
+    for (const v of t.variants) {
+      expect([v.fill, v.stroke, v.rad[1], v.wh[2]]).toEqual([['surface/raised'], ['border/default'], 'radius/4', 'toast/width'])
+      expect(v.pad.map((x: any) => x[1])).toEqual(['space/15', 'space/15', 'space/15', 'space/15'])
+      expect(v.ch.map((c: any) => c.n)).toEqual([`Status mark / ${v.n.split('=')[1]}`, 'Content', 'Close'])
+    }
+  })
+
+  it("the mark binds its own severity's icon colour; the action is a standard button at control-height/24; the close is the Dialog's", () => {
+    for (const v of t.variants) {
+      const sev = v.n.split('=')[1]
+      const [mark, content, close] = v.ch
+      expect(mark.wh.slice(2)).toEqual(['icon/20', 'line-height/body'])
+      expect(mark.ch[0].fill).toEqual([`severity/${sev}/icon`])
+      expect(content.ch.map((c: any) => c.n)).toEqual(['Message', 'Action'])
+      expect(content.ch[0].ch.map((c: any) => [c.n, c.style, c.fill[0]])).toEqual([['Title', 'Heading/H5', 'text/heading'], ['Description', 'Body/Default', 'text/default']])
+      const action = content.ch[1]
+      expect([action.fill[0], action.stroke[0], action.wh[3]]).toEqual(['button/standard-bg', 'button/standard-border', 'control-height/24'])
+      expect(action.ch[0]).toMatchObject({ style: 'Button/Tiny', fill: ['button/standard-text'] })
+      expect(close.wh.slice(2)).toEqual(['control-height/24', 'control-height/24'])
+      expect(close.ch[0].fill).toEqual(['icon/strong'])
     }
   })
 })

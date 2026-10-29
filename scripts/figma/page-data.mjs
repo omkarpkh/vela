@@ -200,13 +200,14 @@ export const entryPointOf = (spec) => (/^none\b/i.test(dependenciesOf(spec)) ? P
  * The name an entry point exports for a source folder: src/index.ts for the core package
  * (`ContextualAlert` for ./components/ContextualAlert), src/headless/index.ts for the headless one
  * (`Checkbox` for ./Checkbox). A headless-born component has no core export, so the spec's
- * `**Dependencies:**` line decides which index is read.
+ * `**Dependencies:**` line decides which index is read. A folder exporting several names (Toast:
+ * `ToastProvider, useToast`) is named by the first.
  */
 export function exportNameOf(src, entry = PACKAGE) {
   const headless = entry === HEADLESS
   const file = headless ? 'src/headless/index.ts' : 'src/index.ts'
   const from = headless ? `\\./${src}` : `\\./components/${src}`
-  const m = read(file).match(new RegExp(`^export \\{ (\\w+) \\} from '${from}'`, 'm'))
+  const m = read(file).match(new RegExp(`^export \\{ (\\w+)(?:, \\w+)* \\} from '${from}'`, 'm'))
   if (!m) throw new Error(`${file} exports nothing from ${from.replace(/\\/g, '')}`)
   return m[1]
 }

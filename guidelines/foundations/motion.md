@@ -24,12 +24,17 @@ cannot be named in one of those words, it does not ship.
 - `--vela-delay-tooltip` (600ms): not an animation — how long the pointer rests on a control before
   its Tooltip opens, so a pointer crossing a toolbar does not flash every label. Keyboard focus does
   not wait. Equal to Base UI's own default, which applies when the stylesheet is not loaded.
+- `--vela-duration-toast` (6000ms): not an animation either — how long a Toast that times out stays
+  on screen (a `success` or `info` with no action; a warning, or a toast with an action, never times
+  out). The timer pauses while the region is hovered or holds focus. The reduced-motion collapse
+  never shortens it: it is a dwell, not a transition.
 
 No component defines its own duration or curve. A new one is a token change, reviewed like a colour.
 
-Overlays (Popover, Tooltip, Dialog) appear at `--vela-duration-base` on opacity plus a
+Overlays (Popover, Tooltip, Dialog, Toast) appear at `--vela-duration-base` on opacity plus a
 `--vela-space-5` step of travel, and leave on opacity alone — softer than they arrived. One opened or
-closed from the keyboard does not animate at all.
+closed from the keyboard does not animate at all; a toast travels in from the edge it sits on, and a
+swiped one fades where the finger left it.
 
 In Figma they live in the **Motion** collection as Figma's own motion variable types: `duration/instant`,
 `duration/fast` and `duration/base` are **timing** variables (Figma keeps timing in seconds, so 120ms is stored as

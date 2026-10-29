@@ -329,11 +329,15 @@
   @opacity-scrim
   @layer-overlay
 
+  /* ---- Toast (headless) ---- */
+  @toast-width
+
   /* ---- Motion (respects reduced-motion in components.css) ---- */
   @duration-instant
   @duration-fast
   @duration-base
   @delay-tooltip
+  @duration-toast
   @ease-standard
   @blur-materialize
 }

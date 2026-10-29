@@ -119,6 +119,15 @@ export const PAIRS = [
   // would give the hover nothing to show.
   ['--vela-icon-strong',        '--vela-bg-raised',             'Dialog close glyph',          'ui'],
   ['--vela-icon-strong',        '--vela-btn-standard-hover-bg', 'Dialog close glyph, hovered', 'ui'],
+  // Toast (Phase 1, headless). A toast is the raised surface of a Popover — same title, body, edge
+  // and close-glyph pairs, already above — with one thing a Popover does not carry: the severity
+  // mark, in its own severity's icon colour, on bg-raised instead of on its severity background.
+  // Only the three severities a toast may carry (success, info, warning) are asserted; minor, major
+  // and critical never reach a toast (toast.md). The action is a standard tiny Button and inherits
+  // its pairs; a text-link would not — text-link on the dark raised surface is 4.35:1 and fails.
+  ...['success', 'info', 'warning'].map((s) => [
+    `--vela-icon-severity-${s}`, '--vela-bg-raised', `Toast ${s} mark on raised surface`, 'ui',
+  ]),
   ['--vela-btn-standard-border','--vela-btn-standard-bg', 'Standard button border', 'ui'],
   ['--vela-border-default',     '--vela-bg-global',       'Default border on page', 'ui'],
   ['--vela-border-active',  '--vela-bg-global',  'Focus ring',          'ui'],

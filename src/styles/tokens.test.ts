@@ -98,7 +98,8 @@ describe('token source', () => {
       color: /^(surface|border|text|icon|button|control|severity|risk|status|focus)\//,
       // `control/` carries the Checkbox and Radio geometry (control/checkbox/size, control/radio/dot) since Phase 1.
       // `popover/`, `dialog/`, `tooltip/`, `opacity/` and `layer/` carry the overlay geometry since Phase 1.
-      sizing: /^(space|icon|control-height|control|radius|focus|stroke|field|toggle|status|popover|dialog|tooltip|opacity|layer)\//,
+      // `toast/` carries the Toast width since Phase 1.
+      sizing: /^(space|icon|control-height|control|radius|focus|stroke|field|toggle|status|popover|dialog|tooltip|opacity|layer|toast)\//,
       typography: /^(size|line-height|weight|tracking)\//,
       // `delay/tooltip` is a wait before an overlay opens, not an animation, so it is not a duration/.
       motion: /^(duration|easing|blur|delay)\//,

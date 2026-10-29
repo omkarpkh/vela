@@ -1,0 +1,88 @@
+/* ------------------------------------------------------------------ Toast -- */
+/* guidelines/components/toast.md. The region is fixed to the viewport, --vela-space-20 from its
+   edges at the placement; toasts stack --vela-space-10 apart, the newest nearest that edge. Keys on
+   Base UI's transition attributes (data-starting-style, data-ending-style), data-limited and
+   data-swipe-direction; the contract never depends on them. */
+.vela-toast-region {
+  position: fixed;
+  z-index: var(--vela-layer-overlay);
+  display: flex; flex-direction: column-reverse; gap: var(--vela-space-10);
+  width: var(--vela-toast-width);
+  /* Never wider than the viewport less its gutters: a fixed box's percentage is the viewport's. */
+  max-width: calc(100% - var(--vela-space-20) * 2);
+  inset-block-end: var(--vela-space-20);
+  inset-inline-end: var(--vela-space-20);
+}
+.vela-toast-region--top-end {
+  flex-direction: column;
+  inset-block-start: var(--vela-space-20); inset-block-end: auto;
+}
+.vela-toast-region--bottom-center {
+  inset-inline: 0;
+  margin-inline: auto;
+}
+
+.vela-toast {
+  display: flex; align-items: flex-start; gap: var(--vela-space-10);
+  padding: var(--vela-space-15);
+  background: var(--vela-bg-raised);
+  color: var(--vela-text-default);
+  /* No shadow: no elevation token exists. The edge is the border, asserted against page and container. */
+  border: 1px solid var(--vela-border-default);
+  border-radius: var(--vela-radius-4);
+  font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height);
+  transition: opacity var(--vela-duration-base) var(--vela-ease-standard),
+              transform var(--vela-duration-base) var(--vela-ease-standard);
+}
+/* Past the limit a toast waits, hidden and inert (Base UI marks it), until a newer one leaves. */
+.vela-toast[data-limited] { display: none; }
+
+/* Appearing: a fade and a step of travel in from the edge it sits on. Leaving: the fade only. */
+.vela-toast[data-starting-style] { opacity: 0; transform: translateY(var(--vela-space-5)); }
+.vela-toast-region--top-end .vela-toast[data-starting-style] { transform: translateY(calc(var(--vela-space-5) * -1)); }
+.vela-toast[data-ending-style] { opacity: 0; }
+/* Swiped away: it stays where the finger left it while it fades, instead of snapping back. */
+.vela-toast[data-ending-style][data-swipe-direction] {
+  transform: translate(var(--toast-swipe-movement-x), var(--toast-swipe-movement-y));
+}
+/* From the keyboard, nothing animates (foundations/motion.md). */
+.vela-toast[data-vela-instant] { transition: none; }
+
+.vela-toast__mark {
+  flex: none; display: inline-flex; align-items: center; justify-content: center;
+  /* The mark sits on the title's line, as on the Contextual Alert. */
+  width: var(--vela-icon-20); height: var(--vela-text-body-line-height);
+}
+.vela-toast__icon { width: var(--vela-icon-16); height: var(--vela-icon-16); }
+.vela-toast--success .vela-toast__icon { color: var(--vela-icon-severity-success); }
+.vela-toast--info .vela-toast__icon { color: var(--vela-icon-severity-info); }
+.vela-toast--warning .vela-toast__icon { color: var(--vela-icon-severity-warning); }
+
+.vela-toast__content {
+  flex: 1 1 auto; min-width: 0;
+  display: flex; flex-direction: column; align-items: flex-start; gap: var(--vela-space-5);
+  overflow-wrap: break-word;
+}
+.vela-toast__title {
+  margin: 0;
+  font-size: var(--vela-text-h5-size); font-weight: var(--vela-text-h5-weight); line-height: var(--vela-text-h5-line-height);
+  color: var(--vela-text-heading);
+}
+.vela-toast__description { margin: 0; color: var(--vela-text-default); }
+/* The action sits --vela-space-10 under the text: the content's gap plus one more step. */
+.vela-toast__action { margin-top: var(--vela-space-5); }
+
+.vela-toast__close {
+  flex: none;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: var(--vela-control-height-24); height: var(--vela-control-height-24);
+  padding: 0; margin: 0;
+  background: none; border: none; border-radius: var(--vela-radius-3);
+  color: var(--vela-icon-strong);
+  cursor: pointer;
+  transition: background-color var(--vela-duration-base) var(--vela-ease-standard);
+}
+.vela-toast__close svg { width: var(--vela-icon-16); height: var(--vela-icon-16); }
+@media (hover: hover) {
+  .vela-toast__close:hover { background: var(--vela-btn-standard-hover-bg); transition-duration: var(--vela-duration-fast); }
+}

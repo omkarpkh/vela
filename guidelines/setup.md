@@ -8,8 +8,8 @@ npm install @omkarux/vela
 
 `react` and `react-dom` (v18.3 or v19) are peer dependencies — the consuming app supplies
 them. The core entry has **zero runtime dependencies** of its own. The `@omkarux/vela/headless`
-entry (Experimental: Tabs, and Checkbox, Radio Group, Popover, Tooltip and Dialog, which ship from
-it only) needs one optional peer, `@base-ui/react` 1.9.x — install it only if you import from
+entry (Experimental: Tabs, and Checkbox, Radio Group, Popover, Tooltip, Dialog and Toast, which
+ship from it only) needs one optional peer, `@base-ui/react` 1.9.x — install it only if you import from
 `/headless`.
 
 ## Import the stylesheet once, at the app root
@@ -57,6 +57,15 @@ focus ring and the reduced-motion collapse still apply) and copies the `data-the
 nearest themed ancestor — a popover opened from a dark sidebar in a light app is dark, with nothing
 to configure. Overlays sit at `--vela-layer-overlay` (z-index 1000); if your app layers anything
 above that, raise the token rather than the component.
+
+**Toasts.** Render one `ToastProvider` near the root of the app, inside the element that carries
+your `data-theme` (or below `<html>` if that is where it is), and call `useToast()` anywhere under
+it. The region is portalled to `<body>` like the overlays, takes the theme of where the provider is
+rendered, and re-reads it on every toast, so a theme switch needs no re-mount. A toast confirms
+something the page already shows: raise it after the save has landed and the page is updated, put
+any Undo on the page as well, and tell keyboard users in your app's shortcut help that **F6** moves
+focus to the notifications region. Raise a toast after a Dialog closes, not while it is open: the
+Dialog makes the region inert behind its scrim.
 
 Dark mode is implemented by re-pointing semantic tokens onto a different part of the same
 scale — **no primitive is redefined and no raw hex appears in the dark block**. A test

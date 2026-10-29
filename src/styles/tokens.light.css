@@ -329,11 +329,15 @@
   --vela-opacity-scrim: 0.5;
   --vela-layer-overlay: 1000;
 
+  /* ---- Toast (headless) ---- */
+  --vela-toast-width: 360px;
+
   /* ---- Motion (respects reduced-motion in components.css) ---- */
   --vela-duration-instant: 70ms;
   --vela-duration-fast: 120ms;
   --vela-duration-base: 180ms;
   --vela-delay-tooltip: 600ms;
+  --vela-duration-toast: 6000ms;
   --vela-ease-standard: cubic-bezier(0.2, 0, 0.2, 1);
   --vela-blur-materialize: 2px;
 }

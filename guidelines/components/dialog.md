@@ -23,7 +23,8 @@ published; see `GOVERNANCE.md`.
   page in the wrong container.
 - A message the user should read but need not answer → a **Contextual Alert** on the page
   (`contextual-alert.md`). A dialog that only says "OK" interrupts for nothing.
-- A notification that comes and goes on its own → a toast, **not in this kit**. Flag it.
+- A notification that comes and goes on its own, confirming something already done → **Toast**
+  (`toast.md`). A toast never asks; a question is a Dialog.
 
 ## Composition
 

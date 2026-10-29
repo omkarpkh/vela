@@ -398,6 +398,35 @@
       "spec": "guidelines/components/text-area.md"
     },
     {
+      "set": "Toast",
+      "page": "Toast",
+      "state": "none",
+      "node": null,
+      "url": null,
+      "import": "import { useToast } from '@omkarux/vela/headless'",
+      "write": "useToast",
+      "figmaToProp": [
+        {
+          "figma": "Severity",
+          "prop": "severity"
+        },
+        {
+          "figma": "Title",
+          "prop": "title"
+        },
+        {
+          "figma": "Description",
+          "prop": "description"
+        },
+        {
+          "figma": "Action",
+          "prop": "action — presence of the object, not a flag"
+        }
+      ],
+      "example": "<ToastProvider placement=\"bottom-end\">   {/* once, near the root of the app */}\n  <App />\n</ToastProvider>\n\n// Anywhere below it:\nconst toast = useToast()\n\nasync function save() {\n  await savePolicy(policy)\n  toast.add({ severity: 'success', title: 'Policy saved', description: 'Block legacy TLS now applies to 14 tenants.' })\n}\n\nfunction remove() {\n  archivePolicy(policy)          // the row now shows \"Archived\", with its own Restore button\n  toast.add({\n    title: 'Policy archived',\n    action: { label: 'Undo', onClick: () => restorePolicy(policy) },   // a shortcut to that Restore\n  })\n}",
+      "spec": "guidelines/components/toast.md"
+    },
+    {
       "set": "Toggle",
       "page": "Toggle",
       "state": "published",

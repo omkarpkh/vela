@@ -22,9 +22,10 @@ below, then open the per-component file for props, tokens, and anti-patterns.
 | Popover | A non-modal panel opened from a button — filters, detail, a short edit — with the page still usable (headless entry only) | `components/popover.md` |
 | Tooltip | A short text-only label on hover and focus; supplementary, never the only copy (headless entry only) | `components/tooltip.md` |
 | Dialog | A modal decision that blocks the task; `variant="alert"` confirms a destructive action (headless entry only) | `components/dialog.md` |
+| Toast | A floating, polite confirmation that something already happened — never the only record, never the only Undo (headless entry only) | `components/toast.md` |
 
-Checkbox, Radio Group, Popover, Tooltip and Dialog ship from `@omkarux/vela/headless` (Base UI as
-an optional peer) and are Experimental; the other ten ship from `@omkarux/vela` with no
+Checkbox, Radio Group, Popover, Tooltip, Dialog and Toast ship from `@omkarux/vela/headless` (Base
+UI as an optional peer) and are Experimental; the other ten ship from `@omkarux/vela` with no
 dependencies (Risk Pill, Icon, Text Area and Table are Experimental there).
 
 ## Disambiguations (where AI usually picks wrong)
@@ -45,6 +46,12 @@ dependencies (Risk Pill, Icon, Text Area and Table are Experimental there).
   opening it). A decision that must be answered before anything else → **Dialog**; a destructive
   or irreversible one → **Dialog `variant="alert"`**. A list of commands from a button is an
   Actions Dropdown, not in this kit — not a Popover.
+- **Toast vs Contextual Alert vs Dialog** — something the user just did **has completed** and the
+  page already shows it → **Toast** (`success`, `info` or `warning` only), a notice that leaves.
+  An event the user must read and that stays until resolved, or **any failure** → **Contextual
+  Alert** in the page, next to its subject. A question → **Dialog**. A toast is never the only
+  record of what it says and never the only place an Undo lives: the Undo is on the page, and the
+  toast's action is a shortcut to it.
 - **Contextual Alert vs Status Indicator vs Risk Pill** — an event the user must read →
   **Alert**. An object's ongoing health, usually in a table cell → **Status Indicator**. A
   risk *score* on an object → **Risk Pill**. A removable filter chip → Token Pill, not in this kit.

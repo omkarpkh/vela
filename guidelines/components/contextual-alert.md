@@ -7,7 +7,9 @@ An inline banner carrying a severity. Lives in the page flow, next to the thing 
 
 - An event or condition the user must read, inline → **Contextual Alert**.
 - An object's ongoing health, usually in a table → **Status Indicator**.
-- Transient confirmation that floats and auto-dismisses → a Toast, **not in this kit**.
+- Transient confirmation that something already happened, floating and leaving on its own →
+  **Toast** (`toast.md`, `@omkarux/vela/headless`): `success`, `info` or `warning` only. Anything
+  `minor`, `major` or `critical`, and any failure, stays here, in the page.
 - A blocking decision → a Modal, **not in this kit**. Flag the gap.
 
 ## Props

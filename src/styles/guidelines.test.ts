@@ -66,10 +66,16 @@ describe('the agent-facing contract is complete', () => {
     const notInKit = overview.match(/Not yet specced: ([^.]+)\./)?.[1] ?? ''
     for (const missing of ['Select List', 'Token Pill', 'Icon Button', 'Actions Dropdown', 'View Switcher'])
       expect(notInKit).toContain(missing)
-    for (const shipped of ['Checkbox', 'Radio', 'Modal', 'Tooltip', 'Popover', 'Dialog']) expect(notInKit).not.toContain(shipped)
+    // Toast joined in Phase 1 too; it was never on this list, but the specs that called it missing must not.
+    for (const shipped of ['Checkbox', 'Radio', 'Modal', 'Tooltip', 'Popover', 'Dialog', 'Toast']) expect(notInKit).not.toContain(shipped)
     // DESIGN.md carries the same list, and the same removals.
     const designNotInKit = readFileSync(resolve(root, 'DESIGN.md'), 'utf8').match(/Not yet specced: ([^.]+)\./)?.[1] ?? ''
-    for (const shipped of ['Modal', 'Tooltip']) expect(designNotInKit).not.toContain(shipped)
+    for (const shipped of ['Modal', 'Tooltip', 'Toast']) expect(designNotInKit).not.toContain(shipped)
+    // No spec still sends an agent to a Toast that is "not in this kit".
+    for (const file of specs) {
+      const md = readFileSync(resolve(root, 'guidelines/components', file), 'utf8')
+      expect(md, `${file} still calls Toast missing`).not.toMatch(/toast[^.\n]*not in this kit/i)
+    }
     expect(designNotInKit).toContain('Select List')
   })
 

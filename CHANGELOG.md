@@ -34,6 +34,33 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   the tightest shipped pair is now the `unknown` dot on a selected row at 3.22:1 (was the input
   border at 3.29:1), recorded in `DESIGN.md` and `foundations/color.md`. Rule count, with Icon and
   Text Area merged: 43 of 93 rules are enforced by the compiler.
+- **Toast — Experimental, `@omkarux/vela/headless` only** (`toast.md`; Base UI 1.9 `Toast`). A
+  floating, polite confirmation that something already happened — and, as the spec and the agentic
+  specs that depend on it say, never the only record of it, never the only place an Undo lives, and
+  never a decision. `ToastProvider` (`placement` `bottom-end | top-end | bottom-center`, `limit`
+  `1 | 2 | 3`, `label`, `dismissLabel`) renders the region; `useToast()` returns
+  `add({ title, description?, severity?, action? })` and `dismiss(id)`, and throws a named error
+  outside a provider. `severity` is the Severity taxonomy's `success | info | warning` only: minor,
+  major and critical are events to read and resolve in a Contextual Alert, a failure belongs where
+  the work is, and a Risk or Status value does not compile. At most one `action`, a
+  `{ label, onClick }` — a shortcut to something that also exists on the page — rendered as a tiny
+  standard Button that dismisses the toast. The caller sets no timing and no priority: a `success`
+  or `info` toast with no action leaves after `--vela-duration-toast` (read from the stylesheet);
+  a `warning`, and any toast with an action, never times out (WCAG 2.2.1). Hover, focus in the
+  region and F6 pause every timer and resume with the time left; F6 reaches the region from
+  anywhere, Escape dismisses the focused toast, a new toast never takes focus, and every toast is
+  announced politely — assertive would need major or critical, which a toast never carries.
+  Eighteen compiler fixtures (seven rules), ten runtime rules, one browser rule
+  (`toast-stays-in-viewport`), three conventions, a Figma builder (Severity, three variants;
+  each title is a `Title` layer per variant, not a TEXT property, so none collapses; no waiver) and a playground page whose Undo is the page's own. Rule count, with Table merged: 64 of
+  147 rules are now enforced by the compiler.
+- **Toast tokens.** `toast-width` (360, so a 400px viewport less its `--vela-space-20` gutters is
+  exactly one toast wide) and `duration-toast` (6000ms — a dwell, not an animation; the
+  reduced-motion collapse never touches it). Three new `PAIRS`, the success, info and warning marks
+  in their own icon colour on `bg-raised`: 8.03 / 7.00, 7.45 / 5.87 and 5.83 / 9.62. The action is a
+  standard Button rather than a text-link because the link colour on the dark raised surface is
+  4.35:1. `contextual-alert.md` and `dialog.md` stop calling a toast "not in this kit", and the
+  guidelines test asserts no spec does.
 - **Popover — Experimental, `@omkarux/vela/headless` only** (`popover.md`; Base UI 1.9 `Popover`).
   A non-modal panel anchored to the button that opened it. Closed props: `trigger` (one element,
   rendered through Base UI's `render`, so a Vela Button keeps its own behaviour), `title` a

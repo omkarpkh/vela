@@ -2815,10 +2815,23 @@
     "layer-overlay": {
       "$type": "number",
       "$value": 1000,
-      "$description": "z-index of every overlay (Popover, Tooltip, Dialog) portalled to <body>. One layer: overlays stack among themselves by DOM order, the later one on top.",
+      "$description": "z-index of every overlay (Popover, Tooltip, Dialog, the Toast region) portalled to <body>. One layer: overlays stack among themselves by DOM order, the later one on top.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "layer/overlay"
+        }
+      }
+    },
+    "toast-width": {
+      "$type": "dimension",
+      "$value": {
+        "value": 360,
+        "unit": "px"
+      },
+      "$description": "Toast: the width of every toast in the region. Never wider than the viewport less --vela-space-20 a side, so at a 400px viewport it is exactly this.",
+      "$extensions": {
+        "com.omkarux.vela": {
+          "figma": "toast/width"
         }
       }
     }
@@ -3354,6 +3367,19 @@
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "delay/tooltip"
+        }
+      }
+    },
+    "duration-toast": {
+      "$type": "duration",
+      "$value": {
+        "value": 6000,
+        "unit": "ms"
+      },
+      "$description": "How long a Toast that times out (success or info, with no action) stays before it leaves. A dwell, not an animation: the reduced-motion collapse never touches it, and the timer pauses while the region is hovered or holds focus. Warnings and any toast with an action never time out.",
+      "$extensions": {
+        "com.omkarux.vela": {
+          "figma": "duration/toast"
         }
       }
     },

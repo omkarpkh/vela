@@ -1,7 +1,8 @@
 import { useState, type ReactNode } from 'react'
 import { Button, Toggle, Input, TextArea, ContextualAlert, StatusIndicator, RiskPill, Tabs, Icon, ICON_NAMES, Table } from '../../src'
 import type { Severity, Status, Risk, IconName, IconSize, IconTone, TableSortDirection } from '../../src'
-import { Tabs as HeadlessTabs, Checkbox, RadioGroup, Popover, Tooltip, Dialog } from '../../src/headless'
+import { Tabs as HeadlessTabs, Checkbox, RadioGroup, Popover, Tooltip, Dialog, ToastProvider, useToast } from '../../src/headless'
+import type { ToastLimit, ToastPlacement, ToastSeverity } from '../../src/headless'
 import { PlusIcon } from '../../src/lib/icons'
 import { printJsx, type Control, type Spec } from './spec'
 import buttonMd from '../../guidelines/components/button.md?raw'
@@ -19,6 +20,7 @@ import tableMd from '../../guidelines/components/table.md?raw'
 import popoverMd from '../../guidelines/components/popover.md?raw'
 import tooltipMd from '../../guidelines/components/tooltip.md?raw'
 import dialogMd from '../../guidelines/components/dialog.md?raw'
+import toastMd from '../../guidelines/components/toast.md?raw'
 
 export type Values = Record<string, string | boolean | undefined>
 
@@ -45,6 +47,8 @@ export interface Entry {
   /** Spec file and source folder, for the page's links. */
   file: string
   src: string
+  /** What the import line names, when it is not the source folder's name (Toast: a provider and a hook). */
+  imports?: string
   /** Starting values for controls the spec does not default (label text, children). */
   seed: Values
   /** Controls the Props table cannot express (a callback becomes a boolean "present"). */
@@ -150,6 +154,43 @@ function TableStage({ v }: { v: Values }) {
 const defaultsOf = (spec: Spec) => Object.fromEntries(spec.controls.map((c) => [c.prop, c.default]))
 const str = (v: string | boolean | undefined) => (typeof v === 'string' ? v : '')
 const bool = (v: string | boolean | undefined) => v === true
+
+/**
+ * The Toast stage: a Save button that raises a toast with the page's current options. The page
+ * keeps its own record of every save, and the Undo the toast offers is the same Undo the page
+ * shows — a toast is never the only record and never the only Undo (toast.md).
+ */
+function ToastStage({ v }: { v: Values }) {
+  const toast = useToast()
+  const [saves, setSaves] = useState(0)
+  const severity = (str(v.severity) || 'info') as ToastSeverity
+  const undo = () => setSaves((n) => Math.max(0, n - 1))
+  return (
+    <div className="pg-toast-stage">
+      <Button
+        onClick={() => {
+          setSaves((n) => n + 1)
+          toast.add({
+            severity,
+            title: str(v.title) || 'Title',
+            description: str(v.description) || undefined,
+            action: bool(v.action) ? { label: 'Undo', onClick: undo } : undefined,
+          })
+        }}
+      >
+        Save Changes
+      </Button>
+      <p className="vela-body pg-overlay-copy">
+        {saves === 0 ? 'Nothing saved yet.' : `Saved ${saves} ${saves === 1 ? 'time' : 'times'} — the page keeps the record.`}
+      </p>
+      {saves > 0 && (
+        <Button size="tiny" onClick={undo}>
+          Undo Last Save
+        </Button>
+      )}
+    </div>
+  )
+}
 
 export const REGISTRY: Entry[] = [
   {
@@ -619,5 +660,54 @@ export const REGISTRY: Entry[] = [
   <p>${str(v.children) || 'Body text.'}</p>
   <Input label="Policy name" defaultValue="Block legacy TLS" />
 </Dialog>`,
+  },
+  // Toast is headless-born. Each frame renders its own ToastProvider, so a toast raised from the
+  // dark frame is portalled carrying that frame's theme. The spec's root part is `Toast` — the
+  // options `add` takes — so those are the generated controls; the provider's placement and limit
+  // and the presence of an action are extras. `label` and `dismissLabel` change only accessible
+  // names: documented, not demonstrated.
+  {
+    id: 'toast',
+    file: 'toast.md',
+    src: 'Toast',
+    imports: 'ToastProvider, useToast',
+    name: 'Toast',
+    spec: toastMd,
+    seed: { severity: 'success', title: 'Policy saved', description: 'Block legacy TLS now applies to 14 tenants.', action: false },
+    extra: [
+      { prop: 'action', kind: 'boolean', type: '{ label: string; onClick: () => void }', default: false, notes: 'Present → an Undo, a shortcut to the Undo on the page. A toast with an action never times out.' },
+      { prop: 'placement', kind: 'select', type: '"bottom-end" | "top-end" | "bottom-center"', options: ['bottom-end', 'top-end', 'bottom-center'], default: 'bottom-end', notes: 'ToastProvider: where the region sits.' },
+      { prop: 'limit', kind: 'select', type: '1 | 2 | 3', options: ['1', '2', '3'], default: '3', notes: 'ToastProvider: how many toasts show at once.' },
+    ],
+    noControl: ['label', 'dismissLabel'],
+    implementations: [{ id: 'headless', entry: '@omkarux/vela/headless' }],
+    highlight: (v) => (t) => t === `--vela-icon-severity-${str(v.severity) || 'info'}` || t === '--vela-bg-raised' || t === '--vela-toast-width',
+    render: (v) => (
+      <ToastProvider
+        placement={(str(v.placement) || 'bottom-end') as ToastPlacement}
+        limit={Number(str(v.limit) || '3') as ToastLimit}
+      >
+        <ToastStage v={v} />
+      </ToastProvider>
+    ),
+    code: (v) => {
+      const provider = [
+        str(v.placement) && v.placement !== 'bottom-end' ? ` placement="${v.placement}"` : '',
+        str(v.limit) && v.limit !== '3' ? ` limit={${v.limit}}` : '',
+      ].join('')
+      const opts = [
+        str(v.severity) && v.severity !== 'info' ? `severity: '${v.severity}'` : '',
+        `title: '${str(v.title) || 'Title'}'`,
+        str(v.description) ? `description: '${v.description}'` : '',
+        bool(v.action) ? `action: { label: 'Undo', onClick: undoSave }` : '',
+      ].filter(Boolean).join(', ')
+      return `<ToastProvider${provider}>
+  <App />
+</ToastProvider>
+
+// in App, after the save has landed and the page shows it:
+const toast = useToast()
+toast.add({ ${opts} })`
+    },
   },
 ]
