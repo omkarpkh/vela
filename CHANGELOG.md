@@ -6,6 +6,36 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Unreleased]
 
 ### Added
+- **Text Area** — multi-line entry, Input's sibling, in the core entry with no dependency.
+  Closed props mirroring Input (`label` required, `value` / `defaultValue` exclusive, `error`
+  a message, `size` Input's three), plus `rows` (the minimum height in lines), `resize`
+  (`vertical` or `none`; there is no horizontal and no both) and `maxLength` with a live
+  `n / max` count. The count and the limit are both measured in code points, so an emoji is one
+  character in each; the native `maxlength`, which counts UTF-16 units, is not used. The count
+  is spoken by a polite live region only once 10% or less of the limit remains. Nine rules: five
+  `compiler` with six fixtures (`text-area-label-required`, `text-area-controlled-exclusive`,
+  `text-area-error-is-a-message`, `text-area-resize-closed`, `text-area-size-closed`), three
+  `runtime` (`text-area-describedby-only-rendered`, `text-area-count-in-code-points`,
+  `text-area-count-announced-near-limit`) and one `browser`
+  (`text-area-never-resizes-horizontally`: a drag on the handle moves the bottom edge only and
+  stops at `rows`, even under a host `textarea { resize: both }`). Binds Input's tokens and adds
+  none, so no new colour pair. A Figma builder (12 variants, Size x State, clean under the
+  reviewer lint with no waiver) and a playground page; not on the Overview page, so no visual
+  baseline moves. Status: Experimental until its Figma set is published. Rule count 34 of 73
+  compiler-enforced, was 29 of 64.
+- **A monospace family and the `Mono/Meta` text style**, requested by the Action Impact Card
+  spec. `--vela-font-family-mono` is a system stack — `ui-monospace, "SF Mono", "Cascadia
+  Mono", "Roboto Mono", Menlo, Consolas, monospace` — so no web font is downloaded; it is
+  `raw` like the other two families, which the Figma variable sync skips by type. Figma gets
+  the text style `Mono/Meta`: Body/Meta's size, line height, weight and tracking variables in
+  Roboto Mono, the stack's Google-hosted member. Flutter carries `fontFamilyMono` ('SF Mono')
+  with its fallbacks; the MUI bridge is unchanged. 265 tokens, was 264 (the README's "242" had gone stale and
+  now says 265).
+- **Four contrast pairs the agentic-component specs rely on**, asserted in both themes:
+  `--vela-text-default` on `--vela-bg-raised` (7.69:1 light, 8.84:1 dark), on
+  `--vela-bg-selected` (6.59 / 11.12), `--vela-text-heading` on `--vela-bg-selected`
+  (14.54 / 16.48) and `--vela-border-active` on `--vela-bg-container` as UI (5.39 / 5.06). All
+  pass with no token change; `PAIRS` is 59, was 55.
 - **Icon — Experimental** (`decisions/003-icons-lucide-curated`). Fifty curated
   [Lucide](https://lucide.dev) 1.63.0 glyphs (ISC; 25 of them Feather-derived, MIT) compiled at
   build time into zero-dependency React in the core entry: `lucide` is a pinned devDependency,

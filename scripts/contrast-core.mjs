@@ -112,6 +112,13 @@ export const PAIRS = [
   ['--vela-icon-strong',  '--vela-bg-global',    'Icon, default tone, on page',      'ui'],
   ['--vela-icon-strong',  '--vela-bg-container', 'Icon, default tone, on container', 'ui'],
   ['--vela-icon-default', '--vela-bg-global',    'Icon, muted tone, on page',        'ui'],
+  // Requested by the agentic-component specs (Phase 2): a card body on a raised
+  // surface, a selected row's text, and the active border drawn on a container rather than the
+  // page. Each is measured in both themes before it is relied on.
+  ['--vela-text-default',  '--vela-bg-raised',    'Body text on raised surface',   'text'],
+  ['--vela-text-default',  '--vela-bg-selected',  'Body text on selected row',     'text'],
+  ['--vela-text-heading',  '--vela-bg-selected',  'Heading on selected row',       'text'],
+  ['--vela-border-active', '--vela-bg-container', 'Active border on container',    'ui'],
   ...['unknown', 'healthy', 'warning', 'medium', 'unhealthy'].map((s) => [
     `--vela-signal-status-${s}`, '--vela-bg-global', `Status dot: ${s}`, 'ui',
   ]),

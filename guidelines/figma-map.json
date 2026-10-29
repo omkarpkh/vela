@@ -236,6 +236,39 @@
       "spec": "guidelines/components/tabs.md"
     },
     {
+      "set": "Text Area",
+      "page": "Text Area",
+      "state": "none",
+      "node": null,
+      "url": null,
+      "import": "import { TextArea } from '@omkarux/vela'",
+      "write": "TextArea",
+      "figmaToProp": [
+        {
+          "figma": "Size",
+          "prop": "size"
+        },
+        {
+          "figma": "State=default",
+          "prop": "—"
+        },
+        {
+          "figma": "State=focus",
+          "prop": ":focus-visible, not a prop"
+        },
+        {
+          "figma": "State=error",
+          "prop": "error — a message string, not a boolean"
+        },
+        {
+          "figma": "State=disabled",
+          "prop": "disabled"
+        }
+      ],
+      "example": "<TextArea label=\"Justification\" hint=\"Shown to the approver\" maxLength={280} rows={4} />",
+      "spec": "guidelines/components/text-area.md"
+    },
+    {
       "set": "Toggle",
       "page": "Toggle",
       "state": "published",

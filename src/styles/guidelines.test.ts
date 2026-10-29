@@ -67,4 +67,15 @@ describe('the agent-facing contract is complete', () => {
       expect(notInKit).toContain(missing)
     for (const shipped of ['Checkbox', 'Radio']) expect(notInKit).not.toContain(shipped)
   })
+
+  it('keeps a shipped component out of both "not in the kit" lists', () => {
+    const design = readFileSync(resolve(root, 'DESIGN.md'), 'utf8')
+    const notYet = (md: string) => md.match(/Not yet specced:([\s\S]*?)Flag rather than guess/)![1]
+    // Icon is matched as a word not followed by "Button": Icon Button is genuinely not in the kit.
+    const named = (list: string, c: string) => new RegExp(`\\b${c}\\b(?! Button)`).test(list)
+    expect(named(' Icon Button, Modal', 'Icon')).toBe(false)
+    for (const shipped of ['Text Area', 'Input', 'Tabs', 'Icon', 'Checkbox', 'Radio Group'])
+      for (const [name, md] of [['overview.md', overview], ['DESIGN.md', design]] as const)
+        expect(named(notYet(md), shipped), `${shipped} is listed as missing in ${name}`).toBe(false)
+  })
 })

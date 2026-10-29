@@ -71,7 +71,7 @@ describe('Figma → code map', () => {
     expect(pub).toEqual(['Button', 'Contextual Alert', 'Input', 'Status Indicator', 'Tab', 'Toggle'])
     // Risk Pill's set exists in the file but is being rebuilt: its node is null until the Figma thread posts it.
     expect(map.sets.find((s: any) => s.set === 'Risk Pill')).toMatchObject({ state: 'built', node: null })
-    expect(map.sets.filter((s: any) => s.state === 'none').map((s: any) => s.set).sort()).toEqual(['Checkbox', 'Icon', 'Radio'])
+    expect(map.sets.filter((s: any) => s.state === 'none').map((s: any) => s.set).sort()).toEqual(['Checkbox', 'Icon', 'Radio', 'Text Area'])
   })
 
   it('maps the Tab set to Tabs.Trigger, because the set is one trigger', () => {

@@ -2701,6 +2701,17 @@
         }
       }
     },
+    "font-family-mono": {
+      "$type": "fontFamily",
+      "$value": "ui-monospace, \"SF Mono\", \"Cascadia Mono\", \"Roboto Mono\", Menlo, Consolas, monospace",
+      "$description": "System monospace stack, no web font: identifiers, hashes, IPs, timestamps and counts that must align. Figma text style Mono/Meta draws it in Roboto Mono.",
+      "$extensions": {
+        "com.omkarux.vela": {
+          "figma": "font-family-mono",
+          "raw": true
+        }
+      }
+    },
     "font-weight-light": {
       "$type": "number",
       "$value": 300,

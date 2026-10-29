@@ -41,6 +41,7 @@ export const SETS = {
   'button.md': { set: 'Button', src: 'Button', state: 'published', node: '7:122', export: 'Button' },
   'toggle.md': { set: 'Toggle', src: 'Toggle', state: 'published', node: '8:49', export: 'Toggle' },
   'input.md': { set: 'Input', src: 'Input', state: 'published', node: '8:110', export: 'Input' },
+  'text-area.md': { set: 'Text Area', src: 'TextArea', state: 'none', node: null, export: 'TextArea' },
   'contextual-alert.md': { set: 'Contextual Alert', src: 'ContextualAlert', state: 'published', node: '77:15', export: 'ContextualAlert' },
   'status-indicator.md': { set: 'Status Indicator', src: 'StatusIndicator', state: 'published', node: '8:32', export: 'StatusIndicator' },
   'risk-pill.md': { set: 'Risk Pill', src: 'RiskPill', state: 'built', node: null, export: 'RiskPill' },

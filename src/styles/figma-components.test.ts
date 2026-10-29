@@ -18,7 +18,7 @@ const cli = (...args: string[]) => {
 const lintReport: Record<string, { problems: { rule: string; node: string; what: string; waived: boolean }[]; allow: { rule: string; reason: string }[] }> = JSON.parse(cli('--lint'))
 const dump = (name: string) => JSON.parse(cli('--dump', name))
 const styles: any[] = JSON.parse(execFileSync('node', ['scripts/figma/text-styles.mjs', '--json'], { cwd: root, encoding: 'utf8' }))
-const BUILDERS = ['button', 'checkbox', 'contextual-alert', 'icon', 'input', 'radio-group', 'risk-pill', 'status-indicator', 'tabs', 'toggle']
+const BUILDERS = ['button', 'checkbox', 'contextual-alert', 'icon', 'input', 'radio-group', 'risk-pill', 'status-indicator', 'tabs', 'text-area', 'toggle']
 
 describe('Figma builders, built in the mock Plugin API', () => {
   it('runs every builder', () => {
@@ -290,8 +290,14 @@ describe('text styles have a source', () => {
     expect(styles.map((s) => s.name)).toEqual([
       'Heading/H1', 'Heading/H2', 'Heading/H3', 'Heading/H4', 'Heading/H5', 'Heading/H6',
       'Body/Default', 'Body/Meta', 'Button/Tiny', 'Button/Regular', 'Button/Large', 'Button/Huge',
-      'Tab/Default', 'Tab/Large', 'Body/Link', 'Tab/Count', 'Tab/Count Large',
+      'Tab/Default', 'Tab/Large', 'Body/Link', 'Tab/Count', 'Tab/Count Large', 'Mono/Meta',
     ])
+  })
+
+  it('draws Mono/Meta as Body/Meta in Roboto Mono: same size, line height, weight and tracking variables', () => {
+    const mono = styles.find((s) => s.name === 'Mono/Meta'), meta = styles.find((s) => s.name === 'Body/Meta')
+    expect(mono.fontName).toEqual({ family: 'Roboto Mono', style: 'Regular' })
+    for (const k of ['size', 'lineHeight', 'weight', 'tracking']) expect(mono[k], k).toEqual(meta[k])
   })
 
   it('binds Tab/Count to size/tab, line-height/tab and weight/semibold, and Tab/Count Large to the large pair', () => {

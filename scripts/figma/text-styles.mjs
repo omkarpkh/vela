@@ -8,7 +8,8 @@
  * One style per size in the ramp, derived the way flutter/lib/vela_tokens.dart derives its
  * TextStyles: text-<s>-size + text-<s>-line-height + text-<s>-weight, with button and tab labels
  * falling back to font-weight-regular as Button.css and Tabs.css do. Then the styles that are a
- * ramp size at another weight (Body/Link, the two tab counts), declared in EXTRA.
+ * ramp size at another weight (Body/Link, the two tab counts) or in another family (Mono/Meta),
+ * declared in EXTRA.
  *
  *   npm run styles:figma > /tmp/styles.js    # a Plugin API script: creates-or-updates every style
  *
@@ -22,6 +23,10 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { VENDOR, pxOf } from '../tokens-core.mjs'
 
 export const FAMILY = 'Open Sans'
+// --vela-font-family-mono is a system stack (ui-monospace, "SF Mono", … monospace) with no web
+// font, and Figma has no system stack: a style names one family. Roboto Mono is the stack's
+// Google-hosted member, so every Figma seat has it.
+export const MONO_FAMILY = 'Roboto Mono'
 export const WEIGHT_STYLE = { 300: 'Light', 400: 'Regular', 600: 'SemiBold' }
 
 // Figma name for each ramp entry (the <s> in text-<s>-size).
@@ -32,7 +37,7 @@ const NAME = {
   tab: 'Tab/Default', 'tab-large': 'Tab/Large',
 }
 
-// Styles that are not a ramp entry: a ramp size at a different weight.
+// Styles that are not a ramp entry: a ramp size at a different weight, or in a different family.
 const EXTRA = [
   { name: 'Body/Link', base: 'body', weight: 'font-weight-semibold',
     description: 'Inline link text: semibold body, no underline. Colour comes from text/link.' },
@@ -40,6 +45,8 @@ const EXTRA = [
     description: 'The count beside a tab label, e.g. "Proposals 9". Same size and line height as Tab/Default, semibold.' },
   { name: 'Tab/Count Large', base: 'tab-large', weight: 'font-weight-semibold',
     description: 'The count beside a large tab label. Same size and line height as Tab/Large, semibold.' },
+  { name: 'Mono/Meta', base: 'meta', weight: 'text-meta-weight', family: MONO_FAMILY,
+    description: 'Identifiers, hashes, IPs, timestamps and counts that must align: Body/Meta in a monospace family. Code binds --vela-font-family-mono.' },
 ]
 
 // A dimension is { value, unit: "px" }; a weight is a plain number.
@@ -53,12 +60,12 @@ export function textStyles(doc) {
     if (!t) throw new Error(`text-styles: no token ${css}`)
     return { css, figma: t.$extensions?.[VENDOR]?.figma, value: px(t, css) }
   }
-  const compose = (name, s, weightCss, description = '') => {
+  const compose = (name, s, weightCss, description = '', family = FAMILY) => {
     const size = tok(`text-${s}-size`), lineHeight = tok(`text-${s}-line-height`), weight = tok(weightCss)
     const tracking = typ[`text-${s}-tracking`] ? tok(`text-${s}-tracking`) : null
     const style = WEIGHT_STYLE[weight.value]
-    if (!style) throw new Error(`text-styles: ${name}: no ${FAMILY} style for weight ${weight.value}`)
-    return { name, size, lineHeight, weight, tracking, fontName: { family: FAMILY, style }, description }
+    if (!style) throw new Error(`text-styles: ${name}: no ${family} style for weight ${weight.value}`)
+    return { name, size, lineHeight, weight, tracking, fontName: { family, style }, description }
   }
   const ramp = Object.keys(typ).filter((n) => /^text-.+-size$/.test(n)).map((n) => n.slice(5, -5))
   const out = ramp.map((s) => {
@@ -67,7 +74,7 @@ export function textStyles(doc) {
     if (!weightCss) throw new Error(`text-styles: ${s}: no weight token and no component rule to fall back on`)
     return compose(NAME[s], s, weightCss)
   })
-  for (const e of EXTRA) out.push(compose(e.name, e.base, e.weight, e.description))
+  for (const e of EXTRA) out.push(compose(e.name, e.base, e.weight, e.description, e.family))
   return out
 }
 
