@@ -5,7 +5,7 @@ Single-line text entry with a label, optional hint, and an error state.
 ## When to use Input
 
 - Single-line text or numeric-as-text → **Input**.
-- Multi-line → Text Area, **not in this kit**. Flag the gap.
+- Multi-line → **Text Area** (`components/text-area.md`).
 - Numeric with a spinner → Number Stepper, **not in this kit**. Flag the gap.
 - Choosing from a set → Radio or Dropdown, **not in this kit**.
 

@@ -16,11 +16,47 @@ test('the Button page constrains text-link the way the type does, and the code f
 test('navigation reaches every component and each page lists its tokens', async ({ page }) => {
   await page.goto('/')
   const nav = page.getByRole('navigation', { name: 'Site' })
-  for (const name of ['Button', 'Toggle', 'Input', 'Contextual Alert', 'Status Indicator', 'Risk Pill', 'Tabs', 'Checkbox', 'Radio Group', 'Popover', 'Tooltip', 'Dialog']) {
+  for (const name of ['Button', 'Toggle', 'Input', 'Text Area', 'Contextual Alert', 'Status Indicator', 'Risk Pill', 'Tabs', 'Icon', 'Checkbox', 'Radio Group', 'Popover', 'Tooltip', 'Dialog']) {
     await nav.getByRole('link', { name, exact: true }).click()
     await expect(page.getByRole('heading', { level: 1, name })).toBeVisible()
     await expect(page.getByRole('tab', { name: /^Tokens/ })).not.toHaveText(/Tokens\s*0$/)
   }
+})
+
+// [[rule: text-area-never-resizes-horizontally]]
+// The UA default for a <textarea> is `resize: both`, and a host stylesheet can say the same; the
+// component's class must win either way. A drag on the handle is the proof: it may move the
+// bottom edge, never the right one, and never above `rows` lines (3 x the 21px body line here).
+test('the Text Area page counts as you type and the field only ever resizes vertically', async ({ page }) => {
+  await page.goto('/#/components/text-area')
+  await expect(page.getByRole('heading', { level: 1, name: 'Text Area' })).toBeVisible()
+  await page.addStyleTag({ content: 'textarea { resize: both; }' })
+  const field = page.locator('.pg-frame-body textarea').first()
+  const count = page.locator('.pg-frame-body .vela-text-area__count').first()
+  await field.fill('Public bucket 🔒')
+  await expect(count).toHaveText('15 / 140')
+  expect(await field.evaluate((el) => getComputedStyle(el).resize)).toBe('vertical')
+  expect(await field.evaluate((el) => getComputedStyle(el).minHeight)).toBe('63px')
+
+  const before = (await field.boundingBox())!
+  await page.mouse.move(before.x + before.width - 3, before.y + before.height - 3)
+  await page.mouse.down()
+  await page.mouse.move(before.x + before.width + 120, before.y + before.height + 60, { steps: 6 })
+  await page.mouse.up()
+  const grown = (await field.boundingBox())!
+  expect(grown.width).toBeCloseTo(before.width, 0)
+  expect(grown.height).toBeGreaterThan(before.height + 40)
+
+  await page.mouse.move(grown.x + grown.width - 3, grown.y + grown.height - 3)
+  await page.mouse.down()
+  await page.mouse.move(grown.x + grown.width - 3, grown.y + 4, { steps: 6 })
+  await page.mouse.up()
+  const shrunk = (await field.boundingBox())!
+  expect(shrunk.height).toBeCloseTo(before.height, 0)
+
+  await page.getByRole('complementary', { name: 'Props' }).getByLabel('resize').selectOption('none')
+  await expect(page.locator('.pg-code')).toContainText('resize="none"')
+  expect(await page.locator('.pg-frame-body textarea').first().evaluate((el) => getComputedStyle(el).resize)).toBe('none')
 })
 
 // Two entry points, one playground (decisions/002): the Tabs page renders the same props through
@@ -371,4 +407,23 @@ test('an anchored press does not move the point it was pressed on', async ({ pag
   // Anchored at the left edge: that edge stays, and the far edge is the one that travels.
   expect(Math.abs(pressed.left - box.x)).toBeLessThan(0.75)
   expect(box.x + box.width - pressed.right).toBeGreaterThan(8)
+})
+
+// The Icon stylesheet is the only source of a glyph's box and stroke (icon.md, "Size and stroke
+// come from the tokens"); jsdom cannot resolve either, so the real layout is checked here once.
+test('the Icon page sizes every glyph from the tokens and draws the stroke on the 24 grid', async ({ page }) => {
+  await page.goto('/#/components/icon')
+  await expect(page.getByRole('heading', { level: 1, name: 'Icon' })).toBeVisible()
+  const frame = page.locator('.pg-frame[data-theme="light"] .pg-frame-body')
+  await expect(frame.locator('.pg-icon__grid svg.vela-icon')).toHaveCount(50)
+  const lead = frame.locator('.pg-icon__lead svg')
+  const box = async () => { const b = (await lead.boundingBox())!; return [Math.round(b.width), Math.round(b.height)] }
+  expect(await box()).toEqual([16, 16])
+  await expect(lead).toHaveCSS('stroke-width', '2px')
+  const props = page.getByRole('complementary', { name: 'Props' })
+  await props.getByLabel('size').selectOption('large')
+  expect(await box()).toEqual([20, 20])
+  await props.getByLabel('size').selectOption('small')
+  expect(await box()).toEqual([12, 12])
+  await expect(page.locator('.pg-code')).toContainText('<Icon name="shield-x" size="small" />')
 })

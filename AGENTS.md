@@ -12,6 +12,7 @@ Vela is a design system and its rules are load-bearing. Read, in this order, the
 4. Severity (6) / Risk (3) / Status (5) are separate taxonomies. Never cross them.
 5. Never invent a component. Name the closest match and flag the gap.
 6. New colour pair? Add it to `PAIRS` in `scripts/contrast-core.mjs`. Unasserted is unverified.
+7. Reading a Figma node? If it is an instance of a Vela set, look it up in `guidelines/figma-map.json` and write that export with those props. Never reproduce Figma's generated markup.
 
 ## Before you claim it works
 ```bash

@@ -1,0 +1,19 @@
+/* ------------------------------------------------------------------ Icon -- */
+/* The glyph is drawn on Lucide's 24-unit grid (viewBox 0 0 24 24). stroke-width is in those units,
+   so --vela-icon-stroke (2) renders 1px at small, 1.33px at regular and 1.67px at large: the stroke
+   scales with the box. The svg carries no width, height or stroke-width attribute; these are the
+   only source. */
+.vela-icon {
+  display: inline-block;
+  flex: none;
+  vertical-align: middle;
+  width: var(--vela-icon-size);
+  height: var(--vela-icon-size);
+  stroke-width: var(--vela-icon-stroke);
+}
+.vela-icon--small { width: var(--vela-icon-size-small); height: var(--vela-icon-size-small); }
+.vela-icon--large { width: var(--vela-icon-size-large); height: var(--vela-icon-size-large); }
+
+/* `inherit` sets no colour: the glyph's stroke is currentColor, so it follows the text it sits in. */
+.vela-icon--default { color: var(--vela-icon-strong); }
+.vela-icon--muted   { color: var(--vela-icon-default); }

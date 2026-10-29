@@ -31,7 +31,7 @@ describe('component specs → Figma descriptions', () => {
 
   it.each(entries.map((e) => e.set))('%s description carries code, mapping, rules and paths', (set) => {
     const d = entries.find((e) => e.set === set)!.description
-    expect(d).toContain('CODE\n<')
+    expect(d).toMatch(/Use the library component; do not rebuild it from this frame\.\nCODE\nimport \{ \w+ \} from '@omkarux\/vela(\/headless)?'\n/)
     expect(d).toMatch(/FIGMA → PROP\n.+→/)
     expect(d).toMatch(/RULES {2}\S/)
     // A headless-only component (Checkbox, Radio Group) lives under src/headless, not src/components.
@@ -71,5 +71,16 @@ describe('the agent-facing contract is complete', () => {
     const designNotInKit = readFileSync(resolve(root, 'DESIGN.md'), 'utf8').match(/Not yet specced: ([^.]+)\./)?.[1] ?? ''
     for (const shipped of ['Modal', 'Tooltip']) expect(designNotInKit).not.toContain(shipped)
     expect(designNotInKit).toContain('Select List')
+  })
+
+  it('keeps a shipped component out of both "not in the kit" lists', () => {
+    const design = readFileSync(resolve(root, 'DESIGN.md'), 'utf8')
+    const notYet = (md: string) => md.match(/Not yet specced:([\s\S]*?)Flag rather than guess/)![1]
+    // Icon is matched as a word not followed by "Button": Icon Button is genuinely not in the kit.
+    const named = (list: string, c: string) => new RegExp(`\\b${c}\\b(?! Button)`).test(list)
+    expect(named(' Icon Button, Modal', 'Icon')).toBe(false)
+    for (const shipped of ['Text Area', 'Input', 'Tabs', 'Icon', 'Checkbox', 'Radio Group'])
+      for (const [name, md] of [['overview.md', overview], ['DESIGN.md', design]] as const)
+        expect(named(notYet(md), shipped), `${shipped} is listed as missing in ${name}`).toBe(false)
   })
 })

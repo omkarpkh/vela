@@ -57,6 +57,7 @@ check(files.includes('tokens/vela.tokens.json'), 'tarball contains tokens/vela.t
 check(files.includes('flutter/lib/vela_tokens.dart'), 'tarball contains flutter/lib/vela_tokens.dart')
 check(files.includes('bridges/vela.mui-theme.json'), 'tarball contains bridges/vela.mui-theme.json')
 check(files.some((f) => f.startsWith('guidelines/')), 'tarball contains guidelines/')
+check(files.includes('NOTICE'), 'tarball contains NOTICE (the Lucide ISC notice travels with every copy)')
 check(!files.some((f) => f.startsWith('src/')), 'no src/ leaked into the tarball')
 check(!files.some((f) => f.includes('.test.')), 'no test files leaked into the tarball')
 console.log(`  ....  ${files.length} files, ${(packed.size / 1024).toFixed(1)} kB packed`)
@@ -118,14 +119,16 @@ try {
   // -- valid usage must compile --
   mkdirSync(join(app, 'src'), { recursive: true })
   writeFileSync(join(app, 'valid.tsx'), `
-import { Button, Toggle, Input, ContextualAlert, StatusIndicator, RiskPill, Tabs } from '@omkarux/vela'
-import type { Severity, Status, Risk, ButtonProps } from '@omkarux/vela'
+import { Button, Toggle, Input, TextArea, ContextualAlert, StatusIndicator, RiskPill, Tabs, Icon, ICON_NAMES } from '@omkarux/vela'
+import type { Severity, Status, Risk, ButtonProps, IconName } from '@omkarux/vela'
 
 export const A = () => <Button variant="primary" appearance="filled" size="huge">Save Changes</Button>
 export const B = () => <Button variant="primary" appearance="text-link" size="tiny">Learn More</Button>
 export const C = () => <Button variant="destructive" appearance="hollow" loading>Delete Account</Button>
 export const D = () => <Toggle label="Email alerts" onChange={(v: boolean) => v} />
 export const E = () => <Input label="Tenant" hint="Lowercase only" error="Taken" size="large" />
+export const E2 = () => <TextArea label="Justification" hint="Shown to the approver" error="Required" size="tiny" rows={4} maxLength={280} resize="none" defaultValue="" />
+export const E3 = (v: string) => <TextArea label="Notes" value={v} onChange={(e) => e.target.value} name="notes" readOnly required />
 export const F = (s: Severity) => <ContextualAlert severity={s}>Body</ContextualAlert>
 export const G = (s: Status) => <StatusIndicator status={s} label="Node 1" />
 export const G2 = (r: Risk) => <RiskPill risk={r} label="High · 87" size="small" />
@@ -145,6 +148,11 @@ export const I = () => (
 )
 export const J = () => <Toggle label="Email alerts" checked onChange={(v: boolean) => v} />
 export const props: ButtonProps = { variant: 'standard', children: 'OK' }
+export const K = () => <Icon name="shield-x" />
+export const K2 = () => <Icon name="rotate-ccw-clock" size="large" tone="muted" label="Audit history" />
+export const K3 = () => <Button icon={<Icon name="plus" tone="inherit" />}>Add rule</Button>
+export const K4 = (n: IconName) => <Icon name={n} size="small" />
+export const names: readonly IconName[] = ICON_NAMES
 `)
   const tsc = join(root, 'node_modules', '.bin', 'tsc')
   let validOk = true
@@ -295,6 +303,12 @@ export const props: [PopoverProps, TooltipProps, DialogProps, DialogProps, Dialo
     ['input-error-is-a-message', 'error as a boolean', `<Input label="Tenant" error />`],
     ['tabs-controlled-exclusive', 'tabs both controlled and uncontrolled', `<Tabs value="a" defaultValue="a"><Tabs.List aria-label="V"><Tabs.Trigger value="a">A</Tabs.Trigger></Tabs.List></Tabs>`],
     ['toggle-controlled-exclusive', 'toggle both controlled and uncontrolled', `<Toggle label="Alerts" checked defaultChecked />`],
+    ['text-area-label-required', 'text area with no label', `<TextArea />`],
+    ['text-area-controlled-exclusive', 'text area both controlled and uncontrolled', `<TextArea label="Notes" value="a" defaultValue="a" />`],
+    ['text-area-error-is-a-message', 'text area error as a boolean', `<TextArea label="Notes" error />`],
+    ['text-area-resize-closed', 'horizontal resize', `<TextArea label="Notes" resize="horizontal" />`],
+    ['text-area-resize-closed', 'resize in both directions', `<TextArea label="Notes" resize="both" />`],
+    ['text-area-size-closed', 'invented text area size', `<TextArea label="Notes" size="medium" />`],
     // Checkbox and Radio Group ship from `@omkarux/vela/headless` only; the fixture file imports them from there.
     ['checkbox-label-required', 'checkbox with no label', `<Checkbox />`],
     ['checkbox-label-required', 'checkbox label as a node', `<Checkbox label={<b>Accept</b>} />`],
@@ -310,6 +324,16 @@ export const props: [PopoverProps, TooltipProps, DialogProps, DialogProps, Dialo
     ['radio-value-required', 'radio with no value', `<RadioGroup label="Mode"><RadioGroup.Radio label="A" /></RadioGroup>`],
     ['radio-label-required', 'radio with no label', `<RadioGroup label="Mode"><RadioGroup.Radio value="a" /></RadioGroup>`],
     ['radio-label-required', 'radio label as a node', `<RadioGroup label="Mode"><RadioGroup.Radio value="a" label={<b>A</b>} /></RadioGroup>`],
+    ['icon-name-closed-set', 'unknown icon name', `<Icon name="shield" />`],
+    ['icon-name-closed-set', 'a Lucide glyph outside the curated set', `<Icon name="airplay" />`],
+    ['icon-name-closed-set', 'a Lucide alias instead of the canonical name', `<Icon name="trash-2" />`],
+    ['icon-name-closed-set', 'icon with no name', `<Icon />`],
+    ['icon-size-closed-set', 'invalid icon size', `<Icon name="check" size="medium" />`],
+    ['icon-size-closed-set', 'icon size as a number', `<Icon name="check" size={16} />`],
+    ['icon-tone-closed-set', 'severity used as an icon tone', `<Icon name="shield-x" tone="critical" />`],
+    ['icon-tone-closed-set', 'risk used as an icon tone', `<Icon name="shield-alert" tone="high" />`],
+    ['icon-not-interactive', 'icon with a click handler', `<Icon name="x" onClick={() => {}} />`],
+    ['icon-not-interactive', 'icon in the tab order', `<Icon name="copy" tabIndex={0} />`],
     // Popover, Tooltip and Dialog ship from `@omkarux/vela/headless` only, like Checkbox and Radio Group.
     ['popover-title-required', 'popover with no title', `<Popover trigger={<Button>Filters</Button>}>Body</Popover>`],
     ['popover-title-required', 'popover title as a node', `<Popover trigger={<Button>Filters</Button>} title={<b>Filters</b>}>Body</Popover>`],
@@ -337,7 +361,7 @@ export const props: [PopoverProps, TooltipProps, DialogProps, DialogProps, Dialo
   ]
   for (const [id, name, snippet] of violations) {
     writeFileSync(join(app, 'invalid.tsx'),
-      `import { Button, ContextualAlert, Input, RiskPill, StatusIndicator, Tabs, Toggle } from '@omkarux/vela'\n` +
+      `import { Button, ContextualAlert, Icon, Input, RiskPill, StatusIndicator, Tabs, TextArea, Toggle } from '@omkarux/vela'\n` +
       `import { Checkbox, RadioGroup, Popover, Tooltip, Dialog } from '@omkarux/vela/headless'\nexport const X = () => (${snippet})\n`)
     let rejected = false
     try { run(tsc, ['--noEmit', '-p', 'tsconfig.json'], app) } catch { rejected = true }

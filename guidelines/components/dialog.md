@@ -213,7 +213,9 @@ difference is recorded here:
 ## Figma mapping
 
 Library file: **Vela Design System** → page `Dialog`. Four variants, `Variant` (standard / alert) x
-`Size` (regular / wide), plus a `Title text` text property and a `Description` boolean. The set is
+`Size` (regular / wide), each with its own title in a text layer named `Title`, plus a
+`Description` boolean. There is no `Title text` property: a Figma text property holds one default
+for the whole set, and a standard dialog and an alert are titled differently. The set is
 created by `scripts/figma/components/dialog.figma.js`; until that builder has been run in the file,
 the library has no Dialog set. The backdrop is not part of the set: a dialog frame is placed over a
 `surface/scrim` rectangle at the `opacity/scrim` layer opacity.
@@ -222,7 +224,7 @@ the library has no Dialog set. The backdrop is not part of the set: a dialog fra
 |---|---|
 | `Variant` | `variant` |
 | `Size` | `size` |
-| `Title text` | `title` |
+| `Title` (text layer, override on the instance) | `title` |
 | `Description` (boolean) | `description` |
 
 **Focus trapping, inertness, scroll locking, Escape and the return of focus exist only in code. The

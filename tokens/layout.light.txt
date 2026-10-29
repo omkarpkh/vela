@@ -246,6 +246,12 @@
   @icon-20
   @icon-24
 
+  /* ---- Icon component: its three sizes and the glyph stroke (24-grid units) ---- */
+  @icon-size
+  @icon-size-small
+  @icon-size-large
+  @icon-stroke
+
   /* ---- Control heights ---- */
   @control-height-24
   @control-height-25
@@ -265,6 +271,7 @@
   /* ---- Typography: family & weight ---- */
   @font-family-primary
   @font-family-display
+  @font-family-mono
   @font-weight-light
   @font-weight-regular
   @font-weight-semibold

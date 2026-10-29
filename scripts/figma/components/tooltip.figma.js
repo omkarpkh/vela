@@ -1,7 +1,10 @@
 // @page Tooltip
 // @set  Tooltip
-// Tooltip — 2 variants (Lines) + a "Content" text property. `Lines` is not a prop: it shows the
-// cap. A one-line tooltip hugs its text; a two-line one is tooltip/width-max wide and wraps, which
+// Tooltip — 2 variants (Lines). Each variant keeps its own sentence in a text layer named
+// "Content", overridden on the instance — no TEXT component property: Figma holds one default per
+// TEXT property for the whole set, and the two variants need different lengths to show the cap
+// (the text-property-collapse lint fails a builder that binds differing texts). `Lines` is not a
+// prop: it shows the cap. A one-line tooltip hugs its text; a two-line one is tooltip/width-max wide and wraps, which
 // is the only way the width token is visible in the file. No arrow and no placement axis: without an
 // arrow the four placements look the same, and placement is code (tooltip.md, Figma mapping).
 
@@ -34,10 +37,5 @@ const set = figma.combineAsVariants(variants, page);
 set.name = SET; set.x = 0; set.y = 0;
 grid(set, p => [p.Lines === 'one' ? 0 : 1, 0], 300, 64, 32);
 set.resize(32 * 2 + 300 * 2, 32 * 2 + 64);
-
-const contentProp = set.addComponentProperty('Content', 'TEXT', 'Download the last 24 hours as CSV');
-for (const v of set.children) {
-  const t = v.findOne(n => n.name === 'Content'); if (t) t.componentPropertyReferences = { characters: contentProp };
-}
 
 return { created: SET, variants: variants.length, setId: set.id };

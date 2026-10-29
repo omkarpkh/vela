@@ -66,6 +66,23 @@ Status Indicator dot and the Toggle track only (`guidelines/foundations/spacing.
 `sizing.md`). Button and the input family do not share a height ramp — a `regular` Button is
 35px and a `regular` Input is 26px, deliberately.
 
+## Typography
+
+Three families, each a token, each with a fallback stack so the kit degrades rather than breaks
+(`guidelines/foundations/typography.md`):
+
+| Token | Stack | For |
+|---|---|---|
+| `--vela-font-family-primary` | `"Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif` | all UI text |
+| `--vela-font-family-display` | `"Oswald", "Open Sans", -apple-system, sans-serif` | large stat and number displays only |
+| `--vela-font-family-mono` | `ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", Menlo, Consolas, monospace` | identifiers, hashes, IPs, timestamps, counts that must align |
+
+The mono stack is **system fonts only** — no web font is downloaded; each platform's own
+monospace answers first. It is used at Meta's size, line height, weight and tracking
+(`--vela-text-meta-*`), which Figma carries as the text style **`Mono/Meta`** in Roboto Mono
+(Figma names one family per style, and Roboto Mono is the stack's Google-hosted member). Sizes
+are triples: never take a size without its line height.
+
 ## The three taxonomies
 
 Vela deliberately separates **severity** (events), **risk** (scoring) and **status** (the health
@@ -301,8 +318,8 @@ Accessibility
 
 Do not invent one silently. State that the kit has no component for the need and pick the
 closest match while flagging the gap. Not yet specced: Dropdown List, Select List, Token Pill,
-Number Stepper, Text Area, Icon Button, Actions Dropdown, View Switcher. Flag rather than
-guess. Checkbox (with Checkbox.Group), Radio Group, Popover, Tooltip and Dialog (with its `alert`
+Number Stepper, Icon Button, Actions Dropdown, View Switcher. Flag rather than guess.
+Checkbox (with Checkbox.Group), Radio Group, Popover, Tooltip and Dialog (with its `alert`
 variant — the kit's modal) are specced and ship from `@omkarux/vela/headless` only
 (Experimental). The disambiguations agents most often get wrong
 — Toggle vs Checkbox, Radio Group vs Select List, Tabs vs View Switcher, Popover vs Tooltip vs

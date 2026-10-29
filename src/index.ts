@@ -25,6 +25,9 @@ export type { ToggleProps } from './components/Toggle'
 export { Input } from './components/Input'
 export type { InputProps } from './components/Input'
 
+export { TextArea } from './components/TextArea'
+export type { TextAreaProps } from './components/TextArea'
+
 export { ContextualAlert } from './components/ContextualAlert'
 export type { ContextualAlertProps, Severity } from './components/ContextualAlert'
 
@@ -36,5 +39,12 @@ export type { RiskPillProps, Risk } from './components/RiskPill'
 
 export { Tabs } from './components/Tabs'
 export type { TabsProps, TabListProps, TabTriggerProps, TabPanelProps } from './components/Tabs'
+
+// The curated icon set (decisions/003-icons-lucide-curated): one component and the closed list of
+// names. The individual glyph components are internal and not exported.
+export { Icon } from './components/Icon'
+export type { IconProps, IconSize, IconTone } from './components/Icon'
+export { ICON_NAMES } from './icons/names'
+export type { IconName } from './icons/names'
 
 export { cn } from './lib/cn'

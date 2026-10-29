@@ -1,6 +1,9 @@
 // @page Dialog
 // @set  Dialog
-// Dialog — 4 variants (Variant × Size) + a "Title text" property and a "Description" boolean.
+// Dialog — 4 variants (Variant × Size) + a "Description" boolean. Each variant keeps its own title
+// in a text layer named "Title", overridden on the instance — no TEXT component property: Figma
+// holds one default per TEXT property for the whole set, and a standard dialog and an alert are
+// titled differently (the text-property-collapse lint fails a builder that binds differing texts).
 // The popup only: the scrim is a surface/scrim rectangle at the opacity/scrim layer opacity placed
 // under an instance, and focus trapping, inertness, scroll locking and Escape are code (dialog.md).
 // Header (title, description, and on `standard` the close button), Body (`standard` only), Footer.
@@ -114,10 +117,8 @@ set.name = SET; set.x = 0; set.y = 0;
 grid(set, p => [p.Size === 'regular' ? 0 : 1, p.Variant === 'standard' ? 0 : 1], 780, 260, 40);
 set.resize(40 * 2 + 780 * 2, 40 * 2 + 260 * 2);
 
-const titleProp = set.addComponentProperty('Title text', 'TEXT', 'Edit policy');
 const descProp = set.addComponentProperty('Description', 'BOOLEAN', true);
 for (const v of set.children) {
-  const t = v.findOne(n => n.name === 'Title'); if (t) t.componentPropertyReferences = { characters: titleProp };
   const d = v.findOne(n => n.name === 'Description'); if (d) d.componentPropertyReferences = { visible: descProp };
 }
 

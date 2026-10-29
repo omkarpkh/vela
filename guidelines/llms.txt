@@ -4,7 +4,7 @@
 > deliberately separate status taxonomies, full light and dark theming, zero runtime dependencies
 > in the core entry (the `/headless` entry needs one optional peer, Base UI, and is where Checkbox,
 > Radio Group, Popover, Tooltip and Dialog ship from).
-> 39 of the 85 design rules are enforced by the TypeScript types; the rest are checked at runtime, in a
+> 48 of the 106 design rules are enforced by the TypeScript types; the rest are checked at runtime, in a
 > real browser, or by review. Each rule in the component guidelines is tagged with its level.
 >
 > THESE SPECS ARE FRAMEWORK-AGNOSTIC. The published package is a React implementation of them, and
@@ -24,12 +24,21 @@ rules, what CI asserts for accessibility, every anti-pattern, and what is not in
 `overview.md`, which maps a user need to a component and lists the choices agents most often get
 wrong. Then the per-component file before generating any markup.
 
+`proposals/` (in the repository, not the npm package) holds specs for components that are NOT
+built yet — Verdict Card, Action Impact Card, Autonomy Ladder, Approval Queue, Calibrated Confidence Gate. Never import or imitate them; name
+the closest component that exists and flag the gap.
+
+Working from the Figma library? `figma-map.json` (this folder) maps each component set to the
+export and props to write for it. When a design node is an instance of a Vela set, write that
+export; never reproduce the markup Figma's design context generates for it.
+
 ## Hard rules (apply everywhere)
 - Bind SEMANTIC tokens (`var(--vela-text-default)`). Never a primitive (`--vela-grey-700`), never raw hex.
 - Numeric tokens already carry their unit. Use `var(--vela-space-10)`, never `calc(var(--vela-space-10) * 1px)`.
 - Prop sets are CLOSED. If a value is not in the component's Props table, it does not exist.
 - Never invent a component. If nothing fits, say so and name the closest match.
 - Severity, Risk and Status are three different taxonomies. Never cross them.
+- Icons come from `ICON_NAMES` only (`<Icon name="…" />`). Never import `lucide-react` or another icon set beside Vela.
 
 ## Figma
 
@@ -56,10 +65,12 @@ behaviour has no Figma expression at all.
 - [Button](components/button.md)
 - [Toggle](components/toggle.md)
 - [Input](components/input.md)
+- [Text Area](components/text-area.md)
 - [Contextual Alert](components/contextual-alert.md)
 - [Status Indicator](components/status-indicator.md)
 - [Risk Pill](components/risk-pill.md)
 - [Tabs](components/tabs.md)
+- [Icon](components/icon.md) — 50 curated Lucide glyphs (ISC, see NOTICE), compiled into the core entry; `ICON_NAMES` is the closed list
 - [Checkbox](components/checkbox.md) — `@omkarux/vela/headless` only, Experimental
 - [Radio Group](components/radio-group.md) — `@omkarux/vela/headless` only, Experimental
 - [Popover](components/popover.md) — `@omkarux/vela/headless` only, Experimental

@@ -2,6 +2,11 @@
 
 **Open Sans** for all UI text (Light 300, Regular 400, SemiBold 600).
 **Oswald** for large stat/number displays only. Both have system fallbacks.
+**Monospace** (`--vela-font-family-mono`) for values that must align or be read character by
+character — identifiers, hashes, IP addresses, timestamps, counts — at Meta's size:
+`ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", Menlo, Consolas, monospace`. A
+system stack: no web font is downloaded. In Figma it is the text style `Mono/Meta`, drawn in
+Roboto Mono.
 
 ## The scale
 
@@ -15,6 +20,7 @@
 | H6 | 12 / 600 / 18 | `.vela-h6` |
 | Body | 14 / 400 / 21 | `.vela-body` |
 | Meta | 12 / 400 / 18, +0.3 tracking | `.vela-meta` |
+| Mono meta | Meta's triple and tracking in `--vela-font-family-mono` | — (Figma `Mono/Meta`) |
 
 Note the weight inversion: H1–H3 are **Light 300** and get their prominence from size;
 H5–H6 are **SemiBold 600** and get theirs from weight. Do not "correct" H1 to bold.

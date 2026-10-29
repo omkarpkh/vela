@@ -6,22 +6,54 @@
  * axes, a typography property set on a styled text detaches the style, a union takes the bounding
  * box of its parts, HUG and FILL set the sizing modes. It knows nothing about pixels it is not
  * told: text and hugging frames keep placeholder sizes, so only bound or resized sizes mean anything.
+ *
+ * Two behaviours of the real file are modelled because a builder got them wrong (29 Oct 2026):
+ *   - A TEXT component property holds ONE default for the whole set. Binding a text layer to it
+ *     (componentPropertyReferences = { characters }) makes that layer's characters the property's
+ *     default, and every layer bound to it shows that default; writing a bound layer's characters
+ *     rewrites the default for all of them. Per-variant words bound to one property collapse to
+ *     the last one written (Low / Medium / High → High / High / High, observed live). The mock
+ *     keeps what the builder last wrote to each layer (`_authored`) so the lint can say so.
+ *   - A paint's colour is resolved from its bound variable when the binding is new. Re-assigning a
+ *     paint bound to the same variable as the node's current paint at that index keeps the paint's
+ *     own placeholder colour ({0,0,0}, the black the builders pass) — observed on a reused page
+ *     frame. Clearing the fills first (`fills = []`) makes the binding new again.
  */
 const MIXED = Symbol('figma.mixed')
 let seq = 0
 const nid = (t) => `${t.toLowerCase()}:${++seq}`
-const DEFAULT_NAME = { FRAME: 'Frame', COMPONENT: 'Component', COMPONENT_SET: 'Component', TEXT: 'Text', RECTANGLE: 'Rectangle', ELLIPSE: 'Ellipse', POLYGON: 'Polygon', BOOLEAN_OPERATION: 'Union' }
+const hexToRgb = (v) => {
+  if (typeof v !== 'string' || !/^#[0-9a-f]{6}([0-9a-f]{2})?$/i.test(v)) return null
+  const n = (i) => Math.round((parseInt(v.slice(i, i + 2), 16) / 255) * 1000) / 1000
+  return { r: n(1), g: n(3), b: n(5) }
+}
+const DEFAULT_NAME = { FRAME: 'Frame', COMPONENT: 'Component', COMPONENT_SET: 'Component', TEXT: 'Text', RECTANGLE: 'Rectangle', ELLIPSE: 'Ellipse', POLYGON: 'Polygon', BOOLEAN_OPERATION: 'Union', VECTOR: 'Vector' }
 
 class SceneNode {
   constructor(type, figma) {
+    Object.defineProperty(this, '_figma', { value: figma, enumerable: false })
     this.id = nid(type); this.type = type; this.name = DEFAULT_NAME[type]; this.visible = true
     this.parent = null; this.x = 0; this.y = 0; this.width = 100; this.height = 100
     this.fills = []; this.strokes = []; this.strokeAlign = 'INSIDE'
     this._sw = { top: 1, right: 1, bottom: 1, left: 1 }
     this.boundVariables = {}; this.componentPropertyReferences = {}
     this._ls = { h: null, v: null }
-    Object.defineProperty(this, '_figma', { value: figma, enumerable: false })
   }
+  // Paints: a new binding resolves the variable's colour; the same binding re-assigned keeps the placeholder.
+  _setPaints(key, v) {
+    const prev = this[key] || []
+    this[key] = (v || []).map((p, i) => {
+      const id = p.boundVariables && p.boundVariables.color && p.boundVariables.color.id
+      const was = prev[i] && prev[i].boundVariables && prev[i].boundVariables.color && prev[i].boundVariables.color.id
+      const color = id && id !== was ? (this._figma._resolveColour(id) ?? p.color) : p.color
+      return color ? { ...p, color: { ...color } } : { ...p }
+    })
+  }
+  get fills() { return (this._fills || []).map((p) => ({ ...p })) } set fills(v) { this._setPaints('_fills', v) }
+  get strokes() { return (this._strokes || []).map((p) => ({ ...p })) } set strokes(v) { this._setPaints('_strokes', v) }
+  get componentPropertyReferences() { return this._cpr }
+  set componentPropertyReferences(v) { this._cpr = { ...(v || {}) }; if (this._cpr.characters) this._bindText(this._cpr.characters) }
+  _bindText() { throw new Error(`componentPropertyReferences.characters on "${this.name}": only a text layer has characters`) }
   get strokeWeight() { const s = this._sw; return s.top === s.right && s.top === s.bottom && s.top === s.left ? s.top : MIXED }
   set strokeWeight(v) { this._sw = { top: v, right: v, bottom: v, left: v } }
   get strokeTopWeight() { return this._sw.top } set strokeTopWeight(v) { this._sw.top = v }
@@ -101,8 +133,34 @@ class TextNode extends SceneNode {
   constructor(figma) {
     super('TEXT', figma)
     this._f = { fontName: { family: 'Inter', style: 'Regular' }, fontSize: 12, lineHeight: { unit: 'AUTO' }, letterSpacing: { unit: 'PERCENT', value: 0 } }
-    this.textStyleId = ''; this.textAutoResize = 'WIDTH_AND_HEIGHT'; this.textAlignHorizontal = 'LEFT'; this.characters = ''
+    this.textStyleId = ''; this.textAutoResize = 'WIDTH_AND_HEIGHT'; this.textAlignHorizontal = 'LEFT'
+    this._chars = ''; this._name = DEFAULT_NAME.TEXT; this.autoRename = true; this.hyperlink = null
   }
+  // As in Figma: a text layer is named after its characters until a name is set, which turns autoRename off.
+  get name() { return this._name } set name(v) { this._name = v; this.autoRename = false }
+  get characters() { return this._chars }
+  set characters(v) {
+    this._authored = v; this._show(v)
+    const key = this._cpr && this._cpr.characters
+    if (key) this._setDefault(key, v)
+  }
+  _show(v) { this._chars = v; if (this.autoRename) this._name = v }
+  _setOf() { let p = this.parent; while (p && p.type !== 'COMPONENT_SET') p = p.parent; return p }
+  // A TEXT property has one default for the whole set: binding a layer makes its characters that
+  // default, and every layer bound to the property shows it.
+  _bindText(key) { this._setDefault(key, this._chars) }
+  _setDefault(key, value) {
+    const set = this._setOf()
+    const def = set && set.componentPropertyDefinitions[key]
+    if (!def) throw new Error(`componentPropertyReferences on "${this.name}": no property ${key} on the containing component set`)
+    if (def.type !== 'TEXT') throw new Error(`componentPropertyReferences.characters on "${this.name}": ${key} is a ${def.type} property, not TEXT`)
+    def.defaultValue = value
+    for (const t of set.findAll((n) => n.type === 'TEXT' && n._cpr && n._cpr.characters === key)) t._show(value)
+  }
+  setRangeHyperlink(start, end, target) { if (start === 0 && end === this._chars.length) this.hyperlink = target }
+  // Whole-node list options only — the page builders set a list over all of a text's characters.
+  setRangeListOptions(start, end, options) { if (start === 0 && end === this._chars.length) this._list = options }
+  getRangeListOptions() { return this._list ?? { type: 'NONE' } }
   _defaultLs(axis) { return this.textAutoResize === 'WIDTH_AND_HEIGHT' ? 'HUG' : this.textAutoResize === 'HEIGHT' && axis === 'v' ? 'HUG' : 'FIXED' }
   // Setting a typography property on a styled node detaches the style — exactly what Figma does.
   get fontName() { return this._f.fontName } set fontName(v) { this._f.fontName = v; this.textStyleId = '' }
@@ -128,6 +186,11 @@ class RectangleNode extends SceneNode {
 }
 class EllipseNode extends SceneNode { constructor(figma) { super('ELLIPSE', figma) } }
 class PolygonNode extends SceneNode { constructor(figma) { super('POLYGON', figma); this.pointCount = 3; this.cornerRadius = 0 } }
+// A vector keeps its constraints (how it follows a resized parent) and its stroke cap and join. Its
+// geometry is not modelled: the mock knows a vector's box only if a builder sets it.
+class VectorNode extends SceneNode {
+  constructor(figma) { super('VECTOR', figma); this.constraints = { horizontal: 'MIN', vertical: 'MIN' }; this.strokeCap = 'NONE'; this.strokeJoin = 'MITER' }
+}
 class BooleanOperationNode extends ContainerNode {
   constructor(figma) { super('BOOLEAN_OPERATION', figma); this.booleanOperation = 'UNION'; this.cornerRadius = 0 }
 }
@@ -153,18 +216,45 @@ export function createMockFigma({ variables, styles, pages }) {
   const styleList = styles.map((s, i) => ({ id: `S:${i},`, type: 'TEXT', name: s.name, fontName: s.fontName, fontSize: s.fontSize, lineHeight: s.lineHeight, letterSpacing: s.letterSpacing, description: s.description ?? '' }))
   const figma = {
     mixed: MIXED,
+    _resolveColour(id) { const v = byId[id]; return v && v.resolvedType === 'COLOR' ? hexToRgb(v.valuesByMode['mode:0']) : null },
     root: { children: pages.map((n) => new PageNode(n)) },
     currentPage: null,
     _styles: Object.fromEntries(styleList.map((s) => [s.id, s])),
     async setCurrentPageAsync(p) { figma.currentPage = p },
+    createPage() { const p = new PageNode('Page'); figma.root.children.push(p); return p },
     async loadFontAsync() {},
     createFrame() { const n = new FrameNode('FRAME', figma); figma.currentPage.appendChild(n); return n },
+    // As documented: a frame with auto layout on in `direction` (HORIZONTAL by default), both axes hugging. It takes no name.
+    createAutoLayout(direction = 'HORIZONTAL') { const n = new FrameNode('FRAME', figma); figma.currentPage.appendChild(n); n.layoutMode = direction; return n },
     createComponent() { const n = new FrameNode('COMPONENT', figma); figma.currentPage.appendChild(n); return n },
     createText() { const n = new TextNode(figma); figma.currentPage.appendChild(n); return n },
     createRectangle() { const n = new RectangleNode(figma); figma.currentPage.appendChild(n); return n },
     createEllipse() { const n = new EllipseNode(figma); figma.currentPage.appendChild(n); return n },
     createPolygon() { const n = new PolygonNode(figma); figma.currentPage.appendChild(n); return n },
     combineAsVariants(nodes, parent) { const set = new ComponentSetNode(figma); for (const n of nodes) set.appendChild(n); parent.appendChild(set); set._variantDefs(); return set },
+    // createNodeFromSvg returns a frame without auto layout holding one vector per drawn element, with
+    // the SVG's stroke as a raw paint — which is why a builder must rebind it. The frame takes the
+    // svg's width and height attributes.
+    createNodeFromSvg(svg) {
+      const f = new FrameNode('FRAME', figma); figma.currentPage.appendChild(f)
+      f.name = 'svg'; f.fills = []
+      const attr = (k) => Number((svg.match(new RegExp(`<svg[^>]*\\s${k}="([\\d.]+)"`)) || [])[1] ?? 100)
+      f.width = attr('width'); f.height = attr('height')
+      for (const _ of svg.matchAll(/<(path|circle|ellipse|rect|line|polyline|polygon)\b/g)) {
+        const v = new VectorNode(figma); v.width = f.width; v.height = f.height
+        v.strokes = [{ type: 'SOLID', color: { r: 0, g: 0, b: 0 } }]
+        f.appendChild(v)
+      }
+      return f
+    },
+    // flatten merges the nodes into one vector inside `parent`; its box is not computed.
+    flatten(nodes, parent) {
+      if (!nodes.length) throw new Error('flatten: no nodes')
+      const v = new VectorNode(figma); v.width = Math.max(...nodes.map((n) => n.width)); v.height = Math.max(...nodes.map((n) => n.height))
+      v.strokes = nodes[0].strokes
+      for (const n of [...nodes]) n.remove()
+      ;(parent ?? figma.currentPage).appendChild(v); return v
+    },
     union(nodes, parent) {
       const bo = new BooleanOperationNode(figma)
       const xs = nodes.map((n) => n.x), ys = nodes.map((n) => n.y)

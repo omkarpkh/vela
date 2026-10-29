@@ -153,8 +153,10 @@ difference is recorded here:
 
 ## Figma mapping
 
-Library file: **Vela Design System** → page `Tooltip`. Two variants, `Lines` (one / two), plus a
-`Content` text property. `Lines` is not a prop: a one-line tooltip hugs its text and a two-line one
+Library file: **Vela Design System** → page `Tooltip`. Two variants, `Lines` (one / two), each
+with its own sentence in a text layer named `Content`. There is no `Content` text property: a Figma
+text property holds one default for the whole set, so it cannot carry a different sentence per
+variant. `Lines` is not a prop: a one-line tooltip hugs its text and a two-line one
 is `tooltip/width-max` wide and wraps, which is the only place the cap is visible in the file. There
 is no placement axis: without an arrow — Vela overlays carry none — the four placements look the
 same. The set is created by `scripts/figma/components/tooltip.figma.js`; until that builder has
@@ -162,7 +164,7 @@ been run in the file, the library has no Tooltip set.
 
 | Figma property | Code prop |
 |---|---|
-| `Content` | `content` |
+| `Content` (text layer, override on the instance) | `content` |
 | `Lines` | none — the length of `content` decides where it wraps |
 
 **The delay, the hover and focus triggers, Escape and the aria-describedby wiring exist only in
