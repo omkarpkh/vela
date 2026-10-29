@@ -5,7 +5,8 @@ started" — raised by the app, announced politely, and gone on its own or when 
 the only record of what it says, never the only place an Undo lives, and never carries a decision.
 
 **Status:** Experimental — born in `@omkarux/vela/headless` (Base UI 1.9); there is no core
-implementation and no Figma set yet (the builder is `scripts/figma/components/toast.figma.js`).
+implementation, and its Figma set is built in the library file (from
+`scripts/figma/components/toast.figma.js`) but not published yet.
 Approved once the API has settled and the set is published; see `GOVERNANCE.md`.
 **Dependencies:** @base-ui/react (optional peer, via /headless)
 

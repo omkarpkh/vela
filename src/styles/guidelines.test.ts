@@ -31,7 +31,7 @@ describe('component specs → Figma descriptions', () => {
 
   it.each(entries.map((e) => e.set))('%s description carries code, mapping, rules and paths', (set) => {
     const d = entries.find((e) => e.set === set)!.description
-    expect(d).toMatch(/Use the library component; do not rebuild it from this frame\.\nCODE\nimport \{ \w+ \} from '@omkarux\/vela(\/headless)?'\n/)
+    expect(d).toMatch(/Use the library component; do not rebuild it from this frame\.\nCODE\nimport \{ \w+(?:, \w+)* \} from '@omkarux\/vela(\/headless)?'\n/)
     expect(d).toMatch(/FIGMA → PROP\n.+→/)
     expect(d).toMatch(/RULES {2}\S/)
     // A headless-only component (Checkbox, Radio Group) lives under src/headless, not src/components.

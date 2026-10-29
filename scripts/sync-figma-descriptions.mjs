@@ -31,43 +31,44 @@ const version = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).ver
 // (`@omkarux/vela/headless` only — Checkbox, Radio Group, Popover, Tooltip, Dialog and Toast have no core
 // implementation).
 // `state` is a closed set: 'published' (the set is in the published library, `node` is its id),
-// 'built' (the set exists in the file but is not published — `node` stays null until the Figma
-// thread posts the id; Risk Pill's set is being rebuilt, so its id is not final), 'none' (no set
-// yet, `node` null). `node` is the component set's id in the library file
-// (XO2rmeCcgOjyKe4oipgF4j), read by the Figma thread on 28 Oct 2026. `export` is what an agent
-// writes for an instance of the set — for Tab it is the trigger, because the set is one trigger,
-// not the tablist; for Radio it is the radio inside its group.
+// 'built' (the set exists in the file but is not published; `node` is its id once the Figma
+// thread has posted it), 'none' (no set yet, `node` null). `node` is the component set's id in the
+// library file (XO2rmeCcgOjyKe4oipgF4j), read back by the Figma thread on 29 Oct 2026 at main
+// 60d80ef (requests R13). `export` is what an agent writes for an instance of the set — for Tab it
+// is the trigger, because the set is one trigger, not the tablist; for Radio it is the radio inside
+// its group. `imports`, when given, lists every name the import line must bring in, because the
+// description's example uses more than `export` (Toast: the provider and the hook, R14).
 export const STATES = ['published', 'built', 'none']
 export const SETS = {
   'button.md': { set: 'Button', src: 'Button', state: 'published', node: '7:122', export: 'Button' },
   'toggle.md': { set: 'Toggle', src: 'Toggle', state: 'published', node: '8:49', export: 'Toggle' },
   'input.md': { set: 'Input', src: 'Input', state: 'published', node: '8:110', export: 'Input' },
-  'text-area.md': { set: 'Text Area', src: 'TextArea', state: 'none', node: null, export: 'TextArea' },
+  'text-area.md': { set: 'Text Area', src: 'TextArea', state: 'built', node: '127:102', export: 'TextArea' },
   'contextual-alert.md': { set: 'Contextual Alert', src: 'ContextualAlert', state: 'published', node: '77:15', export: 'ContextualAlert' },
   'status-indicator.md': { set: 'Status Indicator', src: 'StatusIndicator', state: 'published', node: '8:32', export: 'StatusIndicator' },
-  'risk-pill.md': { set: 'Risk Pill', src: 'RiskPill', state: 'built', node: null, export: 'RiskPill' },
+  'risk-pill.md': { set: 'Risk Pill', src: 'RiskPill', state: 'built', node: '127:14', export: 'RiskPill' },
   'tabs.md': { set: 'Tab', src: 'Tabs', state: 'published', node: '11:20', export: 'Tabs.Trigger' },
-  'icon.md': { set: 'Icon', src: 'Icon', state: 'none', node: null, export: 'Icon' },
-  'checkbox.md': { set: 'Checkbox', src: 'Checkbox', entry: 'headless', state: 'none', node: null, export: 'Checkbox' },
-  'radio-group.md': { set: 'Radio', src: 'RadioGroup', entry: 'headless', state: 'none', node: null, export: 'RadioGroup.Radio' },
+  'icon.md': { set: 'Icon', src: 'Icon', state: 'built', node: '131:324', export: 'Icon' },
+  'checkbox.md': { set: 'Checkbox', src: 'Checkbox', entry: 'headless', state: 'built', node: '128:50', export: 'Checkbox' },
+  'radio-group.md': { set: 'Radio', src: 'RadioGroup', entry: 'headless', state: 'built', node: '128:64', export: 'RadioGroup.Radio' },
   // A component built from several sets (scripts/figma/components/table.figma.js declares three)
   // names the first as `set` / `export` and the rest under `also`, each with its own export and
   // node; the entry's `state` covers every set (Table's are built together). Each set gets the
   // same description except the line naming its part, and the map lists each one.
   'table.md': {
-    set: 'Table Header Cell', src: 'Table', state: 'none', node: null, export: 'Table.HeaderCell',
-    also: [{ set: 'Table Cell', node: null, export: 'Table.Cell' }, { set: 'Table Row', node: null, export: 'Table.Row' }],
+    set: 'Table Header Cell', src: 'Table', state: 'built', node: '130:82', export: 'Table.HeaderCell',
+    also: [{ set: 'Table Cell', node: '130:91', export: 'Table.Cell' }, { set: 'Table Row', node: '130:148', export: 'Table.Row' }],
   },
-  'popover.md': { set: 'Popover', src: 'Popover', entry: 'headless', state: 'none', node: null, export: 'Popover' },
-  'tooltip.md': { set: 'Tooltip', src: 'Tooltip', entry: 'headless', state: 'none', node: null, export: 'Tooltip' },
-  'dialog.md': { set: 'Dialog', src: 'Dialog', entry: 'headless', state: 'none', node: null, export: 'Dialog' },
+  'popover.md': { set: 'Popover', src: 'Popover', entry: 'headless', state: 'built', node: '127:109', export: 'Popover' },
+  'tooltip.md': { set: 'Tooltip', src: 'Tooltip', entry: 'headless', state: 'built', node: '127:114', export: 'Tooltip' },
+  'dialog.md': { set: 'Dialog', src: 'Dialog', entry: 'headless', state: 'built', node: '129:54', export: 'Dialog' },
   // A toast is raised with `toast.add(...)` from `useToast()`, inside the app's one ToastProvider.
-  'toast.md': { set: 'Toast', src: 'Toast', entry: 'headless', state: 'none', node: null, export: 'useToast' },
+  'toast.md': { set: 'Toast', src: 'Toast', entry: 'headless', state: 'built', node: '129:94', export: 'useToast', imports: ['ToastProvider', 'useToast'] },
 }
 export const FILE_KEY = 'XO2rmeCcgOjyKe4oipgF4j'
 
 /** The import an agent writes for an instance of the set — the same string in the description's CODE block and in figma-map.json. */
-export const importOf = (e) => `import { ${e.export.split('.')[0]} } from '@omkarux/vela${e.entry === 'headless' ? '/headless' : ''}'`
+export const importOf = (e) => `import { ${(e.imports ?? [e.export.split('.')[0]]).join(', ')} } from '@omkarux/vela${e.entry === 'headless' ? '/headless' : ''}'`
 /** For a set that is one part of a compound component, the line that says which part. */
 const partOf = (e) => (e.export.includes('.') ? [`This set is one ${e.export}.`] : [])
 

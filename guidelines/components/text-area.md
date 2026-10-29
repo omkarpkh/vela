@@ -3,8 +3,8 @@
 Multi-line text entry with a label, optional hint, an error state and an optional live
 character count. Input's sibling: the same field anatomy, the same tokens, more lines.
 
-**Status:** Experimental — specced, built and tested, but its Figma set is not in the library
-yet (the builder is `scripts/figma/components/text-area.figma.js`). Approved once the set is
+**Status:** Experimental — specced, built and tested; its Figma set is built in the library
+file (from `scripts/figma/components/text-area.figma.js`) but not published yet. Approved once the set is
 published and the API has been reviewed; see `GOVERNANCE.md`.
 
 **Dependencies:** none — a core component in `@omkarux/vela`.
