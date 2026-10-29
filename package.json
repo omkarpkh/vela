@@ -1,7 +1,7 @@
 {
   "name": "@omkarux/vela",
   "version": "0.12.1",
-  "description": "A token-first design system: framework-agnostic tokens and component specs with a React implementation. Tokens compile to CSS, a Figma library, a Flutter theme and a Material UI theme from one source. Two-layer colour architecture, separate severity, risk and status taxonomies, light and dark theming, WCAG AA asserted in CI, zero runtime dependencies (a second entry point, @omkarux/vela/headless, builds on Base UI as an optional peer). Every design rule is tagged with how it is enforced: 34 of 72 by the TypeScript compiler, the rest at runtime, in a browser, or by review.",
+  "description": "A token-first design system: framework-agnostic tokens and component specs with a React implementation. Tokens compile to CSS, a Figma library, a Flutter theme and a Material UI theme from one source. Two-layer colour architecture, separate severity, risk and status taxonomies, light and dark theming, WCAG AA asserted in CI, zero runtime dependencies (a second entry point, @omkarux/vela/headless, builds on Base UI as an optional peer). Every design rule is tagged with how it is enforced: 38 of 84 by the TypeScript compiler, the rest at runtime, in a browser, or by review.",
   "type": "module",
   "license": "MIT",
   "author": "Omkar Khadamkar",
@@ -40,9 +40,11 @@
   "files": [
     "dist",
     "guidelines",
+    "!guidelines/proposals",
     "README.md",
     "CHANGELOG.md",
     "LICENSE",
+    "NOTICE",
     "tokens",
     "flutter/lib",
     "flutter/pubspec.yaml",
@@ -67,6 +69,8 @@
     "components:figma:check": "node scripts/figma/check-components.mjs",
     "tokens:check": "npm run tokens && git diff --exit-code -- src/styles/tokens.light.css src/styles/tokens.dark.body.css flutter/lib/vela_tokens.dart flutter/pubspec.yaml bridges/vela.mui-theme.json",
     "tokens:validate": "node scripts/validate-tokens.mjs",
+    "icons:build": "node scripts/build-icons.mjs",
+    "icons:check": "npm run icons:build && git diff --exit-code -- src/icons/generated src/icons/names.ts scripts/figma/components/icon.figma.js && test -z \"$(git status --porcelain -- src/icons/generated src/icons/names.ts scripts/figma/components/icon.figma.js)\"",
     "rules:check": "node scripts/check-rules.mjs",
     "css:check": "node scripts/check-css.mjs",
     "build": "npm run clean && npm run tokens && npm run build:js && npm run build:css",
@@ -87,8 +91,9 @@
     "screenshots": "DOCS=1 playwright test tests/visual/docs.spec.ts",
     "typecheck": "tsc --noEmit",
     "contrast": "node scripts/contrast-report.mjs",
-    "verify": "npm run tokens:check && npm run rules:check && npm run typecheck && npm run test && npm run checks:check && npm run build && node scripts/verify-pack.mjs",
-    "prepublishOnly": "npm run verify"
+    "verify": "npm run tokens:check && npm run icons:check && npm run rules:check && npm run typecheck && npm run test && npm run checks:check && npm run build && node scripts/verify-pack.mjs",
+    "prepublishOnly": "npm run verify",
+    "figma:map": "node scripts/sync-figma-descriptions.mjs --map > guidelines/figma-map.json"
   },
   "peerDependencies": {
     "@base-ui/react": "1.9.x",
@@ -115,6 +120,7 @@
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.3.4",
     "jsdom": "^26.0.0",
+    "lucide": "1.63.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "typescript": "^5.7.0",

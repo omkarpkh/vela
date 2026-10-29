@@ -1125,6 +1125,14 @@ abstract final class VelaSizing {
   static const double icon16 = 16;
   static const double icon20 = 20;
   static const double icon24 = 24;
+  /// Icon component, size regular: the glyph box beside 14px body text (Body/Default, Button regular). Same value as icon/16.
+  static const double iconSize = 16;
+  /// Icon component, size small: beside 12px meta text and in Button tiny. Same value as icon/12.
+  static const double iconSizeSmall = 12;
+  /// Icon component, size large: a standalone glyph (table cell, toolbar, card header) or beside 16px text. Same value as icon/20.
+  static const double iconSizeLarge = 20;
+  /// Icon glyph stroke, in the 24-unit grid the glyphs are drawn on (Lucide's default). It scales with the box: 1px at small, 1.33px at regular, 1.67px at large — the stem weight of Open Sans Regular at 12–16px. Not stroke/2, which is screen pixels.
+  static const double iconStroke = 2;
   /// Button and the input family do not share a height ramp.
   static const double controlHeight24 = 24;
   /// Button and the input family do not share a height ramp.

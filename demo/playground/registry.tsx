@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react'
-import { Button, Toggle, Input, ContextualAlert, StatusIndicator, RiskPill, Tabs, Table } from '../../src'
-import type { Severity, Status, Risk, TableSortDirection } from '../../src'
+import { Button, Toggle, Input, ContextualAlert, StatusIndicator, RiskPill, Tabs, Icon, ICON_NAMES, Table } from '../../src'
+import type { Severity, Status, Risk, IconName, IconSize, IconTone, TableSortDirection } from '../../src'
 import { Tabs as HeadlessTabs, Checkbox, RadioGroup } from '../../src/headless'
 import { PlusIcon } from '../../src/lib/icons'
 import { printJsx, type Control, type Spec } from './spec'
@@ -11,6 +11,7 @@ import alertMd from '../../guidelines/components/contextual-alert.md?raw'
 import statusMd from '../../guidelines/components/status-indicator.md?raw'
 import riskMd from '../../guidelines/components/risk-pill.md?raw'
 import tabsMd from '../../guidelines/components/tabs.md?raw'
+import iconMd from '../../guidelines/components/icon.md?raw'
 import checkboxMd from '../../guidelines/components/checkbox.md?raw'
 import radioGroupMd from '../../guidelines/components/radio-group.md?raw'
 import tableMd from '../../guidelines/components/table.md?raw'
@@ -311,6 +312,44 @@ export const REGISTRY: Entry[] = [
   <Tabs.Panel value="alerts">…</Tabs.Panel>
   <Tabs.Panel value="assets">…</Tabs.Panel>
 </Tabs>`,
+  },
+  {
+    id: 'icon',
+    file: 'icon.md',
+    src: 'Icon',
+    name: 'Icon',
+    spec: iconMd,
+    seed: { name: 'shield-x', label: '' },
+    // `name` is the IconName union — fifty literals the Props table names by type rather than
+    // spelling out — so its control is built here from ICON_NAMES, the same list the type is.
+    extra: [{ prop: 'name', kind: 'select', type: 'IconName', options: [...ICON_NAMES], default: 'shield-x', notes: 'One of the fifty curated glyphs.' }],
+    // className is layout for the host page; it changes nothing on this stage.
+    noControl: ['className'],
+    highlight: (v) => (t) =>
+      t === ({ small: '--vela-icon-size-small', regular: '--vela-icon-size', large: '--vela-icon-size-large' }[str(v.size) || 'regular']) ||
+      t === '--vela-icon-stroke' ||
+      t === ({ default: '--vela-icon-strong', muted: '--vela-icon-default', inherit: '' }[str(v.tone) || 'default']),
+    render: (v) => {
+      const size = (str(v.size) || 'regular') as IconSize
+      const tone = (str(v.tone) || 'default') as IconTone
+      return (
+        <div className="pg-icon">
+          <p className="vela-body pg-icon__lead">
+            <Icon name={(str(v.name) || 'shield-x') as IconName} size={size} tone={tone} label={str(v.label) || undefined} />
+            <span>{str(v.name) || 'shield-x'}</span>
+          </p>
+          <ul className="pg-icon__grid" aria-label="Every glyph at this size and tone">
+            {ICON_NAMES.map((n) => (
+              <li key={n} className="vela-meta pg-icon__cell" title={n}>
+                <Icon name={n} size={size} tone={tone} />
+                <span className="pg-icon__name">{n}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )
+    },
+    code: (v, spec) => printJsx('Icon', { name: str(v.name) || 'shield-x', size: v.size, tone: v.tone, label: v.label }, defaultsOf(spec)),
   },
   {
     id: 'checkbox',

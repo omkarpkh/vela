@@ -29,8 +29,46 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   4.20:1, `bg-hover` in dark puts links at 4.35:1. 19 new `PAIRS` (text, secondary text, link,
   marker and all five status dots on both rows, and the unsorted sort glyph) pass in both themes;
   the tightest shipped pair is now the `unknown` dot on a selected row at 3.22:1 (was the input
-  border at 3.29:1), recorded in `DESIGN.md` and `foundations/color.md`. Rule count: 34 of 72
+  border at 3.29:1), recorded in `DESIGN.md` and `foundations/color.md`. Rule count, with Icon merged: 38 of 84
   rules are enforced by the compiler.
+- **Icon — Experimental** (`decisions/003-icons-lucide-curated`). Fifty curated
+  [Lucide](https://lucide.dev) 1.63.0 glyphs (ISC; 25 of them Feather-derived, MIT) compiled at
+  build time into zero-dependency React in the core entry: `lucide` is a pinned devDependency,
+  nothing from it is imported at runtime, and `dependencies` stays `{}` — `verify-pack.mjs`
+  still walks the core module graph and finds only React. `<Icon name size tone label>`: `name`
+  is the closed `IconName` union (exported with `ICON_NAMES`), `size` regular | small | large on
+  the new `--vela-icon-size*` tokens (16, 12, 20), `tone` default | muted | inherit on
+  `--vela-icon-strong` / `--vela-icon-default` / `currentColor`, and the stroke on
+  `--vela-icon-stroke` (2 in the 24 grid: 1px at small, 1.33px at regular, 1.67px at large).
+  With `label` it is `role="img"`, without one `aria-hidden`; never focusable, never
+  interactive. Twelve rules, four of them compiler with ten fixtures (an invented name, a Lucide
+  glyph outside the set, an alias such as `trash-2`, a missing name, `size="medium"`,
+  `size={16}`, `tone="critical"`, `tone="high"`, `onClick`, `tabIndex`). Three new `PAIRS`.
+  Core JS grows from 3,675 B to 7,753 B gzip (10 → 63 modules); the glyphs are reached only
+  through `Icon`.
+- **The icon build.** `scripts/icons.list.json` is the set; `npm run icons:build` writes
+  `src/icons/generated/*.tsx`, `src/icons/names.ts` and the Figma builder
+  `scripts/figma/components/icon.figma.js` (one `Glyph` variant per name, box on `icon/size`,
+  stroke on `icon/strong`); `npm run icons:check` fails on any difference from what is committed
+  and runs in `verify`. It refuses a Lucide alias (`filter`, `trash-2`, `history` are `funnel`,
+  `trash`, `rotate-ccw-clock` in Lucide 1.x), an unknown name, or an installed Lucide other than
+  the reviewed version. A test holds `NOTICE`'s Feather list to Lucide's LICENSE. The mock
+  Plugin API models `createNodeFromSvg` and `flatten`; the builder has not been run in the
+  library yet. A playground page shows every glyph at the chosen size and tone.
+- **The first three agentic specs are public, as proposals.** `guidelines/proposals/` holds the
+  pressure-tested specs for the Verdict Card (29 rules, 23 with proofs), the Action Impact Card
+  (30, 22) and the Autonomy Ladder (28, 22), with four new closed taxonomies: Verdict, Confidence
+  band, Reversibility tier and Autonomy rung. Nothing in them is built; the folder's README and
+  each file's first line say so, and it is left out of the npm package so a consumer's agent
+  cannot mistake a proposal for an export.
+- **`guidelines/figma-map.json`: what to write for each Figma set, on every plan.** Compiled from
+  the specs by `npm run figma:map` (the description sync with `--map`): each set's node id and
+  link, the import, the export to write (`Tabs.Trigger` for the Tab set), every Figma property's
+  prop, and the spec's example. It does the job Code Connect does on an Organization plan;
+  Vela's library is on Professional, where Code Connect is not available. `AGENTS.md` and
+  `llms.txt` tell an agent to use it instead of the markup Figma generates. A test fails when it
+  is stale. Measured against the Figma thread's "before" on Button node 7:7: without it, the
+  design context gives a `<div>` lookalike with no import and raw fallback values.
 - **The library's Changelog and Status pages are compiled from the repository.**
   `npm run figma:build:pages` prints a Plugin API script per page (each under 50 KB):
   `scripts/figma/pages/changelog.figma.js` draws one card per released version, newest first —

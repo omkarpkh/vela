@@ -17,7 +17,7 @@ const cli = (...args: string[]) => {
 const lintReport: Record<string, { problems: { rule: string; node: string; what: string; waived: boolean }[]; allow: { rule: string; reason: string }[] }> = JSON.parse(cli('--lint'))
 const dump = (name: string, set?: string) => JSON.parse(set ? cli('--dump', name, `--set=${set}`) : cli('--dump', name))
 const styles: any[] = JSON.parse(execFileSync('node', ['scripts/figma/text-styles.mjs', '--json'], { cwd: root, encoding: 'utf8' }))
-const BUILDERS = ['button', 'checkbox', 'contextual-alert', 'input', 'radio-group', 'risk-pill', 'status-indicator', 'table', 'tabs', 'toggle']
+const BUILDERS = ['button', 'checkbox', 'contextual-alert', 'icon', 'input', 'radio-group', 'risk-pill', 'status-indicator', 'table', 'tabs', 'toggle']
 
 describe('Figma builders, built in the mock Plugin API', () => {
   it('runs every builder', () => {
@@ -29,9 +29,12 @@ describe('Figma builders, built in the mock Plugin API', () => {
     expect(bad.map((p) => `${p.rule}  ${p.node}: ${p.what}`)).toEqual([])
   })
 
-  it('only the two builders with recorded literal geometry carry waivers', () => {
+  it('only the builders with recorded literal geometry carry waivers', () => {
+    // status-indicator and toggle: diameters with no token. icon (29 Oct 2026): the glyph is drawn
+    // geometry on Lucide's 24-unit grid inside a box bound to icon/size — not a layout.
     const waiving = Object.entries(lintReport).filter(([, r]) => r.allow.length).map(([n]) => n).sort()
-    expect(waiving).toEqual(['status-indicator', 'toggle'])
+    expect(waiving).toEqual(['icon', 'status-indicator', 'toggle'])
+    expect(lintReport.icon.allow.map((a) => a.rule).sort()).toEqual(['absolute-children', 'raw-size'])
   })
 })
 
@@ -118,6 +121,37 @@ describe('Risk Pill, as the builder creates it', () => {
       expect(v.wh[3]).toBe(small ? null : 'control-height/24')
       expect(v.pad.map((p: any) => p[1])).toEqual(small ? [null, 'space/5', null, 'space/5'] : [null, 'space/10', null, 'space/10'])
     }
+  })
+})
+
+describe('Icon, as the builder creates it', () => {
+  const icon = dump('icon')
+  const list: string[] = JSON.parse(readFileSync(resolve(root, 'scripts/icons.list.json'), 'utf8')).icons
+
+  it('has one Glyph variant per curated name, in the list order, and no other property', () => {
+    expect(icon.variants.map((v: any) => v.n)).toEqual(list.map((n) => `Glyph=${n}`))
+    expect(Object.keys(icon.defs)).toEqual(['Glyph'])
+  })
+
+  it('binds every box to icon/size and strokes one flattened vector with icon/strong, no fill', () => {
+    for (const v of icon.variants) {
+      const name = v.n.split('=')[1]
+      expect(v.wh.slice(2)).toEqual(['icon/size', 'icon/size'])
+      expect(v.fill).toEqual([])
+      expect(v.ch).toHaveLength(1)
+      expect(v.ch[0]).toMatchObject({ t: 'VECTOR', n: `Glyph / ${name}`, fill: [], stroke: ['icon/strong'], sa: 'CENTER' })
+    }
+  })
+
+  it('writes the stroke the code renders at regular: icon/stroke × icon/size ÷ 24', () => {
+    // 2 grid units in a 16px box = 1.33px. Figma cannot bind a product of two variables, so this is
+    // the one literal on the page, derived from the variables when the script runs.
+    for (const v of icon.variants) expect(v.ch[0].sw).toBe(1.33)
+  })
+
+  it('stays under the 50 KB the MCP accepts as one script', async () => {
+    const { generate } = await import('../../scripts/figma/build-components.mjs')
+    expect(Buffer.byteLength(generate('icon'))).toBeLessThan(50 * 1024)
   })
 })
 

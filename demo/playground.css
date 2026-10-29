@@ -66,6 +66,13 @@
 .pg-list li { margin: 0 0 var(--vela-space-5); }
 .pg-rules > div + div { margin-top: var(--vela-space-30); }
 
+/* Icon page: the chosen glyph beside its name, then every glyph at the same size and tone. */
+.pg-icon { display: flex; flex-direction: column; gap: var(--vela-space-15); min-width: 0; }
+.pg-icon__lead { display: inline-flex; align-items: center; gap: var(--vela-space-5); margin: 0; color: var(--vela-text-default); }
+.pg-icon__grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: var(--vela-space-5) var(--vela-space-10); }
+.pg-icon__cell { display: flex; align-items: center; gap: var(--vela-space-5); min-width: 0; color: var(--vela-text-de-emphasized); }
+.pg-icon__name { overflow-wrap: anywhere; }
+
 /* Table (Phase 1). The frame body hugs its content, and a Table's width never comes from its
    content — it is an inline-size container, so a wide table cannot widen its host. Here the host
    gives it the frame's width, as a page column would. The bounded height is the host's half of

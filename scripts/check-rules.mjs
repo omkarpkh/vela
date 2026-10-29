@@ -122,7 +122,7 @@ if (proven.length) {
   try {
     proven.forEach((f, i) => {
       writeFileSync(join(dir, `f${i}.tsx`),
-        `import { Button, ContextualAlert, Input, RiskPill, StatusIndicator, Table, Tabs, Toggle } from '${join(root, 'src')}'\n` +
+        `import { Button, ContextualAlert, Icon, Input, RiskPill, StatusIndicator, Table, Tabs, Toggle } from '${join(root, 'src')}'\n` +
         // Checkbox and Radio Group ship from the headless entry only.
         `import { Checkbox, RadioGroup } from '${join(root, 'src/headless')}'\n` +
         `export const X = () => (${f.snippet})\n`)

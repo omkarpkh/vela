@@ -37,6 +37,13 @@ export type { RiskPillProps, Risk } from './components/RiskPill'
 export { Tabs } from './components/Tabs'
 export type { TabsProps, TabListProps, TabTriggerProps, TabPanelProps } from './components/Tabs'
 
+// The curated icon set (decisions/003-icons-lucide-curated): one component and the closed list of
+// names. The individual glyph components are internal and not exported.
+export { Icon } from './components/Icon'
+export type { IconProps, IconSize, IconTone } from './components/Icon'
+export { ICON_NAMES } from './icons/names'
+export type { IconName } from './icons/names'
+
 export { Table } from './components/Table'
 export type {
   TableProps,
