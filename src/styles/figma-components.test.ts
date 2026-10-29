@@ -18,7 +18,7 @@ const cli = (...args: string[]) => {
 const lintReport: Record<string, { problems: { rule: string; node: string; what: string; waived: boolean }[]; allow: { rule: string; reason: string }[] }> = JSON.parse(cli('--lint'))
 const dump = (name: string, set?: string) => JSON.parse(set ? cli('--dump', name, `--set=${set}`) : cli('--dump', name))
 const styles: any[] = JSON.parse(execFileSync('node', ['scripts/figma/text-styles.mjs', '--json'], { cwd: root, encoding: 'utf8' }))
-const BUILDERS = ['button', 'checkbox', 'contextual-alert', 'icon', 'input', 'radio-group', 'risk-pill', 'status-indicator', 'table', 'tabs', 'text-area', 'toggle']
+const BUILDERS = ['button', 'checkbox', 'contextual-alert', 'dialog', 'icon', 'input', 'popover', 'radio-group', 'risk-pill', 'status-indicator', 'table', 'tabs', 'text-area', 'toggle', 'tooltip']
 
 describe('Figma builders, built in the mock Plugin API', () => {
   it('runs every builder', () => {
@@ -390,5 +390,58 @@ describe('text styles have a source', () => {
     expect(script).toContain('let s = existing[e.name];')
     expect(script).toContain('s.setBoundVariable(field, need(name))')
     expect(script).toContain('"fontWeight":"weight/semibold"')
+  })
+})
+
+// The overlays (headless, Experimental): the popup only — placement, focus and dismissal are code.
+describe('Popover, Tooltip and Dialog, as the builders draw them', () => {
+  const defs = (d: any) => Object.keys(d.defs).map((k) => k.replace(/#.*$/, '')).sort()
+
+  it('Popover: Size regular / wide at popover/width(-wide), surface/raised in a border/default edge, radius/4', () => {
+    const p = dump('popover')
+    expect(p.variants.map((v: any) => v.n)).toEqual(['Size=regular', 'Size=wide'])
+    expect(defs(p)).toEqual(['Size', 'Title text'])
+    expect(p.variants.map((v: any) => v.wh[2])).toEqual(['popover/width', 'popover/width-wide'])
+    for (const v of p.variants) {
+      expect([v.fill, v.stroke, v.rad[1]]).toEqual([['surface/raised'], ['border/default'], 'radius/4'])
+      expect(v.pad.map((x: any) => x[1])).toEqual(['space/15', 'space/15', 'space/15', 'space/15'])
+      expect(v.ch.map((c: any) => [c.n, c.style, c.fill[0]])).toEqual([['Title', 'Heading/H5', 'text/heading'], ['Body', 'Body/Default', 'text/default']])
+    }
+  })
+
+  it('Tooltip: text/tooltip in Body/Meta on surface/tooltip; the two-line variant is tooltip/width-max wide', () => {
+    const t = dump('tooltip')
+    expect(t.variants.map((v: any) => v.n)).toEqual(['Lines=one', 'Lines=two'])
+    // No TEXT property: each variant keeps its own sentence in an unbound Content layer.
+    expect(defs(t)).toEqual(['Lines'])
+    // (the dump keeps the first 40 characters of a text)
+    expect(t.variants.map((v: any) => v.ch[0].chars)).toEqual(['Download the last 24 hours as CSV', 'Download the last 24 hours of alerts, ev'])
+    for (const v of t.variants) {
+      expect([v.fill, v.rad[1]]).toEqual([['surface/tooltip'], 'radius/4'])
+      expect(v.ch[0]).toMatchObject({ n: 'Content', style: 'Body/Meta', fill: ['text/tooltip'] })
+    }
+    expect(t.variants[1].wh[2]).toBe('tooltip/width-max')
+  })
+
+  it('Dialog: Variant × Size; an alert has no close button, no body and no footer rule, and a destructive confirm', () => {
+    const d = dump('dialog')
+    expect(d.variants.map((v: any) => v.n)).toEqual([
+      'Variant=standard, Size=regular', 'Variant=standard, Size=wide', 'Variant=alert, Size=regular', 'Variant=alert, Size=wide',
+    ])
+    // No TEXT property: a standard dialog and an alert keep their own titles in an unbound Title layer.
+    expect(defs(d)).toEqual(['Description', 'Size', 'Variant'])
+    for (const v of d.variants) {
+      const alert = v.n.includes('alert')
+      expect([v.fill, v.rad[1], v.wh[2]]).toEqual([['surface/raised'], 'radius/8', v.n.includes('wide') ? 'dialog/width-wide' : 'dialog/width'])
+      expect(v.ch.map((c: any) => c.n)).toEqual(alert ? ['Header', 'Footer'] : ['Header', 'Body', 'Footer'])
+      const header = v.ch[0]
+      expect(header.ch.map((c: any) => c.n)).toEqual(alert ? ['Heading'] : ['Heading', 'Close'])
+      if (!alert) expect(header.ch[1].wh.slice(2)).toEqual(['control-height/24', 'control-height/24'])
+      const footer = v.ch.at(-1)
+      expect(footer.stroke).toEqual(alert ? [] : ['border/subtle'])
+      if (!alert) expect(footer.swx).toEqual([1, 0, 0, 0])
+      expect(footer.ch.map((b: any) => b.fill[0])).toEqual(alert ? ['button/standard-bg', 'button/destructive-bg'] : ['button/standard-bg', 'button/primary-bg'])
+      for (const b of footer.ch) expect(b.wh[3]).toBe('control-height/35')
+    }
   })
 })

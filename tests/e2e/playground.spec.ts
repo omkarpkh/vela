@@ -16,7 +16,7 @@ test('the Button page constrains text-link the way the type does, and the code f
 test('navigation reaches every component and each page lists its tokens', async ({ page }) => {
   await page.goto('/')
   const nav = page.getByRole('navigation', { name: 'Site' })
-  for (const name of ['Button', 'Toggle', 'Input', 'Text Area', 'Contextual Alert', 'Status Indicator', 'Risk Pill', 'Tabs', 'Icon', 'Checkbox', 'Radio Group', 'Table']) {
+  for (const name of ['Button', 'Toggle', 'Input', 'Text Area', 'Contextual Alert', 'Status Indicator', 'Risk Pill', 'Tabs', 'Icon', 'Checkbox', 'Radio Group', 'Table', 'Popover', 'Tooltip', 'Dialog']) {
     await nav.getByRole('link', { name, exact: true }).click()
     await expect(page.getByRole('heading', { level: 1, name })).toBeVisible()
     await expect(page.getByRole('tab', { name: /^Tokens/ })).not.toHaveText(/Tokens\s*0$/)
@@ -237,6 +237,155 @@ test('a sticky header stays at the top of the region while the body scrolls', as
   // and a body row has scrolled up under it
   const first = (await region.getByRole('row').nth(1).boundingBox())!
   expect(first.y).toBeLessThan(h.y + h.height)
+})
+
+// The overlays are headless-born and portalled to <body>. On the stage each frame renders its own
+// trigger; what opens must carry that frame's theme, sit above the page, take focus and give it back.
+test('the Popover page opens a themed, non-modal popover: focus moves in, Escape returns it, a press outside closes it', async ({ page }) => {
+  await page.goto('/#/components/popover')
+  await expect(page.getByRole('heading', { level: 1, name: 'Popover' })).toBeVisible()
+  await expect(page.getByRole('group', { name: 'Implementation' })).toHaveCount(0)
+  const contract = page.getByRole('region', { name: 'Contract' })
+  await expect(contract.locator('.pg-install')).toContainText("import { Popover } from '@omkarux/vela/headless'")
+  await expect(contract.locator('.pg-dependencies')).toHaveText('Dependencies: @base-ui/react (optional peer, via /headless)')
+
+  for (const theme of ['light', 'dark'] as const) {
+    const trigger = page.locator(`.pg-frame[data-theme="${theme}"] .pg-frame-body`).getByRole('button', { name: 'Filters' })
+    await trigger.click()
+    const popover = page.getByRole('dialog', { name: 'Filter alerts' })
+    await expect(popover).toBeVisible()
+    // Portalled out of the frame, it still carries the frame's theme, and the kit's root styles.
+    await expect(popover.locator('xpath=ancestor::*[contains(@class,"vela-overlay-portal")]')).toHaveAttribute('data-theme', theme)
+    await expect(page.getByRole('button', { name: 'Apply Filters' })).toBeFocused()
+    // Anchored: it opens below its trigger, a step away (--vela-space-5 of positioner padding).
+    const t = (await trigger.boundingBox())!, p = (await popover.boundingBox())!
+    expect(p.y).toBeGreaterThanOrEqual(t.y + t.height)
+    expect(p.y - (t.y + t.height)).toBeLessThan(12)
+    // Non-modal: the page behind keeps its accessibility tree.
+    await expect(page.getByRole('heading', { level: 1, name: 'Popover' })).toBeVisible()
+    await page.keyboard.press('Escape')
+    await expect(popover).toHaveCount(0)
+    await expect(trigger).toBeFocused()
+  }
+  const trigger = page.locator('.pg-frame[data-theme="light"] .pg-frame-body').getByRole('button', { name: 'Filters' })
+  await trigger.click()
+  await expect(page.getByRole('dialog', { name: 'Filter alerts' })).toBeVisible()
+  await page.getByRole('heading', { level: 1, name: 'Popover' }).click()
+  await expect(page.getByRole('dialog', { name: 'Filter alerts' })).toHaveCount(0)
+  // The light popover sits on the raised surface with the border edge, not a shadow.
+  await trigger.click()
+  await expect(page.getByRole('dialog', { name: 'Filter alerts' })).toHaveCSS('box-shadow', 'none')
+})
+
+test('the Tooltip page describes its trigger on hover and on keyboard focus, and Escape dismisses it', async ({ page }) => {
+  await page.goto('/#/components/tooltip')
+  await expect(page.getByRole('heading', { level: 1, name: 'Tooltip' })).toBeVisible()
+  const contract = page.getByRole('region', { name: 'Contract' })
+  await expect(contract.locator('.pg-install')).toContainText("import { Tooltip } from '@omkarux/vela/headless'")
+
+  const frame = page.locator('.pg-frame[data-theme="light"] .pg-frame-body')
+  const trigger = frame.getByRole('button', { name: 'Export' })
+  await trigger.hover()
+  const tip = page.getByRole('tooltip')
+  await expect(tip).toHaveText('Download the last 24 hours as CSV')
+  // A description, not the name: the trigger is still called Export.
+  await expect(trigger).toHaveAttribute('aria-describedby', (await tip.getAttribute('id'))!)
+  await expect(trigger).toHaveAccessibleName('Export')
+  await page.keyboard.press('Escape')
+  await expect(tip).toHaveCount(0)
+  await expect(trigger).not.toHaveAttribute('aria-describedby')
+  // From the keyboard: start focus at the frame, Tab onto the trigger, and it opens at once.
+  await page.mouse.move(0, 0)
+  await page.locator('.pg-frame[data-theme="light"]').evaluate((el: HTMLElement) => { el.tabIndex = -1; el.focus() })
+  await page.keyboard.press('Tab')
+  await expect(trigger).toBeFocused()
+  await expect(page.getByRole('tooltip')).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(page.getByRole('tooltip')).toHaveCount(0)
+  await expect(trigger).toBeFocused()
+})
+
+test('the Dialog page opens a modal: focus moves in and is trapped, the page is inert, Escape closes it and focus returns', async ({ page }) => {
+  await page.goto('/#/components/dialog')
+  await expect(page.getByRole('heading', { level: 1, name: 'Dialog' })).toBeVisible()
+  const contract = page.getByRole('region', { name: 'Contract' })
+  await expect(contract.locator('.pg-install')).toContainText("import { Dialog } from '@omkarux/vela/headless'")
+
+  const trigger = page.locator('.pg-frame[data-theme="dark"] .pg-frame-body').getByRole('button', { name: 'Edit Policy' })
+  await trigger.click()
+  const dialog = page.getByRole('dialog', { name: 'Edit policy' })
+  await expect(dialog).toBeVisible()
+  await expect(dialog.locator('xpath=ancestor::*[contains(@class,"vela-overlay-portal")]')).toHaveAttribute('data-theme', 'dark')
+  // Focus lands on the first control in the body, not on the header's close button.
+  await expect(dialog.getByRole('textbox', { name: 'Policy name' })).toBeFocused()
+  // The page behind is out of the accessibility tree and does not scroll.
+  await expect(page.getByRole('heading', { level: 1, name: 'Dialog' })).toHaveCount(0)
+  // Base UI locks whichever of <html> and <body> scrolls the viewport.
+  const locked = () => page.evaluate(() => [document.documentElement, document.body].some((el) => getComputedStyle(el).overflowY === 'hidden'))
+  expect(await locked()).toBe(true)
+  // Trapped: Tab past the last action wraps inside the dialog. Base UI's focus guards hand focus on
+  // a task after the key lands, so each step is polled rather than read once.
+  const inDialog = () => page.evaluate(() => !!document.activeElement?.closest('.vela-dialog'))
+  for (let i = 0; i < 4; i++) {
+    await page.keyboard.press('Tab')
+    await expect.poll(inDialog).toBe(true)
+  }
+  await expect(dialog.getByRole('textbox', { name: 'Policy name' })).toBeFocused()
+  // The backdrop covers the sticky top bar: the dialog layer is above the page's own layers.
+  const covering = await page.evaluate(() => document.elementFromPoint(window.innerWidth / 2, 10)?.className ?? '')
+  expect(covering).toMatch(/vela-dialog__(backdrop|viewport)/)
+  await page.keyboard.press('Escape')
+  await expect(dialog).toHaveCount(0)
+  await expect(trigger).toBeFocused()
+  await expect(page.getByRole('heading', { level: 1, name: 'Dialog' })).toBeVisible()
+  expect(await locked()).toBe(false)
+
+  // variant="alert": role alertdialog, the cancel takes focus, the confirm is the destructive Button.
+  await page.getByRole('complementary', { name: 'Props' }).getByLabel('variant').selectOption('alert')
+  const del = page.locator('.pg-frame[data-theme="light"] .pg-frame-body').getByRole('button', { name: 'Delete Policy' })
+  await del.click()
+  const alert = page.getByRole('alertdialog')
+  await expect(alert).toBeVisible()
+  await expect(alert.getByRole('button', { name: 'Keep Policy' })).toBeFocused()
+  await expect(alert.getByRole('button', { name: 'Delete Policy' })).toHaveClass(/vela-btn--destructive/)
+  await page.mouse.click(5, 5)   // the backdrop: an alert ignores it
+  await expect(alert).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(alert).toHaveCount(0)
+  await expect(del).toBeFocused()
+})
+
+// [[rule: dialog-body-scrolls]]
+// Only a real layout shows this: a dialog never grows past the viewport less its gutters; past that
+// its body scrolls inside it, and the title and the actions stay where they are.
+test('a tall dialog scrolls its body and keeps its header and footer on screen', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 520 })
+  await page.goto('/#/components/dialog')
+  await page.locator('.pg-frame[data-theme="light"] .pg-frame-body').getByRole('button', { name: 'Edit Policy' }).click()
+  const dialog = page.getByRole('dialog', { name: 'Edit policy' })
+  await expect(dialog).toBeVisible()
+  await dialog.locator('.vela-dialog__body').evaluate((body) => {
+    for (let i = 0; i < 40; i++) {
+      const p = document.createElement('p')
+      p.textContent = `Rule ${i + 1}: block TLS 1.0 and 1.1 on every listener in the tenant.`
+      body.appendChild(p)
+    }
+  })
+  const box = (await dialog.boundingBox())!
+  const vh = page.viewportSize()!.height
+  expect(box.y).toBeGreaterThanOrEqual(0)
+  expect(box.y + box.height).toBeLessThanOrEqual(vh)
+  const body = dialog.locator('.vela-dialog__body')
+  const metrics = await body.evaluate((el) => ({ scroll: el.scrollHeight, client: el.clientHeight }))
+  expect(metrics.scroll).toBeGreaterThan(metrics.client)
+  const title = dialog.getByRole('heading', { name: 'Edit policy' })
+  const save = dialog.getByRole('button', { name: 'Save Changes' })
+  const before = { title: (await title.boundingBox())!.y, save: (await save.boundingBox())!.y }
+  await body.evaluate((el) => { el.scrollTop = el.scrollHeight })
+  expect((await title.boundingBox())!.y).toBe(before.title)
+  expect((await save.boundingBox())!.y).toBe(before.save)
+  await expect(title).toBeInViewport()
+  await expect(save).toBeInViewport()
 })
 
 test('the nav filter narrows the list and the menu button collapses it', async ({ page }) => {

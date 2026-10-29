@@ -55,7 +55,9 @@ describe('Dart target', () => {
   it('carries every sizing and typography value, as logical pixels, FontWeight, Duration or Cubic', () => {
     for (const [name, t] of Object.entries({ ...doc.sizing, ...doc.typography, ...doc.motion } as Record<string, any>)) {
       if (t.$type === 'dimension') expect(dart, name).toContain(`static const double ${ident(name)} = ${t.$value.value};`)
-      else if (t.$type === 'number') expect(dart, name).toContain(`static const FontWeight ${ident(name)} = FontWeight.w${t.$value};`)
+      // A typography number is a weight; a sizing number (the scrim opacity, the overlay layer) a double.
+      else if (t.$type === 'number' && name in doc.typography) expect(dart, name).toContain(`static const FontWeight ${ident(name)} = FontWeight.w${t.$value};`)
+      else if (t.$type === 'number') expect(dart, name).toContain(`static const double ${ident(name)} = ${t.$value};`)
       else if (t.$type === 'duration') expect(dart, name).toContain(`static const Duration ${ident(name)} = Duration(milliseconds: ${t.$value.unit === 's' ? t.$value.value * 1000 : t.$value.value});`)
       else if (t.$type === 'cubicBezier') expect(dart, name).toContain(`static const Cubic ${ident(name)} = Cubic(${t.$value.join(', ')});`)
       else if (t.$type === 'fontFamily') expect(dart, name).toContain(`static const String ${ident(name)} = `)

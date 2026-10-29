@@ -19,10 +19,13 @@ below, then open the per-component file for props, tokens, and anti-patterns.
 | Checkbox | Recording intent until a Save — alone, or any-of-several in a Checkbox.Group (headless entry only) | `components/checkbox.md` |
 | Radio Group | Exactly one of two to five visible options, committed by a Save (headless entry only) | `components/radio-group.md` |
 | Table | Records compared across named columns — sortable headers, two densities, a scroll region (Experimental) | `components/table.md` |
+| Popover | A non-modal panel opened from a button — filters, detail, a short edit — with the page still usable (headless entry only) | `components/popover.md` |
+| Tooltip | A short text-only label on hover and focus; supplementary, never the only copy (headless entry only) | `components/tooltip.md` |
+| Dialog | A modal decision that blocks the task; `variant="alert"` confirms a destructive action (headless entry only) | `components/dialog.md` |
 
-Checkbox and Radio Group ship from `@omkarux/vela/headless` (Base UI as an optional peer) and are
-Experimental; the other ten ship from `@omkarux/vela` with no dependencies (Risk Pill, Icon, Text
-Area and Table are Experimental there).
+Checkbox, Radio Group, Popover, Tooltip and Dialog ship from `@omkarux/vela/headless` (Base UI as
+an optional peer) and are Experimental; the other ten ship from `@omkarux/vela` with no
+dependencies (Risk Pill, Icon, Text Area and Table are Experimental there).
 
 ## Disambiguations (where AI usually picks wrong)
 
@@ -36,6 +39,12 @@ Area and Table are Experimental there).
 - **Tabs vs View Switcher** — different content sections → **Tabs**. The *same* dataset
   rendered differently (Grid / Dashboard / Chart) → **View Switcher**, which is not in this
   kit. If only the presentation of one dataset changes, do not reach for Tabs.
+- **Popover vs Tooltip vs Dialog** — the user opens a panel on purpose and may act in it while
+  the page stays usable → **Popover**. A short text-only hint on hover or focus about a control
+  that does something else → **Tooltip** (an ⓘ infotip is a Popover: its trigger's purpose is
+  opening it). A decision that must be answered before anything else → **Dialog**; a destructive
+  or irreversible one → **Dialog `variant="alert"`**. A list of commands from a button is an
+  Actions Dropdown, not in this kit — not a Popover.
 - **Contextual Alert vs Status Indicator vs Risk Pill** — an event the user must read →
   **Alert**. An object's ongoing health, usually in a table cell → **Status Indicator**. A
   risk *score* on an object → **Risk Pill**. A removable filter chip → Token Pill, not in this kit.
@@ -61,8 +70,8 @@ Area and Table are Experimental there).
 
 Do not invent one silently. State that the kit has no component for the need and pick the
 closest match while flagging the gap. Not yet specced: Dropdown List, Select List, Token Pill,
-Number Stepper, Modal, Tooltip, Icon Button, Actions Dropdown, View Switcher, Data Grid, Card
-List. Flag rather than guess.
+Number Stepper, Icon Button, Actions Dropdown, View Switcher, Data Grid, Card List.
+Flag rather than guess.
 
 ## How each component file is structured
 

@@ -257,6 +257,51 @@ export const props: [CheckboxProps, CheckboxGroupProps, RadioGroupProps, RadioPr
   check(bornOk, 'headless Checkbox, Checkbox.Group and RadioGroup typecheck in every documented shape')
   rmSync(join(app, 'valid-born-headless.tsx'))
 
+  // -- the headless overlays: every documented shape compiles --
+  // As above: the rejection fixtures for Popover, Tooltip and Dialog prove nothing unless the
+  // documented shapes compile against the same shipped .d.ts — a Button trigger from the core
+  // entry included, since that is the trigger the specs show.
+  writeFileSync(join(app, 'valid-overlays.tsx'), `
+import { Button } from '@omkarux/vela'
+import { Popover, Tooltip, Dialog } from '@omkarux/vela/headless'
+import type { PopoverProps, TooltipProps, DialogProps, DialogCloseProps } from '@omkarux/vela/headless'
+
+export const A = () => (
+  <Popover trigger={<Button>Filters</Button>} title="Filter alerts" placement="bottom" align="start" size="wide" onOpenChange={(o: boolean) => o}>
+    <p>Body</p>
+  </Popover>
+)
+export const B = () => <Popover trigger={<button type="button">Filters</button>} title="Filter alerts" open={false} placement="end">Body</Popover>
+export const C = () => <Popover trigger={<Button>Filters</Button>} title="Filter alerts" defaultOpen placement="start" align="center" />
+export const D = () => <Tooltip content="Download the last 24 hours as CSV" placement="top" align="end"><Button>Export</Button></Tooltip>
+export const E = () => <Tooltip content="Delete the rule"><button type="button" aria-label="Delete">×</button></Tooltip>
+export const F = () => (
+  <Dialog trigger={<Button>Edit Policy</Button>} title="Edit policy" description="Changes apply on save." size="wide" closeLabel="Close"
+    footer={<><Dialog.Close><Button>Cancel</Button></Dialog.Close><Button variant="primary">Save Changes</Button></>}>
+    <p>Body</p>
+  </Dialog>
+)
+export const G = () => <Dialog open title="Session expired" onOpenChange={(o: boolean) => o} variant="standard" />
+export const H = () => (
+  <Dialog variant="alert" trigger={<Button variant="destructive">Delete Policy</Button>} title="Delete policy?"
+    description="This cannot be undone." cancelLabel="Keep Policy" confirmLabel="Delete Policy" onConfirm={() => {}} defaultOpen={false} />
+)
+export const props: [PopoverProps, TooltipProps, DialogProps, DialogProps, DialogCloseProps] = [
+  { trigger: <Button>F</Button>, title: 'F' },
+  { content: 'C', children: <Button>T</Button> },
+  { title: 'D' },
+  { variant: 'alert', title: 'A', cancelLabel: 'Keep', confirmLabel: 'Delete', onConfirm: () => {} },
+  { children: <Button>Cancel</Button> },
+]
+`)
+  let overlaysOk = true
+  try { run(tsc, ['--noEmit', '-p', 'tsconfig.json'], app) } catch (e) {
+    overlaysOk = false
+    console.log((e.stdout || '').toString().split('\n').slice(0, 8).join('\n'))
+  }
+  check(overlaysOk, 'headless Popover, Tooltip and Dialog (standard and alert) typecheck in every documented shape')
+  rmSync(join(app, 'valid-overlays.tsx'))
+
   // -- invalid usage must NOT compile --
   // Each of these is a rule from the guidelines. If any compiles, the design
   // constraint is documentation only, which is how systems drift.
@@ -327,11 +372,35 @@ export const props: [CheckboxProps, CheckboxGroupProps, RadioGroupProps, RadioPr
     ['table-align-closed', 'numeric cell aligned to the start', `<Table.Cell numeric align="start">42</Table.Cell>`],
     ['table-empty-requires-text', 'empty state with no message', `<Table.Empty colSpan={3} />`],
     ['table-empty-requires-text', 'empty state message as a node', `<Table.Empty colSpan={3}><b>None</b></Table.Empty>`],
+    // Popover, Tooltip and Dialog ship from `@omkarux/vela/headless` only, like Checkbox and Radio Group.
+    ['popover-title-required', 'popover with no title', `<Popover trigger={<Button>Filters</Button>}>Body</Popover>`],
+    ['popover-title-required', 'popover title as a node', `<Popover trigger={<Button>Filters</Button>} title={<b>Filters</b>}>Body</Popover>`],
+    ['popover-trigger-required', 'popover with no trigger', `<Popover title="Filter alerts">Body</Popover>`],
+    ['popover-controlled-exclusive', 'popover both controlled and uncontrolled', `<Popover trigger={<Button>Filters</Button>} title="Filter alerts" open defaultOpen>Body</Popover>`],
+    ['popover-placement-closed', 'physical popover placement', `<Popover trigger={<Button>Filters</Button>} title="Filter alerts" placement="left">Body</Popover>`],
+    ['popover-placement-closed', 'invented popover alignment', `<Popover trigger={<Button>Filters</Button>} title="Filter alerts" align="middle">Body</Popover>`],
+    ['popover-sizes-closed', 'invented popover size', `<Popover trigger={<Button>Filters</Button>} title="Filter alerts" size="small">Body</Popover>`],
+    ['tooltip-content-is-text', 'tooltip content as a link', `<Tooltip content={<a href="/docs">Docs</a>}><Button>Export</Button></Tooltip>`],
+    ['tooltip-content-is-text', 'tooltip with no content', `<Tooltip><Button>Export</Button></Tooltip>`],
+    ['tooltip-wraps-one-element', 'tooltip around a bare string', `<Tooltip content="Download as CSV">Export</Tooltip>`],
+    ['tooltip-wraps-one-element', 'tooltip around two elements', `<Tooltip content="Download as CSV"><Button>Export</Button><Button>Print</Button></Tooltip>`],
+    ['tooltip-placement-closed', 'invented tooltip placement', `<Tooltip content="Download as CSV" placement="auto"><Button>Export</Button></Tooltip>`],
+    ['dialog-title-required', 'dialog with no title', `<Dialog trigger={<Button>Edit Policy</Button>}>Body</Dialog>`],
+    ['dialog-title-required', 'dialog title as a node', `<Dialog trigger={<Button>Edit Policy</Button>} title={<b>Edit</b>}>Body</Dialog>`],
+    ['dialog-description-is-text', 'dialog description holding a control', `<Dialog title="Edit policy" description={<Button>Undo</Button>}>Body</Dialog>`],
+    ['dialog-controlled-exclusive', 'dialog both controlled and uncontrolled', `<Dialog title="Edit policy" open defaultOpen>Body</Dialog>`],
+    ['dialog-props-closed', 'invented dialog size', `<Dialog title="Edit policy" size="fullscreen">Body</Dialog>`],
+    ['dialog-props-closed', 'invented dialog variant', `<Dialog title="Edit policy" variant="sheet">Body</Dialog>`],
+    ['alert-dialog-requires-cancel-and-confirm', 'alert with no cancel', `<Dialog variant="alert" title="Delete policy?" confirmLabel="Delete Policy" onConfirm={() => {}} />`],
+    ['alert-dialog-requires-cancel-and-confirm', 'alert with no confirm label', `<Dialog variant="alert" title="Delete policy?" cancelLabel="Keep Policy" onConfirm={() => {}} />`],
+    ['alert-dialog-requires-cancel-and-confirm', 'alert with no onConfirm', `<Dialog variant="alert" title="Delete policy?" cancelLabel="Keep Policy" confirmLabel="Delete Policy" />`],
+    ['alert-dialog-actions-are-fixed', 'alert with its own footer', `<Dialog variant="alert" title="Delete policy?" cancelLabel="Keep" confirmLabel="Delete Policy" onConfirm={() => {}} footer={<Button>Delete</Button>} />`],
+    ['alert-dialog-actions-are-fixed', 'alert with a close button label', `<Dialog variant="alert" title="Delete policy?" cancelLabel="Keep" confirmLabel="Delete Policy" onConfirm={() => {}} closeLabel="Close" />`],
   ]
   for (const [id, name, snippet] of violations) {
     writeFileSync(join(app, 'invalid.tsx'),
       `import { Button, ContextualAlert, Icon, Input, RiskPill, StatusIndicator, Table, Tabs, TextArea, Toggle } from '@omkarux/vela'\n` +
-      `import { Checkbox, RadioGroup } from '@omkarux/vela/headless'\nexport const X = () => (${snippet})\n`)
+      `import { Checkbox, RadioGroup, Popover, Tooltip, Dialog } from '@omkarux/vela/headless'\nexport const X = () => (${snippet})\n`)
     let rejected = false
     try { run(tsc, ['--noEmit', '-p', 'tsconfig.json'], app) } catch { rejected = true }
     check(rejected, `compiler rejects: ${name}  [${id}]`)
@@ -356,6 +425,8 @@ export const props: [CheckboxProps, CheckboxGroupProps, RadioGroupProps, RadioPr
     'shipped CSS carries the headless-born Checkbox and Radio Group styles')
   check(css.includes('.vela-table__region') && css.includes('--vela-bg-row-selected:'),
     'shipped CSS carries the Table styles and the row tokens they bind')
+  check(css.includes('.vela-popover') && css.includes('.vela-tooltip') && css.includes('.vela-dialog__backdrop') && css.includes('--vela-layer-overlay:'),
+    'shipped CSS carries the overlay styles and the tokens they bind')
 } finally {
   rmSync(app, { recursive: true, force: true })
   rmSync(tarball, { force: true })

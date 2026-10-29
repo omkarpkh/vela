@@ -173,15 +173,18 @@ describe('the Status page', () => {
   })
 
   it('has one row per registered component, in registry order, each with its spec\'s label', () => {
-    expect(rows.map((r) => r.n)).toEqual(['Button', 'Toggle', 'Input', 'Text Area', 'Contextual Alert', 'Status Indicator', 'Risk Pill', 'Tabs', 'Icon', 'Checkbox', 'Radio Group', 'Table'])
+    expect(rows.map((r) => r.n)).toEqual(['Button', 'Toggle', 'Input', 'Text Area', 'Contextual Alert', 'Status Indicator', 'Risk Pill', 'Tabs', 'Icon', 'Checkbox', 'Radio Group', 'Table', 'Popover', 'Tooltip', 'Dialog'])
     expect(rows.filter((r) => label(r) === 'Approved').map((r) => r.n)).toEqual(['Button', 'Toggle', 'Input', 'Contextual Alert', 'Status Indicator', 'Tabs'])
-    for (const n of ['Text Area', 'Risk Pill', 'Icon', 'Checkbox', 'Radio Group', 'Table']) expect(label(rows.find((r) => r.n === n)!), n).toBe('Experimental')
+    for (const n of ['Text Area', 'Risk Pill', 'Icon', 'Checkbox', 'Radio Group', 'Table', 'Popover', 'Tooltip', 'Dialog']) expect(label(rows.find((r) => r.n === n)!), n).toBe('Experimental')
   })
 
   it('names the headless entry point for a component born there', () => {
     const exp = (n: string) => rows.find((r) => r.n === n)!.ch!.filter((c) => c.t === 'TEXT')[2].chars
     expect(exp('Checkbox')).toBe('Checkbox · @omkarux/vela/headless')
     expect(exp('Radio Group')).toBe('RadioGroup · @omkarux/vela/headless')
+    expect(exp('Popover')).toBe('Popover · @omkarux/vela/headless')
+    expect(exp('Tooltip')).toBe('Tooltip · @omkarux/vela/headless')
+    expect(exp('Dialog')).toBe('Dialog · @omkarux/vela/headless')
   })
 
   it('fills Figma set, React export, Since and Spec from the repository', () => {
@@ -203,12 +206,16 @@ describe('the Status page', () => {
     // Text Area is core and unreleased; its spec is on main, so no "(branch)".
     const [, tset, texp, tsince, tspec] = cells('Text Area')
     expect([tset.chars, texp.chars, tsince.chars, tspec.chars]).toEqual(['None yet — the builder is ready (text-area.figma.js)', 'TextArea · @omkarux/vela', 'Unreleased', 'text-area.md'])
-    // Table is core and unreleased, with three sets and none yet; its spec is not on main until
-    // this branch merges, so its spec cell is the one row that says "(branch)".
+    // Table is core and unreleased, with three sets and none yet.
     const [, bset, bexp, bsince, bspec] = cells('Table')
-    expect([bset.chars, bexp.chars, bsince.chars]).toEqual(['None yet — the builder is ready (table.figma.js)', 'Table · @omkarux/vela', 'Unreleased'])
-    expect(bspec.chars).toMatch(/^table\.md( \(branch\))?$/)
-    for (const r of rows.filter((r) => r.n !== 'Table')) expect(cells(r.n)[4].chars, r.n).not.toContain('(branch)')
+    expect([bset.chars, bexp.chars, bsince.chars, bspec.chars]).toEqual(['None yet — the builder is ready (table.figma.js)', 'Table · @omkarux/vela', 'Unreleased', 'table.md'])
+    // Popover, Tooltip and Dialog have no Figma set yet; the builders are ready.
+    for (const [n, f] of [['Popover', 'popover'], ['Tooltip', 'tooltip'], ['Dialog', 'dialog']]) {
+      expect(cells(n)[1].chars, n).toBe(`None yet — the builder is ready (${f}.figma.js)`)
+    }
+    // Their specs are on this branch only until it merges, so their rows alone may show "(branch)".
+    const notOnMainYet = ['Popover', 'Tooltip', 'Dialog']
+    for (const r of rows) if (!notOnMainYet.includes(r.n)) expect(cells(r.n)[4].chars, r.n).not.toContain('(branch)')
   })
 })
 

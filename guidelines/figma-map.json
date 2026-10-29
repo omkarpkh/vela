@@ -82,6 +82,35 @@
       "spec": "guidelines/components/contextual-alert.md"
     },
     {
+      "set": "Dialog",
+      "page": "Dialog",
+      "state": "none",
+      "node": null,
+      "url": null,
+      "import": "import { Dialog } from '@omkarux/vela/headless'",
+      "write": "Dialog",
+      "figmaToProp": [
+        {
+          "figma": "Variant",
+          "prop": "variant"
+        },
+        {
+          "figma": "Size",
+          "prop": "size"
+        },
+        {
+          "figma": "Title",
+          "prop": "title"
+        },
+        {
+          "figma": "Description",
+          "prop": "description"
+        }
+      ],
+      "example": "<Dialog\n  trigger={<Button>Edit Policy</Button>}\n  title=\"Edit policy\"\n  description=\"Changes apply to every tenant on save.\"\n  footer={\n    <>\n      <Dialog.Close><Button>Cancel</Button></Dialog.Close>\n      <Button variant=\"primary\" onClick={save}>Save Changes</Button>\n    </>\n  }\n>\n  <Input label=\"Policy name\" defaultValue=\"Block legacy TLS\" />\n</Dialog>\n\n<Dialog\n  variant=\"alert\"\n  trigger={<Button variant=\"destructive\">Delete Policy</Button>}\n  title=\"Delete “Block legacy TLS”?\"\n  description=\"Its 14 rules stop applying at once. This cannot be undone.\"\n  cancelLabel=\"Keep Policy\"\n  confirmLabel=\"Delete Policy\"\n  onConfirm={deletePolicy}\n/>",
+      "spec": "guidelines/components/dialog.md"
+    },
+    {
       "set": "Icon",
       "page": "Icon",
       "state": "none",
@@ -130,6 +159,27 @@
       ],
       "example": "<Input label=\"Tenant name\" hint=\"Lowercase letters only\" error={err} size=\"regular\" />",
       "spec": "guidelines/components/input.md"
+    },
+    {
+      "set": "Popover",
+      "page": "Popover",
+      "state": "none",
+      "node": null,
+      "url": null,
+      "import": "import { Popover } from '@omkarux/vela/headless'",
+      "write": "Popover",
+      "figmaToProp": [
+        {
+          "figma": "Size",
+          "prop": "size"
+        },
+        {
+          "figma": "Title text",
+          "prop": "title"
+        }
+      ],
+      "example": "<Popover\n  trigger={<Button>Filters</Button>}\n  title=\"Filter alerts\"\n  placement=\"bottom\"\n  align=\"start\"\n  onOpenChange={setFiltersOpen}\n>\n  <Checkbox.Group label=\"Severity\" defaultValue={['critical']}>\n    <Checkbox value=\"critical\" label=\"Critical\" />\n    <Checkbox value=\"major\" label=\"Major\" />\n  </Checkbox.Group>\n</Popover>",
+      "spec": "guidelines/components/popover.md"
     },
     {
       "set": "Radio",
@@ -371,6 +421,27 @@
       ],
       "example": "<Toggle label=\"Email alerts\" checked={on} onChange={setOn} />",
       "spec": "guidelines/components/toggle.md"
+    },
+    {
+      "set": "Tooltip",
+      "page": "Tooltip",
+      "state": "none",
+      "node": null,
+      "url": null,
+      "import": "import { Tooltip } from '@omkarux/vela/headless'",
+      "write": "Tooltip",
+      "figmaToProp": [
+        {
+          "figma": "Content",
+          "prop": "content"
+        },
+        {
+          "figma": "Lines",
+          "prop": "none — the length of content decides where it wraps"
+        }
+      ],
+      "example": "<Tooltip content=\"Download the last 24 hours as CSV\" placement=\"top\">\n  <Button>Export</Button>\n</Tooltip>",
+      "spec": "guidelines/components/tooltip.md"
     }
   ]
 }

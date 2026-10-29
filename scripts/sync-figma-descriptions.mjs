@@ -28,7 +28,8 @@ const version = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).ver
 
 // spec file → Figma component set name and source directory. `entry` is the source tree the
 // component lives in: `components` (the core, `@omkarux/vela`) unless it says `headless`
-// (`@omkarux/vela/headless` only — Checkbox and Radio Group have no core implementation).
+// (`@omkarux/vela/headless` only — Checkbox, Radio Group, Popover, Tooltip and Dialog have no core
+// implementation).
 // `state` is a closed set: 'published' (the set is in the published library, `node` is its id),
 // 'built' (the set exists in the file but is not published — `node` stays null until the Figma
 // thread posts the id; Risk Pill's set is being rebuilt, so its id is not final), 'none' (no set
@@ -57,6 +58,9 @@ export const SETS = {
     set: 'Table Header Cell', src: 'Table', state: 'none', node: null, export: 'Table.HeaderCell',
     also: [{ set: 'Table Cell', node: null, export: 'Table.Cell' }, { set: 'Table Row', node: null, export: 'Table.Row' }],
   },
+  'popover.md': { set: 'Popover', src: 'Popover', entry: 'headless', state: 'none', node: null, export: 'Popover' },
+  'tooltip.md': { set: 'Tooltip', src: 'Tooltip', entry: 'headless', state: 'none', node: null, export: 'Tooltip' },
+  'dialog.md': { set: 'Dialog', src: 'Dialog', entry: 'headless', state: 'none', node: null, export: 'Dialog' },
 }
 export const FILE_KEY = 'XO2rmeCcgOjyKe4oipgF4j'
 

@@ -1,0 +1,86 @@
+/* ----------------------------------------------------------------- Dialog -- */
+/* guidelines/components/dialog.md. The backdrop and the viewport cover the screen at
+   --vela-layer-overlay; the popup is centred in the viewport, never taller or wider than it, and
+   only its body scrolls — the header and the footer stay where the eye left them. */
+.vela-dialog__backdrop {
+  position: fixed; inset: 0;
+  z-index: var(--vela-layer-overlay);
+  background: var(--vela-bg-scrim);
+  opacity: var(--vela-opacity-scrim);
+  transition: opacity var(--vela-duration-base) var(--vela-ease-standard);
+}
+.vela-dialog__backdrop[data-starting-style],
+.vela-dialog__backdrop[data-ending-style] { opacity: 0; }
+
+.vela-dialog__viewport {
+  position: fixed; inset: 0;
+  z-index: var(--vela-layer-overlay);
+  display: flex; align-items: center; justify-content: center;
+  padding: var(--vela-space-20);
+}
+
+.vela-dialog {
+  display: flex; flex-direction: column;
+  width: var(--vela-dialog-width);
+  max-width: 100%;
+  max-height: 100%;
+  background: var(--vela-bg-raised);
+  color: var(--vela-text-default);
+  border-radius: var(--vela-radius-8);
+  font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height);
+  transition: opacity var(--vela-duration-base) var(--vela-ease-standard),
+              transform var(--vela-duration-base) var(--vela-ease-standard);
+}
+.vela-dialog--wide { width: var(--vela-dialog-width-wide); }
+/* Appearing: a fade and a step of travel. Leaving: the fade only, softer than it arrived. */
+.vela-dialog[data-starting-style] { opacity: 0; transform: translateY(var(--vela-space-5)); }
+.vela-dialog[data-ending-style] { opacity: 0; }
+/* From the keyboard, nothing animates (foundations/motion.md). */
+.vela-dialog[data-vela-instant],
+.vela-dialog__backdrop[data-vela-instant] { transition: none; }
+
+.vela-dialog__header {
+  flex: none;
+  display: flex; align-items: flex-start; gap: var(--vela-space-15);
+  padding: var(--vela-space-20) var(--vela-space-20) var(--vela-space-10);
+}
+.vela-dialog__heading { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: var(--vela-space-5); }
+.vela-dialog__title {
+  margin: 0;
+  font-size: var(--vela-text-h4-size); font-weight: var(--vela-text-h4-weight); line-height: var(--vela-text-h4-line-height);
+  color: var(--vela-text-heading);
+  overflow-wrap: break-word;
+}
+.vela-dialog__description { margin: 0; color: var(--vela-text-default); overflow-wrap: break-word; }
+
+.vela-dialog__close {
+  flex: none;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: var(--vela-control-height-24); height: var(--vela-control-height-24);
+  padding: 0; margin: 0;
+  background: none; border: none; border-radius: var(--vela-radius-3);
+  color: var(--vela-icon-strong);
+  cursor: pointer;
+  transition: background-color var(--vela-duration-base) var(--vela-ease-standard);
+}
+.vela-dialog__close svg { width: var(--vela-icon-16); height: var(--vela-icon-16); }
+@media (hover: hover) {
+  .vela-dialog__close:hover { background: var(--vela-btn-standard-hover-bg); transition-duration: var(--vela-duration-fast); }
+}
+
+.vela-dialog__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--vela-space-10) var(--vela-space-20);
+  overflow-wrap: break-word;
+}
+.vela-dialog__header + .vela-dialog__footer { padding-top: var(--vela-space-10); }
+.vela-dialog__footer {
+  flex: none;
+  display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--vela-space-10);
+  padding: var(--vela-space-15) var(--vela-space-20) var(--vela-space-20);
+  border-top: 1px solid var(--vela-border-subtle);
+}
+/* An alert has no body to separate from: its actions sit directly under the question. */
+.vela-dialog--alert .vela-dialog__footer { border-top: none; }

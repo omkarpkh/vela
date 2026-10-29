@@ -1057,6 +1057,16 @@
         }
       }
     },
+    "bg-scrim": {
+      "$type": "color",
+      "$value": "{primitives.black}",
+      "$description": "The modal backdrop behind a Dialog. Always drawn at opacity-scrim, never opaque: the page under it stays readable as context, and inert.",
+      "$extensions": {
+        "com.omkarux.vela": {
+          "figma": "surface/scrim"
+        }
+      }
+    },
     "bg-inactive": {
       "$type": "color",
       "$value": "{primitives.grey-100}",
@@ -1227,6 +1237,16 @@
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "text/error"
+        }
+      }
+    },
+    "text-tooltip": {
+      "$type": "color",
+      "$value": "{primitives.white}",
+      "$description": "Tooltip text, on bg-tooltip. White on grey-800 (light) and grey-700 (dark); asserted in PAIRS at 4.5:1 in both themes.",
+      "$extensions": {
+        "com.omkarux.vela": {
+          "figma": "text/tooltip"
         }
       }
     },
@@ -2716,6 +2736,91 @@
           "figma": "status/dot-small"
         }
       }
+    },
+    "popover-width": {
+      "$type": "dimension",
+      "$value": {
+        "value": 280,
+        "unit": "px"
+      },
+      "$description": "Popover, size regular: the popup width. Never wider than the space beside its trigger (--available-width).",
+      "$extensions": {
+        "com.omkarux.vela": {
+          "figma": "popover/width"
+        }
+      }
+    },
+    "popover-width-wide": {
+      "$type": "dimension",
+      "$value": {
+        "value": 400,
+        "unit": "px"
+      },
+      "$description": "Popover, size wide.",
+      "$extensions": {
+        "com.omkarux.vela": {
+          "figma": "popover/width-wide"
+        }
+      }
+    },
+    "dialog-width": {
+      "$type": "dimension",
+      "$value": {
+        "value": 480,
+        "unit": "px"
+      },
+      "$description": "Dialog, size regular: the popup width. Never wider than the viewport less its gutters.",
+      "$extensions": {
+        "com.omkarux.vela": {
+          "figma": "dialog/width"
+        }
+      }
+    },
+    "dialog-width-wide": {
+      "$type": "dimension",
+      "$value": {
+        "value": 720,
+        "unit": "px"
+      },
+      "$description": "Dialog, size wide.",
+      "$extensions": {
+        "com.omkarux.vela": {
+          "figma": "dialog/width-wide"
+        }
+      }
+    },
+    "tooltip-width-max": {
+      "$type": "dimension",
+      "$value": {
+        "value": 240,
+        "unit": "px"
+      },
+      "$description": "Tooltip: the widest a tooltip grows before its text wraps. A tooltip is a phrase, not a paragraph.",
+      "$extensions": {
+        "com.omkarux.vela": {
+          "figma": "tooltip/width-max"
+        }
+      }
+    },
+    "opacity-scrim": {
+      "$type": "number",
+      "$value": 0.5,
+      "$description": "The opacity bg-scrim is drawn at behind a Dialog. A number, not a colour alpha: primitives are opaque and the Figma sync carries opaque colours only.",
+      "$extensions": {
+        "com.omkarux.vela": {
+          "figma": "opacity/scrim"
+        }
+      }
+    },
+    "layer-overlay": {
+      "$type": "number",
+      "$value": 1000,
+      "$description": "z-index of every overlay (Popover, Tooltip, Dialog) portalled to <body>. One layer: overlays stack among themselves by DOM order, the later one on top.",
+      "$extensions": {
+        "com.omkarux.vela": {
+          "figma": "layer/overlay"
+        }
+      }
     }
   },
   "typography": {
@@ -3238,6 +3343,19 @@
         }
       },
       "$description": "Anything that settles or enters: hover out, appearing."
+    },
+    "delay-tooltip": {
+      "$type": "duration",
+      "$value": {
+        "value": 600,
+        "unit": "ms"
+      },
+      "$description": "How long the pointer rests on a trigger before its Tooltip opens. A delay, not an animation: it stops tooltips flashing as the pointer crosses a toolbar. Equal to Base UI's default, which applies when the stylesheet is not loaded.",
+      "$extensions": {
+        "com.omkarux.vela": {
+          "figma": "delay/tooltip"
+        }
+      }
     },
     "ease-standard": {
       "$type": "cubicBezier",

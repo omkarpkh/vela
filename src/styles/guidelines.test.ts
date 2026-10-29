@@ -60,12 +60,17 @@ describe('the agent-facing contract is complete', () => {
   })
 
   it('names every component that is NOT in the kit, so an agent flags a gap instead of inventing one', () => {
-    // Checkbox and Radio left this list in Phase 1 (they ship from /headless); the sentence that
-    // names the rest has to survive, and it must no longer call either of them missing.
+    // Checkbox and Radio left this list in Phase 1 (they ship from /headless), and so did Modal and
+    // Tooltip when Dialog and Tooltip arrived; the sentence that names the rest has to survive, and
+    // it must no longer call any of them missing.
     const notInKit = overview.match(/Not yet specced: ([^.]+)\./)?.[1] ?? ''
-    for (const missing of ['Select List', 'Token Pill', 'Modal', 'Tooltip', 'Icon Button', 'View Switcher'])
+    for (const missing of ['Select List', 'Token Pill', 'Icon Button', 'Actions Dropdown', 'View Switcher'])
       expect(notInKit).toContain(missing)
-    for (const shipped of ['Checkbox', 'Radio']) expect(notInKit).not.toContain(shipped)
+    for (const shipped of ['Checkbox', 'Radio', 'Modal', 'Tooltip', 'Popover', 'Dialog']) expect(notInKit).not.toContain(shipped)
+    // DESIGN.md carries the same list, and the same removals.
+    const designNotInKit = readFileSync(resolve(root, 'DESIGN.md'), 'utf8').match(/Not yet specced: ([^.]+)\./)?.[1] ?? ''
+    for (const shipped of ['Modal', 'Tooltip']) expect(designNotInKit).not.toContain(shipped)
+    expect(designNotInKit).toContain('Select List')
   })
 
   it('keeps a shipped component out of both "not in the kit" lists', () => {
@@ -74,7 +79,7 @@ describe('the agent-facing contract is complete', () => {
     // Icon is matched as a word not followed by "Button": Icon Button is genuinely not in the kit.
     const named = (list: string, c: string) => new RegExp(`\\b${c}\\b(?! Button)`).test(list)
     expect(named(' Icon Button, Modal', 'Icon')).toBe(false)
-    for (const shipped of ['Text Area', 'Input', 'Tabs', 'Icon', 'Checkbox', 'Radio Group'])
+    for (const shipped of ['Text Area', 'Input', 'Tabs', 'Icon', 'Checkbox', 'Radio Group', 'Table', 'Popover', 'Tooltip', 'Dialog'])
       for (const [name, md] of [['overview.md', overview], ['DESIGN.md', design]] as const)
         expect(named(notYet(md), shipped), `${shipped} is listed as missing in ${name}`).toBe(false)
   })

@@ -21,7 +21,15 @@ cannot be named in one of those words, it does not ship.
 - `--vela-duration-base` (180ms): anything that settles or appears.
 - `--vela-ease-standard` `cubic-bezier(0.2, 0, 0.2, 1)`: the only curve. Never a bare `ease`.
 
+- `--vela-delay-tooltip` (600ms): not an animation — how long the pointer rests on a control before
+  its Tooltip opens, so a pointer crossing a toolbar does not flash every label. Keyboard focus does
+  not wait. Equal to Base UI's own default, which applies when the stylesheet is not loaded.
+
 No component defines its own duration or curve. A new one is a token change, reviewed like a colour.
+
+Overlays (Popover, Tooltip, Dialog) appear at `--vela-duration-base` on opacity plus a
+`--vela-space-5` step of travel, and leave on opacity alone — softer than they arrived. One opened or
+closed from the keyboard does not animate at all.
 
 In Figma they live in the **Motion** collection as Figma's own motion variable types: `duration/instant`,
 `duration/fast` and `duration/base` are **timing** variables (Figma keeps timing in seconds, so 120ms is stored as

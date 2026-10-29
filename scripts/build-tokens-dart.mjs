@@ -154,6 +154,9 @@ export function generateDart(set, version) {
     if (t.$type === 'dimension') w(`  static const double ${id} = ${pxOf(t.$value, name)};`)
     else if (t.$type === 'duration') w(`  static const Duration ${id} = ${ms(t.$value, name)};`)
     else if (t.$type === 'cubicBezier') w(`  static const Cubic ${id} = Cubic(${cubicBezierOf(t.$value, name).join(', ')});`)
+    // A sizing-group number (the scrim opacity, the overlay layer) is a plain double: in Flutter the
+    // opacity feeds Opacity / Color.withValues, and the layer has no meaning but travels for parity.
+    else if (t.$type === 'number') w(`  static const double ${id} = ${t.$value};`)
     else throw new Error(`unmapped sizing type ${t.$type} on ${name}`)
   }
   w(`}`)
