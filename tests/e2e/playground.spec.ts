@@ -202,9 +202,14 @@ test('the Dialog page opens a modal: focus moves in and is trapped, the page is 
   // Base UI locks whichever of <html> and <body> scrolls the viewport.
   const locked = () => page.evaluate(() => [document.documentElement, document.body].some((el) => getComputedStyle(el).overflowY === 'hidden'))
   expect(await locked()).toBe(true)
-  // Trapped: Tab past the last action wraps inside the dialog.
-  for (let i = 0; i < 4; i++) await page.keyboard.press('Tab')
-  expect(await page.evaluate(() => !!document.activeElement?.closest('.vela-dialog'))).toBe(true)
+  // Trapped: Tab past the last action wraps inside the dialog. Base UI's focus guards hand focus on
+  // a task after the key lands, so each step is polled rather than read once.
+  const inDialog = () => page.evaluate(() => !!document.activeElement?.closest('.vela-dialog'))
+  for (let i = 0; i < 4; i++) {
+    await page.keyboard.press('Tab')
+    await expect.poll(inDialog).toBe(true)
+  }
+  await expect(dialog.getByRole('textbox', { name: 'Policy name' })).toBeFocused()
   // The backdrop covers the sticky top bar: the dialog layer is above the page's own layers.
   const covering = await page.evaluate(() => document.elementFromPoint(window.innerWidth / 2, 10)?.className ?? '')
   expect(covering).toMatch(/vela-dialog__(backdrop|viewport)/)
