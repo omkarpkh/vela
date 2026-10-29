@@ -258,7 +258,8 @@ type RouteInput = {
   reach?: ReachLimit                                       // the limit for this change's target, if any
   change: Pick<ActionImpactCardProps,
     "reversibility" | "blastRadius" | "computedAt" | "staleAfterMinutes" | "inputsChangedAt">
-  confidence?: "high" | "moderate" | "low" | "unrated"     // the producer's band, if it gave one
+  confidence?: "high" | "moderate" | "low" | "unrated"     // gateBand(reading, now).band from the Calibrated
+                                                           //   Confidence Gate — never the producer's raw band
   delegatedFrom?: { rung: AutonomyRung }                   // the delegating agent's route, for a sub-agent
   overdueReviews?: number                                  // from the action's track record
   now: Date
@@ -273,7 +274,7 @@ type RouteReason =
   | { kind: "unknown-radius-limit" }
   | { kind: "partial-radius"; atLeast: number; routedAs: string }   // the band it was routed as
   | { kind: "stale-estimate-limit" }
-  | { kind: "low-confidence"; band: string }
+  | { kind: "low-confidence"; band: string; gate: string }   // gate: the Gate's `because`, e.g. "thin"
   | { kind: "delegated-limit"; rung: AutonomyRung }
   | { kind: "no-policy-cell"; tier: string; band: string }
   | { kind: "hold-not-set" }
@@ -499,6 +500,7 @@ None. One size; the container decides the layout.
 | Conflict | "The policy or this permission changed while you were editing (now v5)." The new state renders; the draft is kept. |
 | Stepped down | The newest history entry reads "Stepped down from *from* to *to* on 12 Oct — *reason*. Alerted: Security lead, SOC on-call." |
 | Reviews overdue | Above the rungs: "3 reviews overdue (older than 24 h) — new actions wait out a hold until they are cleared." |
+| Route, not yet calibrated | "Route: You approve each — not yet calibrated (the Gate treats the agent's High as unrated) · policy v4, Security lead." |
 | Route, partial radius | "Route: You approve each — at least 1 host; routed as more than 10 · policy v4, Security lead." |
 | Route, unrestricted | "Route: You review after — policy v4: undoable × 1 host." |
 | Route, limited | "Route: You approve each — reach limit: Domain controllers · policy v4, Security lead." |

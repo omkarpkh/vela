@@ -25,7 +25,7 @@ rules, what CI asserts for accessibility, every anti-pattern, and what is not in
 wrong. Then the per-component file before generating any markup.
 
 `proposals/` (in the repository, not the npm package) holds specs for components that are NOT
-built yet — Verdict Card, Action Impact Card, Autonomy Ladder. Never import or imitate them; name
+built yet — Verdict Card, Action Impact Card, Autonomy Ladder, Calibrated Confidence Gate. Never import or imitate them; name
 the closest component that exists and flag the gap.
 
 Working from the Figma library? `figma-map.json` (this folder) maps each component set to the

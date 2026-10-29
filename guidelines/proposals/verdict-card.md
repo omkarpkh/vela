@@ -12,6 +12,11 @@ It changes nothing on its own.
 **Status:** Experimental — specced, not yet built or tested; no Figma set.
 **Dependencies:** @base-ui/react (optional peer, via /headless)
 
+> **Changed 29 Oct 2026 — breaking.** With the [Calibrated Confidence Gate](calibrated-confidence-gate.md),
+> `confidence` is a full `ConfidenceReading` instead of a band word, the Confidence band taxonomy
+> moves to the Gate, and Accept follows the band the Gate allows (`gateBand`), not the band the
+> agent states.
+
 ## Intent
 
 An analyst should be able to answer six questions from the card without opening anything else:
@@ -72,7 +77,7 @@ cannot see a related alert that landed in a different case.
   verdictId="vd_8f21"
   version={3}
   verdict="malicious"
-  confidence="low"
+  confidence={reading}            // a ConfidenceReading: stated band "low", with its record (see the Gate)
   rationale="Two sign-ins from new countries within 9 minutes, then a mailbox rule that forwards invoices externally."
   analysedAt="2026-10-28T08:32:00Z"
   dataCutoff="2026-10-28T08:25:00Z"
@@ -101,7 +106,7 @@ inconclusive result carries none:
 
 ```ts
 type VerdictAndConfidence =
-  | { verdict: "malicious" | "suspicious" | "benign"; confidence: "high" | "moderate" | "low" | "unrated" }
+  | { verdict: "malicious" | "suspicious" | "benign"; confidence: ConfidenceReading }   // from the Calibrated Confidence Gate
   | { verdict: "inconclusive"; confidence?: never }
 ```
 
@@ -110,7 +115,7 @@ type VerdictAndConfidence =
 | `verdictId` | `string` | — | **Required.** Stable id of this verdict. |
 | `version` | `number` | — | **Required.** Increments on every re-analysis. Every decision carries it. |
 | `verdict` | `"malicious" \| "suspicious" \| "benign" \| "inconclusive"` | — | **Required. These four only.** The Verdict taxonomy (below). |
-| `confidence` | `"high" \| "moderate" \| "low" \| "unrated"` | — | **Required for a conclusion; forbidden for `inconclusive`.** The Confidence band taxonomy (below). `unrated` means the producer gave none. |
+| `confidence` | `ConfidenceReading` | — | **Required for a conclusion; forbidden for `inconclusive`.** The stated band with its record, shown as the inline Calibrated Confidence Gate. The Confidence band taxonomy is owned by the Gate. |
 | `rationale` | `string` | — | **Required, non-empty.** The conclusion in full, in the producer's words. For `inconclusive`, why no conclusion was reached. Never truncated on the card. |
 | `analysedAt` | ISO 8601 string with offset | — | **Required.** When the producer made this version. |
 | `dataCutoff` | ISO 8601 string with offset | — | **Required.** Time of the newest data the producer used. Not the same as `analysedAt`. |
@@ -149,7 +154,7 @@ them. They join the taxonomy table in `DESIGN.md` when this component is built.
 | Taxonomy | Values | Describes | Owned by | Tokens |
 |---|---|---|---|---|
 | **Verdict** (4) | `malicious` · `suspicious` · `benign` · `inconclusive` | a producer's or a person's conclusion about a case, or the statement that none was reached | Verdict Card | `--vela-{text,icon}-verdict-*`. Two roles, no background |
-| **Confidence band** (4) | `high` · `moderate` · `low` · `unrated` | how sure the producer says it is of a conclusion | Verdict Card now; Calibrated Confidence Gate once specced | **none.** Confidence has no colour |
+| **Confidence band** (4) | `high` · `moderate` · `low` · `unrated` | how sure the producer says it is of a conclusion | **Calibrated Confidence Gate** (was: Verdict Card) | **none.** Confidence has no colour |
 
 Why four verdicts. `suspicious` and `inconclusive` are different claims. "Suspicious" is a
 conclusion: worth attention, not confirmed. "Inconclusive" is no conclusion: there was not enough
@@ -160,8 +165,8 @@ Inconclusive. Prophet documents benign / malicious / inconclusive. Intezer repor
 threats, false positives and "suspicious or inconclusive" verdicts.
 
 Who owns the bands. The producer's mapping from its score to a band belongs to the host, and the
-host documents it. The card shows the band and does not define it. Calibration over time — how
-often `high` turned out right — is shown by the Calibrated Confidence Gate, not here.
+host documents it. The Calibrated Confidence Gate owns the taxonomy, shows the record beside the
+stated band, and decides through `gateBand(reading, now)` which band the card may act on.
 
 `low` and `high` also exist in Risk. A low-confidence verdict is not a low-risk case. Never derive
 one from the other.
@@ -174,8 +179,9 @@ Rule ids are listed with their proof level; they become `[[rule: … ]]` tags wh
 - **Four verdicts.** `malicious`, `suspicious`, `benign`, `inconclusive`. There is no
   `"critical"`, no `"high"`, no `"true-positive"`, no `"unknown"`. A Severity, Risk or Status
   value passed as `verdict` does not compile. `verdict-closed-set` · compiler
-- **Four confidence bands.** `high`, `moderate`, `low`, `unrated`. A number is not a band:
-  `confidence={0.82}` does not compile. `confidence-band-closed-set` · compiler
+- **Confidence is a reading, not a number.** The band set and its rule
+  (`confidence-band-closed-set`) belong to the Calibrated Confidence Gate; `confidence={0.82}`
+  still does not compile there.
 - **An inconclusive result has no band.** `verdict="inconclusive"` with any `confidence` does not
   compile, and a conclusion without one does not compile either. `verdict-inconclusive-has-no-band` · compiler
 - **One taxonomy per field.** `verdict` takes only Verdict values; `confidence` takes only
@@ -205,10 +211,14 @@ Rule ids are listed with their proof level; they become `[[rule: … ]]` tags wh
   and `notSeen`, as a separate fact. Coverage is never folded into the confidence word and never
   shares its line. `verdict-coverage-separate` · runtime
 - **Accept is withheld, not disabled,** while the verdict is outdated, for `inconclusive`, and
-  at `low` or `unrated` confidence. The button is not rendered. In its place one sentence gives
+  when the band the Gate allows — `gateBand(confidence, now).band` — is `low` or `unrated`. That
+  includes a stated High that is not yet calibrated: "Not yet calibrated: 6 of 30 High verdicts
+  reviewed. To agree, use Override with a reason — each one adds to the record." A new agent
+  version or a stale record is named the same way. Accept feeds the record's `confirmedByAccept`;
+  Override agreeing with the lean feeds `confirmedOnReview`. The button is not rendered. In its place one sentence gives
   the reason and the routes left (Re-analyse, Override). A disabled button would leave the tab
   order and hide the reason. `verdict-accept-withheld` · runtime
-- **No recommendation when the producer is unsure.** At `low` and `unrated` the headline is "No
+- **No recommendation when the producer is unsure.** At a *stated* `low` or `unrated` the headline is "No
   recommendation", followed by what the producer could not see. The producer's verdict follows as
   "Agent's lean: Malicious", in de-emphasised text, with no verdict icon and no verdict colour.
   For `inconclusive` the headline is "Inconclusive" and there is no lean. `verdict-low-no-recommendation` · runtime
@@ -253,9 +263,9 @@ Rule ids are listed with their proof level; they become `[[rule: … ]]` tags wh
   days", not "Checked all activity". A claim that leaves the case says so: "only in the mail
   admin console". `verdict-labels-claim-only-data` · convention
 
-**Proof plan:** 7 compiler (7 fixtures), 14 runtime (14 unit tests naming the rule id), 2 browser
-(2 Playwright specs on a container-width harness at 280, 320 and 480 px), 6 convention. 29 rules,
-23 with proofs.
+**Proof plan:** 6 compiler (6 fixtures), 14 runtime (14 unit tests naming the rule id), 2 browser
+(2 Playwright specs on a container-width harness at 280, 320 and 480 px), 6 convention. 28 rules,
+22 with proofs (`confidence-band-closed-set` moved to the Calibrated Confidence Gate).
 
 ## Token bindings
 
@@ -392,7 +402,7 @@ show the text summary.
 - **Toast**, optional, to announce a saved decision. Never the only Undo.
 - **Icon** (Lucide export): the five glyphs above.
 - Later slots: an **Agent Provenance badge** replaces `source`. The **Calibrated Confidence Gate**
-  (inline size) replaces the confidence word and adds the calibration strip. The **Evidence
+  (inline size) is the confidence word, with its record; `gateBand` decides Accept. The **Evidence
   Locker** opens from "What the agent read". The **Override & Teach panel** opens from an override.
 
 ## Figma mapping
@@ -412,6 +422,7 @@ set as an instance swap.
 | `Freshness` | derived from `newerEvidence` and `dataCutoff` — `Outdated` only when an item is later than the cut-off |
 | `Has not-seen` (boolean) | `notSeen.length > 0` |
 | `Has history` (boolean) | `history.length > 0` |
+| `Calibrated` (boolean) | `gateBand(confidence, now).band` equals the stated band; `No` drives the withheld bar on a stated High or Moderate |
 | `Decision` (instance swap) | `decision.state` (plus `sameAsLean`), and the absence of handlers for `No permission` |
 | `Rationale`, `Analysed`, `Data cut-off`, `Coverage` (text) | `rationale`, `analysedAt`, `dataCutoff`, derived coverage |
 
