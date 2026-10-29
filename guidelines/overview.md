@@ -14,11 +14,21 @@ below, then open the per-component file for props, tokens, and anti-patterns.
 | Status Indicator | A health dot for one of five states | `components/status-indicator.md` |
 | Risk Pill | A read-only risk score (low/medium/high) on an object | `components/risk-pill.md` |
 | Tabs | Navigate between different content panels | `components/tabs.md` |
+| Checkbox | Recording intent until a Save — alone, or any-of-several in a Checkbox.Group (headless entry only) | `components/checkbox.md` |
+| Radio Group | Exactly one of two to five visible options, committed by a Save (headless entry only) | `components/radio-group.md` |
+
+Checkbox and Radio Group ship from `@omkarux/vela/headless` (Base UI as an optional peer) and are
+Experimental; the other seven ship from `@omkarux/vela` with no dependencies.
 
 ## Disambiguations (where AI usually picks wrong)
 
 - **Toggle vs Checkbox** — immediate effect (notifications on/off, dark mode) → **Toggle**.
-  Records intent until a Save click → **Checkbox**. Checkbox is not in this kit; flag the gap.
+  Records intent until a Save click → **Checkbox**. The test is the Save button: if one is
+  needed it is a Checkbox; if the change is already live it is a Toggle.
+- **Radio Group vs Select List** — two to five options the user should see side by side, one
+  answer → **Radio Group**. More than five, or options known by name (a country, a tenant) →
+  Select List, which is not in this kit; flag the gap rather than stacking radios. Any number of
+  answers → **Checkbox.Group**.
 - **Tabs vs View Switcher** — different content sections → **Tabs**. The *same* dataset
   rendered differently (Grid / Dashboard / Chart) → **View Switcher**, which is not in this
   kit. If only the presentation of one dataset changes, do not reach for Tabs.
@@ -33,9 +43,9 @@ below, then open the per-component file for props, tokens, and anti-patterns.
 ## If no component fits
 
 Do not invent one silently. State that the kit has no component for the need and pick the
-closest match while flagging the gap. Not yet specced: Checkbox, Radio, Dropdown List,
-Select List, Token Pill, Number Stepper, Text Area, Modal, Tooltip, Icon Button,
-Actions Dropdown, View Switcher. Flag rather than guess.
+closest match while flagging the gap. Not yet specced: Dropdown List, Select List, Token Pill,
+Number Stepper, Text Area, Modal, Tooltip, Icon Button, Actions Dropdown, View Switcher. Flag
+rather than guess.
 
 ## How each component file is structured
 

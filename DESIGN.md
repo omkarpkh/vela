@@ -289,11 +289,12 @@ Accessibility
 ## Not in the kit
 
 Do not invent one silently. State that the kit has no component for the need and pick the
-closest match while flagging the gap. Not yet specced: Checkbox, Radio, Dropdown List,
-Select List, Token Pill, Number Stepper, Text Area, Modal, Tooltip, Icon Button,
-Actions Dropdown, View Switcher. Flag rather than guess. The disambiguations agents most often
-get wrong — Toggle vs Checkbox, Tabs vs View Switcher, Alert vs Status Indicator vs Risk Pill
-— are in `guidelines/overview.md`.
+closest match while flagging the gap. Not yet specced: Dropdown List, Select List, Token Pill,
+Number Stepper, Text Area, Modal, Tooltip, Icon Button, Actions Dropdown, View Switcher. Flag
+rather than guess. Checkbox (with Checkbox.Group) and Radio Group are specced and ship from
+`@omkarux/vela/headless` only (Experimental). The disambiguations agents most often get wrong
+— Toggle vs Checkbox, Radio Group vs Select List, Tabs vs View Switcher, Alert vs Status
+Indicator vs Risk Pill — are in `guidelines/overview.md`.
 
 ## How to add a component
 
