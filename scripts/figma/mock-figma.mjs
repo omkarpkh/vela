@@ -10,7 +10,7 @@
 const MIXED = Symbol('figma.mixed')
 let seq = 0
 const nid = (t) => `${t.toLowerCase()}:${++seq}`
-const DEFAULT_NAME = { FRAME: 'Frame', COMPONENT: 'Component', COMPONENT_SET: 'Component', TEXT: 'Text', RECTANGLE: 'Rectangle', ELLIPSE: 'Ellipse', POLYGON: 'Polygon', BOOLEAN_OPERATION: 'Union' }
+const DEFAULT_NAME = { FRAME: 'Frame', COMPONENT: 'Component', COMPONENT_SET: 'Component', TEXT: 'Text', RECTANGLE: 'Rectangle', ELLIPSE: 'Ellipse', POLYGON: 'Polygon', BOOLEAN_OPERATION: 'Union', VECTOR: 'Vector' }
 
 class SceneNode {
   constructor(type, figma) {
@@ -128,6 +128,11 @@ class RectangleNode extends SceneNode {
 }
 class EllipseNode extends SceneNode { constructor(figma) { super('ELLIPSE', figma) } }
 class PolygonNode extends SceneNode { constructor(figma) { super('POLYGON', figma); this.pointCount = 3; this.cornerRadius = 0 } }
+// A vector keeps its constraints (how it follows a resized parent) and its stroke cap and join. Its
+// geometry is not modelled: the mock knows a vector's box only if a builder sets it.
+class VectorNode extends SceneNode {
+  constructor(figma) { super('VECTOR', figma); this.constraints = { horizontal: 'MIN', vertical: 'MIN' }; this.strokeCap = 'NONE'; this.strokeJoin = 'MITER' }
+}
 class BooleanOperationNode extends ContainerNode {
   constructor(figma) { super('BOOLEAN_OPERATION', figma); this.booleanOperation = 'UNION'; this.cornerRadius = 0 }
 }
@@ -165,6 +170,29 @@ export function createMockFigma({ variables, styles, pages }) {
     createEllipse() { const n = new EllipseNode(figma); figma.currentPage.appendChild(n); return n },
     createPolygon() { const n = new PolygonNode(figma); figma.currentPage.appendChild(n); return n },
     combineAsVariants(nodes, parent) { const set = new ComponentSetNode(figma); for (const n of nodes) set.appendChild(n); parent.appendChild(set); set._variantDefs(); return set },
+    // createNodeFromSvg returns a frame without auto layout holding one vector per drawn element, with
+    // the SVG's stroke as a raw paint — which is why a builder must rebind it. The frame takes the
+    // svg's width and height attributes.
+    createNodeFromSvg(svg) {
+      const f = new FrameNode('FRAME', figma); figma.currentPage.appendChild(f)
+      f.name = 'svg'; f.fills = []
+      const attr = (k) => Number((svg.match(new RegExp(`<svg[^>]*\\s${k}="([\\d.]+)"`)) || [])[1] ?? 100)
+      f.width = attr('width'); f.height = attr('height')
+      for (const _ of svg.matchAll(/<(path|circle|ellipse|rect|line|polyline|polygon)\b/g)) {
+        const v = new VectorNode(figma); v.width = f.width; v.height = f.height
+        v.strokes = [{ type: 'SOLID', color: { r: 0, g: 0, b: 0 } }]
+        f.appendChild(v)
+      }
+      return f
+    },
+    // flatten merges the nodes into one vector inside `parent`; its box is not computed.
+    flatten(nodes, parent) {
+      if (!nodes.length) throw new Error('flatten: no nodes')
+      const v = new VectorNode(figma); v.width = Math.max(...nodes.map((n) => n.width)); v.height = Math.max(...nodes.map((n) => n.height))
+      v.strokes = nodes[0].strokes
+      for (const n of [...nodes]) n.remove()
+      ;(parent ?? figma.currentPage).appendChild(v); return v
+    },
     union(nodes, parent) {
       const bo = new BooleanOperationNode(figma)
       const xs = nodes.map((n) => n.x), ys = nodes.map((n) => n.y)

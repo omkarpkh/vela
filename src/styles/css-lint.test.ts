@@ -11,7 +11,7 @@ describe('component CSS binds tokens', () => {
 
   it('lints every component stylesheet', () => {
     expect(report.map((r) => r.file).sort()).toEqual(
-      ['Button', 'ContextualAlert', 'Input', 'RiskPill', 'StatusIndicator', 'Tabs', 'Toggle'].map((c) => `src/components/${c}/${c}.css`),
+      ['Button', 'ContextualAlert', 'Icon', 'Input', 'RiskPill', 'StatusIndicator', 'Tabs', 'Toggle'].map((c) => `src/components/${c}/${c}.css`),
     )
   })
 

@@ -131,7 +131,7 @@ for (const [name, body] of GLYPHS) {
   svg.remove();
   glyph.name = 'Glyph / ' + name;
   glyph.fills = []; glyph.strokes = [paint('icon/strong')];
-  glyph.strokeCap = 'ROUND'; glyph.strokeJoin = 'ROUND';
+  glyph.strokeCap = 'ROUND'; glyph.strokeJoin = 'ROUND'; glyph.strokeAlign = 'CENTER';
   glyph.constraints = { horizontal: 'SCALE', vertical: 'SCALE' };
   c.setBoundVariable('width', SIZE); c.setBoundVariable('height', SIZE);
   glyph.strokeWeight = weight;
