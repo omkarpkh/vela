@@ -181,7 +181,7 @@ describe('Table, as the builder creates its three sets', () => {
   const head = dump('table', 'Table Header Cell')
   const cell = dump('table', 'Table Cell')
   const row = dump('table', 'Table Row')
-  const D = ['regular', 'compact']
+  const D = ['comfortable', 'compact']
   const pads = (density: string) => ['space/' + (density === 'compact' ? 5 : 10), 'space/10', 'space/' + (density === 'compact' ? 5 : 10), 'space/10']
 
   it('declares three sets on one page, linted together, with no waiver', () => {
@@ -218,7 +218,7 @@ describe('Table, as the builder creates its three sets', () => {
     for (const v of cell.variants) {
       expect(v.fill).toEqual([])
       expect([v.stroke, v.swx]).toEqual([['border/subtle'], [0, 0, 1, 0]])
-      expect(v.pad.map((p: any) => p[1])).toEqual(pads(v.n.includes('compact') ? 'compact' : 'regular'))
+      expect(v.pad.map((p: any) => p[1])).toEqual(pads(v.n.includes('compact') ? 'compact' : 'comfortable'))
       expect(v.ch[0].style).toBe('Body/Default')
     }
   })

@@ -13,7 +13,7 @@
 // cells, as components. Tabular numerals, the scroll region and the sticky header have no Figma
 // expression.
 
-const DENSITY = { regular: 'space/10', compact: 'space/5' };
+const DENSITY = { comfortable: 'space/10', compact: 'space/5' };
 const DENSITIES = Object.keys(DENSITY);
 const ALIGNS = ['start', 'end'];
 const SORTS = ['unsortable', 'none', 'ascending', 'descending'];

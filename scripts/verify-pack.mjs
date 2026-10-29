@@ -293,7 +293,7 @@ export const props: [CheckboxProps, CheckboxGroupProps, RadioGroupProps, RadioPr
     ['radio-label-required', 'radio label as a node', `<RadioGroup label="Mode"><RadioGroup.Radio value="a" label={<b>A</b>} /></RadioGroup>`],
     ['table-caption-required', 'table with no caption', `<Table><Table.Body><Table.Empty colSpan={1}>None</Table.Empty></Table.Body></Table>`],
     ['table-caption-required', 'table caption as a node', `<Table caption={<b>Assets</b>}><Table.Body><Table.Empty colSpan={1}>None</Table.Empty></Table.Body></Table>`],
-    ['table-density-closed', 'invented table density', `<Table caption="Assets" density="comfortable"><Table.Body><Table.Empty colSpan={1}>None</Table.Empty></Table.Body></Table>`],
+    ['table-density-closed', 'size word used as a table density', `<Table caption="Assets" density="regular"><Table.Body><Table.Empty colSpan={1}>None</Table.Empty></Table.Body></Table>`],
     ['table-layout-closed', 'invented table layout', `<Table caption="Assets" layout="grid"><Table.Body><Table.Empty colSpan={1}>None</Table.Empty></Table.Body></Table>`],
     ['table-header-scope-closed', 'invented header scope', `<Table.HeaderCell scope="colgroup">Asset</Table.HeaderCell>`],
     ['table-sort-direction-closed', 'invented sort direction', `<Table.HeaderCell sort={{ direction: 'asc', onSort: () => {} }}>Asset</Table.HeaderCell>`],

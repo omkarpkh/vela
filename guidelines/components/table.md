@@ -55,7 +55,7 @@ Review Queue) build on it, and its Figma sets are not in the library yet (the bu
 |---|---|---|---|---|
 | `Table` | `caption` | `string` | — | **Required.** Rendered as the `<caption>` and the label of the scroll region. |
 | | `captionHidden` | `boolean` | `false` | Visually hides the caption; it still names the table and the region. |
-| | `density` | `"regular" \| "compact"` | `"regular"` | **These two only.** Compact tightens vertical padding; type and targets hold. |
+| | `density` | `"comfortable" \| "compact"` | `"comfortable"` | **These two only.** Compact tightens vertical padding; type and targets hold. |
 | | `layout` | `"auto" \| "fixed"` | `"auto"` | **These two only.** `fixed` takes column widths from the first row. |
 | | `stickyHeader` | `boolean` | `false` | Pins the header row to the top of the scroll region. The host bounds the height. |
 | | `children` | `ReactNode` | — | `Table.Head` and `Table.Body`. |
@@ -80,8 +80,8 @@ rows), no `style`.
 - **`caption` is required and is a `string`.** A table with no name is a grid of words to a
   screen-reader user, and the scroll region needs the same name; the type makes an unnamed or
   node-named table impossible. Hide it with `captionHidden`, never omit it. [[rule: table-caption-required | compiler]]
-- **Two densities.** `regular` and `compact`. There is no `comfortable`, no `spacious`, no
-  `condensed`. [[rule: table-density-closed | compiler]]
+- **Two densities, DESIGN.md's two steps.** `comfortable` and `compact`. There is no `regular`, no
+  `spacious`, no `condensed`. [[rule: table-density-closed | compiler]]
 - **Two layouts.** `auto` and `fixed`, the CSS `table-layout` values. [[rule: table-layout-closed | compiler]]
 - **`scope` is `col` or `row`.** No `colgroup`, no `rowgroup`: Vela has no column or row groups
   yet. [[rule: table-header-scope-closed | compiler]]
@@ -163,7 +163,7 @@ padding changes. Type size never changes with density.
 
 | density | Cell padding (block) | Body row, one line | Header row with a sort button |
 |---|---|---|---|
-| regular | `--vela-space-10` | 21 + 20 = 41px, plus the 1px rule | 24 + 20 = 44px, plus the rule |
+| comfortable | `--vela-space-10` | 21 + 20 = 41px, plus the 1px rule | 24 + 20 = 44px, plus the rule |
 | compact | `--vela-space-5` | 21 + 10 = 31px, plus the rule | 24 + 10 = 34px, plus the rule |
 
 The sort button never drops under `--vela-control-height-24` at either density: compact tightens
@@ -214,9 +214,10 @@ header-to-cell association screen readers depend on. Breakpoint tokens do not ex
 `DESIGN.md`, *Responsive and density*), so the table has one layout at every width and states no
 breakpoint of its own.
 
-**Density.** `density` is a prop here because a table is where density matters most and the
-subtree density tokens `DESIGN.md` describes do not exist yet. When they land, a table with no
-`density` will follow its subtree, and the prop stays as the per-table override.
+**Density.** `comfortable` and `compact` are `DESIGN.md`'s two density steps. `density` is an
+interim per-table prop because a table is where density matters most and the subtree density
+tokens `DESIGN.md` describes do not exist yet. When they land, a table with no `density` follows
+its subtree, and the prop stays as the per-table override. They are due before Table is Approved.
 
 ## Accessibility
 

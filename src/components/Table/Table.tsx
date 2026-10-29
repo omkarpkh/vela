@@ -12,8 +12,11 @@ import { SortAscendingIcon, SortDescendingIcon, SortNoneIcon } from '../../lib/i
  * 2b's Filter Bar and Review Queue, are built on these parts.
  */
 
-/** Two densities. `compact` tightens vertical padding only: type size and the 24px target hold. */
-export type TableDensity = 'regular' | 'compact'
+/**
+ * The two density steps DESIGN.md names. `compact` tightens vertical padding only: type size and
+ * the 24px target hold. An interim per-table prop until the subtree density tokens land.
+ */
+export type TableDensity = 'comfortable' | 'compact'
 /** `auto` sizes columns to their content; `fixed` takes widths from the first row (the host's classes). */
 export type TableLayout = 'auto' | 'fixed'
 export type TableAlign = 'start' | 'end'
@@ -54,7 +57,7 @@ export interface TableProps {
 export function Table({
   caption,
   captionHidden = false,
-  density = 'regular',
+  density = 'comfortable',
   layout = 'auto',
   stickyHeader = false,
   children,

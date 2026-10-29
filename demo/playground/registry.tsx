@@ -100,7 +100,7 @@ function TableStage({ v }: { v: Values }) {
     <Table
       caption={str(v.caption) || 'Assets'}
       captionHidden={bool(v.captionHidden)}
-      density={(str(v.density) || 'regular') as 'regular' | 'compact'}
+      density={(str(v.density) || 'comfortable') as 'comfortable' | 'compact'}
       layout={(str(v.layout) || 'auto') as 'auto' | 'fixed'}
       stickyHeader={bool(v.stickyHeader)}
       className={bool(v.stickyHeader) ? 'pg-table-bounded' : undefined}

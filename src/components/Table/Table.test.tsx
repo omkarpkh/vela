@@ -150,10 +150,10 @@ describe('Table', () => {
     expect(cell).toHaveAttribute('colspan', '2')
   })
 
-  it('maps density, layout and stickyHeader to classes, and defaults to regular and auto', () => {
+  it('maps density, layout and stickyHeader to classes, and defaults to comfortable and auto', () => {
     const { container, rerender } = render(<Assets />)
     const root = container.firstChild as HTMLElement
-    expect(root).toHaveClass('vela-table', 'vela-table--regular', 'vela-table--auto')
+    expect(root).toHaveClass('vela-table', 'vela-table--comfortable', 'vela-table--auto')
     expect(root).not.toHaveClass('vela-table--sticky-header')
     rerender(<Table caption="Assets" density="compact" layout="fixed" stickyHeader><Table.Body><Table.Empty colSpan={1}>None</Table.Empty></Table.Body></Table>)
     expect(container.firstChild).toHaveClass('vela-table--compact', 'vela-table--fixed', 'vela-table--sticky-header')

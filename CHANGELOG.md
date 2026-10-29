@@ -9,7 +9,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **Table — Experimental, `@omkarux/vela` (core, zero dependencies).** The primitives a console's
   data views are built on (`table.md`), presentational on purpose: no data fetching, no
   virtualisation, no sort state. Compound parts on native elements — `Table` (required `caption`
-  string, `captionHidden`, `density` `regular | compact`, `layout` `auto | fixed`,
+  string, `captionHidden`, `density` `comfortable | compact` (DESIGN.md's two steps), `layout` `auto | fixed`,
   `stickyHeader`), `Table.Head`, `Table.Body`, `Table.Row` (`selected` → `aria-selected` plus a
   `border-active` start marker, `aria-current`), `Table.HeaderCell` (`scope` `col | row`, `align`,
   `sort={{ direction, onSort }}` rendering a real button named "Last seen, sort ascending" and
