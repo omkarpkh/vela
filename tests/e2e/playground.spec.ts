@@ -866,6 +866,13 @@ const animationsOf = (loc: Locator, subtree = false) =>
     kind: a.constructor.name,
     property: (a as CSSTransition).transitionProperty ?? (a as CSSAnimation).animationName ?? '?',
   })), subtree)
+// The animations once they have started. Base UI mounts an entering part with
+// data-starting-style and removes it on the next frame, so in the frame it mounts nothing is
+// running yet; wait for the transition rather than sample that frame.
+const started = async (loc: Locator, subtree = false) => {
+  await expect.poll(async () => (await animationsOf(loc, subtree)).length).toBeGreaterThan(0)
+  return animationsOf(loc, subtree)
+}
 const onlyMoves = (anims: Anim[]) => anims.every((a) => a.kind === 'CSSTransition' && (MOVING.has(a.property) || COLOUR.test(a.property)))
 const scaleOf = (loc: Locator) => loc.evaluate((el) => {
   const t = getComputedStyle(el).transform
@@ -922,7 +929,7 @@ test.describe('the motion pass, part 2', () => {
         await expect(toast).toBeVisible()
         // In flight: below its place (it rises from the bottom edge), partly transparent, and only
         // opacity and transform are moving — as transitions, never keyframes.
-        const a = await animationsOf(toast)
+        const a = await started(toast)
         expect(a.map((x) => x.property)).toEqual(expect.arrayContaining(['opacity', 'transform']))
         expect(onlyMoves(a)).toBe(true)
         expect(await toast.evaluate((el) => new DOMMatrix(getComputedStyle(el).transform).f)).toBeGreaterThan(0)
@@ -931,6 +938,7 @@ test.describe('the motion pass, part 2', () => {
         // `transform` and `opacity`. Nothing else in the region moves.
         await raise(page, 'Info')
         await expect(toastNamed(page, TITLE.Info)).toBeVisible()
+        await started(toastNamed(page, TITLE.Info))
         const all = await animationsOf(region(page), true)
         expect(onlyMoves(all)).toBe(true)
         expect(all.map((x) => x.property)).toEqual(expect.arrayContaining(['translate', 'scale', 'transform', 'opacity']))
@@ -1120,7 +1128,7 @@ test.describe('the motion pass, part 2', () => {
           await openMotion(page)
           await slowMotion(page)
           await open(page)
-          const a = await animationsOf(popup(page))
+          const a = await started(popup(page))
           expect(a.map((x) => x.property).sort()).toEqual(['opacity', 'transform'])
           expect(onlyMoves(a)).toBe(true)
           const s = await scaleOf(popup(page))
@@ -1275,14 +1283,13 @@ test.describe('the motion pass, part 2', () => {
           await press(page)
           await page.waitForTimeout(100)
           // Pressed: scaled to 0.9 (in at duration-instant, slowed five times), by a transform transition.
-          const pressing = await animationsOf(control(page))
+          const pressing = await started(control(page))
           expect(onlyMoves(pressing)).toBe(true)
           await expect.poll(() => scaleOf(control(page))).toBeCloseTo(0.9, 2)
           await page.mouse.up()
           await expect(c.checked(frame(page))).toHaveAttribute('aria-checked', 'true')
           // The state arrives: the mark or dot scales in from half size and fades in; the knob slides.
-          const arriving = await animationsOf(state(page))
-          expect(arriving.length).toBeGreaterThan(0)
+          const arriving = await started(state(page))
           expect(onlyMoves(arriving)).toBe(true)
           if (name !== 'toggle') {
             expect(arriving.map((a) => a.property).sort()).toEqual(['opacity', 'transform'])
