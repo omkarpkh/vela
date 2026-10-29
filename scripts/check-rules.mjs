@@ -122,7 +122,7 @@ if (proven.length) {
   try {
     proven.forEach((f, i) => {
       writeFileSync(join(dir, `f${i}.tsx`),
-        `import { Button, ContextualAlert, Input, RiskPill, StatusIndicator, Tabs, Toggle } from '${join(root, 'src')}'\n` +
+        `import { Button, ContextualAlert, Input, RiskPill, StatusIndicator, Tabs, TextArea, Toggle } from '${join(root, 'src')}'\n` +
         `export const X = () => (${f.snippet})\n`)
     })
     writeFileSync(join(dir, 'tsconfig.json'), JSON.stringify({

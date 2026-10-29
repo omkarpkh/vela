@@ -78,7 +78,7 @@ try {
   // -- valid usage must compile --
   mkdirSync(join(app, 'src'), { recursive: true })
   writeFileSync(join(app, 'valid.tsx'), `
-import { Button, Toggle, Input, ContextualAlert, StatusIndicator, RiskPill, Tabs } from '@omkarux/vela'
+import { Button, Toggle, Input, TextArea, ContextualAlert, StatusIndicator, RiskPill, Tabs } from '@omkarux/vela'
 import type { Severity, Status, Risk, ButtonProps } from '@omkarux/vela'
 
 export const A = () => <Button variant="primary" appearance="filled" size="huge">Save Changes</Button>
@@ -86,6 +86,8 @@ export const B = () => <Button variant="primary" appearance="text-link" size="ti
 export const C = () => <Button variant="destructive" appearance="hollow" loading>Delete Account</Button>
 export const D = () => <Toggle label="Email alerts" onChange={(v: boolean) => v} />
 export const E = () => <Input label="Tenant" hint="Lowercase only" error="Taken" size="large" />
+export const E2 = () => <TextArea label="Justification" hint="Shown to the approver" error="Required" size="tiny" rows={4} maxLength={280} resize="none" defaultValue="" />
+export const E3 = (v: string) => <TextArea label="Notes" value={v} onChange={(e) => e.target.value} name="notes" readOnly required />
 export const F = (s: Severity) => <ContextualAlert severity={s}>Body</ContextualAlert>
 export const G = (s: Status) => <StatusIndicator status={s} label="Node 1" />
 export const G2 = (r: Risk) => <RiskPill risk={r} label="High · 87" size="small" />
@@ -141,10 +143,16 @@ export const props: ButtonProps = { variant: 'standard', children: 'OK' }
     ['input-error-is-a-message', 'error as a boolean', `<Input label="Tenant" error />`],
     ['tabs-controlled-exclusive', 'tabs both controlled and uncontrolled', `<Tabs value="a" defaultValue="a"><Tabs.List aria-label="V"><Tabs.Trigger value="a">A</Tabs.Trigger></Tabs.List></Tabs>`],
     ['toggle-controlled-exclusive', 'toggle both controlled and uncontrolled', `<Toggle label="Alerts" checked defaultChecked />`],
+    ['text-area-label-required', 'text area with no label', `<TextArea />`],
+    ['text-area-controlled-exclusive', 'text area both controlled and uncontrolled', `<TextArea label="Notes" value="a" defaultValue="a" />`],
+    ['text-area-error-is-a-message', 'text area error as a boolean', `<TextArea label="Notes" error />`],
+    ['text-area-resize-closed', 'horizontal resize', `<TextArea label="Notes" resize="horizontal" />`],
+    ['text-area-resize-closed', 'resize in both directions', `<TextArea label="Notes" resize="both" />`],
+    ['text-area-size-closed', 'invented text area size', `<TextArea label="Notes" size="medium" />`],
   ]
   for (const [id, name, snippet] of violations) {
     writeFileSync(join(app, 'invalid.tsx'),
-      `import { Button, ContextualAlert, Input, RiskPill, StatusIndicator, Tabs, Toggle } from '@omkarux/vela'\nexport const X = () => (${snippet})\n`)
+      `import { Button, ContextualAlert, Input, RiskPill, StatusIndicator, Tabs, TextArea, Toggle } from '@omkarux/vela'\nexport const X = () => (${snippet})\n`)
     let rejected = false
     try { run(tsc, ['--noEmit', '-p', 'tsconfig.json'], app) } catch { rejected = true }
     check(rejected, `compiler rejects: ${name}  [${id}]`)
