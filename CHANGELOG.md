@@ -6,6 +6,39 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Unreleased]
 
 ### Added
+- **Motion pass, part 1: an entering curve, a spring, and a sliding Tabs indicator.** Three motion
+  tokens, all **provisional until the owner has reviewed their feel**: `--vela-ease-out`
+  `cubic-bezier(0.25, 1, 0.5, 1)` for things that enter (starts at four times the average speed,
+  93% there at half-time, no overshoot); `--vela-duration-travel` 240ms for travel across a
+  distance; and `--vela-ease-spring`, a spring (stiffness 1200, damping 56, mass 1 — damping ratio
+  0.81, 1.3% overshoot, 95% there in about 100ms) that `scripts/spring.mjs` solves and writes as a
+  CSS `linear()` easing over `duration-travel` at token build time (27 stops). DTCG has no spring
+  type, so the token's `$value` is its fallback (`{motion.ease-out}`) and the physics sit in the
+  vendor extension; the stylesheet declares the fallback and then the spring under
+  `@supports (transition-timing-function: linear(0, 1))`. Flutter gets `easeSpringStiffness`,
+  `…Damping` and `…Mass` for a `SpringDescription`; Figma gets the fallback curve (resolved, not
+  aliased) with the physics in its description. `--vela-ease-standard` stays the curve for things
+  that move on screen; the overlays and the MUI bridge still enter on it and move to `ease-out` in
+  a later part. 283 tokens (was 280).
+- **Tabs: a sliding selected indicator, on both implementations.** A pointer press slides the
+  underline to the new tab on the spring by `transform` alone (`translateX` and `scaleX` of a
+  full-width bar); a second press mid-flight retargets it; a keyboard switch is instant, colours
+  included (`data-vela-instant`). At rest the underline is still the selected trigger's own border
+  — the bar is visible only in flight — so the screenshot baselines do not move (checked locally:
+  the Tabs section is byte-identical to `main` at four widths in both themes, before and after a
+  switch). The core measures the tab itself; the headless implementation uses Base UI's
+  `Tabs.Indicator` and its `--active-tab-left`. Five new rules, all `browser`, with Playwright
+  proofs on both implementations: moves by transform, keyboard is instant, retargets, reduced
+  motion lands at its end state, at rest it is the border. The trigger no longer transitions
+  `border-color`.
+- **A Motion review page (`#/motion`).** The Tabs indicator in both implementations and both
+  themes, a Replay that presses the tabs the way a pointer does, a ×5 slow-motion switch (it sets
+  `playbackRate` on the page's running animations and touches no component CSS — a review aid),
+  the three curves plotted, and every motion token with its value and reason, read from the token
+  file.
+- **`css:check` now checks motion.** A transition of anything but `transform`, `opacity`, `filter`
+  or a colour fails, as does `all` or a bare duration (which means `all`); inside `@keyframes` only
+  the moving properties are allowed. Every existing stylesheet passes.
 - **Table — Experimental, `@omkarux/vela` (core, zero dependencies).** The primitives a console's
   data views are built on (`table.md`), presentational on purpose: no data fetching, no
   virtualisation, no sort state. Compound parts on native elements — `Table` (required `caption`

@@ -656,3 +656,164 @@ test('the Icon page sizes every glyph from the tokens and draws the stroke on th
   expect(await box()).toEqual([12, 12])
   await expect(page.locator('.pg-code')).toContainText('<Icon name="shield-x" size="small" />')
 })
+
+// The Tabs selected indicator (tabs.md, Motion), on the Motion review page, in both
+// implementations. jsdom has no layout and no Web Animations, so all four proofs live here.
+// The page's own "×5 slow motion" switch widens the window in which a flight can be inspected;
+// it changes only the playback rate of running animations, never the CSS under test.
+test.describe('the Tabs indicator', () => {
+  type Probe = {
+    moving: boolean; instant: boolean; opacity: string; transitionProperty: string
+    left: string; width: string; listWidth: number; x: number; scale: number
+    animations: { property: string; rate: number }[]
+    elsewhere: string[]
+  }
+  // What the bar is doing right now: its computed geometry, its transform as numbers, and every
+  // animation on it and anywhere else in the Tabs subtree.
+  const probe = (impl: string) => async (page: import('@playwright/test').Page) =>
+    page.locator(`.motion-frame[data-theme="light"] [data-implementation="${impl}"] .vela-tabs`).evaluate((root): Probe => {
+      const list = root.querySelector<HTMLElement>('.vela-tabs__list')!
+      const bar = root.querySelector<HTMLElement>('.vela-tabs__indicator')!
+      const cs = getComputedStyle(bar)
+      const m = new DOMMatrix(cs.transform === 'none' ? undefined : cs.transform)
+      const prop = (a: Animation) => (a as CSSTransition).transitionProperty ?? (a as CSSAnimation).animationName ?? '?'
+      return {
+        moving: list.hasAttribute('data-vela-moving'),
+        instant: root.hasAttribute('data-vela-instant'),
+        opacity: cs.opacity,
+        transitionProperty: cs.transitionProperty,
+        left: cs.left,
+        width: cs.width,
+        listWidth: list.clientWidth,
+        x: m.e,
+        scale: m.a,
+        animations: bar.getAnimations().map((a) => ({ property: prop(a), rate: a.playbackRate })),
+        elsewhere: root.getAnimations({ subtree: true }).filter((a) => (a.effect as KeyframeEffect).target !== bar).map(prop),
+      }
+    })
+  // Where the bar belongs under a tab: its left edge in the list's coordinates, its width as a
+  // fraction of the list's.
+  const target = (impl: string, name: string) => async (page: import('@playwright/test').Page) =>
+    page.locator(`.motion-frame[data-theme="light"] [data-implementation="${impl}"] .vela-tabs__list`).evaluate((list: HTMLElement, name) => {
+      const tab = [...list.querySelectorAll<HTMLElement>('[role="tab"]')].find((t) => t.textContent!.startsWith(name))!
+      const l = list.getBoundingClientRect(), t = tab.getBoundingClientRect()
+      return { x: t.left - l.left + list.scrollLeft, scale: t.width / list.clientWidth }
+    }, name)
+  const tab = (page: import('@playwright/test').Page, impl: string, name: string) =>
+    page.locator('.motion-frame[data-theme="light"]').getByRole('tablist', { name: `Views (${impl})` }).getByRole('tab', { name: new RegExp(`^${name}`) })
+  const slowMotion = (page: import('@playwright/test').Page) => page.getByRole('switch', { name: '×5 slow motion' }).click()
+
+  for (const impl of ['core', 'headless'] as const) {
+    test.describe(impl, () => {
+      test.beforeEach(async ({ page }) => {
+        await page.goto('/#/motion')
+        await expect(page.getByRole('heading', { level: 1, name: 'Motion review' })).toBeVisible()
+      })
+
+      test.describe('with motion', () => {
+        test.use({ reducedMotion: 'no-preference' })
+
+        // [[rule: tabs-indicator-moves-by-transform]]
+        test('a pointer switch slides the bar by transform alone, on the spring, while left and width stay put', async ({ page }) => {
+          await slowMotion(page)
+          const before = await probe(impl)(page)
+          expect(before.moving).toBe(false)
+          expect(before.opacity).toBe('0')
+          await tab(page, impl, 'Audit log').click()
+          const a = await probe(impl)(page)
+          expect(a.moving).toBe(true)
+          expect(a.opacity).toBe('1')
+          expect(a.transitionProperty).toBe('transform')
+          // One animation on the bar, a transform transition, slowed by the review switch.
+          expect(a.animations).toEqual([{ property: 'transform', rate: 0.2 }])
+          // Nothing in the Tabs animates geometry: only the triggers' colour may be settling.
+          expect(a.elsewhere.every((p) => p === 'color')).toBe(true)
+          await page.waitForTimeout(150)
+          const b = await probe(impl)(page)
+          expect(b.moving).toBe(true)
+          // Layout never moves: the bar is the list's full width at its left edge throughout.
+          for (const p of [before, a, b]) {
+            expect(p.left).toBe('0px')
+            expect(Math.abs(parseFloat(p.width) - p.listWidth)).toBeLessThan(1)   // clientWidth is rounded
+          }
+          // …while the transform travels towards the pressed tab.
+          const end = await target(impl, 'Audit log')(page)
+          expect(Math.abs(b.x - end.x)).toBeLessThan(Math.abs(before.x - end.x))
+          await expect.poll(async () => (await probe(impl)(page)).moving, { timeout: 5000 }).toBe(false)
+        })
+
+        // [[rule: tabs-indicator-retargets]]
+        test('a second press mid-flight turns the bar from where it is and it ends under the second tab', async ({ page }) => {
+          await slowMotion(page)
+          await tab(page, impl, 'Audit log').click()
+          await page.waitForTimeout(250)
+          const mid = await probe(impl)(page)
+          expect(mid.moving).toBe(true)
+          await tab(page, impl, 'Assets').click()
+          const turned = await probe(impl)(page)
+          const assets = await target(impl, 'Assets')(page)
+          // Retargeted, not restarted or snapped: still in flight, one transform transition, and
+          // not yet under Assets.
+          expect(turned.moving).toBe(true)
+          expect(turned.animations.map((x) => x.property)).toEqual(['transform'])
+          expect(Math.abs(turned.x - assets.x)).toBeGreaterThan(2)
+          await expect.poll(async () => (await probe(impl)(page)).moving, { timeout: 5000 }).toBe(false)
+          const rest = await probe(impl)(page)
+          expect(rest.x).toBeCloseTo(assets.x, 0)
+          expect(rest.scale).toBeCloseTo(assets.scale, 3)
+          await expect(tab(page, impl, 'Assets')).toHaveAttribute('aria-selected', 'true')
+          expect(await tab(page, impl, 'Assets').evaluate((el) => getComputedStyle(el).borderBottomColor)).not.toBe('rgba(0, 0, 0, 0)')
+        })
+
+        // [[rule: tabs-keyboard-switch-is-instant]]
+        test('a keyboard switch moves the underline at once: nothing in the Tabs animates', async ({ page }) => {
+          await tab(page, impl, 'Alerts').focus()
+          await page.keyboard.press('ArrowRight')
+          const p = await probe(impl)(page)
+          expect(p.moving).toBe(false)
+          expect(p.instant).toBe(true)
+          expect(p.animations).toEqual([])
+          expect(p.elsewhere).toEqual([])
+          await expect(tab(page, impl, 'Assets')).toHaveAttribute('aria-selected', 'true')
+          expect(await tab(page, impl, 'Assets').evaluate((el) => getComputedStyle(el).borderBottomColor)).not.toBe('rgba(0, 0, 0, 0)')
+          expect(await tab(page, impl, 'Alerts').evaluate((el) => getComputedStyle(el).borderBottomColor)).toBe('rgba(0, 0, 0, 0)')
+        })
+      })
+
+      // The project default: reducedMotion 'reduce'.
+      // [[rule: tabs-indicator-reduced-motion-end-state]]
+      // [[rule: tabs-indicator-rest-is-the-border]]
+      test('under reduced motion a pointer switch lands at its end state, and at rest the underline is the tab\'s own border', async ({ page }) => {
+        await tab(page, impl, 'Audit log').click()
+        // The reduced-motion collapse gives every property change a 0.01ms transition, the bar's
+        // hand-back to the border included, so "at rest" is polled for rather than read once.
+        await expect.poll(async () => { const p = await probe(impl)(page); return [p.moving, p.opacity] }, { timeout: 2000 }).toEqual([false, '0'])
+        const rest = await probe(impl)(page)
+        const end = await target(impl, 'Audit log')(page)
+        // The bar has gone to the tab and is invisible; the tab's border is the underline, in the
+        // bar's colour (--vela-border-active), and no other tab has one.
+        expect(rest.opacity).toBe('0')
+        expect(rest.x).toBeCloseTo(end.x, 0)
+        expect(rest.scale).toBeCloseTo(end.scale, 3)
+        const barColour = await page.locator(`.motion-frame[data-theme="light"] [data-implementation="${impl}"] .vela-tabs__indicator`).evaluate((el) => getComputedStyle(el).backgroundColor)
+        for (const name of ['Alerts', 'Assets', 'Identities', 'Audit log']) {
+          const colour = await tab(page, impl, name).evaluate((el) => getComputedStyle(el).borderBottomColor)
+          expect(colour, name).toBe(name === 'Audit log' ? barColour : 'rgba(0, 0, 0, 0)')
+        }
+      })
+    })
+  }
+
+  test('the Motion review page lists every motion token with its value and reason, in light and dark', async ({ page }) => {
+    await page.goto('/#/motion')
+    const rows = page.locator('.motion-tokens tbody tr')
+    await expect(rows).toHaveCount(10)
+    await expect(page.locator('.motion-tokens tr[data-token="ease-spring"] td').first()).toContainText('stiffness 1200, damping 56, mass 1')
+    await expect(page.locator('.motion-tokens tr[data-token="ease-out"] td').first()).toHaveText('cubic-bezier(0.25, 1, 0.5, 1)')
+    await expect(page.locator('.motion-frame[data-theme="dark"] .vela-tabs__list')).toHaveCount(2)
+    // The dark frame re-points the underline colour: the two frames' active borders differ.
+    const active = (m: string) => page.locator(`.motion-frame[data-theme="${m}"] [data-implementation="core"] [role="tab"][aria-selected="true"]`).evaluate((el) => getComputedStyle(el).borderBottomColor)
+    expect(await active('light')).not.toBe(await active('dark'))
+    await expect(page.getByText('review aid', { exact: false })).toBeVisible()
+  })
+})

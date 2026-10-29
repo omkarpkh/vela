@@ -25,7 +25,7 @@
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import { loadTokenSet, hexOf, alphaOf, pxOf, msOf, cubicBezierOf, deprecationNote } from './tokens-core.mjs'
+import { loadTokenSet, hexOf, alphaOf, pxOf, msOf, cubicBezierOf, deprecationNote, springOf } from './tokens-core.mjs'
 
 // ---------- names ----------
 const RESERVED = new Set(
@@ -163,16 +163,30 @@ export function generateDart(set, version) {
   w()
 
   // ---------- motion ----------
-  w(`/// Motion: three durations and the one curve. A press lands on [durationInstant]; pointer`)
+  w(`/// Motion: the durations and the curves. A press lands on [durationInstant]; pointer`)
   w(`/// answers and exits use [durationFast]; anything that settles or enters uses`)
-  w(`/// [durationBase]. Same values as tokens.css.`)
+  w(`/// [durationBase]; travel across a distance uses [durationTravel]. Things that move on`)
+  w(`/// screen take [easeStandard], things that enter take [easeOut]. Same values as tokens.css.`)
   w(`abstract final class VelaMotion {`)
   for (const [name, t] of groupEntries('motion')) {
     const id = ident(name)
     if (t.$description) w(`  /// ${t.$description}`)
     deprecated(t)
     if (t.$type === 'duration') w(`  static const Duration ${id} = ${ms(t.$value, name)};`)
-    else if (t.$type === 'cubicBezier') w(`  static const Cubic ${id} = Cubic(${cubicBezierOf(t.$value, name).join(', ')});`)
+    else if (t.$type === 'cubicBezier') {
+      // An alias (the spring's fallback curve) resolves to the curve it names, as the CSS does.
+      w(`  static const Cubic ${id} = Cubic(${cubicBezierOf(set.resolved(name), name).join(', ')});`)
+      // A spring carries its physics as well. Flutter has springs natively: these are the
+      // arguments of SpringDescription(mass:, stiffness:, damping:) from package:flutter/physics.dart,
+      // so a SpringSimulation can run the same spring the CSS linear() curve was drawn from.
+      const s = springOf(set, name)
+      if (s) {
+        w(`  /// The physics of [${id}], for \`SpringDescription(mass: ${id}Mass, stiffness: ${id}Stiffness, damping: ${id}Damping)\`.`)
+        w(`  static const double ${id}Stiffness = ${s.stiffness};`)
+        w(`  static const double ${id}Damping = ${s.damping};`)
+        w(`  static const double ${id}Mass = ${s.mass};`)
+      }
+    }
     // A motion-group dimension (the materialise blur) is a logical-pixel double, like sizing.
     else if (t.$type === 'dimension') w(`  static const double ${id} = ${pxOf(t.$value, name)};`)
     else throw new Error(`unmapped motion type ${t.$type} on ${name}`)

@@ -42,7 +42,8 @@ for (const name of set.order) {
   else if (t.$type === 'number') expected[key] = { css: name, value: t.$value }
   // Figma keeps timing in seconds and an easing as a bezier object (see sync-figma.mjs)
   else if (t.$type === 'duration') expected[key] = { css: name, value: msOf(t.$value, name) / 1000 }
-  else if (t.$type === 'cubicBezier') expected[key] = { css: name, bezier: cubicBezierOf(t.$value, name) }
+  // A spring's $value aliases its fallback curve; the sync writes the resolved curve (sync-figma.mjs).
+  else if (t.$type === 'cubicBezier') expected[key] = { css: name, bezier: cubicBezierOf(set.resolved(name), name) }
 }
 
 // ---------- mode 1: print the read script ----------

@@ -3357,6 +3357,19 @@
       },
       "$description": "Anything that settles or enters: hover out, appearing."
     },
+    "duration-travel": {
+      "$type": "duration",
+      "$value": {
+        "value": 240,
+        "unit": "ms"
+      },
+      "$extensions": {
+        "com.omkarux.vela": {
+          "figma": "duration/travel"
+        }
+      },
+      "$description": "Travel across a distance: the Tabs indicator sliding to the tab that was pressed. The one step above duration-base, still under 300ms. The spring curve is drawn over this duration, so the two are used together."
+    },
     "delay-tooltip": {
       "$type": "duration",
       "$value": {
@@ -3396,7 +3409,38 @@
           "figma": "easing/standard"
         }
       },
-      "$description": "The only curve. Never a bare ease."
+      "$description": "For things that change or move while on screen: a hover colour, a press, a knob sliding. Never a bare ease. Things that enter take ease-out; the spring is only for the moments a spec names."
+    },
+    "ease-out": {
+      "$type": "cubicBezier",
+      "$value": [
+        0.25,
+        1,
+        0.5,
+        1
+      ],
+      "$extensions": {
+        "com.omkarux.vela": {
+          "figma": "easing/out"
+        }
+      },
+      "$description": "For things that enter. Starts at four times the average speed, so the first frame already shows movement, then slows to rest with no overshoot."
+    },
+    "ease-spring": {
+      "$type": "cubicBezier",
+      "$value": "{motion.ease-out}",
+      "$extensions": {
+        "com.omkarux.vela": {
+          "figma": "easing/spring",
+          "spring": {
+            "stiffness": 1200,
+            "damping": 56,
+            "mass": 1,
+            "duration": "{motion.duration-travel}"
+          }
+        }
+      },
+      "$description": "A spring for the few moments a spec names, such as the Tabs indicator after a pointer press: it arrives quickly and settles with a slight overshoot. The stiffness, damping and mass in the extension are the source; CSS receives them as a linear() easing drawn over duration-travel. Where linear() is not supported, and in any tool that does not read the spring, the value is ease-out."
     },
     "blur-materialize": {
       "$type": "dimension",

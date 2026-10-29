@@ -76,7 +76,9 @@ describe('token source', () => {
     const bad: string[] = []
     for (const t of Object.values(all)) {
       for (const k of Object.keys(t.$extensions ?? {})) if (k !== VENDOR) bad.push(`${t.path}: $extensions.${k}`)
-      for (const k of Object.keys(t.$extensions?.[VENDOR] ?? {})) if (!['figma', 'raw'].includes(k)) bad.push(`${t.path}: ${VENDOR}.${k}`)
+      // `spring` carries a spring's physics on a cubicBezier token (scripts/tokens-core.mjs, springOf).
+      for (const k of Object.keys(t.$extensions?.[VENDOR] ?? {})) if (!['figma', 'raw', 'spring'].includes(k)) bad.push(`${t.path}: ${VENDOR}.${k}`)
+      if (t.$extensions?.[VENDOR]?.spring && t.$type !== 'cubicBezier') bad.push(`${t.path}: a spring on a ${t.$type}`)
     }
     expect(bad).toEqual([])
     expect(JSON.stringify(doc)).not.toContain('"vela":')

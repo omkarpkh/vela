@@ -89,3 +89,27 @@ body { margin: 0; background: var(--vela-bg-global); }
 .status-label--retired { color: var(--vela-text-inactive); }
 .status-note { display: block; margin-top: var(--vela-space-5); max-width: 42ch; }
 @media (max-width: 900px) { .status-table { display: block; overflow-x: auto; } }
+
+/* --------------------------------------------------------- motion review -- */
+.motion-section { padding: var(--vela-space-30) 0; border-bottom: 1px solid var(--vela-border-subtle); }
+.motion-section h2 { margin: 0 0 var(--vela-space-10); }
+.motion-copy { max-width: 72ch; margin: 0 0 var(--vela-space-20); }
+.motion-copy code, .motion-tokens code { font-family: var(--vela-font-family-mono); font-size: 0.92em; overflow-wrap: anywhere; }
+.motion-status { color: var(--vela-text-de-emphasized); }
+.motion-section { container-type: inline-size; }   /* so the stage drops to one column in a narrow column (playground.css) */
+.motion-frame { background: var(--vela-bg-global); color: var(--vela-text-default); min-height: 0; justify-content: flex-start; }
+.motion-frame__body { width: 100%; display: flex; flex-direction: column; gap: var(--vela-space-30); }
+.motion-sample__label { margin: 0 0 var(--vela-space-5); color: var(--vela-text-de-emphasized); }
+.motion-sample__panel { margin: 0; color: var(--vela-text-de-emphasized); }
+.motion-curves { margin: 0; max-width: 480px; }
+.motion-curves svg { display: block; width: 100%; height: auto; }
+.motion-curves figcaption { display: flex; flex-wrap: wrap; gap: var(--vela-space-5) var(--vela-space-15); margin-top: var(--vela-space-10); color: var(--vela-text-de-emphasized); }
+.motion-curve { fill: none; stroke-width: 2; }
+.motion-curve__rule { stroke: var(--vela-border-subtle); stroke-width: 1; stroke-dasharray: 3 3; }
+.motion-curve--standard { stroke: var(--vela-text-de-emphasized); color: var(--vela-text-de-emphasized); }
+.motion-curve--out { stroke: var(--vela-text-default); color: var(--vela-text-default); }
+.motion-curve--spring { stroke: var(--vela-text-link); color: var(--vela-text-link); }
+.motion-key { display: inline-flex; align-items: center; gap: var(--vela-space-5); font-family: var(--vela-font-family-mono); }
+.motion-key::before { content: ''; width: var(--vela-space-15); height: var(--vela-stroke-2); background: currentColor; }
+.motion-tokens td { overflow-wrap: anywhere; }
+.motion-new { color: var(--vela-text-link); font-weight: var(--vela-font-weight-semibold); }

@@ -35,6 +35,18 @@ describe('Figma sync: the motion tokens use Figma\'s own motion types', () => {
     })
   })
 
+  it('the spring arrives as its fallback curve, resolved rather than aliased, with its physics in the description', () => {
+    const out = doc.motion['ease-out']
+    const e = byCss['ease-spring']
+    expect(doc.motion['ease-spring'].$value).toBe('{motion.ease-out}')
+    expect(e.type).toBe('EASING')
+    expect(e.light).toEqual({
+      type: 'CUSTOM_CUBIC_BEZIER',
+      easingFunctionCubicBezier: { x1: out.$value[0], y1: out.$value[1], x2: out.$value[2], y2: out.$value[3] },
+    })
+    expect(e.description).toContain('Spring: stiffness 1200, damping 56, mass 1, over duration/travel (240ms).')
+  })
+
   it('motion variables carry no scopes: Figma refuses scopes on TIMING and EASING, the type decides where they are offered', () => {
     for (const e of entries.filter((e) => e.collection === 'Motion' && e.type !== 'FLOAT')) expect(e.scopes, e.css).toBeNull()
     expect(script).toContain('if (e.scopes) v.scopes = e.scopes;')

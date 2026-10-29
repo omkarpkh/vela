@@ -14,7 +14,8 @@
  *   duration   { value, unit: "ms" | "s" }
  *   dimension  { value, unit: "px" | "rem" }
  *   alias      "{group.name}" — a full path from the document root; the target must exist
- *   $extensions["com.omkarux.vela"]  the vendor data: `figma` (variable name), `raw`
+ *   $extensions["com.omkarux.vela"]  the vendor data: `figma` (variable name), `raw`, and `spring`
+ *              (stiffness, damping, mass, duration) on a cubicBezier token — see springOf
  *   $deprecated  true | "reason" | false, inherited from the group unless the token says false
  *
  * A token's SHORT name (the last path segment) is what the CSS custom property, the Dart field
@@ -203,6 +204,31 @@ export function loadTokenSet(root) {
   const overlays = {}
   for (const [ctx, list] of Object.entries(mod.contexts)) overlays[ctx] = list.map((s, i) => load(s, `modifier ${modifiers[0].name}.${ctx}[${i}]`))
   return createTokenSet({ base, overlays, defaultContext, resolver })
+}
+
+/**
+ * A token's spring, or null. DTCG 2025.10 has no spring type, so a spring is a `cubicBezier`
+ * token whose $value is the fallback curve and whose vendor extension carries the physics:
+ *
+ *   "$extensions": { "com.omkarux.vela": { "spring": { stiffness, damping, mass, duration: "{motion.duration-…}" } } }
+ *
+ * Returns { stiffness, damping, mass, durationMs, durationToken }. The duration is the one the
+ * curve is drawn over: CSS `linear()` maps a fixed span of time, so the spring is sampled across
+ * the duration it will be paired with in a transition.
+ */
+export function springOf(set, name) {
+  const t = set.all[name]
+  const s = set.vendor(t).spring
+  if (s === undefined) return null
+  if (t.$type !== 'cubicBezier') throw new Error(`${name}: only a cubicBezier token may carry a spring (its $value is the fallback curve)`)
+  for (const key of ['stiffness', 'damping', 'mass']) {
+    if (typeof s[key] !== 'number' || !(s[key] > 0)) throw new Error(`${name}: spring.${key} must be a positive number, got ${JSON.stringify(s[key])}`)
+  }
+  if (!isAlias(s.duration) || !set.byPath[aliasPath(s.duration)]) throw new Error(`${name}: spring.duration must alias an existing duration token, e.g. "{motion.duration-travel}"`)
+  const target = set.byPath[aliasPath(s.duration)]
+  if (target.$type !== 'duration') throw new Error(`${name}: spring.duration aliases ${target.path}, which is a ${target.$type}, not a duration`)
+  for (const key of Object.keys(s)) if (!['stiffness', 'damping', 'mass', 'duration'].includes(key)) throw new Error(`${name}: unknown spring key "${key}"`)
+  return { stiffness: s.stiffness, damping: s.damping, mass: s.mass, durationMs: msOf(set.resolved(target.name), target.name), durationToken: target.name }
 }
 
 /** `/* deprecated *\/`-style note for a token, or '' — one wording for every generator. */

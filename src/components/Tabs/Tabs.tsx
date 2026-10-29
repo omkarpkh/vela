@@ -1,10 +1,12 @@
 import * as React from 'react'
 import { cn } from '../../lib/cn'
+import { useIndicatorMotion, measureIndicator, indicatorVars, type IndicatorMotion } from './motion'
 
 interface TabsContextValue {
   value: string
   setValue: (v: string) => void
   idPrefix: string
+  motion: IndicatorMotion
 }
 
 const TabsContext = React.createContext<TabsContextValue | null>(null)
@@ -53,23 +55,32 @@ export function Tabs({
   const [internal, setInternal] = React.useState(defaultValue ?? '')
   const active = isControlled ? value : internal
   const idPrefix = React.useId()
+  const motion = useIndicatorMotion()
+  const { onChange } = motion
 
   const setValue = React.useCallback(
     (next: string) => {
+      // Same event, same commit: the indicator's motion state changes with the selection.
+      onChange()
       if (!isControlled) setInternal(next)
       onValueChange?.(next)
     },
-    [isControlled, onValueChange],
+    [isControlled, onValueChange, onChange],
   )
 
   const ctx = React.useMemo(
-    () => ({ value: active, setValue, idPrefix }),
-    [active, setValue, idPrefix],
+    () => ({ value: active, setValue, idPrefix, motion }),
+    [active, setValue, idPrefix, motion],
   )
 
   return (
     <TabsContext.Provider value={ctx}>
-      <div className={cn('vela-tabs', `vela-tabs--${size}`, className)}>{children}</div>
+      <div
+        className={cn('vela-tabs', `vela-tabs--${size}`, className)}
+        data-vela-instant={motion.instant || undefined}
+      >
+        {children}
+      </div>
     </TabsContext.Provider>
   )
 }
@@ -82,7 +93,36 @@ export interface TabListProps {
 }
 
 function TabList({ children, className, ...rest }: TabListProps) {
+  const { value, motion } = useTabs('List')
+  const { moving, changes, settle, listProps } = motion
   const listRef = React.useRef<HTMLDivElement>(null)
+  const indicatorRef = React.useRef<HTMLSpanElement>(null)
+
+  // The indicator follows the selected tab: measured after every change of selection (before
+  // paint, so the transition and the new selection land in the same frame) and whenever the list
+  // or a tab is resized — a web font arriving changes every trigger's width.
+  const place = React.useCallback(() => {
+    const list = listRef.current
+    const bar = indicatorRef.current
+    if (!list || !bar) return
+    const at = measureIndicator(list, list.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]'))
+    for (const [k, v] of Object.entries(at ? indicatorVars(`${at.x}px`, at.scale) : {})) bar.style.setProperty(k, v)
+    if (!at) for (const k of Object.keys(indicatorVars('', 0))) bar.style.removeProperty(k)
+  }, [])
+
+  React.useLayoutEffect(() => {
+    place()
+    if (moving) settle(indicatorRef.current)
+  }, [value, moving, changes, place, settle])
+
+  React.useEffect(() => {
+    const list = listRef.current
+    if (!list || typeof ResizeObserver === 'undefined') return
+    const observer = new ResizeObserver(place)
+    observer.observe(list)
+    for (const tab of list.querySelectorAll('[role="tab"]')) observer.observe(tab)
+    return () => observer.disconnect()
+  }, [place, children])
 
   // Roving focus. Reading the tabs off the DOM avoids a child registry that
   // would silently desync whenever a tab is conditionally rendered.
@@ -113,10 +153,14 @@ function TabList({ children, className, ...rest }: TabListProps) {
       ref={listRef}
       role="tablist"
       onKeyDown={onKeyDown}
+      {...listProps}
+      data-vela-moving={moving || undefined}
       className={cn('vela-tabs__list', className)}
       {...rest}
     >
       {children}
+      {/* Decorative: the selection is aria-selected on the tab. */}
+      <span ref={indicatorRef} className="vela-tabs__indicator" aria-hidden="true" />
     </div>
   )
 }

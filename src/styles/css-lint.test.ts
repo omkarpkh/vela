@@ -71,7 +71,7 @@ describe('the CSS checker', () => {
   it('catches bare lengths and leaves 0, hairlines, percentages and unitless numbers alone', () => {
     expect(rules('.a { width: 34px; margin-left: 2px; padding: 0.5rem; font-size: 1.2em; }')).toEqual(['raw-length:width', 'raw-length:margin-left', 'raw-length:padding', 'raw-length:font-size'])
     expect(rules('.a { transform: translateX(14px); }')).toEqual(['raw-length:transform'])
-    expect(rules('.a { padding: 0; margin: 0px; width: 100%; line-height: 1.5; opacity: .5; transform: scale(0.97) translate(-50%, 0); transition: 700ms; rotate: 90deg; }')).toEqual([])
+    expect(rules('.a { padding: 0; margin: 0px; width: 100%; line-height: 1.5; opacity: .5; transform: scale(0.97) translate(-50%, 0); transition: opacity 700ms; rotate: 90deg; }')).toEqual([])
     expect(rules('.a { border: 1px solid; inset: -1px; margin-bottom: -1px; outline-offset: 1px; border-bottom: 1px solid var(--vela-border-subtle); }')).toEqual([])
     // 1px is a hairline, not a general-purpose unit.
     expect(rules('.a { padding: 1px; gap: 1px; }')).toEqual(['raw-length:padding', 'raw-length:gap'])
@@ -80,6 +80,27 @@ describe('the CSS checker', () => {
   it('ignores comments, including sizes mentioned in prose, and reads multi-line declarations', () => {
     expect(rules('/* 4.8px a side at 320px */ .a { color: var(--vela-text-default); /* was #fff */ }')).toEqual([])
     expect(rules('.a {\n  transition: color var(--vela-duration-base),\n              transform 2px;\n}')).toEqual(['raw-length:transition'])
+  })
+
+  // foundations/motion.md, rule 1: only transform, opacity and filter move. A colour may settle
+  // (Button's hover), layout never animates, and a bare duration is `all`.
+  it('lets transform, opacity, filter and colours transition, and rejects layout, `all` and a bare duration', () => {
+    expect(rules('.a { transition: transform var(--vela-duration-travel) var(--vela-ease-spring), opacity 1ms; }')).toEqual([])
+    expect(rules('.a { transition: color var(--vela-duration-fast) var(--vela-ease-standard),\n  border-color var(--vela-duration-fast), background-color 1ms, filter 1ms; }')).toEqual([])
+    expect(rules('.a { transition: none; transition-property: transform, opacity; transition-duration: 1ms; }')).toEqual([])
+    expect(rules('.a { transition: left var(--vela-duration-base); }')).toEqual(['motion-property:transition'])
+    expect(rules('.a { transition: transform 1ms, width 1ms; }')).toEqual(['motion-property:transition'])
+    expect(rules('.a { transition-property: height; }')).toEqual(['motion-property:transition-property'])
+    expect(rules('.a { transition: all var(--vela-duration-base); }')).toEqual(['motion-property:transition'])
+    expect(rules('.a { transition: var(--vela-duration-base) var(--vela-ease-out); }')).toEqual(['motion-property:transition'])
+  })
+
+  it('allows only the moving properties inside @keyframes', () => {
+    expect(rules('@keyframes a { from { opacity: 0; scale: 0.8; filter: blur(var(--vela-blur-materialize)); } to { opacity: 1; transform: none; rotate: 360deg; } }')).toEqual([])
+    expect(rules('@keyframes a { to { width: 100%; } }')).toEqual(['motion-property:width'])
+    expect(rules('@media (hover: hover) { @keyframes b { 50% { margin-left: 0; } } }')).toEqual(['motion-property:margin-left'])
+    // Outside @keyframes the same declarations are ordinary layout.
+    expect(rules('@keyframes a { to { opacity: 1; } } .b { width: 100%; }')).toEqual([])
   })
 
   it('honours an inline waiver with a reason, reports it, and rejects one without', () => {

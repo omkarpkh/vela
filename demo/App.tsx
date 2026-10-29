@@ -12,6 +12,7 @@ import { Status } from './pages/Status'
 import { Adopt } from './Adopt'
 import { Playground } from './Playground'
 import { How } from './pages/How'
+import { Motion } from './pages/Motion'
 
 type Theme = 'system' | 'light' | 'dark'
 
@@ -36,6 +37,7 @@ const titleFor = (r: Route) =>
   r.kind === 'component' ? COMPONENTS.find((c) => c.id === r.id)?.title
   : r.kind === 'foundation' ? FOUNDATIONS.find((f) => f.id === r.id)?.title
   : r.kind === 'adopt' ? 'Adopt without rewrite'
+  : r.kind === 'motion' ? 'Motion review'
   : r.kind === 'how' ? 'How it is made'
   : r.kind === 'status' ? 'Component status'
   : r.kind === 'doc' ? DOCS.find((d) => d.id === r.id)?.title
@@ -125,6 +127,7 @@ export function App() {
           <div className="sitenav__group">
             <h3>Demos</h3>
             <NavLink to={{ kind: 'adopt' }} current={route}>Adopt without rewrite</NavLink>
+            <NavLink to={{ kind: 'motion' }} current={route}>Motion review</NavLink>
           </div>
           <div className="sitenav__group">
             <h3>Project</h3>
@@ -142,6 +145,7 @@ export function App() {
           {route.kind === 'component' && <Playground key={route.id} id={route.id} />}
           {route.kind === 'foundation' && <Foundation id={route.id} />}
           {route.kind === 'adopt' && <Adopt mode={theme} />}
+          {route.kind === 'motion' && <Motion />}
           {route.kind === 'how' && <How />}
           {route.kind === 'status' && <Status />}
           {route.kind === 'doc' && <Doc key={route.id} id={route.id} />}
