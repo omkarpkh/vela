@@ -708,6 +708,8 @@ test.describe('the Tabs indicator', () => {
       test.beforeEach(async ({ page }) => {
         await page.goto('/#/motion')
         await expect(page.getByRole('heading', { level: 1, name: 'Motion review' })).toBeVisible()
+        // On CI Open Sans arrives from Google Fonts and changes every tab's width; measure after it.
+        await page.evaluate(() => document.fonts.ready)
       })
 
       test.describe('with motion', () => {
@@ -724,8 +726,10 @@ test.describe('the Tabs indicator', () => {
           expect(a.moving).toBe(true)
           expect(a.opacity).toBe('1')
           expect(a.transitionProperty).toBe('transform')
-          // One animation on the bar, a transform transition, slowed by the review switch.
-          expect(a.animations).toEqual([{ property: 'transform', rate: 0.2 }])
+          // One animation on the bar, a transform transition…
+          expect(a.animations.map((x) => x.property)).toEqual(['transform'])
+          // …slowed by the review switch, whose frame loop reaches a new transition on its next frame.
+          await expect.poll(async () => (await probe(impl)(page)).animations).toEqual([{ property: 'transform', rate: 0.2 }])
           // Nothing in the Tabs animates geometry: only the triggers' colour may be settling.
           expect(a.elsewhere.every((p) => p === 'color')).toBe(true)
           await page.waitForTimeout(150)
