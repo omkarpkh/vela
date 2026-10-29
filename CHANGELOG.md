@@ -21,21 +21,109 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   stops at `rows`, even under a host `textarea { resize: both }`). Binds Input's tokens and adds
   none, so no new colour pair. A Figma builder (12 variants, Size x State, clean under the
   reviewer lint with no waiver) and a playground page; not on the Overview page, so no visual
-  baseline moves. Status: Experimental until its Figma set is published. Rule count 18 of 41
-  compiler-enforced, was 13 of 32.
+  baseline moves. Status: Experimental until its Figma set is published. Rule count 34 of 73
+  compiler-enforced, was 29 of 64.
 - **A monospace family and the `Mono/Meta` text style**, requested by the Action Impact Card
   spec. `--vela-font-family-mono` is a system stack — `ui-monospace, "SF Mono", "Cascadia
   Mono", "Roboto Mono", Menlo, Consolas, monospace` — so no web font is downloaded; it is
   `raw` like the other two families, which the Figma variable sync skips by type. Figma gets
   the text style `Mono/Meta`: Body/Meta's size, line height, weight and tracking variables in
   Roboto Mono, the stack's Google-hosted member. Flutter carries `fontFamilyMono` ('SF Mono')
-  with its fallbacks; the MUI bridge is unchanged. 255 tokens, was 254 (the README's "242" had gone stale and
-  now says 255).
+  with its fallbacks; the MUI bridge is unchanged. 265 tokens, was 264 (the README's "242" had gone stale and
+  now says 265).
 - **Four contrast pairs the agentic-component specs rely on**, asserted in both themes:
   `--vela-text-default` on `--vela-bg-raised` (7.69:1 light, 8.84:1 dark), on
   `--vela-bg-selected` (6.59 / 11.12), `--vela-text-heading` on `--vela-bg-selected`
   (14.54 / 16.48) and `--vela-border-active` on `--vela-bg-container` as UI (5.39 / 5.06). All
-  pass with no token change; `PAIRS` is 52, was 48.
+  pass with no token change; `PAIRS` is 59, was 55.
+- **Icon — Experimental** (`decisions/003-icons-lucide-curated`). Fifty curated
+  [Lucide](https://lucide.dev) 1.63.0 glyphs (ISC; 25 of them Feather-derived, MIT) compiled at
+  build time into zero-dependency React in the core entry: `lucide` is a pinned devDependency,
+  nothing from it is imported at runtime, and `dependencies` stays `{}` — `verify-pack.mjs`
+  still walks the core module graph and finds only React. `<Icon name size tone label>`: `name`
+  is the closed `IconName` union (exported with `ICON_NAMES`), `size` regular | small | large on
+  the new `--vela-icon-size*` tokens (16, 12, 20), `tone` default | muted | inherit on
+  `--vela-icon-strong` / `--vela-icon-default` / `currentColor`, and the stroke on
+  `--vela-icon-stroke` (2 in the 24 grid: 1px at small, 1.33px at regular, 1.67px at large).
+  With `label` it is `role="img"`, without one `aria-hidden`; never focusable, never
+  interactive. Twelve rules, four of them compiler with ten fixtures (an invented name, a Lucide
+  glyph outside the set, an alias such as `trash-2`, a missing name, `size="medium"`,
+  `size={16}`, `tone="critical"`, `tone="high"`, `onClick`, `tabIndex`). Three new `PAIRS`.
+  Core JS grows from 3,675 B to 7,753 B gzip (10 → 63 modules); the glyphs are reached only
+  through `Icon`.
+- **The icon build.** `scripts/icons.list.json` is the set; `npm run icons:build` writes
+  `src/icons/generated/*.tsx`, `src/icons/names.ts` and the Figma builder
+  `scripts/figma/components/icon.figma.js` (one `Glyph` variant per name, box on `icon/size`,
+  stroke on `icon/strong`); `npm run icons:check` fails on any difference from what is committed
+  and runs in `verify`. It refuses a Lucide alias (`filter`, `trash-2`, `history` are `funnel`,
+  `trash`, `rotate-ccw-clock` in Lucide 1.x), an unknown name, or an installed Lucide other than
+  the reviewed version. A test holds `NOTICE`'s Feather list to Lucide's LICENSE. The mock
+  Plugin API models `createNodeFromSvg` and `flatten`; the builder has not been run in the
+  library yet. A playground page shows every glyph at the chosen size and tone.
+- **The first three agentic specs are public, as proposals.** `guidelines/proposals/` holds the
+  pressure-tested specs for the Verdict Card (29 rules, 23 with proofs), the Action Impact Card
+  (30, 22) and the Autonomy Ladder (28, 22), with four new closed taxonomies: Verdict, Confidence
+  band, Reversibility tier and Autonomy rung. Nothing in them is built; the folder's README and
+  each file's first line say so, and it is left out of the npm package so a consumer's agent
+  cannot mistake a proposal for an export.
+- **`guidelines/figma-map.json`: what to write for each Figma set, on every plan.** Compiled from
+  the specs by `npm run figma:map` (the description sync with `--map`): each set's node id and
+  link, the import, the export to write (`Tabs.Trigger` for the Tab set), every Figma property's
+  prop, and the spec's example. It does the job Code Connect does on an Organization plan;
+  Vela's library is on Professional, where Code Connect is not available. `AGENTS.md` and
+  `llms.txt` tell an agent to use it instead of the markup Figma generates. A test fails when it
+  is stale. Measured against the Figma thread's "before" on Button node 7:7: without it, the
+  design context gives a `<div>` lookalike with no import and raw fallback values.
+- **The library's Changelog and Status pages are compiled from the repository.**
+  `npm run figma:build:pages` prints a Plugin API script per page (each under 50 KB):
+  `scripts/figma/pages/changelog.figma.js` draws one card per released version, newest first —
+  the date, whether it is on npm (read from the committed `scripts/figma/pages/published.json`,
+  or a `--published` list, or the registry with `--npm`), the bold lead-in of every bullet word
+  for word, and a link to the full entry; `status.figma.js` draws GOVERNANCE.md's four labels as
+  neutral outlined chips and one row per component — label from the spec's Status line, Figma
+  set, React export, Since, spec link. Unlike the component builders they are idempotent: each
+  finds its page frame by name and rebuilds it in place, so the frame keeps its id. Both end
+  with a stamp naming the commit they were read from. `scripts/figma/check-pages.mjs` runs them
+  in the mock Plugin API against the reviewer rules (plus no components on a doc page) in
+  `npm test`; `RELEASING.md` step 7 rebuilds them before the library is published.
+- **Checkbox (with Checkbox.Group) — Experimental, `@omkarux/vela/headless` only.** The first
+  component born on Base UI rather than migrated to it (`checkbox.md`; Base UI 1.9 `Checkbox` +
+  `CheckboxGroup`, by per-component subpath). A box that records intent until a Save — the spec
+  settles Checkbox vs Toggle by that button. Closed props: `label` a required string, `checked`
+  or `defaultChecked`, `size` `regular | tiny`, `error` a message, `indeterminate` rendered as
+  `aria-checked="mixed"` with a dash; a Group with a required `label`, `value` or `defaultValue`,
+  `orientation` `vertical | horizontal`, and a named error for a box in a Group with no `value`.
+  The root is a native `<button>` through Base UI's `render` (native `disabled`, the global focus
+  ring); the tick and the dash are inline SVG at `currentColor`. Seven compiler fixtures (six rules), three
+  runtime rules with unit tests, a Figma builder (six variants, no waiver) and a playground page.
+- **Radio Group — Experimental, `@omkarux/vela/headless` only** (`radio-group.md`; Base UI 1.9
+  `RadioGroup` + `Radio`). Two to five visible options, one answer, committed by a Save; the spec
+  sends six or more to a Select List, which is not in the kit. `RadioGroup` takes a required
+  `label`, `value` or `defaultValue` (closed to `string`), `orientation`, `error` as a message and
+  `name`; `RadioGroup.Radio` a required `value` and `label`, `disabled` and `description`. Roving
+  tabindex, arrow keys that move focus and selection in both axes and skip a natively disabled
+  radio, Space selects, Enter does not. Seven compiler fixtures (six rules), three runtime rules
+  with unit tests, a Figma builder for a single Radio (two variants, the circle an ellipse so
+  `radius/full` keeps its scope) and a playground page.
+- **The check family of tokens.** `control-check-bg-checked` (primary-500; dark primary-450,
+  because white on 400 is 3.18:1 and on 450 4.74:1) and `control-check-mark`, shared by the
+  checked box and the selected radio, and four geometry tokens: `control-checkbox-size` (16),
+  `-size-tiny` (12), `control-radio-size` (16), `control-radio-dot` (6). Four new `PAIRS` pass in
+  both themes, including the Input error border, asserted for the first time. The CSS lint now
+  walks `src/headless` as well as `src/components`; `Checkbox.css` and `RadioGroup.css` ship in
+  `dist/vela.css` and carry no waiver. Rule count: 25 of 52 rules are now enforced by the compiler.
+- **A second entry point, `@omkarux/vela/headless` — Experimental** (`GOVERNANCE.md`: may change
+  in a minor without a deprecation window). Its first component is Tabs on Base UI 1.9
+  (`@base-ui/react`, MIT), listed as an *optional* peer dependency; `@omkarux/vela` is unchanged
+  and `npm run verify` now asserts, against the built module graph, that the core entry imports
+  nothing but React. Same spec, same `Tabs.css`, same unit tests (`Tabs.test.tsx` runs every
+  case against both implementations) and the same compiler fixtures, which the pack gate now
+  also runs against the headless export. Where Base UI's defaults differ from the spec — manual
+  activation, focusable-while-disabled tabs, `aria-controls` only on the active tab — the
+  headless Tabs maps to the spec and `tabs.md` records each difference under a new
+  "Implementations" section. The playground's Tabs page gets an *Implementation* control
+  (core | headless) and every component page an import line with "Dependencies: …", read from a
+  `**Dependencies:**` line in the spec (default `none`).
 - **The docs site carries the project record.** New routes: `#/status` (every component's
   lifecycle label, read from the `**Status:**` line in its spec, so site and spec cannot
   disagree), `#/changelog`, `#/roadmap`, `#/contributing` and `#/accessibility`, each rendered
@@ -109,8 +197,11 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   states that on Professional, Code Connect mappings cannot be created through the MCP server
   (forum thread 59258, 23–27 October 2026); the Figma thread's attempt was rejected with "only
   Organization or Enterprise libraries". Mappings can still be made in Figma's Code Connect panel
-  by hand, or with the Code Connect CLI if the account's token carries the scope. The route is
-  decided in `requests/figma-thread-to-repo.md` (R7) and recorded here when it lands.
+  by hand, or with the Code Connect CLI if the account's token carries the scope. *Decided,
+  29 October 2026:* the library sits on a Figma Professional plan, which does not offer Code
+  Connect in practice, and no plan upgrade will be bought for it. Code Connect is not wired. The
+  component → export → node mapping is kept as data in the repo, so a later plan or tool can
+  publish it without rework.
 - **The npm `description` and the README now say the same thing about enforcement.** The README
   and `llms.txt` have said "11 of the 27 rules by the TypeScript compiler, the rest at runtime, in
   a real browser, or by review" since the rule-coverage gate landed; the description said nothing

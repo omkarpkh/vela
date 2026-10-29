@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
-import { Button, Toggle, Input, TextArea, ContextualAlert, StatusIndicator, RiskPill, Tabs } from '../../src'
-import type { Severity, Status, Risk } from '../../src'
+import { Button, Toggle, Input, TextArea, ContextualAlert, StatusIndicator, RiskPill, Tabs, Icon, ICON_NAMES } from '../../src'
+import type { Severity, Status, Risk, IconName, IconSize, IconTone } from '../../src'
+import { Tabs as HeadlessTabs, Checkbox, RadioGroup } from '../../src/headless'
 import { PlusIcon } from '../../src/lib/icons'
 import { printJsx, type Control, type Spec } from './spec'
 import buttonMd from '../../guidelines/components/button.md?raw'
@@ -11,8 +12,27 @@ import alertMd from '../../guidelines/components/contextual-alert.md?raw'
 import statusMd from '../../guidelines/components/status-indicator.md?raw'
 import riskMd from '../../guidelines/components/risk-pill.md?raw'
 import tabsMd from '../../guidelines/components/tabs.md?raw'
+import iconMd from '../../guidelines/components/icon.md?raw'
+import checkboxMd from '../../guidelines/components/checkbox.md?raw'
+import radioGroupMd from '../../guidelines/components/radio-group.md?raw'
 
 export type Values = Record<string, string | boolean | undefined>
+
+/**
+ * One implementation of a spec. Two entry points, one playground (decisions/002): a component
+ * that ships from both lists them here, the page gets an "Implementation" control, and `render`
+ * reads the choice from `v.implementation` (seeded with the first entry's id).
+ */
+export interface Implementation {
+  id: string
+  /** Where a consumer imports it from. */
+  entry: '@omkarux/vela' | '@omkarux/vela/headless'
+  /**
+   * Shown as "Dependencies: …". Omitted, it is read from the spec's `**Dependencies:**` line — what a
+   * component with a single implementation (Checkbox, Radio Group: headless only) does.
+   */
+  dependencies?: string
+}
 
 export interface Entry {
   id: string
@@ -33,6 +53,11 @@ export interface Entry {
    * row under "Also in the API" — the prop is real, the demonstration is not.
    */
   noControl?: string[]
+  /**
+   * The implementations of the spec; absent means the core entry only. Two or more give the page an
+   * "Implementation" control; one names the entry a headless-only component ships from.
+   */
+  implementations?: Implementation[]
   /** Mirrors the type-level rules: invalid combinations do not exist, so they cannot be picked. */
   constrain?: (v: Values) => Values
   /** Which control options are unavailable for the current values (shown, never selectable). */
@@ -225,19 +250,29 @@ export const REGISTRY: Entry[] = [
     src: 'Tabs',
     name: 'Tabs',
     spec: tabsMd,
-    seed: {},
+    seed: { implementation: 'core' },
     hide: ['defaultValue'],
-    render: (v) => (
-      <Tabs defaultValue="alerts" size={(str(v.size) || 'regular') as 'regular' | 'large'}>
-        <Tabs.List aria-label="Views">
-          <Tabs.Trigger value="alerts" count={12}>Alerts</Tabs.Trigger>
-          <Tabs.Trigger value="assets" count={340}>Assets</Tabs.Trigger>
-          <Tabs.Trigger value="audit" disabled>Audit</Tabs.Trigger>
-        </Tabs.List>
-        <Tabs.Panel value="alerts"><p className="vela-body">Arrow keys move, Home and End jump, Audit is skipped.</p></Tabs.Panel>
-        <Tabs.Panel value="assets"><p className="vela-body">Only the active panel is mounted.</p></Tabs.Panel>
-      </Tabs>
-    ),
+    // The Phase 1 proving case: the same props through either implementation, against the same
+    // spec and the same stylesheet. The values here are the ones tabs.md states under
+    // "Implementations"; the spec's own `**Dependencies:**` line is the core's.
+    implementations: [
+      { id: 'core', entry: '@omkarux/vela', dependencies: 'none' },
+      { id: 'headless', entry: '@omkarux/vela/headless', dependencies: '@base-ui/react (optional peer, via /headless)' },
+    ],
+    render: (v) => {
+      const T = v.implementation === 'headless' ? HeadlessTabs : Tabs
+      return (
+        <T defaultValue="alerts" size={(str(v.size) || 'regular') as 'regular' | 'large'}>
+          <T.List aria-label="Views">
+            <T.Trigger value="alerts" count={12}>Alerts</T.Trigger>
+            <T.Trigger value="assets" count={340}>Assets</T.Trigger>
+            <T.Trigger value="audit" disabled>Audit</T.Trigger>
+          </T.List>
+          <T.Panel value="alerts"><p className="vela-body">Arrow keys move, Home and End jump, Audit is skipped.</p></T.Panel>
+          <T.Panel value="assets"><p className="vela-body">Only the active panel is mounted.</p></T.Panel>
+        </T>
+      )
+    },
     code: (v, spec) =>
       `${printJsx('Tabs', { defaultValue: 'alerts', size: v.size }, defaultsOf(spec)).replace(' />', '>')}
   <Tabs.List aria-label="Views">
@@ -248,5 +283,112 @@ export const REGISTRY: Entry[] = [
   <Tabs.Panel value="alerts">…</Tabs.Panel>
   <Tabs.Panel value="assets">…</Tabs.Panel>
 </Tabs>`,
+  },
+  {
+    id: 'icon',
+    file: 'icon.md',
+    src: 'Icon',
+    name: 'Icon',
+    spec: iconMd,
+    seed: { name: 'shield-x', label: '' },
+    // `name` is the IconName union — fifty literals the Props table names by type rather than
+    // spelling out — so its control is built here from ICON_NAMES, the same list the type is.
+    extra: [{ prop: 'name', kind: 'select', type: 'IconName', options: [...ICON_NAMES], default: 'shield-x', notes: 'One of the fifty curated glyphs.' }],
+    // className is layout for the host page; it changes nothing on this stage.
+    noControl: ['className'],
+    highlight: (v) => (t) =>
+      t === ({ small: '--vela-icon-size-small', regular: '--vela-icon-size', large: '--vela-icon-size-large' }[str(v.size) || 'regular']) ||
+      t === '--vela-icon-stroke' ||
+      t === ({ default: '--vela-icon-strong', muted: '--vela-icon-default', inherit: '' }[str(v.tone) || 'default']),
+    render: (v) => {
+      const size = (str(v.size) || 'regular') as IconSize
+      const tone = (str(v.tone) || 'default') as IconTone
+      return (
+        <div className="pg-icon">
+          <p className="vela-body pg-icon__lead">
+            <Icon name={(str(v.name) || 'shield-x') as IconName} size={size} tone={tone} label={str(v.label) || undefined} />
+            <span>{str(v.name) || 'shield-x'}</span>
+          </p>
+          <ul className="pg-icon__grid" aria-label="Every glyph at this size and tone">
+            {ICON_NAMES.map((n) => (
+              <li key={n} className="vela-meta pg-icon__cell" title={n}>
+                <Icon name={n} size={size} tone={tone} />
+                <span className="pg-icon__name">{n}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )
+    },
+    code: (v, spec) => printJsx('Icon', { name: str(v.name) || 'shield-x', size: v.size, tone: v.tone, label: v.label }, defaultsOf(spec)),
+  },
+  {
+    id: 'checkbox',
+    file: 'checkbox.md',
+    src: 'Checkbox',
+    name: 'Checkbox',
+    spec: checkboxMd,
+    seed: { label: 'Accept the data-processing terms', defaultChecked: true, description: '', error: '' },
+    // `checked` is the controlled arm: on this stage it would freeze the box, so the page drives
+    // defaultChecked instead. name and value only mean anything inside a <form> or a Group.
+    hide: ['checked'],
+    noControl: ['name', 'value'],
+    // Headless-born: one implementation, so no Implementation control; the Dependencies line is the spec's.
+    implementations: [{ id: 'headless', entry: '@omkarux/vela/headless' }],
+    render: (v) => (
+      <Checkbox
+        label={str(v.label) || 'Label'}
+        defaultChecked={bool(v.defaultChecked)}
+        indeterminate={bool(v.indeterminate)}
+        disabled={bool(v.disabled)}
+        size={(str(v.size) || 'regular') as 'regular' | 'tiny'}
+        description={str(v.description) || undefined}
+        error={str(v.error) || undefined}
+      />
+    ),
+    code: (v, spec) =>
+      printJsx(
+        'Checkbox',
+        { label: v.label, defaultChecked: v.defaultChecked, indeterminate: v.indeterminate, disabled: v.disabled, size: v.size, description: v.description, error: v.error },
+        defaultsOf(spec),
+      ),
+    bindingKey: (v) =>
+      bool(v.disabled) ? 'disabled (any)' : str(v.error) ? 'error (any)' : bool(v.defaultChecked) || bool(v.indeterminate) ? 'checked / indeterminate' : 'unchecked',
+  },
+  {
+    id: 'radio-group',
+    file: 'radio-group.md',
+    src: 'RadioGroup',
+    name: 'Radio Group',
+    spec: radioGroupMd,
+    seed: { label: 'Enforcement', defaultValue: 'block', error: '' },
+    // `value` is the controlled arm (it would freeze the stage); `defaultValue` becomes a select of
+    // the three enabled options below. name only means anything inside a <form>.
+    hide: ['value', 'defaultValue'],
+    noControl: ['name'],
+    extra: [{ prop: 'defaultValue', kind: 'select', type: 'string', options: ['monitor', 'block', 'quarantine'], default: 'block', notes: 'Uncontrolled initial selection.' }],
+    implementations: [{ id: 'headless', entry: '@omkarux/vela/headless' }],
+    render: (v) => (
+      <RadioGroup
+        label={str(v.label) || 'Label'}
+        defaultValue={str(v.defaultValue) || undefined}
+        disabled={bool(v.disabled)}
+        orientation={(str(v.orientation) || 'vertical') as 'vertical' | 'horizontal'}
+        error={str(v.error) || undefined}
+      >
+        <RadioGroup.Radio value="monitor" label="Monitor" description="Log the match, allow the traffic" />
+        <RadioGroup.Radio value="block" label="Block" />
+        <RadioGroup.Radio value="isolate" label="Isolate" disabled />
+        <RadioGroup.Radio value="quarantine" label="Quarantine" />
+      </RadioGroup>
+    ),
+    code: (v, spec) =>
+      `${printJsx('RadioGroup', { label: v.label, defaultValue: v.defaultValue, disabled: v.disabled, orientation: v.orientation, error: v.error }, defaultsOf(spec)).replace(' />', '>')}
+  <RadioGroup.Radio value="monitor" label="Monitor" description="Log the match, allow the traffic" />
+  <RadioGroup.Radio value="block" label="Block" />
+  <RadioGroup.Radio value="isolate" label="Isolate" disabled />
+  <RadioGroup.Radio value="quarantine" label="Quarantine" />
+</RadioGroup>`,
+    bindingKey: (v) => (bool(v.disabled) ? 'disabled (any)' : str(v.error) ? 'error (any)' : str(v.defaultValue) ? 'selected' : 'unselected'),
   },
 ]

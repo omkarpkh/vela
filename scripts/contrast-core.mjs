@@ -92,9 +92,26 @@ export const PAIRS = [
   ]),
 
   ['--vela-control-border',     '--vela-control-bg',      'Input border',           'ui'],
+  // Checkbox and Radio Group (Phase 1, headless). The box and the circle rest on control-bg with
+  // the input border; checked, they fill with control-check-bg-checked and the mark, the dash and
+  // the dot are drawn on that fill in control-check-mark. Dark re-points the fill to primary-450,
+  // not primary-400: white on primary-400 is 3.18:1, white on primary-450 is 4.74:1 and the fill
+  // still clears the page at 3.82:1. The error ring is the Input's error border, asserted here for
+  // the first time — Input never listed it.
+  ['--vela-control-check-mark',       '--vela-control-check-bg-checked', 'Check mark / radio dot on the checked fill', 'ui'],
+  ['--vela-control-check-bg-checked', '--vela-bg-global',                'Checked box / selected radio on page',       'ui'],
+  ['--vela-control-check-bg-checked', '--vela-bg-container',             'Checked box / selected radio on container',  'ui'],
+  ['--vela-control-border-error',     '--vela-control-bg',               'Control error border',                       'ui'],
   ['--vela-btn-standard-border','--vela-btn-standard-bg', 'Standard button border', 'ui'],
   ['--vela-border-default',     '--vela-bg-global',       'Default border on page', 'ui'],
   ['--vela-border-active',  '--vela-bg-global',  'Focus ring',          'ui'],
+  // Icon tones (guidelines/components/icon.md): `default` binds --vela-icon-strong, asserted on the
+  // page and on a container; `muted` binds --vela-icon-default, asserted on the page only — on a
+  // container it is 3.07:1 in light mode, under the input border's 3.29:1, so the spec says use
+  // `default` there. A glyph is non-text.
+  ['--vela-icon-strong',  '--vela-bg-global',    'Icon, default tone, on page',      'ui'],
+  ['--vela-icon-strong',  '--vela-bg-container', 'Icon, default tone, on container', 'ui'],
+  ['--vela-icon-default', '--vela-bg-global',    'Icon, muted tone, on page',        'ui'],
   // Requested by the agentic-component specs (Phase 2): a card body on a raised
   // surface, a selected row's text, and the active border drawn on a container rather than the
   // page. Each is measured in both themes before it is relied on.

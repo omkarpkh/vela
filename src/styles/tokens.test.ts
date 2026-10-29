@@ -96,7 +96,8 @@ describe('token source', () => {
     // library has size/h1. Values matched, names did not, and nothing had checked the names.
     const RULE: Record<string, RegExp> = {
       color: /^(surface|border|text|icon|button|control|severity|risk|status|focus)\//,
-      sizing: /^(space|icon|control-height|radius|focus|stroke|field|toggle|status)\//,
+      // `control/` carries the Checkbox and Radio geometry (control/checkbox/size, control/radio/dot) since Phase 1.
+      sizing: /^(space|icon|control-height|control|radius|focus|stroke|field|toggle|status)\//,
       typography: /^(size|line-height|weight|tracking)\//,
       motion: /^(duration|easing|blur)\//,
     }

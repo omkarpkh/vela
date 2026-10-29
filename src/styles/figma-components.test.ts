@@ -17,7 +17,7 @@ const cli = (...args: string[]) => {
 const lintReport: Record<string, { problems: { rule: string; node: string; what: string; waived: boolean }[]; allow: { rule: string; reason: string }[] }> = JSON.parse(cli('--lint'))
 const dump = (name: string) => JSON.parse(cli('--dump', name))
 const styles: any[] = JSON.parse(execFileSync('node', ['scripts/figma/text-styles.mjs', '--json'], { cwd: root, encoding: 'utf8' }))
-const BUILDERS = ['button', 'contextual-alert', 'input', 'risk-pill', 'status-indicator', 'tabs', 'text-area', 'toggle']
+const BUILDERS = ['button', 'checkbox', 'contextual-alert', 'icon', 'input', 'radio-group', 'risk-pill', 'status-indicator', 'tabs', 'text-area', 'toggle']
 
 describe('Figma builders, built in the mock Plugin API', () => {
   it('runs every builder', () => {
@@ -29,9 +29,12 @@ describe('Figma builders, built in the mock Plugin API', () => {
     expect(bad.map((p) => `${p.rule}  ${p.node}: ${p.what}`)).toEqual([])
   })
 
-  it('only the two builders with recorded literal geometry carry waivers', () => {
+  it('only the builders with recorded literal geometry carry waivers', () => {
+    // status-indicator and toggle: diameters with no token. icon (29 Oct 2026): the glyph is drawn
+    // geometry on Lucide's 24-unit grid inside a box bound to icon/size — not a layout.
     const waiving = Object.entries(lintReport).filter(([, r]) => r.allow.length).map(([n]) => n).sort()
-    expect(waiving).toEqual(['status-indicator', 'toggle'])
+    expect(waiving).toEqual(['icon', 'status-indicator', 'toggle'])
+    expect(lintReport.icon.allow.map((a) => a.rule).sort()).toEqual(['absolute-children', 'raw-size'])
   })
 })
 
@@ -117,6 +120,93 @@ describe('Risk Pill, as the builder creates it', () => {
       expect(v.sz).toBe(small ? 'AUTO/AUTO' : 'AUTO/FIXED')
       expect(v.wh[3]).toBe(small ? null : 'control-height/24')
       expect(v.pad.map((p: any) => p[1])).toEqual(small ? [null, 'space/5', null, 'space/5'] : [null, 'space/10', null, 'space/10'])
+    }
+  })
+})
+
+describe('Icon, as the builder creates it', () => {
+  const icon = dump('icon')
+  const list: string[] = JSON.parse(readFileSync(resolve(root, 'scripts/icons.list.json'), 'utf8')).icons
+
+  it('has one Glyph variant per curated name, in the list order, and no other property', () => {
+    expect(icon.variants.map((v: any) => v.n)).toEqual(list.map((n) => `Glyph=${n}`))
+    expect(Object.keys(icon.defs)).toEqual(['Glyph'])
+  })
+
+  it('binds every box to icon/size and strokes one flattened vector with icon/strong, no fill', () => {
+    for (const v of icon.variants) {
+      const name = v.n.split('=')[1]
+      expect(v.wh.slice(2)).toEqual(['icon/size', 'icon/size'])
+      expect(v.fill).toEqual([])
+      expect(v.ch).toHaveLength(1)
+      expect(v.ch[0]).toMatchObject({ t: 'VECTOR', n: `Glyph / ${name}`, fill: [], stroke: ['icon/strong'], sa: 'CENTER' })
+    }
+  })
+
+  it('writes the stroke the code renders at regular: icon/stroke × icon/size ÷ 24', () => {
+    // 2 grid units in a 16px box = 1.33px. Figma cannot bind a product of two variables, so this is
+    // the one literal on the page, derived from the variables when the script runs.
+    for (const v of icon.variants) expect(v.ch[0].sw).toBe(1.33)
+  })
+
+  it('stays under the 50 KB the MCP accepts as one script', async () => {
+    const { generate } = await import('../../scripts/figma/build-components.mjs')
+    expect(Buffer.byteLength(generate('icon'))).toBeLessThan(50 * 1024)
+  })
+})
+
+describe('Checkbox and Radio, as the builders create them', () => {
+  const checkbox = dump('checkbox')
+  const radio = dump('radio-group')
+
+  it('Checkbox has State × Size, Label text and Description; Radio has State, Label text and Description; no waivers', () => {
+    expect(checkbox.variants.map((v: any) => v.n)).toEqual(
+      ['unchecked', 'checked', 'indeterminate'].flatMap((st) => ['regular', 'tiny'].map((sz) => `State=${st}, Size=${sz}`)),
+    )
+    expect(Object.keys(checkbox.defs).map((k) => k.replace(/#.*$/, '')).sort()).toEqual(['Description', 'Label text', 'Size', 'State'])
+    expect(radio.variants.map((v: any) => v.n)).toEqual(['State=unselected', 'State=selected'])
+    expect(Object.keys(radio.defs).map((k) => k.replace(/#.*$/, '')).sort()).toEqual(['Description', 'Label text', 'State'])
+    expect(lintReport.checkbox.allow).toEqual([])
+    expect(lintReport['radio-group'].allow).toEqual([])
+  })
+
+  it('sits the box on the first label line and binds it to the check family; the glyph is one union shape', () => {
+    for (const v of checkbox.variants) {
+      const tiny = v.n.endsWith('Size=tiny')
+      const on = !v.n.includes('State=unchecked')
+      const size = tiny ? 'control/checkbox/size-tiny' : 'control/checkbox/size'
+      const slot = v.ch[0]
+      expect([slot.n, slot.ax, slot.sz]).toEqual(['Control', 'CENTER/CENTER', 'FIXED/FIXED'])
+      expect(slot.wh.slice(2)).toEqual([size, tiny ? 'line-height/meta' : 'line-height/body'])
+      const box = slot.ch[0]
+      expect(box.n).toBe('Box')
+      expect(box.wh.slice(2)).toEqual([size, size])
+      expect(box.rad[1]).toBe('radius/3')
+      expect(box.fill).toEqual([on ? 'control/check/bg-checked' : 'control/bg'])
+      expect(box.stroke).toEqual([on ? 'control/check/bg-checked' : 'control/border'])
+      if (on) {
+        expect(box.ch).toHaveLength(1)
+        expect(box.ch[0]).toMatchObject({ t: 'BOOLEAN_OPERATION', op: 'UNION', fill: ['control/check/mark'] })
+        expect(box.ch[0].n).toBe(v.n.includes('indeterminate') ? 'Glyph / dash' : 'Glyph / check')
+      } else expect(box.ch).toEqual([])
+      const label = v.ch[1].ch.find((c: any) => c.n === 'Label')
+      expect(label.style).toBe(tiny ? 'Body/Meta' : 'Body/Default')
+    }
+  })
+
+  it('draws the radio circle as an ellipse at control/radio/size and the dot at control/radio/dot in control/check/mark', () => {
+    for (const v of radio.variants) {
+      const on = v.n === 'State=selected'
+      const slot = v.ch[0]
+      expect(slot.wh.slice(2)).toEqual(['control/radio/size', 'line-height/body'])
+      const [circle, dot] = slot.ch
+      expect([circle.t, circle.n]).toEqual(['ELLIPSE', 'Circle'])
+      expect(circle.wh.slice(2)).toEqual(['control/radio/size', 'control/radio/size'])
+      expect(circle.fill).toEqual([on ? 'control/check/bg-checked' : 'control/bg'])
+      if (on) {
+        expect([dot.t, dot.n, dot.fill]).toEqual(['ELLIPSE', 'Dot', ['control/check/mark']])
+        expect(dot.wh.slice(2)).toEqual(['control/radio/dot', 'control/radio/dot'])
+      } else expect(slot.ch).toHaveLength(1)
     }
   })
 })

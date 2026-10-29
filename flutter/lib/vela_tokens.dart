@@ -127,6 +127,8 @@ class VelaColors extends ThemeExtension<VelaColors> {
     required this.toggleOffBg,
     required this.toggleOnBg,
     required this.toggleKnob,
+    required this.controlCheckBgChecked,
+    required this.controlCheckMark,
     required this.bgSeveritySuccess,
     required this.borderSeveritySuccess,
     required this.signalSeveritySuccess,
@@ -297,6 +299,12 @@ class VelaColors extends ThemeExtension<VelaColors> {
   final Color toggleOnBg;
   /// `--vela-toggle-knob` · Figma `control/toggle-knob`
   final Color toggleKnob;
+  /// `--vela-control-check-bg-checked` · Figma `control/check/bg-checked`
+  /// The filled box of a checked Checkbox and the filled circle of a selected Radio. Shared by both so the two controls read as one family; the check mark and the radio dot sit on it in control-check-mark.
+  final Color controlCheckBgChecked;
+  /// `--vela-control-check-mark` · Figma `control/check/mark`
+  /// The check mark, the indeterminate dash and the radio dot, drawn on control-check-bg-checked. Asserted at 3:1 (a non-text glyph) in both themes.
+  final Color controlCheckMark;
   /// `--vela-bg-severity-success` · Figma `severity/success/bg`
   /// Severity describes events. Never interchange with Risk or Status.
   final Color bgSeveritySuccess;
@@ -534,6 +542,8 @@ class VelaColors extends ThemeExtension<VelaColors> {
     toggleOffBg: VelaPrimitives.grey400,
     toggleOnBg: VelaPrimitives.primary500,
     toggleKnob: VelaPrimitives.white,
+    controlCheckBgChecked: VelaPrimitives.primary500,
+    controlCheckMark: VelaPrimitives.white,
     bgSeveritySuccess: VelaPrimitives.green100,
     borderSeveritySuccess: VelaPrimitives.green300,
     signalSeveritySuccess: VelaPrimitives.green500,
@@ -652,6 +662,8 @@ class VelaColors extends ThemeExtension<VelaColors> {
     toggleOffBg: VelaPrimitives.grey700,
     toggleOnBg: VelaPrimitives.primary500,
     toggleKnob: VelaPrimitives.white,
+    controlCheckBgChecked: VelaPrimitives.primary450,
+    controlCheckMark: VelaPrimitives.white,
     bgSeveritySuccess: VelaPrimitives.green950,
     borderSeveritySuccess: VelaPrimitives.green700,
     signalSeveritySuccess: VelaPrimitives.green500,
@@ -770,6 +782,8 @@ class VelaColors extends ThemeExtension<VelaColors> {
     Color? toggleOffBg,
     Color? toggleOnBg,
     Color? toggleKnob,
+    Color? controlCheckBgChecked,
+    Color? controlCheckMark,
     Color? bgSeveritySuccess,
     Color? borderSeveritySuccess,
     Color? signalSeveritySuccess,
@@ -886,6 +900,8 @@ class VelaColors extends ThemeExtension<VelaColors> {
       toggleOffBg: toggleOffBg ?? this.toggleOffBg,
       toggleOnBg: toggleOnBg ?? this.toggleOnBg,
       toggleKnob: toggleKnob ?? this.toggleKnob,
+      controlCheckBgChecked: controlCheckBgChecked ?? this.controlCheckBgChecked,
+      controlCheckMark: controlCheckMark ?? this.controlCheckMark,
       bgSeveritySuccess: bgSeveritySuccess ?? this.bgSeveritySuccess,
       borderSeveritySuccess: borderSeveritySuccess ?? this.borderSeveritySuccess,
       signalSeveritySuccess: signalSeveritySuccess ?? this.signalSeveritySuccess,
@@ -1007,6 +1023,8 @@ class VelaColors extends ThemeExtension<VelaColors> {
       toggleOffBg: Color.lerp(toggleOffBg, other.toggleOffBg, t)!,
       toggleOnBg: Color.lerp(toggleOnBg, other.toggleOnBg, t)!,
       toggleKnob: Color.lerp(toggleKnob, other.toggleKnob, t)!,
+      controlCheckBgChecked: Color.lerp(controlCheckBgChecked, other.controlCheckBgChecked, t)!,
+      controlCheckMark: Color.lerp(controlCheckMark, other.controlCheckMark, t)!,
       bgSeveritySuccess: Color.lerp(bgSeveritySuccess, other.bgSeveritySuccess, t)!,
       borderSeveritySuccess: Color.lerp(borderSeveritySuccess, other.borderSeveritySuccess, t)!,
       signalSeveritySuccess: Color.lerp(signalSeveritySuccess, other.signalSeveritySuccess, t)!,
@@ -1088,6 +1106,14 @@ abstract final class VelaSizing {
   static const double icon16 = 16;
   static const double icon20 = 20;
   static const double icon24 = 24;
+  /// Icon component, size regular: the glyph box beside 14px body text (Body/Default, Button regular). Same value as icon/16.
+  static const double iconSize = 16;
+  /// Icon component, size small: beside 12px meta text and in Button tiny. Same value as icon/12.
+  static const double iconSizeSmall = 12;
+  /// Icon component, size large: a standalone glyph (table cell, toolbar, card header) or beside 16px text. Same value as icon/20.
+  static const double iconSizeLarge = 20;
+  /// Icon glyph stroke, in the 24-unit grid the glyphs are drawn on (Lucide's default). It scales with the box: 1px at small, 1.33px at regular, 1.67px at large — the stem weight of Open Sans Regular at 12–16px. Not stroke/2, which is screen pixels.
+  static const double iconStroke = 2;
   /// Button and the input family do not share a height ramp.
   static const double controlHeight24 = 24;
   /// Button and the input family do not share a height ramp.
@@ -1124,6 +1150,14 @@ abstract final class VelaSizing {
   static const double toggleKnobSizeTiny = 11;
   /// Distance from the track edge to the knob, both sizes.
   static const double toggleKnobInset = 2;
+  /// Checkbox box, regular: one side of the square. Matches icon-16 so a box and a button icon sit level, but it is control geometry, not an icon.
+  static const double controlCheckboxSize = 16;
+  /// Checkbox box, tiny, for dense tables. The same 3:4 ratio to regular as the Toggle track.
+  static const double controlCheckboxSizeTiny = 12;
+  /// Radio circle diameter. One size: a radio group is read as a list, never set in a dense table cell.
+  static const double controlRadioSize = 16;
+  /// The dot inside a selected Radio, centred in control-radio-size.
+  static const double controlRadioDot = 6;
   /// Status Indicator dot, regular.
   static const double statusDot = 10;
   /// Status Indicator dot, small — for dense tables.

@@ -101,6 +101,16 @@ describe('Figma sync: variable scopes match the property each token is for', () 
     ['blur-materialize', ['EFFECT_FLOAT']],
     ['toggle-track-width', ['WIDTH_HEIGHT']],
     ['status-dot', ['WIDTH_HEIGHT']],
+    // The Icon component's tokens (29 Oct 2026): the three boxes go in the width/height picker like
+    // icon/12…24; the glyph stroke goes in the stroke-weight picker, not width/height.
+    ['icon-size', ['WIDTH_HEIGHT']],
+    ['icon-stroke', ['STROKE_FLOAT']],
+    // Phase 1 geometry under the `control/` head: the sizing default is width/height; the check mark
+    // is a glyph (shape fill, stroke), and the checked fill is a frame or shape fill.
+    ['control-checkbox-size', ['WIDTH_HEIGHT']],
+    ['control-radio-dot', ['WIDTH_HEIGHT']],
+    ['control-check-mark', ['SHAPE_FILL', 'STROKE_COLOR']],
+    ['control-check-bg-checked', ['FRAME_FILL', 'SHAPE_FILL']],
     ['space-10', ['WIDTH_HEIGHT', 'GAP']],
     ['radius-4', ['CORNER_RADIUS']],
   ])('%s → %j', (css, scopes) => {

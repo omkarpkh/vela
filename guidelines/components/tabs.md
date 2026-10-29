@@ -2,6 +2,8 @@
 
 Navigate between **different** content panels.
 
+**Dependencies:** none
+
 ## When to use Tabs (vs. something else)
 
 - Different content sections (Alerts / Assets / Audit) → **Tabs**.
@@ -50,6 +52,43 @@ Navigate between **different** content panels.
 Trigger rest `--vela-text-de-emphasized`; hover `--vela-text-default`; selected
 `--vela-text-link` with a 2px `--vela-border-active` underline. List rule
 `--vela-border-subtle`.
+
+## Implementations
+
+Tabs ships from both entry points (`decisions/002-agent-ready-direction`). Same spec, same
+`Tabs.css`, same unit tests — `src/components/Tabs/Tabs.test.tsx` runs every case against both —
+and the same compiler fixtures in `scripts/verify-pack.mjs`. The playground's Tabs page has an
+*Implementation* control that renders the same props through either.
+
+| Entry point | Implementation | Dependencies | Status |
+|---|---|---|---|
+| `@omkarux/vela` | **core** — hand-rolled (`src/components/Tabs`) | **none** | Approved |
+| `@omkarux/vela/headless` | **headless** — Base UI 1.9 `Tabs` (`src/headless/Tabs`) | **`@base-ui/react` (optional peer, via `/headless`)** | Experimental |
+
+Where Base UI's defaults differ from this spec, the headless implementation maps to the spec and
+the difference is recorded here rather than hidden:
+
+- **Activation.** Base UI activates on Enter/Space by default (`activateOnFocus: false`); this
+  spec says the arrow key selects, so the headless `Tabs.List` sets `activateOnFocus`. Loop
+  (`loopFocus`) and Home/End are Base UI defaults and match the spec.
+- **Disabled tabs.** Base UI's own `disabled` prop follows the "focusable when disabled" pattern:
+  `aria-disabled="true"`, no native attribute, and the arrow keys *land on* the tab so a
+  screen-reader user can discover it. This spec says a disabled tab is **skipped**, and `Tabs.css`
+  keys on `:disabled`, so the headless `Tabs.Trigger` renders the native `disabled` attribute
+  through Base UI's `render` prop instead. Base UI's roving focus skips a natively disabled
+  element, the browser keeps it out of the tab order and swallows its clicks, and the stylesheet
+  needs no change. Consequence: Base UI's automatic fallback when the *selected* tab later becomes
+  disabled (uncontrolled mode) does not run — the core does not do that either.
+- **`aria-controls` on inactive tabs.** The core sets `aria-controls` on every trigger, pointing at
+  a panel id whether or not that panel is rendered. Base UI wires it only while the panel is in
+  the DOM, so on the headless implementation an inactive tab has no `aria-controls`. Base UI's is
+  the stricter reading of ARIA (no reference to an element that does not exist); the shared test
+  asserts the active pair only.
+- **Extra attributes.** Base UI adds `data-orientation`, `data-activation-direction`,
+  `data-active` and `data-index`; ids are Base UI's (`base-ui-…`) rather than
+  `<prefix>-tab-<value>`. None of them is styled or part of the contract.
+- **Orientation.** Base UI supports `orientation="vertical"`; this spec does not expose it. The
+  prop set stays closed on both implementations.
 
 ## Responsive behaviour
 

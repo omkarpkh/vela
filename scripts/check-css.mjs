@@ -4,7 +4,8 @@
  * The first non-negotiable is "bind semantic tokens, never a primitive, never raw hex", and
  * the second is "numeric tokens carry their unit". Until now both were review conventions:
  * nothing failed the build when a component stylesheet wrote `rgb(0 0 0 / 0.06)` or `34px`.
- * This is that check. It reads every src/components/**\/*.css and fails on:
+ * This is that check. It reads every src/components/**\/*.css and src/headless/**\/*.css (the
+ * stylesheets of the headless-born components, Checkbox and Radio Group) and fails on:
  *
  *   raw-colour      a 3/4/6/8-digit hex, rgb()/rgba()/hsl()/hsla()/oklch()/oklab()/lab()/lch()/
  *                   hwb(), or a CSS named colour. `transparent` and `currentColor` are not
@@ -29,8 +30,9 @@
  *   node scripts/check-css.mjs            # report; exit 1 on an unwaived finding
  *   node scripts/check-css.mjs --json     # the findings as JSON (what the vitest test reads)
  *
- * Scope is deliberately src/components: base.css owns the sr-only hack and the reduced-motion
- * collapse, which are the two legitimate raw values in the kit, and the token files are generated.
+ * Scope is deliberately the two component trees, src/components and src/headless: base.css owns
+ * the sr-only hack and the reduced-motion collapse, which are the two legitimate raw values in the
+ * kit, and the token files are generated.
  */
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join, dirname, relative } from 'node:path'
@@ -146,10 +148,12 @@ export function lintCss(source) {
   return { findings, waivers: [...waivers].map(([l, reason]) => ({ line: l, reason })) }
 }
 
+// The two trees that hold component stylesheets: the core and the headless-born components.
+const DIRS = ['src/components', 'src/headless']
+
 /** Lint every component stylesheet under `root`. */
 export function checkCss(root = DEFAULT_ROOT) {
-  const dir = join(root, 'src/components')
-  const files = statSync(dir, { throwIfNoEntry: false })?.isDirectory() ? walk(dir) : []
+  const files = DIRS.map((d) => join(root, d)).flatMap((dir) => (statSync(dir, { throwIfNoEntry: false })?.isDirectory() ? walk(dir) : []))
   const report = []
   for (const file of files) {
     const { findings, waivers } = lintCss(readFileSync(file, 'utf8'))

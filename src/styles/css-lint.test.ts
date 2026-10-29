@@ -1,18 +1,22 @@
 import { describe, it, expect } from 'vitest'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 // Shared with `npm run css:check` so the gate and the report cannot disagree.
 import { checkCss, lintCss } from '../../scripts/check-css.mjs'
 
 // The first two non-negotiables — semantic tokens only, units carried by the token — were
 // review conventions in the component stylesheets. This makes them a failing test: a raw
-// colour or a bare length in src/components/**/*.css fails `npm test` unless the line carries
+// colour or a bare length in src/components/**/*.css or src/headless/**/*.css fails `npm test` unless the line carries
 // a `/* vela-allow: <reason> */` waiver, and every waiver is printed, never silent.
 describe('component CSS binds tokens', () => {
   const report = checkCss()
 
   it('lints every component stylesheet', () => {
-    expect(report.map((r) => r.file).sort()).toEqual(
-      ['Button', 'ContextualAlert', 'Input', 'RiskPill', 'StatusIndicator', 'Tabs', 'TextArea', 'Toggle'].map((c) => `src/components/${c}/${c}.css`),
-    )
+    expect(report.map((r) => r.file).sort()).toEqual([
+      ...['Button', 'ContextualAlert', 'Icon', 'Input', 'RiskPill', 'StatusIndicator', 'Tabs', 'TextArea', 'Toggle'].map((c) => `src/components/${c}/${c}.css`),
+      // The headless-born components keep their stylesheets beside their implementation.
+      ...['Checkbox', 'RadioGroup'].map((c) => `src/headless/${c}/${c}.css`),
+    ])
   })
 
   it.each(report.map((r) => r.file))('%s has no raw colour, primitive or bare length without a waiver', (file) => {
@@ -22,6 +26,16 @@ describe('component CSS binds tokens', () => {
 
   it('every waiver says why', () => {
     for (const r of report) for (const w of r.waivers) expect(w.reason, `${r.file} line ${w.line}`).not.toBe('')
+  })
+
+  it('the dev entry imports every component stylesheet the bundle does, in the same order', () => {
+    // scripts/build-css.mjs assembles dist/vela.css; src/styles/index.css is the dev and demo entry.
+    // Both list the stylesheets by hand, and the Icon page's e2e found the dev entry one short.
+    const read = (p: string) => readFileSync(resolve(process.cwd(), p), 'utf8')
+    const bundle = [...read('scripts/build-css.mjs').matchAll(/'src\/((?:components|headless)\/\w+\/\w+\.css)'/g)].map((m) => m[1])
+    const dev = [...read('src/styles/index.css').matchAll(/@import '\.\.\/((?:components|headless)\/\w+\/\w+\.css)'/g)].map((m) => m[1])
+    expect(dev).toEqual(bundle)
+    expect(bundle).toEqual(report.map((r) => r.file.replace(/^src\//, '')).sort((a, b) => bundle.indexOf(a) - bundle.indexOf(b)))
   })
 
   it('no stylesheet carries a waiver — the literal geometry recorded in Phase 0 is tokenised', () => {

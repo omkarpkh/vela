@@ -50,7 +50,7 @@ through the pipeline.
   0.x, a minor announced as breaking) at least two minors later.
 
 Six components are Approved: Button, Toggle, Input, Contextual Alert, Status Indicator and
-Tabs. Risk Pill and Text Area are Experimental until their Figma sets are published. The docs site lists every
+Tabs. Risk Pill, Icon and Text Area are Experimental until their Figma sets are published. The docs site lists every
 component's label on its Status page, read from the spec.
 
 ## Breaking changes
