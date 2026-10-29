@@ -6,6 +6,56 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Unreleased]
 
 ### Added
+- **Popover — Experimental, `@omkarux/vela/headless` only** (`popover.md`; Base UI 1.9 `Popover`).
+  A non-modal panel anchored to the button that opened it. Closed props: `trigger` (one element,
+  rendered through Base UI's `render`, so a Vela Button keeps its own behaviour), `title` a
+  required string wired as the `role="dialog"`'s name, `placement` `top | bottom | start | end`
+  (logical: `start` / `end` are Base UI's `inline-start` / `inline-end`), `align`
+  `start | center | end`, `size` `regular | wide`, `open` or `defaultOpen`. Focus moves to the first
+  control on open and back to the trigger on close; Escape, a press outside and Tab leaving it close
+  it; the page keeps its accessibility tree and its scroll. No shadow: no elevation token exists, so
+  the `--vela-border-default` edge separates it, asserted against page and container. Seven compiler
+  fixtures (five rules), four runtime rules, a Figma builder (Size, two variants) and a playground page.
+- **Tooltip — Experimental, `@omkarux/vela/headless` only** (`tooltip.md`; Base UI 1.9 `Tooltip`).
+  A supplementary text label: `content` is a `string` (the compiler rejects a link or a button),
+  `children` exactly one element. Where Base UI treats a tooltip as visual-only, the spec makes it a
+  description — `role="tooltip"`, wired to the trigger by `aria-describedby` only while rendered —
+  and throws a named error when the trigger has no accessible name of its own, so a tooltip can
+  never be the only name of an icon-only control. Hover waits `--vela-delay-tooltip`, read from the
+  stylesheet; keyboard focus opens it at once; Escape dismisses it. Never on a disabled control
+  (convention, with the wrapper documented). Five compiler fixtures (three rules), four runtime
+  rules, a Figma builder (Lines one / two, so the width cap is visible) and a playground page.
+- **Dialog, with `variant="alert"` — Experimental, `@omkarux/vela/headless` only** (`dialog.md`;
+  Base UI 1.9 `Dialog` and `AlertDialog`). A modal for a decision that blocks the task: focus
+  trapped and returned, the page `aria-hidden` and scroll-locked, Escape closes it, a press on the
+  backdrop closes a standard dialog. `title` required, `description` a string, `size`
+  `regular | wide`, a `footer` slot and `Dialog.Close` (with Vela's own provider guard). The
+  `alert` variant fixes its actions — `cancelLabel`, `confirmLabel` and `onConfirm` are required and
+  `footer` is forbidden by the types — renders the confirm as the destructive Button, focuses the
+  cancel, ignores the backdrop and treats Escape as the cancel. The header, the body and the footer
+  are laid out so only the body scrolls, proved in a real browser (`dialog-body-scrolls`). Eleven
+  compiler fixtures (six rules), six runtime rules, one browser rule, a Figma builder (Variant x
+  Size, four variants) and a playground page.
+- **Overlay tokens.** `bg-scrim` (black) drawn at `opacity-scrim` (0.5) — a number, because
+  primitives are opaque and the Figma sync carries opaque colours only; `text-tooltip` (white) on the
+  existing `bg-tooltip`; `popover-width` / `-wide` (280 / 400), `dialog-width` / `-wide`
+  (480 / 720), `tooltip-width-max` (240); `layer-overlay` (z-index 1000); `delay-tooltip` (600ms,
+  Base UI's default). Six new `PAIRS`, all passing in both themes: overlay title and body on
+  `bg-raised` (16.98 / 13.10 and 7.69 / 8.84), the overlay edge on the container (3.07 / 3.29),
+  tooltip text (11.14 / 7.69) and the Dialog's close glyph at rest and hovered. Body copy on an
+  overlay is `text-default`: `text-de-emphasized` on the dark raised surface is 3.99:1. The Dart
+  generator now emits a sizing-group number as a `double`; the Figma sync scopes the opacity to
+  OPACITY and the layer to no picker.
+- **Portalled overlays keep the kit's styling and the trigger's theme.** The portal element carries
+  `vela-root` and copies the `data-theme` of the trigger's nearest themed ancestor, so the font, the
+  global focus ring and the reduced-motion collapse reach a popup on `<body>`, and a popover opened
+  from a dark sidebar in a light app is dark. An open or close from the keyboard is marked
+  `data-vela-instant` and does not animate. Modal and Tooltip leave the "not yet specced" lists in
+  `overview.md` and `DESIGN.md`. Rule count: 39 of 85 rules are now enforced by the compiler.
+- **Test setup: no more nwsapi recursion on top-layer selectors.** jsdom's selector engine (nwsapi
+  2.2.27) answers `:modal` / `:popover-open` / `:fullscreen` by recursing into itself until the
+  stack overflows, which cost seconds per Floating UI position update; `src/test-setup.ts` answers
+  them `false` (jsdom has no top layer). Browsers are unaffected.
 - **Checkbox (with Checkbox.Group) — Experimental, `@omkarux/vela/headless` only.** The first
   component born on Base UI rather than migrated to it (`checkbox.md`; Base UI 1.9 `Checkbox` +
   `CheckboxGroup`, by per-component subpath). A box that records intent until a Save — the spec

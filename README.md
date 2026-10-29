@@ -5,14 +5,14 @@
 [![Licence: MIT](https://img.shields.io/badge/licence-MIT-blue)](LICENSE)
 
 A token-first design system. The tokens and the component specs are framework-agnostic;
-this repository is a **React implementation** of them. Nine components, two themes, zero runtime
+this repository is a **React implementation** of them. Twelve components, two themes, zero runtime
 dependencies in the core entry — and every design rule in the documentation is tagged with how it is
-enforced: 25 of the 52 by the TypeScript compiler, the rest at runtime, in a real browser, or by review
+enforced: 39 of the 85 by the TypeScript compiler, the rest at runtime, in a real browser, or by review
 (counted by `npm run rules:check`).
 
 **Status:** every component carries a lifecycle label — Approved, Known bugs, Experimental or
-Retired, defined in [`GOVERNANCE.md`](GOVERNANCE.md). Six are **Approved**; Risk Pill, Checkbox
-and Radio Group are **Experimental**.
+Retired, defined in [`GOVERNANCE.md`](GOVERNANCE.md). Six are **Approved**; Risk Pill, Checkbox,
+Radio Group, Popover, Tooltip and Dialog are **Experimental**.
 
 ```bash
 npm install @omkarux/vela
@@ -22,7 +22,8 @@ The core entry point, `@omkarux/vela`, has zero runtime dependencies. A second, 
 entry point, `@omkarux/vela/headless`, builds the same specs on [Base UI](https://base-ui.com)
 and needs one optional peer: `npm install @base-ui/react@1.9` — only if you import from it. Its
 first component is Tabs, which ships from both entries (the spec's "Implementations" section says
-how the two compare); Checkbox (with Checkbox.Group) and Radio Group were born there and ship from
+how the two compare); Checkbox (with Checkbox.Group), Radio Group and the three overlays — Popover,
+Tooltip and Dialog (with its `alert` variant) — were born there and ship from
 `@omkarux/vela/headless` only.
 
 ```tsx
@@ -50,13 +51,13 @@ link to each, and the number of automated checks, written by the test runners ra
 
 | | |
 |---|---|
-| **Components** | Button · Toggle · Input · ContextualAlert · StatusIndicator · RiskPill · Tabs, from `@omkarux/vela` (Tabs also from `/headless`) · Checkbox (with Checkbox.Group) · RadioGroup, from `@omkarux/vela/headless` only |
-| **Tokens** | 242 CSS custom properties, two layers (primitives → semantics) |
+| **Components** | Button · Toggle · Input · ContextualAlert · StatusIndicator · RiskPill · Tabs, from `@omkarux/vela` (Tabs also from `/headless`) · Checkbox (with Checkbox.Group) · RadioGroup · Popover · Tooltip · Dialog (with `variant="alert"`), from `@omkarux/vela/headless` only |
+| **Tokens** | 270 CSS custom properties, two layers (primitives → semantics) |
 | **Themes** | Light + dark. OS preference by default, `data-theme` to override |
 | **Dependencies** | None in the core entry. `react` / `react-dom` are peers (18.3 or 19). The `/headless` entry needs one optional peer, `@base-ui/react` 1.9.x (MIT) |
 | **Format** | ESM, `preserveModules` for tree-shaking, full `.d.ts` |
-| **Tests** | 437 automated checks — 354 unit and contract (52 contrast pairs, each asserted in both themes), 80 browser (68 screenshots at four widths, 10 playground, 2 docs), 3 Flutter — counted by `npm run checks` |
-| **Packed size** | 100.3 kB, 72 files, as `npm run verify` measures it (README and CHANGELOG ship in the tarball, so this moves when they do) |
+| **Tests** | 513 automated checks — 426 unit and contract (58 contrast pairs, each asserted in both themes), 84 browser (68 screenshots at four widths, 14 playground, 2 docs), 3 Flutter — counted by `npm run checks` |
+| **Packed size** | 122.3 kB, 86 files, as `npm run verify` measures it (README and CHANGELOG ship in the tarball, so this moves when they do) |
 
 ## The three ideas worth stealing
 
@@ -224,10 +225,10 @@ or a new rule arrives untagged.
 
 ## Scope
 
-Nine components, chosen to exercise every foundation and all three taxonomies (Severity, Risk,
-Status), and the first form controls born on the headless entry (Checkbox, Radio Group). Not yet
-specced: Dropdown List, Select List, Token Pill, Number Stepper, Text Area, Modal, Tooltip, Icon
-Button, Actions Dropdown, View Switcher. The guidelines name these explicitly so an agent flags the
+Twelve components, chosen to exercise every foundation and all three taxonomies (Severity, Risk,
+Status), the first form controls born on the headless entry (Checkbox, Radio Group) and the three
+overlays (Popover, Tooltip, Dialog). Not yet specced: Dropdown List, Select List, Token Pill, Number
+Stepper, Text Area, Icon Button, Actions Dropdown, View Switcher. The guidelines name these explicitly so an agent flags the
 gap instead of inventing one.
 
 ## Project files
