@@ -69,7 +69,7 @@ What it answers:
   operating point. No vendor shows analysts calibration over time.
 
 Limits: the Gate shows a record the host computed and checks that it adds up, is current, and
-belongs to the agent version it describes. It does not judge whether a conclusion was right;
+belongs to the agent version and the model it describes. It does not judge whether a conclusion was right;
 "confirmed" means a person confirmed it, not that it was true. A record describes the past, in the
 scope given, and is a hint about the next case, not a guarantee.
 
@@ -334,7 +334,8 @@ moves here from the Verdict Card.
 
 ## Changes this makes to other specs
 
-Applied in this same change to `verdict-card.md` and `autonomy-ladder.md`:
+**Already in the proposals before the Provenance Badge change** (PR #15 and #20), applied to
+`verdict-card.md` and `autonomy-ladder.md`:
 
 - **Verdict Card — breaking change to the proposal.** `confidence` becomes a `ConfidenceReading`
   for a conclusion (still forbidden for `inconclusive`), shown as the inline Gate. Accept follows
@@ -342,6 +343,14 @@ Applied in this same change to `verdict-card.md` and `autonomy-ladder.md`:
   includes a High that is not yet calibrated. "No recommendation" still follows the stated band.
 - **Autonomy Ladder — not breaking.** `RouteInput.confidence` is `gateBand(reading, now).band`,
   never the producer's raw band; the route line can say "not yet calibrated".
+
+**Added with the Agent Provenance Badge** (PR #21): this Gate's own change, in the note under
+*Dependencies*. `reading.producer` is `Provenance["agent"] & { model }`, the record carries
+`producerModel`, and a different model gates as `new-version`. The Autonomy Ladder's `agent` gained
+an `id` in the same change.
+
+**Not started:**
+
 - **Score Badge with Explanation** (Phase 2b, not started): its calibration strip uses
   `CalibrationRecord`, shown as counts with dates, version and confirmation source.
 
@@ -434,6 +443,10 @@ Would change this: a sign-in from the user's usual device inside the same 9 minu
 - **Contextual Alert** (core) for record warnings.
 - Placed in: the **Verdict Card** (`inline`, in place of the confidence word), an **Evidence
   Locker** or side panel (`full`), and later the **Score Badge with Explanation** (its strip).
+- **Agent Provenance Badge** (Phase 2): `reading.producer` is `Provenance["agent"]` plus the model
+  that answered, so the Gate, the badge and the record name an agent the same way. A host passes
+  the record's `producerModel` to the badge as `recordModel`, so the badge's line says "model
+  differs from its record" whenever the Gate would gate on `new-version` for that reason.
 - Feeds: `gateBand(reading, now)` → the Verdict Card's Accept rule and the Autonomy Ladder's
   `RouteInput.confidence`.
 - Fed by, through the host, which counts them into `CalibrationWindow`s by the precedence above:

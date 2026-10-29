@@ -58,14 +58,14 @@ exactly like Severity, Risk and Status. Components, in priority order: Verdict C
 Impact card (blast radius as a count, reversibility, rollback path), Autonomy Ladder with a
 reach map, Approval Queue with a fail-closed timer, Calibrated Confidence Gate, Evidence Locker
 with trusted/untrusted labels, Agent Provenance badge, Override & Teach panel, Agent Action
-Ledger, Stop control with safe-state semantics, Awareness Clock (NIS2 24 h, DORA 4 h), Hand-off
-card. Each spec cites the standard or research it answers. One worked console page composes
+Ledger, Stop control with safe-state semantics, Awareness Clock (CRA, NIS2 and DORA reporting
+limits), Hand-off card, Not-Affected Statement (VEX). Each spec cites the standard or research it answers. One worked console page composes
 the set, synthetic data only, rendered to text without loss.
 
 The specs are published as they pass review, before any code: see
 [`guidelines/proposals/`](guidelines/proposals/README.md). Verdict Card, Action Impact Card,
-Autonomy Ladder, Approval Queue, Calibrated Confidence Gate, Evidence Locker and Agent Provenance
-Badge are pressure-tested and published.
+Autonomy Ladder, Approval Queue, Calibrated Confidence Gate, Evidence Locker, Agent Provenance
+Badge and Awareness Clock are pressure-tested and published.
 
 ## Phase 2b — Console data and policy patterns
 

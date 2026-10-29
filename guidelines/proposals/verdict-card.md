@@ -209,10 +209,10 @@ Rule ids are listed with their proof level; they become `[[rule: … ]]` tags wh
   `verdict-unchecked-not-silent` · runtime
 - **Coverage is its own line.** The card prints "Sources read: 2 of 3", derived from
   `evidence.items` and `evidence.notSeen`, as a separate fact. When `weakWorldClaims` returns any,
-  the line adds "· 1 claim about the world is weak", and under it the claim with what it cites,
-  worded from `cited` by the Evidence Locker's table ("cites only untrusted content (1 item)",
-  "cites only agent-written content", and so on). Coverage is never folded into the confidence
-  word and never shares its line. The card's "What the agent read" list is derived from
+  the line adds them in the Evidence Locker's wording, word for word: "· 1 claim about the world
+  cites only untrusted content (1 item)", or "· 2 claims about the world are weak" with each claim
+  and its phrase listed beneath. Coverage is never folded into the confidence word and never
+  shares its line. The card's "What the agent read" list is derived from
   `evidence.items`, and marks untrusted items with the Locker's words ("Untrusted — could have
   been written by the email's sender"). `verdict-coverage-separate` · runtime
 - **Accept is withheld, not disabled,** while the verdict is outdated, for `inconclusive`, and
@@ -222,8 +222,8 @@ Rule ids are listed with their proof level; they become `[[rule: … ]]` tags wh
   version or a stale record is named the same way. Accept feeds the record's `confirmedByAccept`;
   Override agreeing with the lean feeds `confirmedOnReview`. Accept is also withheld when
   `weakWorldClaims(evidence.claims, evidence.items)` returns any claim, including a claim that
-  cites only items not in `evidence.items`. The sentence is worded by what was cited: "A claim
-  about the world cites only untrusted content (1 item): 'The mailbox rule forwards invoices to an
+  cites only items not in `evidence.items`. The sentence uses the Evidence Locker's wording table,
+  word for word: "A claim about the world cites only untrusted content (1 item): 'The mailbox rule forwards invoices to an
   outside address'. Check it against a system record, or agree through Override with a reason." A
   claim about an item never withholds Accept. The button is not rendered. In its place one sentence gives
   the reason and the routes left (Re-analyse, Override). A disabled button would leave the tab
