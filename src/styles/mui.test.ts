@@ -67,16 +67,18 @@ describe('MUI theme bridge', () => {
     expect(bridge.light.typography.fontFamily).toBe(all['font-family-primary'].$value)
   })
 
-  it('carries the motion tokens: two durations onto Material\'s slots, one curve everywhere', () => {
+  it('carries the motion tokens: two durations onto Material\'s slots, ease-out on the entering slot, ease-standard on the rest', () => {
     const ms = (n: string) => all[n].$value.value * (all[n].$value.unit === 's' ? 1000 : 1)
     const curve = `cubic-bezier(${all['ease-standard'].$value.join(', ')})`
+    const entering = `cubic-bezier(${all['ease-out'].$value.join(', ')})`
     for (const mode of MODES) {
       const { duration, easing } = bridge[mode].transitions
       expect(duration.short).toBe(ms('duration-fast'))
       expect(duration.leavingScreen).toBe(ms('duration-fast'))
       expect(duration.standard).toBe(ms('duration-base'))
       expect(duration.enteringScreen).toBe(ms('duration-base'))
-      for (const k of ['easeInOut', 'easeOut', 'easeIn', 'sharp']) expect(easing[k], k).toBe(curve)
+      for (const k of ['easeInOut', 'easeIn', 'sharp']) expect(easing[k], k).toBe(curve)
+      expect(easing.easeOut).toBe(entering)
     }
   })
 

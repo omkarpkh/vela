@@ -29,7 +29,7 @@ Three curves, each for one kind of movement:
 |---|---|---|
 | `--vela-ease-standard` | `cubic-bezier(0.2, 0, 0.2, 1)` | things that change or move while on screen: a hover colour, a press, a toggle knob. Never a bare `ease`. |
 | `--vela-ease-out` | `cubic-bezier(0.25, 1, 0.5, 1)` | things that enter. |
-| `--vela-ease-spring` | a spring: stiffness 1200, damping 56, mass 1 | the few moments a spec names — today only the Tabs indicator after a pointer press. Always with `--vela-duration-travel`. |
+| `--vela-ease-spring` | a spring: stiffness 1200, damping 56, mass 1 | the few moments a spec names — the Tabs indicator after a pointer press, and the Toast stack moving back and spreading. Always with `--vela-duration-travel`. |
 
 Why these values:
 
@@ -53,8 +53,9 @@ Why these values:
 
 **These three — `duration-travel`, `ease-out`, `ease-spring` — are provisional until the owner has
 reviewed their feel** on the playground's Motion review page (`#/motion`), which plays the Tabs
-indicator in both themes and both implementations, with a Replay and a ×5 slow-motion switch.
-Tune by feel, then look again the next day.
+indicator in both implementations, the Toast stack, Popover and Tooltip, and the Checkbox, Radio
+Group and Toggle, each in both themes, with a ×5 slow-motion switch that reaches all of them. Tune
+by feel, then look again the next day.
 
 - `--vela-delay-tooltip` (600ms): not an animation — how long the pointer rests on a control before
   its Tooltip opens, so a pointer crossing a toolbar does not flash every label. Keyboard focus does
@@ -66,11 +67,21 @@ Tune by feel, then look again the next day.
 
 No component defines its own duration or curve. A new one is a token change, reviewed like a colour.
 
-Overlays (Popover, Tooltip, Dialog, Toast) still enter on `--vela-ease-standard`; moving them to
-`--vela-ease-out` is a later part of the motion pass. They appear at `--vela-duration-base` on opacity plus a
-`--vela-space-5` step of travel, and leave on opacity alone — softer than they arrived. One opened or
-closed from the keyboard does not animate at all; a toast travels in from the edge it sits on, and a
-swiped one fades where the finger left it.
+Overlays (Popover, Tooltip, Dialog, Toast) enter on `--vela-ease-out`. Popover and Tooltip grow from
+their trigger: scale from 0.96 plus opacity, pivoting on the point Base UI computes nearest the
+trigger (`--transform-origin`) — the Popover at `--vela-duration-base`, the Tooltip at
+`--vela-duration-fast`, because it has already waited `--vela-delay-tooltip` for the pointer to rest.
+A Dialog rises a `--vela-space-5` step as it fades in, at `base`. Popover, Tooltip and Dialog leave on
+opacity alone — softer than they arrived. A toast travels its own height in from the edge it sits on
+and leaves the same way, fading; the older toasts behind it step back and spread on the spring; a
+swiped one carries on out from where the pointer left it. One opened or closed from the keyboard does
+not animate at all.
+
+The small controls follow the same rules. A Checkbox mark and a Radio dot scale in from half size on
+a change of state, at `fast` on `ease-out`, moved by the component that owns the state (an Icon never
+animates by itself); the box, the circle and the Toggle track press to 0.9 the way a Button presses,
+in at `instant`, out at `base`, with a guard that holds the hit target. From the keyboard none of it
+moves.
 
 In Figma they live in the **Motion** collection as Figma's own motion variable types: `duration/instant`,
 `duration/fast` and `duration/base` are **timing** variables (Figma keeps timing in seconds, so 120ms is stored as

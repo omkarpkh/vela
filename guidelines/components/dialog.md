@@ -106,6 +106,8 @@ published; see `GOVERNANCE.md`.
 - **A dialog is for a decision that blocks the task.** Not for a message (a Contextual Alert), not
   for a long form (a page), and never two at once unless the second is a confirmation the first
   asked for. [[rule: dialog-blocks-for-a-decision | convention]]
+- **It enters on ease-out, by opacity and a step of rise.** Only `opacity` and `transform` move, on
+  `--vela-ease-out` because it enters; opened from the keyboard nothing moves at all. [[rule: dialog-enters-on-ease-out | browser]]
 
 ## Token bindings
 
@@ -151,7 +153,7 @@ kit's destructive Button and inherits its pairs.
 
 | Moment | What moves | Timing | Why |
 |---|---|---|---|
-| Appears | the backdrop's opacity; the popup's opacity and `--vela-space-5` of rise | `--vela-duration-base` (180ms), `--vela-ease-standard` | orientation: the page recedes, the question arrives |
+| Appears | the backdrop's opacity; the popup's opacity and `--vela-space-5` of rise | `--vela-duration-base` (180ms), `--vela-ease-out` | orientation: the page recedes, the question arrives |
 | Leaves | opacity only, backdrop and popup | `--vela-duration-base` (180ms) | softer than it arrived |
 | From the keyboard | nothing | instant | Enter or Space on the trigger, Escape: from the keyboard nothing animates |
 

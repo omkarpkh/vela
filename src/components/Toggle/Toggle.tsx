@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { cn } from '../../lib/cn'
+import { useKeyboardInstant } from '../../lib/instant'
 
 interface ToggleBaseProps {
   onChange?: (checked: boolean) => void
@@ -52,6 +53,8 @@ export const Toggle = React.forwardRef<HTMLButtonElement, ToggleProps>(
     const value = isControlled ? checked : internal
     const reactId = React.useId()
     const labelId = `${id ?? reactId}-label`
+    // Enter or Space flips it with no transition; a pointer flip slides the knob (toggle.md, Motion).
+    const motion = useKeyboardInstant()
 
     const toggle = () => {
       if (disabled) return
@@ -68,6 +71,8 @@ export const Toggle = React.forwardRef<HTMLButtonElement, ToggleProps>(
           disabled && 'vela-toggle--disabled',
           className,
         )}
+        data-vela-instant={motion.instant || undefined}
+        {...motion.handlers}
       >
         <button
           ref={ref}

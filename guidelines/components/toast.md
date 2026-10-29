@@ -126,6 +126,27 @@ how it is announced follow from its severity and its action (below), not from th
 - **It stays on screen at every width.** The region sits `--vela-space-20` from the viewport's edges
   at its placement, and a toast is `--vela-toast-width` wide, never wider than the viewport less
   those gutters. Only a real layout can show this. [[rule: toast-stays-in-viewport | browser]]
+- **It enters from the edge it sits on, by transform and opacity alone.** A new toast travels its
+  own height in from its edge as it fades in; nothing in the region animates layout, and every
+  movement is a transition, never a keyframe. [[rule: toast-enters-from-its-edge | browser]]
+- **The stack collapses, and spreads on hover or focus.** Behind the front toast each older one
+  steps back `--vela-space-10` and 5% smaller, its top edge one step above the one in front. While
+  the pointer is over the region, or keyboard focus is in it, every toast sits at full size
+  `--vela-space-10` beyond the toasts in front of it. Under reduced motion both are reached at
+  once. [[rule: toast-stack-collapses-and-spreads | browser]]
+- **A collapsed stack never hides a warning.** A warning never times out, so behind another toast it
+  would stay out of sight for as long as it lasts. While a warning sits behind the front toast the
+  stack stays spread and its title is on screen; a warning in front collapses the stack as usual.
+  [[rule: toast-stack-keeps-warnings-in-view | browser]]
+- **A toast raised mid-flight re-flows the stack from where it is.** The stack moves by transitions,
+  so a second toast turns every movement round from its current position and each toast ends in
+  its place. [[rule: toast-stack-reflows-mid-flight | browser]]
+- **From the keyboard, nothing in the stack animates.** F6 spreads it at once; Escape, or Enter or
+  Space on a toast's button, dismisses that toast at once, and the toasts behind it close up at
+  once. [[rule: toast-keyboard-dismiss-is-instant | browser]]
+- **A swipe follows the pointer, then carries on out.** Dragged towards the edge it sits on, a toast
+  moves with the pointer with no transition between; released past the threshold it continues out
+  in that direction from where it was, fading. [[rule: toast-swipe-follows-the-pointer | browser]]
 - **A toast confirms; it never decides.** It reports something that has already happened. It does
   not ask a question, does not offer two outcomes, and does not wait on the user to finish a task.
   [[rule: toast-confirms-what-happened | convention]]
@@ -156,8 +177,8 @@ severity background, as in a Contextual Alert — asserted in `PAIRS`: success 8
 raised surface is 4.35:1 and fails.
 
 Geometry: padding `--vela-space-15`, mark-to-text gap `--vela-space-10`, title-to-description
-`--vela-space-5`, the action `--vela-space-10` under the text; radius `--vela-radius-4`; toasts
-stack `--vela-space-10` apart; the region sits `--vela-space-20` from the viewport's edges at
+`--vela-space-5`, the action `--vela-space-10` under the text; radius `--vela-radius-4`; spread
+toasts sit `--vela-space-10` apart and collapsed ones step back `--vela-space-10` each; the region sits `--vela-space-20` from the viewport's edges at
 `--vela-layer-overlay`. The mark is an `--vela-icon-16` glyph centred in an `--vela-icon-20` box one
 body line tall, as on the Contextual Alert, so it sits on the title's line. The close button is
 `--vela-control-height-24` square, an `--vela-icon-16` glyph, radius `--vela-radius-3`.
@@ -171,8 +192,12 @@ needs a second paragraph is a Contextual Alert on the page.
 
 - **Entering / leaving** — see *Motion*.
 - **Paused** — while the region is hovered or holds focus; nothing on screen changes.
+- **Collapsed / spread** — see *Motion*. Collapsed, the toasts behind the front one show only their
+  top edge; spread, every toast is in full view. Both are layouts of the same list: every toast stays
+  in the accessibility tree and reachable with Tab in either.
 - **Waiting** — past `limit`, an older toast is hidden and inert until a newer one leaves; it keeps
-  its place in the queue.
+  its place in the queue. This holds for a warning too: `limit` decides what is shown, the stack
+  only how.
 - **Focus** — the global ring, on the toast itself (it is focusable once the user is in the region)
   and on its buttons; it reaches the region because the portal carries `vela-root`.
 - **Close button hover** — the standard hover fill under `@media (hover: hover)`, in at
@@ -182,14 +207,45 @@ needs a second paragraph is a Contextual Alert on the page.
 
 | Moment | What moves | Timing | Why |
 |---|---|---|---|
-| Appears | opacity, and `--vela-space-5` of travel in from the edge it sits on | `--vela-duration-base` (180ms), `--vela-ease-standard` | orientation: it says where it came from |
-| Leaves | opacity only | `--vela-duration-base` (180ms) | softer than it arrived |
-| Dismissed from the keyboard | nothing | instant | Escape, or Enter / Space on its buttons: from the keyboard nothing animates |
-| Swiped away (touch) | it stays where the finger left it, fading | `--vela-duration-base` | continuity: it does not snap back before it goes |
+| Appears | opacity, and its own height of travel in from the edge it sits on (`transform`) | `--vela-duration-base` (180ms), `--vela-ease-out` | orientation: it says where it came from |
+| The stack moves back | each older toast steps back `--vela-space-10` and 5% smaller (`translate`, `scale`) | `--vela-duration-travel` (240ms), `--vela-ease-spring` | continuity: the same toasts, making room |
+| Spreads (hover, focus inside) | every toast to full size, `--vela-space-10` beyond the toasts in front (`translate`, `scale`) | `--vela-duration-travel` (240ms), `--vela-ease-spring` | orientation: the whole stack, readable |
+| Leaves | opacity, and its height of travel back out towards its edge | `--vela-duration-base` (180ms), `--vela-ease-out` | it goes back where it came from |
+| Swiped away | follows the pointer, then carries on out in the swipe's direction, fading | while dragged: none; released: `--vela-duration-base` | continuity: it does not snap back before it goes |
+| From the keyboard | nothing | instant | F6, Tab, Escape, Enter / Space on its buttons: from the keyboard nothing animates |
 | Stays | nothing | `--vela-duration-toast` (6000ms), paused on hover and focus | a dwell, not an animation |
 
-Under `prefers-reduced-motion` the global collapse in `base.css` applies to the travel and the fade.
-It does not shorten the dwell: `--vela-duration-toast` is a timer, not a transition.
+How it is built, all in `Toast.css`, from Base UI's own signals:
+
+- **One grid cell holds every toast**, so they overlap, each its natural height, anchored on the edge
+  the region sits on. The stack moves on the `translate` and `scale` properties, keyed on Base UI's
+  `--toast-index` (0 at the front) and `--toast-offset-y` (the heights of the toasts in front); the
+  entrance, the exit and the swipe move on `transform`. The two compose, so a toast can enter while
+  the one behind it is still stepping back, and neither restarts the other.
+- **Collapsed**, a toast behind the front one is scaled from the edge that shows (its top edge at the
+  bottom placements, its bottom edge at `top-end`), so it peeks out by exactly one step for each
+  toast in front — when the toasts are the same height. A taller toast behind a shorter one shows
+  more of itself. The stack does not clamp heights: that would need `height` to animate, and only
+  `transform`, `opacity` and `filter` do. `--toast-height` and `--toast-frontmost-height` are
+  therefore not used.
+- **Spread** is Base UI's `data-expanded` on the region (the pointer over it, or keyboard focus in
+  it), or `data-vela-spread`, which the component sets while a warning is behind the front toast. A
+  pointer crossing the gap between two spread toasts is still over the region: each toast extends its
+  hover area across the gap nearer its edge.
+- **The spring** is the curve the stack moves on because the stack is travel across a distance and
+  the same toasts are moving while on screen. Entering and leaving are on `--vela-ease-out`: no
+  overshoot on the way in.
+- **Swipe** is Base UI's. While the pointer is down it moves the toast with an inline transform and
+  no transition; released past its threshold it sets `data-swipe-direction`, and the exit carries on
+  from `--toast-swipe-movement-x/y` in that direction. A press that starts on a button never swipes.
+- **Keyboard**: a key pressed in the region, or F6 anywhere, marks the region `data-vela-instant`:
+  no transition on any toast. A pointer on the region, or a new toast raised by the app, clears it —
+  a toast the app raises still enters, wherever focus is.
+
+Under `prefers-reduced-motion` the global collapse in `base.css` applies to every movement here: the
+stack collapses and spreads at once. It does not shorten the dwell: `--vela-duration-toast` is a
+timer, not a transition. No prop turns any of this on or off; the prop set stays closed. The values
+are provisional until reviewed on the Motion review page (`#/motion`).
 
 ## Responsive behaviour
 
@@ -198,8 +254,9 @@ is `--vela-toast-width` (360) wide and **never wider than the viewport less thos
 400px viewport it is exactly 360 and below that it narrows. Its title and description **wrap** —
 never truncate — and the close button stays on the first line at the end. Like Dialog, the region
 is a viewport-level surface and sizes against the viewport, not its container: there is one region
-for the app, not one per embedded widget. Toasts stack `--vela-space-10` apart, the newest nearest
-the edge they sit on; past `limit` the oldest wait, hidden. Minimum width: the viewport's, less the
+for the app, not one per embedded widget. The newest toast is nearest the edge it sits on, the
+older ones collapsed behind it and spread `--vela-space-10` apart on hover or focus (see *Motion*);
+past `limit` the oldest wait, hidden. Minimum width: the viewport's, less the
 gutters. Density tokens do not exist yet (see `DESIGN.md`); the padding does not change.
 
 ## Accessibility
@@ -252,11 +309,14 @@ difference is recorded here:
   expanded or it has focus — a stacked-deck design. Vela's toasts are a flat list, so the close
   button and the action are Vela's own buttons calling the manager's `close`, never hidden from
   assistive technology. The action is the kit's tiny standard `Button`.
-- **Stack.** Base UI exposes CSS variables (`--toast-index`, `--toast-offset-y`, `--toast-height`)
-  for a collapsed, expand-on-hover deck. This spec stacks toasts as a plain list `--vela-space-10`
-  apart and does not collapse them.
-- **Swipe.** Base UI dismisses on a swipe (`down` and `right` by default). This spec swipes toward
-  the edge a toast sits on: `right` or `down` at `bottom-end`, `right` or `up` at `top-end`, `down` at
+- **Stack.** Base UI exposes CSS variables (`--toast-index`, `--toast-offset-y`, `--toast-height`,
+  `--toast-frontmost-height`) and `data-expanded` for a collapsed, expand-on-hover deck. This spec
+  uses the index, the offset and `data-expanded`; it does not clamp a stacked toast to the front
+  one's height (that would animate `height`). It adds one thing Base UI does not have: the stack
+  stays spread while a warning is behind the front toast (`toast-stack-keeps-warnings-in-view`).
+- **Swipe.** Base UI dismisses on a swipe (`down` and `right` by default), at every placement this
+  spec allows (it turns swipe off only for anchored toasts, which are not exposed). This spec swipes
+  toward the edge a toast sits on: `right` or `down` at `bottom-end`, `right` or `up` at `top-end`, `down` at
   `bottom-center`. Swipe directions are physical in Base UI, so in a right-to-left document the
   `end` placements still swipe right; this is recorded as a gap, not a feature.
 - **Portal and theme.** As Popover: the portal element carries `vela-root`, and the `data-theme` of
@@ -266,7 +326,7 @@ difference is recorded here:
   and its scrim covers the region. A toast raised while a Dialog is open waits behind it; raise the
   toast after the Dialog closes — the Dialog was the decision, the toast is its receipt.
 - **Extra attributes.** Base UI adds `data-starting-style` / `data-ending-style`, `data-type` (the
-  severity), `data-swiping`, `data-swipe-direction`, `data-expanded`, focus-guard `<span>`s and
+  severity), `data-swiping`, `data-swipe-direction`, `data-expanded` (on the region and each toast), focus-guard `<span>`s and
   `data-base-ui-*` markers; ids are Base UI's. None is part of the contract.
 
 ## Figma mapping

@@ -79,6 +79,17 @@ published; see `GOVERNANCE.md`.
   different border, not a tooltip: the state is in the markup and in the glyph. [[rule: checkbox-indeterminate-is-mixed | runtime]]
 - **A Checkbox records intent; a Toggle acts.** Never wire a Checkbox to take effect on change
   with no Save, and never put a Toggle behind a Save button. [[rule: checkbox-records-intent | convention]]
+- **The mark scales in, by transform and opacity alone.** Checked with a pointer, the mark — or the
+  indeterminate dash — scales from half size as it fades in; unchecked, it fades out where it is.
+  Transitions only, never a keyframe. [[rule: checkbox-mark-scales-in | browser]]
+- **Changed again mid-flight, it turns round.** A press while the mark is still arriving or leaving
+  reverses it from where it is, and it ends in the state the box is in. [[rule: checkbox-mark-retargets | browser]]
+- **From the keyboard it does not animate.** Space checks and unchecks at once: no press, no fill
+  fade, no mark motion. [[rule: checkbox-keyboard-is-instant | browser]]
+- **Under reduced motion it is at its end state.** Pressed while held, released after, the mark
+  in full. [[rule: checkbox-motion-reduced-end-state | browser]]
+- **A press never moves the hit target.** The box presses to 0.9; a guard holds its original box
+  for as long as the press lasts, so a release at its edge still lands on it. [[rule: checkbox-press-keeps-hit-target | browser]]
 
 ## Token bindings
 
@@ -122,8 +133,41 @@ to the middle. Gap box-to-label `--vela-space-10`; gap between boxes in a vertic
   on the box; the fill and the mark cannot drift from the state the markup carries.
 - **Error** — CSS keys on `[aria-invalid='true']`, set when `error` is a non-empty string.
 - **Disabled** — the native attribute; CSS keys on `:disabled`. Nothing animates.
-- **Motion** — the fill changes over `--vela-duration-fast` with `--vela-ease-standard`; the mark
-  does not animate (from the keyboard, nothing should).
+- **Pressed** — pointer only, the box at `scale(0.9)`; see *Motion*.
+- **Motion** — see below.
+
+## Motion
+
+| Moment | What moves | Timing | Why |
+|---|---|---|---|
+| Press in (pointer, on the box or its label) | the box, `transform: scale(0.9)`, from its centre; a guard holds the hit target | `--vela-duration-instant` (70ms), `--vela-ease-standard` | feedback: the press landed |
+| Press out | the scale releases | `--vela-duration-base` (180ms) | a release settles |
+| Checked / indeterminate (pointer) | the mark or the dash: opacity, and scale from 0.5 | `--vela-duration-fast` (120ms), `--vela-ease-out` | continuity: the state arrives in the box |
+| Unchecked (pointer) | the mark fades out where it is | `--vela-duration-fast` (120ms) | softer than it arrived |
+| Fill and border | colour | `--vela-duration-fast`, `--vela-ease-standard` | unchanged |
+| From the keyboard | nothing | instant | Space: from the keyboard nothing animates; the focus ring collapses onto the edge, as on Button |
+
+**The press is Button's mechanism** (`button.md#motion`): pointer only, excluded for
+`:focus-visible`, asymmetric (in at `instant`, out at `base`), and a counter-scaled guard
+(0.9 × 1.1111111 = 1) holds the box's original border box for the length of the press. It is the
+CSS layer alone — no anchored pivot — because on a 16px box the pivot would move the pressed pixel
+by under a pixel either way. The depth differs: Button's 3% of a 16px box is a quarter of a pixel,
+which is no feedback at all, so the small controls (Checkbox, Radio Group, Toggle) press to 0.9,
+under a pixel of travel a side.
+
+**The mark moves only on a change of state, and the component that owns the state moves it**:
+Base UI's `Checkbox.Indicator` carries `data-starting-style` and `data-ending-style` and stays mounted
+until its fade has finished; the stylesheet keys on those. The glyph is an inline SVG with no motion
+of its own (`icon.md`: an Icon does not animate). Going from indeterminate straight to checked swaps
+the dash for the tick at once: the indicator was already showing.
+
+**From the keyboard**: a key pressed on the box marks the row `data-vela-instant`; a pointer on it
+clears the mark. A change the app makes — a controlled `checked` set from elsewhere, such as a
+select-all — animates like a pointer one, unless this box's last input was the keyboard.
+
+Under `prefers-reduced-motion` the global collapse in `base.css` applies. No prop turns any of this
+on or off; the prop set stays closed. The values are provisional until reviewed on the Motion review
+page (`#/motion`).
 
 ## Responsive behaviour
 

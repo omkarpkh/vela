@@ -151,7 +151,10 @@ markup already carries, not a new variant.
   spinner would strip the accessible name mid-request; disabling it would drop focus.
 - **Pressed** — pointer only, `transform: scale(0.97)`, keyed on `[data-vela-pressed]` (set by
   the component) or `:active` without JS, and excluded for `:focus-visible`, so Space and Enter
-  never scale: a keyboard press collapses the focus ring instead. The hit target never moves.
+  never scale: a keyboard press collapses the focus ring instead. The hit target never moves. The
+  small controls — the Checkbox box, the Radio circle, the Toggle track — press the same way, from
+  their centre on `:active`, to `scale(0.9)`: 3% of 16px is a quarter of a pixel, which is no
+  feedback at all.
 - **Selected / checked / invalid** — CSS keys on the ARIA state the markup already carries:
   `[aria-selected="true"]` (Tabs), `[aria-checked="true"]` (Toggle, Checkbox, Radio Group),
   `[aria-checked="mixed"]` (an indeterminate Checkbox), `[aria-invalid="true"]` (Input, Checkbox,
@@ -179,16 +182,22 @@ the overlays bullet below):
 - `--vela-ease-spring` — a spring (stiffness 1200, damping 56, mass 1), generated into a CSS
   `linear()` easing over `--vela-duration-travel` at token build time; `--vela-ease-out` where
   `linear()` is not supported. Only for the moments a spec names (today: the Tabs indicator after
-  a pointer press), always paired with `--vela-duration-travel`.
+  a pointer press, and the Toast stack moving back and spreading), always paired with
+  `--vela-duration-travel`.
 
 The three new values (`duration-travel`, `ease-out`, `ease-spring`) are **provisional** until the
-owner has reviewed their feel on the playground's Motion review page (`#/motion`). The overlays
-still enter on `--vela-ease-standard`; moving them to `--vela-ease-out` is a later part of the
-motion pass, not this rule silently unmet.
+owner has reviewed their feel on the playground's Motion review page (`#/motion`), and so are the
+values the specs choose with them (the overlays' 0.96, the small controls' 0.9, the toast stack's
+step and scale).
 
-Overlays (Popover, Tooltip, Dialog, Toast) appear at `base` on opacity plus a `--vela-space-5` step
-of travel, and leave on opacity alone; one opened or closed from the keyboard does not animate
-(`data-vela-instant`). A Tooltip waits `--vela-delay-tooltip` on hover and opens at once on focus.
+Overlays enter on `--vela-ease-out` and leave on opacity alone; one opened or closed from the
+keyboard does not animate (`data-vela-instant`). Popover and Tooltip grow from their trigger —
+scale from 0.96 plus opacity, pivoting on Base UI's `--transform-origin` — the Popover at `base`, the
+Tooltip at `fast` because it has already waited for the pointer to rest. Dialog appears at `base` on
+opacity plus a `--vela-space-5` step of rise. A Toast travels its own height in from the edge it sits
+on at `base` and leaves the same way, fading (the one overlay whose exit travels: it goes back where
+it came from); the stack behind it steps back and spreads on the spring (`toast.md`, Motion). A
+Tooltip waits `--vela-delay-tooltip` on hover and opens at once on focus.
 A Toast stays `--vela-duration-toast` (6000ms) — a dwell, not an animation, paused on hover and
 focus, untouched by the reduced-motion collapse — and only when it is a `success` or `info` with no
 action; a warning or a toast with an action stays until dismissed.
@@ -197,7 +206,9 @@ Only `transform`, `opacity` and `filter` animate (a colour may settle, as a hove
 never moves), and `scripts/check-css.mjs` fails a transition or keyframe that moves anything
 else. Pointer states enter faster than they leave
 (hover in at `fast`, out at `base`; press in at `instant`, out at `base`). Transitions, not
-keyframes, for anything a person can re-trigger. No looping attention-seekers — the loading
+keyframes, for anything a person can re-trigger. A state change moves only the part that shows the
+state — a Checkbox mark, a Radio dot — and the component that owns the state moves it, never an
+Icon prop. No looping attention-seekers — the loading
 spinner is the one loop. **`prefers-reduced-motion` is handled once, globally**, in
 `src/styles/base.css`: durations collapse, loops run once, and every animation must read
 correctly frozen at its end state. The reference implementation is

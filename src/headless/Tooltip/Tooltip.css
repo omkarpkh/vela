@@ -17,9 +17,14 @@
   border-radius: var(--vela-radius-4);
   font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height);
   overflow-wrap: break-word;
-  transition: opacity var(--vela-duration-base) var(--vela-ease-standard);
+  /* Grows from the trigger, as Popover does, but at duration-fast: it has already waited
+     --vela-delay-tooltip for the pointer to rest, and a label that then takes 180ms more to arrive
+     reads as lag (tooltip.md, Motion). */
+  transform-origin: var(--transform-origin);
+  transition: opacity var(--vela-duration-fast) var(--vela-ease-out),
+              transform var(--vela-duration-fast) var(--vela-ease-out);
 }
-.vela-tooltip[data-starting-style],
+.vela-tooltip[data-starting-style] { opacity: 0; transform: scale(0.96); }
 .vela-tooltip[data-ending-style] { opacity: 0; }
 /* From the keyboard nothing animates: Base UI marks a focus-opened tooltip data-instant, and the
    component marks an Escape or keyboard close data-vela-instant. */

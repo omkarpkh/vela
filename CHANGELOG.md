@@ -39,6 +39,51 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **`css:check` now checks motion.** A transition of anything but `transform`, `opacity`, `filter`
   or a colour fails, as does `all` or a bare duration (which means `all`); inside `@keyframes` only
   the moving properties are allowed. Every existing stylesheet passes.
+- **Motion pass, part 2: the Toast stack, overlays that grow from their trigger, state and press
+  motion on the small controls.** No new token and no new prop; every value below is
+  **provisional until the owner has reviewed the feel** on the Motion review page. Thirty new
+  rules, all `browser`, each with a Playwright proof that the part moves only by `transform` and
+  `opacity` (the stack also uses the `translate` and `scale` properties), reads correctly at its end
+  state under reduced motion, ends in the right state when re-triggered mid-flight, and does not
+  animate from the keyboard. 182 rules (was 152), 42 of them `browser` (was 12).
+  - **Toast** enters by travelling its own height in from the edge it sits on, at `duration-base` on
+    `ease-out`, and leaves the same way, fading. Older toasts collapse behind the newest — each a
+    `--vela-space-10` step back and 5% smaller — and spread out on hover or with keyboard focus in
+    the region, on `ease-spring` over `duration-travel`, from Base UI's `--toast-index`,
+    `--toast-offset-y` and `data-expanded`. **New rule: a collapsed stack never hides a warning** —
+    while a warning sits behind the front toast the stack stays spread (`data-vela-spread`), because
+    a warning never times out and would otherwise stay out of sight. A swipe follows the pointer and
+    then carries on out from `--toast-swipe-movement-x/y`. From the keyboard (F6, Tab, Escape,
+    Enter / Space on its buttons) nothing in the stack moves: the mark is now on the region, not the
+    toast. The Toast API is unchanged.
+  - **Popover and Tooltip grow from their trigger**: scale from 0.96 plus opacity on `ease-out`,
+    pivoting on Base UI's `--transform-origin`. Popover at `duration-base` (it is opened deliberately
+    and carries content); Tooltip at `duration-fast` (it has already waited `--vela-delay-tooltip`,
+    and 180ms more reads as lag). Both still leave on opacity alone.
+  - **Overlays enter on `ease-out`**, as part 1 said they would — Dialog and its backdrop included,
+    whose step of rise is otherwise unchanged — and the MUI bridge's entering slot (`easeOut`) moves
+    to `--vela-ease-out` with them, so the two never disagree in one app.
+  - **Checkbox mark and Radio dot scale in** from half size as they fade in, at `duration-fast` on
+    `ease-out`, keyed on Base UI's Indicator transition attributes; the old one fades out. Moved by
+    the component that owns the state, never by an Icon.
+  - **Checkbox, Radio Group and Toggle press** like a Button — pointer only, from the centre, in at
+    `duration-instant`, out at `duration-base`, excluded for `:focus-visible`, with a counter-scaled
+    guard that holds the hit target — but to `scale(0.9)`: 3% of a 16px box is a quarter of a pixel.
+    With the guard removed, Chromium lost one of two edge presses on the Checkbox and both on the
+    Toggle; with it, none. The Radio's edge presses landed with or without it (not yet examined).
+  - **From the keyboard the small controls do not animate**: Space on a Checkbox, arrow keys and
+    Space in a Radio Group (the mark is on the group, so the radio reached does not animate
+    either), Enter and Space on a Toggle — whose knob used to slide from the keyboard, against
+    `foundations/motion.md`. A shared internal hook (`src/lib/instant.ts`) sets `data-vela-instant`
+    from the last input; a pointer clears it.
+  - **The Motion review page** adds the Toast stack (raise a success, an info or a warning; the
+    light frame's region at the bottom end, the dark frame's at the top end), a Popover and a
+    Tooltip, and a Checkbox, a Radio Group and a Toggle, all reached by the ×5 slow-motion switch.
+  - At rest nothing moves: the Toggle — the one part here with screenshot baselines — renders
+    exactly as before, and the CSS for the press exists only under `:active`.
+  - Not done, noted for later: the kit has no disclosure chevron and no copy-to-clipboard control
+    today (the glyphs exist in the Icon set, but no component owns that state), so neither got
+    motion; Table's sort glyph swap was left as it is.
 - **Every Figma set is in the library file.** The Figma thread built the nine new sets from
   their builders at `main` 60d80ef (Text Area, Icon, Checkbox, Radio, Table's three, Popover,
   Tooltip, Dialog, Toast) and rebuilt Risk Pill, whose variants now read Low / Medium / High. The

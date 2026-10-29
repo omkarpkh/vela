@@ -821,3 +821,542 @@ test.describe('the Tabs indicator', () => {
     await expect(page.getByText('review aid', { exact: false })).toBeVisible()
   })
 })
+
+// ---------------------------------------------------------------------------------------------
+// The motion pass, part 2 (toast.md, popover.md, tooltip.md, dialog.md, checkbox.md,
+// radio-group.md, toggle.md — each spec's Motion section). Every animated part is proved four
+// ways: it animates only transform and opacity (the stack also uses the `translate` and `scale`
+// properties, which are transform); under reduced motion it reads correctly at its end state; a
+// second trigger mid-flight ends in the right state; a keyboard change does not animate. jsdom has
+// no layout and no Web Animations, so all of it lives here, on the Motion review page.
+// ---------------------------------------------------------------------------------------------
+type Page = import('@playwright/test').Page
+type Locator = import('@playwright/test').Locator
+type Anim = { kind: string; property: string }
+const MOVING = new Set(['transform', 'translate', 'scale', 'opacity'])
+const COLOUR = /^(color|background-color|border-color|border-(top|right|bottom|left)-color|outline-color)$/
+
+// Every animation on an element (and, with subtree, under it): whether it is a CSS transition or a
+// keyframe animation, and what it animates.
+const animationsOf = (loc: Locator, subtree = false) =>
+  loc.evaluate((el, subtree) => el.getAnimations({ subtree }).map((a) => ({
+    kind: a.constructor.name,
+    property: (a as CSSTransition).transitionProperty ?? (a as CSSAnimation).animationName ?? '?',
+  })), subtree)
+const onlyMoves = (anims: Anim[]) => anims.every((a) => a.kind === 'CSSTransition' && (MOVING.has(a.property) || COLOUR.test(a.property)))
+const scaleOf = (loc: Locator) => loc.evaluate((el) => {
+  const t = getComputedStyle(el).transform
+  return t === 'none' ? 1 : new DOMMatrix(t).a
+})
+const openMotion = async (page: Page) => {
+  await page.goto('/#/motion')
+  await expect(page.getByRole('heading', { level: 1, name: 'Motion review' })).toBeVisible()
+  await page.evaluate(() => document.fonts.ready)
+}
+const slowMotion = async (page: Page) => {
+  await page.getByRole('switch', { name: '×5 slow motion' }).click()
+  await page.mouse.move(0, 0)
+}
+const frameIn = (page: Page, section: string, theme: 'light' | 'dark' = 'light') =>
+  page.locator(`section[aria-labelledby="${section}"] .motion-frame[data-theme="${theme}"]`)
+
+test.describe('the motion pass, part 2', () => {
+  // ------------------------------------------------------------------------------------- Toast
+  test.describe('Toast', () => {
+    const region = (page: Page) => page.locator('.vela-overlay-portal[data-theme="light"]').getByRole('region', { name: 'Notifications' })
+    const toastNamed = (page: Page, title: string) => region(page).getByRole('dialog', { name: title })
+    const raise = (page: Page, severity: 'Success' | 'Info' | 'Warning') =>
+      page.getByRole('group', { name: 'Raise a toast (light)' }).getByRole('button', { name: `Raise ${severity}` }).click()
+    const TITLE = { Success: 'Policy saved', Info: 'Export started', Warning: 'Policy saved with 2 tenants skipped' }
+    // Each toast's box, height, stack variables and running animations, newest first.
+    const stack = (page: Page) => region(page).evaluate((r) => [...r.querySelectorAll<HTMLElement>('.vela-toast')]
+      .filter((el) => !el.hasAttribute('data-ending-style'))
+      .map((el) => {
+        const b = el.getBoundingClientRect(), cs = getComputedStyle(el)
+        return {
+          title: el.querySelector('.vela-toast__title')?.textContent ?? '',
+          top: b.top, bottom: b.bottom, height: el.offsetHeight,
+          scale: cs.scale === 'none' ? 1 : Number(cs.scale),
+          transform: cs.transform, opacity: cs.opacity,
+          animations: el.getAnimations().length,
+        }
+      }))
+    const settled = async (page: Page) => {
+      await expect.poll(async () => (await stack(page)).every((t) => t.animations === 0 && t.opacity === '1' && t.transform === 'none'), { timeout: 5000 }).toBe(true)
+      return stack(page)
+    }
+    const vh = (page: Page) => page.viewportSize()!.height
+
+    test.describe('with motion', () => {
+      test.use({ reducedMotion: 'no-preference' })
+
+      // [[rule: toast-enters-from-its-edge]]
+      test('a toast enters from the edge it sits on, by transform and opacity alone, on transitions', async ({ page }) => {
+        await openMotion(page)
+        await slowMotion(page)
+        await raise(page, 'Success')
+        const toast = toastNamed(page, TITLE.Success)
+        await expect(toast).toBeVisible()
+        // In flight: below its place (it rises from the bottom edge), partly transparent, and only
+        // opacity and transform are moving — as transitions, never keyframes.
+        const a = await animationsOf(toast)
+        expect(a.map((x) => x.property)).toEqual(expect.arrayContaining(['opacity', 'transform']))
+        expect(onlyMoves(a)).toBe(true)
+        expect(await toast.evaluate((el) => new DOMMatrix(getComputedStyle(el).transform).f)).toBeGreaterThan(0)
+        expect(onlyMoves(await animationsOf(region(page), true))).toBe(true)
+        // A second toast: the first steps back on `translate` and `scale`, the new one enters on
+        // `transform` and `opacity`. Nothing else in the region moves.
+        await raise(page, 'Info')
+        await expect(toastNamed(page, TITLE.Info)).toBeVisible()
+        const all = await animationsOf(region(page), true)
+        expect(onlyMoves(all)).toBe(true)
+        expect(all.map((x) => x.property)).toEqual(expect.arrayContaining(['translate', 'scale', 'transform', 'opacity']))
+        await settled(page)
+      })
+
+      // [[rule: toast-stack-reflows-mid-flight]]
+      test('a toast raised while another is still entering re-flows the stack from where it is and ends in place', async ({ page }) => {
+        await openMotion(page)
+        await slowMotion(page)
+        await raise(page, 'Success')
+        await page.waitForTimeout(300)   // the first is a third of the way in, slowed five times
+        const mid = (await stack(page))[0]
+        expect(mid.animations).toBeGreaterThan(0)
+        await raise(page, 'Info')
+        // Still transitions (they retarget); no keyframe restarted anything.
+        expect(onlyMoves(await animationsOf(region(page), true))).toBe(true)
+        const [front, back] = await settled(page)
+        expect(front.title).toBe(TITLE.Info)
+        expect(back.title).toBe(TITLE.Success)
+        expect(front.bottom).toBeCloseTo(vh(page) - 20, 0)
+        expect(back.scale).toBeCloseTo(0.95, 3)
+        expect(back.top).toBeCloseTo(vh(page) - 20 - back.height - 10, 0)
+      })
+
+      // [[rule: toast-keyboard-dismiss-is-instant]]
+      test('from the keyboard nothing in the stack animates: F6 spreads it at once, Escape dismisses at once', async ({ page }) => {
+        await openMotion(page)
+        await raise(page, 'Success')
+        await raise(page, 'Info')
+        await page.mouse.move(0, 0)
+        await settled(page)
+        const quiet = () => region(page).evaluate((el) => ({
+          instant: el.hasAttribute('data-vela-instant'),
+          animations: el.getAnimations({ subtree: true }).filter((a) => ((a.effect as KeyframeEffect).target as Element)?.classList.contains('vela-toast')).length,
+        }))
+        // F6: the region takes focus and spreads, with no transition.
+        await page.keyboard.press('F6')
+        await expect(region(page)).toHaveAttribute('data-expanded', '')
+        expect(await quiet()).toEqual({ instant: true, animations: 0 })
+        const [front, back] = await stack(page)
+        expect(back.scale).toBe(1)
+        expect(back.bottom).toBeCloseTo(front.top - 10, 0)
+        // Escape on the focused toast: it goes at once, and the one behind takes its place at once.
+        await page.keyboard.press('Tab')
+        const first = toastNamed(page, TITLE.Info)
+        await expect.poll(() => first.evaluate((el) => el.contains(document.activeElement))).toBe(true)
+        await page.keyboard.press('Escape')
+        expect(await quiet()).toEqual({ instant: true, animations: 0 })
+        await expect(first).toHaveCount(0, { timeout: 500 })
+        const [left] = await stack(page)
+        expect(left.title).toBe(TITLE.Success)
+        expect(left.animations).toBe(0)
+        expect(left.bottom).toBeCloseTo(vh(page) - 20, 0)
+      })
+
+      // [[rule: toast-swipe-follows-the-pointer]]
+      test('a toast swiped towards its edge follows the pointer, then carries on out and leaves', async ({ page }) => {
+        await openMotion(page)
+        await slowMotion(page)
+        await raise(page, 'Success')
+        const [{ top, height }] = await settled(page)
+        const toast = toastNamed(page, TITLE.Success)
+        const box = (await toast.boundingBox())!
+        const x = box.x + 60, y = top + height / 2   // on the text, not a button: buttons never start a swipe
+        await page.mouse.move(x, y)
+        await page.mouse.down()
+        await page.mouse.move(x + 15, y, { steps: 3 })
+        await page.mouse.move(x + 30, y, { steps: 3 })
+        // Mid-swipe: it is where the pointer took it, with no transition between.
+        await expect(toast).toHaveAttribute('data-swiping', '')
+        const dragged = await toast.evaluate((el) => new DOMMatrix(getComputedStyle(el).transform).e)
+        expect(dragged).toBeGreaterThan(20)
+        expect(dragged).toBeLessThan(40)
+        expect(await animationsOf(toast)).toEqual([])
+        await page.mouse.move(x + 90, y, { steps: 6 })
+        await page.mouse.up()
+        // Released past the threshold: it leaves to the right from where it was, by transform and opacity.
+        await expect(toast).toHaveAttribute('data-swipe-direction', 'right')
+        await expect(toast).toHaveAttribute('data-ending-style', '')
+        expect(onlyMoves(await animationsOf(toast))).toBe(true)
+        const released = await toast.evaluate((el) => new DOMMatrix(getComputedStyle(el).transform).e)
+        expect(released).toBeGreaterThan(60)
+        await page.waitForTimeout(300)
+        expect(await toast.evaluate((el) => new DOMMatrix(getComputedStyle(el).transform).e)).toBeGreaterThan(released + 20)
+        await expect(toast).toHaveCount(0)
+      })
+    })
+
+    // The project default: reducedMotion 'reduce'.
+    // [[rule: toast-stack-collapses-and-spreads]]
+    test('under reduced motion the stack is at its end state: collapsed behind the front toast, spread on hover and on F6', async ({ page }) => {
+      await openMotion(page)
+      for (const s of ['Success', 'Info', 'Success'] as const) await raise(page, s)
+      await page.mouse.move(0, 0)
+      let [front, mid, back] = await settled(page)
+      const bottom = vh(page) - 20
+      // Collapsed: the front toast at its place; each one behind it a step further back, 5% smaller,
+      // its top edge a step above the one in front's (the scale pivots on the top edge).
+      expect(front.bottom).toBeCloseTo(bottom, 0)
+      expect(front.scale).toBe(1)
+      expect(mid.scale).toBeCloseTo(0.95, 3)
+      expect(back.scale).toBeCloseTo(0.9, 3)
+      expect(mid.top).toBeCloseTo(bottom - mid.height - 10, 0)
+      expect(back.top).toBeCloseTo(bottom - back.height - 20, 0)
+      // Spread on hover: full size, each --vela-space-10 above the one in front.
+      await region(page).locator('.vela-toast').first().hover()
+      await expect(region(page)).toHaveAttribute('data-expanded', '')
+      ;[front, mid, back] = await settled(page)
+      expect([front.scale, mid.scale, back.scale]).toEqual([1, 1, 1])
+      expect(front.bottom).toBeCloseTo(bottom, 0)
+      expect(mid.bottom).toBeCloseTo(front.top - 10, 0)
+      expect(back.bottom).toBeCloseTo(mid.top - 10, 0)
+      // Crossing the gap between two toasts does not collapse it under the pointer.
+      const r = (await region(page).boundingBox())!
+      await page.mouse.move(r.x + 40, (front.top + mid.bottom) / 2)
+      await expect(region(page)).toHaveAttribute('data-expanded', '')
+      // Off it, it closes up again.
+      await page.mouse.move(0, 0)
+      await expect(region(page)).not.toHaveAttribute('data-expanded')
+      expect((await settled(page))[1].scale).toBeCloseTo(0.95, 3)
+      // Focus inside the region (F6) spreads it too.
+      await page.keyboard.press('F6')
+      await expect(region(page)).toHaveAttribute('data-expanded', '')
+      ;[front, mid] = await settled(page)
+      expect(mid.bottom).toBeCloseTo(front.top - 10, 0)
+    })
+
+    // [[rule: toast-stack-keeps-warnings-in-view]]
+    test('a warning behind another toast keeps the stack spread, so its title is on screen', async ({ page }) => {
+      await openMotion(page)
+      await raise(page, 'Warning')
+      await raise(page, 'Success')
+      await page.mouse.move(0, 0)
+      await expect(region(page)).toHaveAttribute('data-vela-spread')
+      await expect(region(page)).not.toHaveAttribute('data-expanded')
+      const [front, warning] = await settled(page)
+      expect(warning.title).toBe(TITLE.Warning)
+      expect(warning.scale).toBe(1)
+      expect(warning.bottom).toBeCloseTo(front.top - 10, 0)
+      // Nothing covers its title: the topmost element at the title's centre is the title.
+      const title = toastNamed(page, TITLE.Warning).locator('.vela-toast__title')
+      const t = (await title.boundingBox())!
+      expect(await page.evaluate(([x, y]) => document.elementFromPoint(x, y)?.className ?? '', [t.x + t.width / 2, t.y + t.height / 2])).toContain('vela-toast__title')
+      // A warning in front hides nothing, so a stack with no warning behind collapses as usual.
+      // (A fresh page: after a close button is pressed, Base UI keeps the region hovered until the
+      // pointer crosses it again, which would hold the stack spread for a reason of its own.)
+      await page.reload()
+      await expect(page.getByRole('heading', { level: 1, name: 'Motion review' })).toBeVisible()
+      await raise(page, 'Info')
+      await raise(page, 'Warning')
+      await page.mouse.move(0, 0)
+      await expect(region(page)).not.toHaveAttribute('data-vela-spread')
+      const [, behind] = await settled(page)
+      expect(behind.scale).toBeCloseTo(0.95, 3)
+    })
+  })
+
+  // ---------------------------------------------------------------------------- Popover, Tooltip
+  for (const overlay of ['popover', 'tooltip'] as const) {
+    test.describe(overlay, () => {
+      const frame = (page: Page) => frameIn(page, 'motion-overlays')
+      const trigger = (page: Page) => frame(page).getByRole('button', { name: overlay === 'popover' ? 'Filters' : 'Export' })
+      const popup = (page: Page) => overlay === 'popover' ? page.getByRole('dialog', { name: 'Filter alerts' }) : page.getByRole('tooltip')
+      // Pointer open: a press for the popover, a resting pointer for the tooltip.
+      const open = async (page: Page) => {
+        if (overlay === 'popover') await trigger(page).click()
+        else await trigger(page).hover()
+        await expect(popup(page)).toBeVisible()
+      }
+      const close = async (page: Page) => {
+        if (overlay === 'popover') await trigger(page).click()
+        else await page.mouse.move(0, 0)
+      }
+      const atRest = async (page: Page) => {
+        await expect.poll(async () => (await animationsOf(popup(page))).length, { timeout: 5000 }).toBe(0)
+        expect(await popup(page).evaluate((el) => getComputedStyle(el).opacity)).toBe('1')
+        expect(await scaleOf(popup(page))).toBe(1)
+      }
+
+      test.describe('with motion', () => {
+        test.use({ reducedMotion: 'no-preference' })
+
+        // [[rule: popover-grows-from-its-trigger]]
+        // [[rule: tooltip-grows-from-its-trigger]]
+        test(`the ${overlay} grows from its trigger: scale from 0.96 and opacity, pivoting on Base UI's transform origin`, async ({ page }) => {
+          await openMotion(page)
+          await slowMotion(page)
+          await open(page)
+          const a = await animationsOf(popup(page))
+          expect(a.map((x) => x.property).sort()).toEqual(['opacity', 'transform'])
+          expect(onlyMoves(a)).toBe(true)
+          const s = await scaleOf(popup(page))
+          expect(s).toBeGreaterThanOrEqual(0.96)
+          expect(s).toBeLessThan(1)
+          // The pivot is the point Base UI computed nearest the trigger (its --transform-origin), not
+          // the popup's centre: the popover opens below its trigger, so it pivots on its top edge;
+          // the tooltip opens above, so on its bottom edge — under the trigger's centre either way.
+          const origin = await popup(page).evaluate((el) => {
+            const [x, y] = getComputedStyle(el).transformOrigin.split(' ').map(parseFloat)
+            const r = el.getBoundingClientRect()
+            return { variable: getComputedStyle(el).getPropertyValue('--transform-origin').trim(), x: r.left + x * (r.width / el.offsetWidth), y, height: el.offsetHeight }
+          })
+          expect(origin.variable).not.toBe('')
+          if (overlay === 'popover') expect(origin.y).toBeLessThanOrEqual(1)
+          else expect(origin.y).toBeGreaterThanOrEqual(origin.height - 1)
+          const t = (await trigger(page).boundingBox())!
+          expect(Math.abs(origin.x - (t.x + t.width / 2))).toBeLessThan(2)
+          await atRest(page)
+        })
+
+        // [[rule: popover-reopen-mid-flight]]
+        // [[rule: tooltip-reopen-mid-flight]]
+        test(`a ${overlay} closed and reopened mid-flight turns round and ends open, at rest`, async ({ page }) => {
+          // The tooltip waits --vela-delay-tooltip before it opens; with the wait at zero the second
+          // hover lands while the first close is still fading. Read at mount, so set before it.
+          if (overlay === 'tooltip') {
+            await page.addInitScript(() => {
+              const s = document.createElement('style')
+              s.textContent = '* { --vela-delay-tooltip: 0ms !important; }'
+              document.documentElement.appendChild(s)
+            })
+          }
+          await openMotion(page)
+          await slowMotion(page)
+          await open(page)
+          await atRest(page)
+          await close(page)
+          await page.waitForTimeout(150)
+          // Still on screen, fading out…
+          expect(await popup(page).evaluate((el) => el.hasAttribute('data-ending-style'))).toBe(true)
+          await open(page)
+          // …and back: the same popup, at rest and open.
+          await atRest(page)
+          await expect(popup(page)).toHaveCount(1)
+          expect(await popup(page).evaluate((el) => el.hasAttribute('data-ending-style'))).toBe(false)
+        })
+
+        // [[rule: popover-keyboard-is-instant]]
+        // [[rule: tooltip-keyboard-is-instant]]
+        test(`a ${overlay} opened and closed from the keyboard does not animate`, async ({ page }) => {
+          await openMotion(page)
+          if (overlay === 'popover') {
+            await trigger(page).focus()
+            await page.keyboard.press('Enter')
+          } else {
+            await frame(page).getByRole('button', { name: 'Filters' }).focus()
+            await page.keyboard.press('Tab')
+            await expect(trigger(page)).toBeFocused()
+          }
+          await expect(popup(page)).toBeVisible()
+          expect(await animationsOf(popup(page))).toEqual([])
+          expect(await scaleOf(popup(page))).toBe(1)
+          await page.keyboard.press('Escape')
+          await expect(popup(page)).toHaveCount(0, { timeout: 500 })
+        })
+      })
+
+      // [[rule: popover-motion-reduced-end-state]]
+      // [[rule: tooltip-motion-reduced-end-state]]
+      test(`under reduced motion the ${overlay} is at its end state: full size, opaque, and gone when closed`, async ({ page }) => {
+        await openMotion(page)
+        await open(page)
+        await atRest(page)
+        await close(page)
+        await expect(popup(page)).toHaveCount(0)
+      })
+    })
+  }
+
+  // ------------------------------------------------------------------------------------ Dialog
+  test.describe('Dialog', () => {
+    test.use({ reducedMotion: 'no-preference' })
+    // [[rule: dialog-enters-on-ease-out]]
+    test('the dialog enters on ease-out by opacity and a step of rise, and not at all from the keyboard', async ({ page }) => {
+      await page.goto('/#/components/dialog')
+      const trigger = page.locator('.pg-frame[data-theme="light"] .pg-frame-body').getByRole('button', { name: 'Edit Policy' })
+      await trigger.click()
+      const dialog = page.getByRole('dialog', { name: 'Edit policy' })
+      await expect(dialog).toBeVisible()
+      const timing = await dialog.evaluate((el) => getComputedStyle(el).transitionTimingFunction)
+      expect(timing).toBe('cubic-bezier(0.25, 1, 0.5, 1), cubic-bezier(0.25, 1, 0.5, 1)')
+      expect(onlyMoves(await animationsOf(dialog))).toBe(true)
+      await page.keyboard.press('Escape')
+      await expect(dialog).toHaveCount(0)
+      await trigger.focus()
+      await page.keyboard.press('Enter')
+      await expect(dialog).toBeVisible()
+      expect(await animationsOf(dialog)).toEqual([])
+    })
+  })
+
+  // ------------------------------------------------------------ Checkbox, Radio Group, Toggle
+  // The control's own element (the box, the circle, the track), what shows its state (the mark,
+  // the dot, the knob) and how to change it from the keyboard.
+  const CONTROLS = {
+    checkbox: {
+      control: (f: Locator) => f.getByRole('checkbox', { name: 'Include archived policies' }),
+      state: (f: Locator) => f.locator('.vela-checkbox__indicator'),
+      checked: (f: Locator) => f.getByRole('checkbox', { name: 'Include archived policies' }),
+      key: 'Space',
+    },
+    radio: {
+      control: (f: Locator) => f.getByRole('radio', { name: 'Quarantine' }),
+      state: (f: Locator) => f.getByRole('radio', { name: 'Quarantine' }).locator('.vela-radio__indicator'),
+      checked: (f: Locator) => f.getByRole('radio', { name: 'Quarantine' }),
+      key: 'ArrowRight',   // from Block, focused first
+    },
+    toggle: {
+      control: (f: Locator) => f.getByRole('switch', { name: 'Email alerts' }),
+      state: (f: Locator) => f.locator('.vela-toggle__knob'),
+      checked: (f: Locator) => f.getByRole('switch', { name: 'Email alerts' }),
+      key: 'Space',
+    },
+  } as const
+
+  for (const [name, c] of Object.entries(CONTROLS)) {
+    test.describe(name, () => {
+      const frame = (page: Page) => frameIn(page, 'motion-controls')
+      const control = (page: Page) => c.control(frame(page))
+      const state = (page: Page) => c.state(frame(page))
+      const press = async (page: Page, dx = 0) => {
+        await control(page).scrollIntoViewIfNeeded()   // a mouse moved by hand does not scroll
+        const b = (await control(page).boundingBox())!
+        await page.mouse.move(dx >= 0 ? b.x + b.width / 2 + dx : b.x + b.width + dx, b.y + b.height / 2)
+        await page.mouse.down()
+      }
+      const stateAtRest = async (page: Page) => {
+        await expect.poll(async () => (await animationsOf(state(page))).length, { timeout: 5000 }).toBe(0)
+        expect(await state(page).evaluate((el) => getComputedStyle(el).opacity)).toBe('1')
+      }
+
+      test.describe('with motion', () => {
+        test.use({ reducedMotion: 'no-preference' })
+
+        // [[rule: checkbox-mark-scales-in]]
+        // [[rule: radio-dot-scales-in]]
+        // [[rule: toggle-press-by-transform]]
+        test(`a pointer change on the ${name} moves by transform and opacity alone: the press, then the state`, async ({ page }) => {
+          await openMotion(page)
+          await slowMotion(page)
+          await press(page)
+          await page.waitForTimeout(100)
+          // Pressed: scaled to 0.9 (in at duration-instant, slowed five times), by a transform transition.
+          const pressing = await animationsOf(control(page))
+          expect(onlyMoves(pressing)).toBe(true)
+          await expect.poll(() => scaleOf(control(page))).toBeCloseTo(0.9, 2)
+          await page.mouse.up()
+          await expect(c.checked(frame(page))).toHaveAttribute('aria-checked', 'true')
+          // The state arrives: the mark or dot scales in from half size and fades in; the knob slides.
+          const arriving = await animationsOf(state(page))
+          expect(arriving.length).toBeGreaterThan(0)
+          expect(onlyMoves(arriving)).toBe(true)
+          if (name !== 'toggle') {
+            expect(arriving.map((a) => a.property).sort()).toEqual(['opacity', 'transform'])
+            const s = await scaleOf(state(page))
+            expect(s).toBeGreaterThanOrEqual(0.5)
+            expect(s).toBeLessThan(1)
+          }
+          expect(onlyMoves(await animationsOf(frame(page), true))).toBe(true)
+          await stateAtRest(page)
+          await expect.poll(() => scaleOf(control(page)), { timeout: 5000 }).toBe(1)
+        })
+
+        // [[rule: checkbox-mark-retargets]]
+        // [[rule: radio-dot-retargets]]
+        // [[rule: toggle-press-retargets]]
+        test(`changing the ${name} again mid-flight turns round and ends in the right state`, async ({ page }) => {
+          await openMotion(page)
+          await slowMotion(page)
+          await control(page).click()
+          await page.waitForTimeout(100)
+          // Back again while the first change is still moving…
+          if (name === 'radio') await frame(page).getByRole('radio', { name: 'Block' }).click()
+          else await control(page).click()
+          await page.waitForTimeout(100)
+          // …and forward once more: it ends checked and at rest, never stranded half-way.
+          await control(page).click()
+          await expect(c.checked(frame(page))).toHaveAttribute('aria-checked', 'true')
+          await stateAtRest(page)
+          if (name !== 'toggle') expect(await scaleOf(state(page))).toBe(1)
+          await expect.poll(() => scaleOf(control(page)), { timeout: 5000 }).toBe(1)
+          if (name === 'radio') await expect(frame(page).locator('.vela-radio__indicator')).toHaveCount(1, { timeout: 5000 })
+        })
+
+        // [[rule: checkbox-keyboard-is-instant]]
+        // [[rule: radio-keyboard-is-instant]]
+        // [[rule: toggle-keyboard-is-instant]]
+        test(`a keyboard change on the ${name} lands at once: no press, no state motion`, async ({ page }) => {
+          await openMotion(page)
+          if (name === 'radio') await frame(page).getByRole('radio', { name: 'Block' }).focus()
+          else await control(page).focus()
+          await page.keyboard.down(c.key)
+          // Held down from the keyboard, the control does not scale.
+          expect(await scaleOf(control(page))).toBe(1)
+          await page.keyboard.up(c.key)
+          await expect(c.checked(frame(page))).toHaveAttribute('aria-checked', 'true')
+          expect(await frame(page).locator('[data-vela-instant]').count()).toBe(1)
+          const moving = (await animationsOf(frame(page), true)).filter((a) => MOVING.has(a.property) || COLOUR.test(a.property))
+          expect(moving).toEqual([])
+          expect(await state(page).evaluate((el) => getComputedStyle(el).opacity)).toBe('1')
+          if (name !== 'toggle') expect(await scaleOf(state(page))).toBe(1)
+        })
+      })
+
+      // The project default: reducedMotion 'reduce'.
+      // [[rule: checkbox-motion-reduced-end-state]]
+      // [[rule: radio-motion-reduced-end-state]]
+      // [[rule: toggle-motion-reduced-end-state]]
+      test(`under reduced motion the ${name} is at its end state: pressed while held, released after, the state shown in full`, async ({ page }) => {
+        await openMotion(page)
+        await press(page)
+        await expect.poll(() => scaleOf(control(page))).toBeCloseTo(0.9, 3)
+        await page.mouse.up()
+        await expect(c.checked(frame(page))).toHaveAttribute('aria-checked', 'true')
+        await expect.poll(() => scaleOf(control(page))).toBe(1)
+        await stateAtRest(page)
+        if (name !== 'toggle') expect(await scaleOf(state(page))).toBe(1)
+      })
+
+      // [[rule: checkbox-press-keeps-hit-target]]
+      // [[rule: radio-press-keeps-hit-target]]
+      // [[rule: toggle-press-keeps-hit-target]]
+      // The press scales the control to 0.9 under the pointer; the guard holds its original box, so
+      // a press half a pixel inside its edge still releases on it and its click fires. Without the
+      // guard the release falls where the control no longer is (0.8px a side on a 16px box) and the
+      // click goes to the parent — measured in Chromium with the guard removed: 1 of these 2 presses
+      // lost on the Checkbox, 2 of 2 on the Toggle. On the Radio both still landed without the guard,
+      // for a reason not yet examined, so there this proves only that the press lands; the guard is
+      // kept for parity. Clicks are counted, not the state, because a Radio also selects on focus.
+      test(`a press at the inner edge of the ${name} still fires its click`, async ({ page }) => {
+        await openMotion(page)
+        await control(page).evaluate((el) => {
+          ;(window as Window & { __hits?: number }).__hits = 0
+          el.addEventListener('click', () => { (window as Window & { __hits?: number }).__hits!++ })
+        })
+        for (const edge of [1, -1]) {
+          await control(page).scrollIntoViewIfNeeded()
+          const b = (await control(page).boundingBox())!
+          const x = edge > 0 ? b.x + 0.5 : b.x + b.width - 0.5
+          await page.mouse.move(x, b.y + b.height / 2)
+          await page.mouse.down()
+          await page.waitForTimeout(150)   // longer than the press transition; .click() cannot fail
+          await page.mouse.up()
+        }
+        expect(await page.evaluate(() => (window as Window & { __hits?: number }).__hits)).toBe(2)
+        // And a Checkbox or Toggle pressed twice is back where it started.
+        if (name !== 'radio') await expect(c.checked(frame(page))).toHaveAttribute('aria-checked', 'false')
+      })
+    })
+  }
+})

@@ -31,11 +31,43 @@
   border-radius: 50%;
   color: var(--vela-control-check-mark);
   cursor: pointer;
+  /* Asymmetric press, as on Button and Checkbox: the :active rule swaps in duration-instant. */
+  --vela-radio-press-duration: var(--vela-duration-base);
   transition: background-color var(--vela-duration-fast) var(--vela-ease-standard),
-              border-color var(--vela-duration-fast) var(--vela-ease-standard);
+              border-color var(--vela-duration-fast) var(--vela-ease-standard),
+              transform var(--vela-radio-press-duration) var(--vela-ease-standard);
 }
-.vela-radio__indicator { display: flex; }
+.vela-radio__indicator {
+  display: flex;
+  transition: opacity var(--vela-duration-fast) var(--vela-ease-out),
+              transform var(--vela-duration-fast) var(--vela-ease-out);
+}
 .vela-radio__dot { display: block; width: var(--vela-control-radio-dot); height: var(--vela-control-radio-dot); }
+
+/* State motion (radio-group.md, Motion). The selected radio's dot scales in from half size as it
+   fades in; the radio that lost the selection fades its dot out where it is. Keyed on Base UI's
+   transition attributes on the Indicator, which mounts only while selected and stays mounted
+   until its fade has finished. */
+.vela-radio__indicator[data-starting-style] { opacity: 0; transform: scale(0.5); }
+.vela-radio__indicator[data-ending-style] { opacity: 0; }
+
+/* Press: pointer only, the Button mechanism on a 16px circle (see Checkbox.css for why 0.9). */
+.vela-radio__circle:active:not(:disabled):not(:focus-visible) {
+  --vela-radio-press-duration: var(--vela-duration-instant);
+  transform: scale(0.9);
+}
+/* The guard holds the circle's original border box for the length of the press. */
+.vela-radio__circle:active:not(:disabled):not(:focus-visible)::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  transform: scale(1.1111111);
+}
+.vela-radio__circle:active:not(:disabled):focus-visible { outline-offset: 0; }
+/* From the keyboard, nothing animates: arrow keys and Space change the selection at once. */
+.vela-radio-group[data-vela-instant] .vela-radio__circle,
+.vela-radio-group[data-vela-instant] .vela-radio__indicator { transition: none; }
 
 @media (hover: hover) {
   .vela-radio:hover .vela-radio__circle[aria-checked='false']:not(:disabled) { border-color: var(--vela-control-border-hover); }
