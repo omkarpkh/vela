@@ -14,6 +14,14 @@ specification and the source is one implementation of it**: do not infer an API 
 the taxonomies and the accessibility rules hold for any framework, and the specs are written
 to be implementation-independent (`guidelines/llms.txt`, `guidelines/setup.md`).
 
+The React package has two entry points (`decisions/002-agent-ready-direction`): `@omkarux/vela`
+is hand-rolled and has zero runtime dependencies; `@omkarux/vela/headless` builds the same
+specs on Base UI (`@base-ui/react`, an optional peer) and is Experimental. The first headless
+component is Tabs, so the two can be compared against one spec, one stylesheet and one test
+file. Choose the core entry unless you already carry Base UI or need a behaviour the core does
+not yet implement; a spec's "Implementations" section lists what each entry ships and where they
+differ.
+
 ## Token layers and naming
 
 Two layers (`guidelines/tokens.md`, `guidelines/foundations/color.md`):

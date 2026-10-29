@@ -1,7 +1,8 @@
 # Vela Design System
 
 > A token-first design system. Two-layer colour architecture (primitives -> semantics), three
-> deliberately separate status taxonomies, full light and dark theming, zero runtime dependencies.
+> deliberately separate status taxonomies, full light and dark theming, zero runtime dependencies
+> in the core entry (the `/headless` entry needs one optional peer, Base UI).
 > 13 of the 32 design rules are enforced by the TypeScript types; the rest are checked at runtime, in a
 > real browser, or by review. Each rule in the component guidelines is tagged with its level.
 >

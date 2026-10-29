@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { Button, Toggle, Input, ContextualAlert, StatusIndicator, RiskPill, Tabs } from '../../src'
 import type { Severity, Status, Risk } from '../../src'
+import { Tabs as HeadlessTabs } from '../../src/headless'
 import { PlusIcon } from '../../src/lib/icons'
 import { printJsx, type Control, type Spec } from './spec'
 import buttonMd from '../../guidelines/components/button.md?raw'
@@ -12,6 +13,19 @@ import riskMd from '../../guidelines/components/risk-pill.md?raw'
 import tabsMd from '../../guidelines/components/tabs.md?raw'
 
 export type Values = Record<string, string | boolean | undefined>
+
+/**
+ * One implementation of a spec. Two entry points, one playground (decisions/002): a component
+ * that ships from both lists them here, the page gets an "Implementation" control, and `render`
+ * reads the choice from `v.implementation` (seeded with the first entry's id).
+ */
+export interface Implementation {
+  id: string
+  /** Where a consumer imports it from. */
+  entry: '@omkarux/vela' | '@omkarux/vela/headless'
+  /** Shown as "Dependencies: …"; a component with one implementation reads this from its spec. */
+  dependencies: string
+}
 
 export interface Entry {
   id: string
@@ -32,6 +46,8 @@ export interface Entry {
    * row under "Also in the API" — the prop is real, the demonstration is not.
    */
   noControl?: string[]
+  /** Alternative implementations of the same spec; absent means the core entry only. */
+  implementations?: Implementation[]
   /** Mirrors the type-level rules: invalid combinations do not exist, so they cannot be picked. */
   constrain?: (v: Values) => Values
   /** Which control options are unavailable for the current values (shown, never selectable). */
@@ -182,19 +198,29 @@ export const REGISTRY: Entry[] = [
     src: 'Tabs',
     name: 'Tabs',
     spec: tabsMd,
-    seed: {},
+    seed: { implementation: 'core' },
     hide: ['defaultValue'],
-    render: (v) => (
-      <Tabs defaultValue="alerts" size={(str(v.size) || 'regular') as 'regular' | 'large'}>
-        <Tabs.List aria-label="Views">
-          <Tabs.Trigger value="alerts" count={12}>Alerts</Tabs.Trigger>
-          <Tabs.Trigger value="assets" count={340}>Assets</Tabs.Trigger>
-          <Tabs.Trigger value="audit" disabled>Audit</Tabs.Trigger>
-        </Tabs.List>
-        <Tabs.Panel value="alerts"><p className="vela-body">Arrow keys move, Home and End jump, Audit is skipped.</p></Tabs.Panel>
-        <Tabs.Panel value="assets"><p className="vela-body">Only the active panel is mounted.</p></Tabs.Panel>
-      </Tabs>
-    ),
+    // The Phase 1 proving case: the same props through either implementation, against the same
+    // spec and the same stylesheet. The values here are the ones tabs.md states under
+    // "Implementations"; the spec's own `**Dependencies:**` line is the core's.
+    implementations: [
+      { id: 'core', entry: '@omkarux/vela', dependencies: 'none' },
+      { id: 'headless', entry: '@omkarux/vela/headless', dependencies: '@base-ui/react (optional peer, via /headless)' },
+    ],
+    render: (v) => {
+      const T = v.implementation === 'headless' ? HeadlessTabs : Tabs
+      return (
+        <T defaultValue="alerts" size={(str(v.size) || 'regular') as 'regular' | 'large'}>
+          <T.List aria-label="Views">
+            <T.Trigger value="alerts" count={12}>Alerts</T.Trigger>
+            <T.Trigger value="assets" count={340}>Assets</T.Trigger>
+            <T.Trigger value="audit" disabled>Audit</T.Trigger>
+          </T.List>
+          <T.Panel value="alerts"><p className="vela-body">Arrow keys move, Home and End jump, Audit is skipped.</p></T.Panel>
+          <T.Panel value="assets"><p className="vela-body">Only the active panel is mounted.</p></T.Panel>
+        </T>
+      )
+    },
     code: (v, spec) =>
       `${printJsx('Tabs', { defaultValue: 'alerts', size: v.size }, defaultsOf(spec)).replace(' />', '>')}
   <Tabs.List aria-label="Views">

@@ -13,7 +13,17 @@ function statusOf(spec: string): { label: Label; note: string } {
   const m = spec.match(/^\*\*Status:\*\*\s*([^\n]+?)(?:\s+[—-]\s+([\s\S]*?))?\n\n/m)
   if (!m) return { label: 'Approved', note: '' }
   const word = LABELS.find((l) => m[1].trim().toLowerCase().startsWith(l.toLowerCase()))
-  return { label: word ?? 'Approved', note: (m[2] ?? '').replace(/`/g, '').replace(/\s+/g, ' ').trim() }
+  // A `**Dependencies:**` line may sit directly under the Status line; it is not part of the note.
+  const note = (m[2] ?? '').replace(/^\*\*Dependencies:\*\*[^\n]*$/m, '')
+  return { label: word ?? 'Approved', note: note.replace(/`/g, '').replace(/\s+/g, ' ').trim() }
+}
+
+// What a consumer installs besides React to render this component, read from the spec the same
+// way the status is: one `**Dependencies:**` line directly under `**Status:**` (or under the intent
+// paragraph when there is no Status line). Absent means "none", which is every core component.
+export function dependenciesOf(spec: string): string {
+  const m = spec.match(/^\*\*Dependencies:\*\*\s*([^\n]+)/m)
+  return m ? m[1].replace(/`/g, '').trim() : 'none'
 }
 
 const PROMISE: Record<Label, string> = {

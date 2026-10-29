@@ -17,6 +17,11 @@ Retired, defined in [`GOVERNANCE.md`](GOVERNANCE.md). All six are currently **Ap
 npm install @omkarux/vela
 ```
 
+The core entry point, `@omkarux/vela`, has zero runtime dependencies. A second, Experimental
+entry point, `@omkarux/vela/headless`, builds the same specs on [Base UI](https://base-ui.com)
+and needs one optional peer: `npm install @base-ui/react@1.9` — only if you import from it. Its
+first component is Tabs; the spec's "Implementations" section says how the two compare.
+
 ```tsx
 import '@omkarux/vela/styles.css'
 import { Button, ContextualAlert, Tabs } from '@omkarux/vela'
@@ -45,10 +50,10 @@ link to each, and the number of automated checks, written by the test runners ra
 | **Components** | Button · Toggle · Input · ContextualAlert · StatusIndicator · Tabs |
 | **Tokens** | 242 CSS custom properties, two layers (primitives → semantics) |
 | **Themes** | Light + dark. OS preference by default, `data-theme` to override |
-| **Dependencies** | None. `react` / `react-dom` are peers (18.3 or 19) |
+| **Dependencies** | None in the core entry. `react` / `react-dom` are peers (18.3 or 19). The `/headless` entry needs one optional peer, `@base-ui/react` 1.9.x (MIT) |
 | **Format** | ESM, `preserveModules` for tree-shaking, full `.d.ts` |
-| **Tests** | 361 automated checks — 281 unit and contract (48 contrast pairs, each asserted in both themes), 77 browser (68 screenshots at four widths, 7 playground, 2 docs), 3 Flutter — counted by `npm run checks` |
-| **Packed size** | 72.3 kB, 53 files, as `npm run verify` measures it (README and CHANGELOG ship in the tarball, so this moves when they do) |
+| **Tests** | 375 automated checks — 294 unit and contract (48 contrast pairs, each asserted in both themes), 78 browser (68 screenshots at four widths, 8 playground, 2 docs), 3 Flutter — counted by `npm run checks` |
+| **Packed size** | 86.4 kB, 59 files, as `npm run verify` measures it (README and CHANGELOG ship in the tarball, so this moves when they do) |
 
 ## The three ideas worth stealing
 
@@ -143,7 +148,7 @@ document.documentElement.removeAttribute('data-theme')        // follow the OS
 
 ```bash
 npm run dev        # demo showcase at localhost:5174
-npm test           # 281 unit and contract tests, of 361 checks in all — the numbers are generated into demo/checks.json
+npm test           # 294 unit and contract tests, of 375 checks in all — the numbers are generated into demo/checks.json
 npm run checks     # counts every automated check into demo/checks.json (diffed in verify)
 npm run contrast   # WCAG report for both themes
 npm run verify     # tokens:check + rules:check + typecheck + tests + checks:check + build + pack-and-consume gate
