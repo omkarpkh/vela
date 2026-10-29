@@ -159,8 +159,14 @@ describe('text styles have a source', () => {
     expect(styles.map((s) => s.name)).toEqual([
       'Heading/H1', 'Heading/H2', 'Heading/H3', 'Heading/H4', 'Heading/H5', 'Heading/H6',
       'Body/Default', 'Body/Meta', 'Button/Tiny', 'Button/Regular', 'Button/Large', 'Button/Huge',
-      'Tab/Default', 'Tab/Large', 'Body/Link', 'Tab/Count', 'Tab/Count Large',
+      'Tab/Default', 'Tab/Large', 'Body/Link', 'Tab/Count', 'Tab/Count Large', 'Mono/Meta',
     ])
+  })
+
+  it('draws Mono/Meta as Body/Meta in Roboto Mono: same size, line height, weight and tracking variables', () => {
+    const mono = styles.find((s) => s.name === 'Mono/Meta'), meta = styles.find((s) => s.name === 'Body/Meta')
+    expect(mono.fontName).toEqual({ family: 'Roboto Mono', style: 'Regular' })
+    for (const k of ['size', 'lineHeight', 'weight', 'tracking']) expect(mono[k], k).toEqual(meta[k])
   })
 
   it('binds Tab/Count to size/tab, line-height/tab and weight/semibold, and Tab/Count Large to the large pair', () => {

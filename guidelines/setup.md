@@ -57,6 +57,7 @@ theme cheap rather than a rewrite.
 
 Open Sans (300/400/600) for UI text; Oswald for large stat displays. Both have system
 fallbacks in the font stack, so the kit degrades rather than breaks if you do not load them.
+`--vela-font-family-mono` is a system monospace stack and needs nothing loaded.
 
 ## Framework
 

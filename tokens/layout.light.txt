@@ -261,6 +261,7 @@
   /* ---- Typography: family & weight ---- */
   @font-family-primary
   @font-family-display
+  @font-family-mono
   @font-weight-light
   @font-weight-regular
   @font-weight-semibold

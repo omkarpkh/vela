@@ -23,6 +23,14 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   reviewer lint with no waiver) and a playground page; not on the Overview page, so no visual
   baseline moves. Status: Experimental until its Figma set is published. Rule count 18 of 41
   compiler-enforced, was 13 of 32.
+- **A monospace family and the `Mono/Meta` text style**, requested by the Action Impact Card
+  spec. `--vela-font-family-mono` is a system stack — `ui-monospace, "SF Mono", "Cascadia
+  Mono", "Roboto Mono", Menlo, Consolas, monospace` — so no web font is downloaded; it is
+  `raw` like the other two families, which the Figma variable sync skips by type. Figma gets
+  the text style `Mono/Meta`: Body/Meta's size, line height, weight and tracking variables in
+  Roboto Mono, the stack's Google-hosted member. Flutter carries `fontFamilyMono` ('SF Mono')
+  with its fallbacks; the MUI bridge is unchanged. 255 tokens, was 254 (the README's "242" had gone stale and
+  now says 255).
 - **The docs site carries the project record.** New routes: `#/status` (every component's
   lifecycle label, read from the `**Status:**` line in its spec, so site and spec cannot
   disagree), `#/changelog`, `#/roadmap`, `#/contributing` and `#/accessibility`, each rendered

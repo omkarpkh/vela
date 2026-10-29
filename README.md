@@ -43,7 +43,7 @@ link to each, and the number of automated checks, written by the test runners ra
 | | |
 |---|---|
 | **Components** | Button · Toggle · Input · TextArea · ContextualAlert · StatusIndicator · RiskPill · Tabs |
-| **Tokens** | 242 CSS custom properties, two layers (primitives → semantics) |
+| **Tokens** | 255 CSS custom properties, two layers (primitives → semantics) |
 | **Themes** | Light + dark. OS preference by default, `data-theme` to override |
 | **Dependencies** | None. `react` / `react-dom` are peers (18.3 or 19) |
 | **Format** | ESM, `preserveModules` for tree-shaking, full `.d.ts` |
