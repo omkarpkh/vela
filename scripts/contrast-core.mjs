@@ -95,6 +95,13 @@ export const PAIRS = [
   ['--vela-btn-standard-border','--vela-btn-standard-bg', 'Standard button border', 'ui'],
   ['--vela-border-default',     '--vela-bg-global',       'Default border on page', 'ui'],
   ['--vela-border-active',  '--vela-bg-global',  'Focus ring',          'ui'],
+  // Icon tones (guidelines/components/icon.md): `default` binds --vela-icon-strong, asserted on the
+  // page and on a container; `muted` binds --vela-icon-default, asserted on the page only — on a
+  // container it is 3.07:1 in light mode, under the input border's 3.29:1, so the spec says use
+  // `default` there. A glyph is non-text.
+  ['--vela-icon-strong',  '--vela-bg-global',    'Icon, default tone, on page',      'ui'],
+  ['--vela-icon-strong',  '--vela-bg-container', 'Icon, default tone, on container', 'ui'],
+  ['--vela-icon-default', '--vela-bg-global',    'Icon, muted tone, on page',        'ui'],
   ...['unknown', 'healthy', 'warning', 'medium', 'unhealthy'].map((s) => [
     `--vela-signal-status-${s}`, '--vela-bg-global', `Status dot: ${s}`, 'ui',
   ]),

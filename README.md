@@ -5,13 +5,14 @@
 [![Licence: MIT](https://img.shields.io/badge/licence-MIT-blue)](LICENSE)
 
 A token-first design system. The tokens and the component specs are framework-agnostic;
-this repository is a **React implementation** of them. Seven components, two themes, zero runtime
+this repository is a **React implementation** of them. Eight components, two themes, zero runtime
 dependencies in the core entry — and every design rule in the documentation is tagged with how it is
-enforced: 13 of the 32 by the TypeScript compiler, the rest at runtime, in a real browser, or by review
+enforced: 17 of the 44 by the TypeScript compiler, the rest at runtime, in a real browser, or by review
 (counted by `npm run rules:check`).
 
 **Status:** every component carries a lifecycle label — Approved, Known bugs, Experimental or
-Retired, defined in [`GOVERNANCE.md`](GOVERNANCE.md). All six are currently **Approved**.
+Retired, defined in [`GOVERNANCE.md`](GOVERNANCE.md). Six are **Approved**; Risk Pill and Icon are
+**Experimental** until their Figma sets are published.
 
 ```bash
 npm install @omkarux/vela
@@ -47,10 +48,11 @@ link to each, and the number of automated checks, written by the test runners ra
 
 | | |
 |---|---|
-| **Components** | Button · Toggle · Input · ContextualAlert · StatusIndicator · Tabs |
+| **Components** | Button · Toggle · Input · ContextualAlert · StatusIndicator · RiskPill · Tabs · Icon |
 | **Tokens** | 242 CSS custom properties, two layers (primitives → semantics) |
 | **Themes** | Light + dark. OS preference by default, `data-theme` to override |
 | **Dependencies** | None in the core entry. `react` / `react-dom` are peers (18.3 or 19). The `/headless` entry needs one optional peer, `@base-ui/react` 1.9.x (MIT) |
+| **Icons** | 50 curated [Lucide](https://lucide.dev) 1.63.0 glyphs (ISC; a subset from Feather, MIT), compiled into the core entry at build time — no icon dependency, `lucide` is a devDependency only. The ISC notice ships in [`NOTICE`](NOTICE) |
 | **Format** | ESM, `preserveModules` for tree-shaking, full `.d.ts` |
 | **Tests** | 370 automated checks — 289 unit and contract (48 contrast pairs, each asserted in both themes), 78 browser (68 screenshots at four widths, 8 playground, 2 docs), 3 Flutter — counted by `npm run checks` |
 | **Packed size** | 86.4 kB, 59 files, as `npm run verify` measures it (README and CHANGELOG ship in the tarball, so this moves when they do) |
@@ -221,8 +223,8 @@ or a new rule arrives untagged.
 
 ## Scope
 
-Seven components, chosen to exercise every foundation and all three taxonomies (Severity, Risk,
-Status). Not yet specced: Checkbox, Radio, Dropdown List, Select List, Token Pill, Number Stepper, Text Area,
+Eight components, chosen to exercise every foundation and all three taxonomies (Severity, Risk,
+Status), and the curated Icon set they draw from. Not yet specced: Checkbox, Radio, Dropdown List, Select List, Token Pill, Number Stepper, Text Area,
 Modal, Tooltip, Icon Button, Actions Dropdown, View Switcher. The guidelines name these
 explicitly so an agent flags the gap instead of inventing one.
 

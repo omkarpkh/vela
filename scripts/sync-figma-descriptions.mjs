@@ -35,6 +35,7 @@ const SETS = {
   'status-indicator.md': { set: 'Status Indicator', src: 'StatusIndicator' },
   'risk-pill.md': { set: 'Risk Pill', src: 'RiskPill' },
   'tabs.md': { set: 'Tab', src: 'Tabs' },
+  'icon.md': { set: 'Icon', src: 'Icon' },
 }
 
 // `[[rule: id | enforcement]]` is metadata for scripts/check-rules.mjs, not prose: it is stripped

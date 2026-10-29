@@ -14,6 +14,7 @@ below, then open the per-component file for props, tokens, and anti-patterns.
 | Status Indicator | A health dot for one of five states | `components/status-indicator.md` |
 | Risk Pill | A read-only risk score (low/medium/high) on an object | `components/risk-pill.md` |
 | Tabs | Navigate between different content panels | `components/tabs.md` |
+| Icon | One of fifty curated glyphs beside text or in another component's icon slot — never a control, never a taxonomy mark | `components/icon.md` |
 
 ## Disambiguations (where AI usually picks wrong)
 
@@ -29,6 +30,11 @@ below, then open the per-component file for props, tokens, and anti-patterns.
   Severity (6 levels) describes *events* and is Contextual Alert's. Risk (3 levels) describes
   *scoring* and is Risk Pill's. Status (5 states) is the Status Indicator dot only. There is no
   "high severity" and no "critical risk".
+- **Icon vs Contextual Alert vs Icon Button** — a glyph that reinforces text, or labels a cell
+  → **Icon**. The mark of an event the user must read → **Contextual Alert**, which owns the
+  severity marks (an Icon has no severity tone). A glyph you click (close, copy, more) → **Icon
+  Button**, which is not in this kit; flag the gap. A glyph that is not in `ICON_NAMES` does not
+  exist: name the closest curated one and flag it, never import another icon library.
 
 ## If no component fits
 
