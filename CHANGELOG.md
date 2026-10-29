@@ -30,6 +30,12 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   the reviewed version. A test holds `NOTICE`'s Feather list to Lucide's LICENSE. The mock
   Plugin API models `createNodeFromSvg` and `flatten`; the builder has not been run in the
   library yet. A playground page shows every glyph at the chosen size and tone.
+- **The first three agentic specs are public, as proposals.** `guidelines/proposals/` holds the
+  pressure-tested specs for the Verdict Card (29 rules, 23 with proofs), the Action Impact Card
+  (30, 22) and the Autonomy Ladder (28, 22), with four new closed taxonomies: Verdict, Confidence
+  band, Reversibility tier and Autonomy rung. Nothing in them is built; the folder's README and
+  each file's first line say so, and it is left out of the npm package so a consumer's agent
+  cannot mistake a proposal for an export.
 - **`guidelines/figma-map.json`: what to write for each Figma set, on every plan.** Compiled from
   the specs by `npm run figma:map` (the description sync with `--map`): each set's node id and
   link, the import, the export to write (`Tabs.Trigger` for the Tab set), every Figma property's

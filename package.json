@@ -40,6 +40,7 @@
   "files": [
     "dist",
     "guidelines",
+    "!guidelines/proposals",
     "README.md",
     "CHANGELOG.md",
     "LICENSE",
