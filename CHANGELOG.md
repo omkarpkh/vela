@@ -5,16 +5,19 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
-### Fixed
-- **Tabs: no stray vertical scrollbar, and the selected tab keeps its colour under the pointer.**
-  The tab list scrolled sideways with `overflow-x: auto`, which left `overflow-y` on auto too; the
-  underline's 1px past the padding box became a vertical scroll range, and a touch browser drew a
-  grey scrollbar at the end of the list. It is now `overflow-y: hidden`, which clips the same
-  pixels. Hovering the selected tab no longer dims its label from the link colour.
-- **Playground: the Tabs stage holds the tab list still.** The frame centred a body that hugged
-  its content, so a panel with shorter text moved the whole list sideways and up or down on a
-  switch. The body now takes the frame's width and sits at the top. A new e2e test holds the
-  list's position across a switch, on both implementations, at phone width.
+## [0.13.0] — 2026-10-29
+
+### Changed — breaking
+- **`@omkarux/vela/tokens.json` has a new shape (DTCG 2025.10).** In 0.12.1 a colour's `$value`
+  was a hex string, vendor data sat under `$extensions.vela`, and the file carried the light
+  values only. Now a colour's `$value` is `{ colorSpace, components, hex }`, a duration is
+  `{ value, unit }`, aliases are full paths, vendor data sits under `$extensions["com.omkarux.vela"]`,
+  and dark mode is an overlay in the new `./tokens.dark.json`, combined by `./tokens.resolver.json`.
+  A tool that read `$value` as a string must read `$value.hex`. The CSS custom properties, the
+  Dart file and the MUI theme are unchanged: no `--vela-*` property was renamed or removed between
+  0.12.1 and this release. (The DTCG entry under Added says every generated
+  target is byte-identical; that holds for the generated targets, not for the JSON source, which
+  ships.)
 
 ### Added
 - **Awareness Clock — proposal, not built** (`guidelines/proposals/awareness-clock.md`). Records
@@ -385,6 +388,15 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   file or a stale `demo/checks.json` failed locally and passed in CI.
 
 ### Fixed
+- **Tabs: no stray vertical scrollbar, and the selected tab keeps its colour under the pointer.**
+  The tab list scrolled sideways with `overflow-x: auto`, which left `overflow-y` on auto too; the
+  underline's 1px past the padding box became a vertical scroll range, and a touch browser drew a
+  grey scrollbar at the end of the list. It is now `overflow-y: hidden`, which clips the same
+  pixels. Hovering the selected tab no longer dims its label from the link colour.
+- **Playground: the Tabs stage holds the tab list still.** The frame centred a body that hugged
+  its content, so a panel with shorter text moved the whole list sideways and up or down on a
+  switch. The body now takes the frame's width and sits at the top. A new e2e test holds the
+  list's position across a switch, on both implementations, at phone width.
 - **Correction to the 0.3.0 entry, 28 October 2026.** It says Code Connect "requires an
   Organization or Enterprise Figma plan". Figma's Code Connect help page now lists the
   Professional plan too, with a Full or Dev seat, limited to one active library and one active
@@ -453,7 +465,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ### Changed
 - README: shields.io badges for CI, the npm version and the licence (static badge URLs, no new
   service), a "Project files" section linking the files above, and a status line stating that
-  the lifecycle labels exist and every component is currently Approved.
+  the lifecycle labels exist and which components carry which.
 
 ## [0.12.1] — 2026-10-09
 

@@ -4,8 +4,9 @@
 `scripts/icons.list.json` and compiled at build time into zero-dependency React inside the core
 entry, behind one `Icon` component whose `name` is a closed union. `lucide` is a pinned
 devDependency only; `dependencies` stays `{}`. Shipped as Experimental: the spec, the component,
-the build and its check, the tests and fixtures, a Figma builder and a playground page. The Figma
-set has not been run in the library yet, and the kit's own six inline glyphs have not moved.**
+the build and its check, the tests and fixtures, a Figma builder and a playground page. Released
+in 0.13.0. The Figma set is built in the library file, published with the 0.13.0 library; the
+kit's own six inline glyphs have not moved.**
 
 The build is `scripts/build-icons.mjs` (`npm run icons:build`), reading through
 `scripts/icons-core.mjs`; `npm run icons:check` rebuilds and diffs, and runs in `verify`.

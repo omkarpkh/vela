@@ -140,7 +140,7 @@ describe('the Changelog page', () => {
       expect([link.chars, link.style]).toEqual(['Full entry: CHANGELOG.md', 'Body/Link'])
       expect(link.link).toMatch(/^https:\/\/github\.com\/omkarpkh\/vela\/blob\/main\/CHANGELOG\.md#\d+--\d{4}-\d{2}-\d{2}$/)
     }
-    expect(cards[0].ch!.at(-1)!.link).toBe('https://github.com/omkarpkh/vela/blob/main/CHANGELOG.md#0121--2026-10-09')
+    expect(cards[0].ch!.at(-1)!.link).toBe('https://github.com/omkarpkh/vela/blob/main/CHANGELOG.md#0130--2026-10-29')
   })
 
   it('says where "on npm" came from: the committed published.json, which lists every release but 0.1.0', () => {
@@ -195,20 +195,20 @@ describe('the Status page', () => {
     expect(spec.link).toBe('https://github.com/omkarpkh/vela/blob/main/guidelines/components/contextual-alert.md')
     // Risk Pill's set is built in the file, not published; its spec is on main, so no "(branch)".
     const [, rset, , rsince, rspec] = cells('Risk Pill')
-    expect([rset.chars, rsince.chars, rspec.chars]).toEqual(['Built, not published', 'Unreleased', 'risk-pill.md'])
+    expect([rset.chars, rsince.chars, rspec.chars]).toEqual(['Built, not published', '0.13.0', 'risk-pill.md'])
     expect(rspec.link).toBe('https://github.com/omkarpkh/vela/blob/main/guidelines/components/risk-pill.md')
     expect(cells('Checkbox')[1].chars).toBe('Built, not published')
     expect(cells('Tabs')[1].chars).toBe('Tab · page Tabs')
-    // Icon is core and unreleased; 0.12.1's `Icon` box (a Figma layer inside Button) does not date it.
+    // Icon is core and first released in 0.13.0; 0.12.1's `Icon` box (a Figma layer inside Button) does not date it.
     // Its set is built in the file, not published (R13); its spec is on main, so no "(branch)".
     const [, iset, iexp, isince, ispec] = cells('Icon')
-    expect([iset.chars, iexp.chars, isince.chars, ispec.chars]).toEqual(['Built, not published', 'Icon · @omkarux/vela', 'Unreleased', 'icon.md'])
-    // Text Area is core and unreleased; its spec is on main, so no "(branch)".
+    expect([iset.chars, iexp.chars, isince.chars, ispec.chars]).toEqual(['Built, not published', 'Icon · @omkarux/vela', '0.13.0', 'icon.md'])
+    // Text Area is core and first released in 0.13.0; its spec is on main, so no "(branch)".
     const [, tset, texp, tsince, tspec] = cells('Text Area')
-    expect([tset.chars, texp.chars, tsince.chars, tspec.chars]).toEqual(['Built, not published', 'TextArea · @omkarux/vela', 'Unreleased', 'text-area.md'])
-    // Table is core and unreleased; its three sets are built, not published.
+    expect([tset.chars, texp.chars, tsince.chars, tspec.chars]).toEqual(['Built, not published', 'TextArea · @omkarux/vela', '0.13.0', 'text-area.md'])
+    // Table is core and first released in 0.13.0; its three sets are built, not published.
     const [, bset, bexp, bsince, bspec] = cells('Table')
-    expect([bset.chars, bexp.chars, bsince.chars, bspec.chars]).toEqual(['Built, not published', 'Table · @omkarux/vela', 'Unreleased', 'table.md'])
+    expect([bset.chars, bexp.chars, bsince.chars, bspec.chars]).toEqual(['Built, not published', 'Table · @omkarux/vela', '0.13.0', 'table.md'])
     // Popover, Tooltip, Dialog and Toast: built in the file from main 60d80ef, not published (R13).
     for (const n of ['Popover', 'Tooltip', 'Dialog', 'Toast']) expect(cells(n)[1].chars, n).toBe('Built, not published')
     // Every spec is on main now, so no row shows "(branch)".
