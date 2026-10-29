@@ -24,6 +24,13 @@ Oswald
   Source: https://github.com/googlefonts/OswaldFont
   Use: named by the typography tokens for large stat displays. Not bundled.
 
+Roboto Mono
+  Copyright The Roboto Mono Project Authors
+  Licence: SIL Open Font License 1.1 — https://openfontlicense.org/open-font-license-official-text/
+  Source: https://github.com/googlefonts/RobotoMono
+  Use: named only by the Figma text style Mono/Meta. Not bundled, and not in the CSS stack, which
+  is system monospace faces (--vela-font-family-mono).
+
 Contributor Covenant, version 2.1
   Copyright Coraline Ada Ehmke and contributors
   Licence: Creative Commons Attribution 4.0 — https://creativecommons.org/licenses/by/4.0/
