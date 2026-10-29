@@ -21,7 +21,7 @@
  */
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { loadTokenSet, isAlias, aliasPath, hexOf, alphaOf, pxOf, msOf, cubicBezierOf, deprecationNote } from './tokens-core.mjs'
+import { loadTokenSet, isAlias, aliasPath, hexOf, alphaOf, pxOf, msOf, cubicBezierOf, deprecationNote, springOf } from './tokens-core.mjs'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const set = loadTokenSet(root)
@@ -73,6 +73,10 @@ const scopesFor = (group, figmaName, cssName, type) => {
 }
 
 const collectionOf = { primitives: 'Primitives', color: 'Color', sizing: 'Sizing', typography: 'Typography', motion: 'Motion' }
+const springNote = (css) => {
+  const s = springOf(set, css)
+  return s ? ` Spring: stiffness ${s.stiffness}, damping ${s.damping}, mass ${s.mass}, over ${set.vendor(s.durationToken).figma} (${s.durationMs}ms). Figma holds the fallback curve.` : ''
+}
 // `--only <Collection>` limits the printed script to one collection (the MCP script cap is 50 KB).
 const only = process.argv.includes('--only') ? process.argv[process.argv.indexOf('--only') + 1] : null
 const entries = []
@@ -91,7 +95,13 @@ for (const [group, tokens] of Object.entries(set.base)) {
     const type = t.$type === 'color' ? 'COLOR' : t.$type === 'duration' ? 'TIMING' : t.$type === 'cubicBezier' ? 'EASING' : 'FLOAT'
     // An alias stays a `{path}` string here and becomes a VARIABLE_ALIAS below; a colour object
     // becomes the hex the Plugin API script turns into RGB.
+    // An easing alias (the spring's fallback, `{motion.ease-out}`) is written as the curve it
+    // resolves to, not as a VARIABLE_ALIAS: the sync has only ever written an EASING variable as a
+    // CUSTOM_CUBIC_BEZIER, and an alias between easing variables is a shape it has not proved.
+    // Figma has no spring variable shape the sync relies on either, so the spring arrives as its
+    // fallback curve, with the physics stated in the description.
     const value = (v) => {
+      if (isAlias(v) && t.$type === 'cubicBezier') v = set.resolved(css)
       if (isAlias(v)) return v
       if (t.$type === 'color') {
         if (alphaOf(v, css) < 1) throw new Error(`sync-figma: ${css} has alpha ${v.alpha}; the Figma sync carries opaque colours only`)
@@ -109,7 +119,7 @@ for (const [group, tokens] of Object.entries(set.base)) {
       light: value(set.valueOf(css, 'light')),
       dark: t.$type === 'color' ? value(set.valueOf(css, 'dark')) : undefined,
       scopes: scopesFor(group, figma, css, type),
-      description: note ? `${note[0].toUpperCase()}${note.slice(1)}.${t.$description ? ' ' + t.$description : ''}` : (t.$description ?? ''),
+      description: (note ? `${note[0].toUpperCase()}${note.slice(1)}.${t.$description ? ' ' + t.$description : ''}` : (t.$description ?? '')) + springNote(css),
     })
   }
 }

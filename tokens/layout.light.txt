@@ -336,8 +336,11 @@
   @duration-instant
   @duration-fast
   @duration-base
+  @duration-travel
   @delay-tooltip
   @duration-toast
   @ease-standard
+  @ease-out
+  @ease-spring /* the fallback; the spring itself is declared under @supports at the end of this file */
   @blur-materialize
 }

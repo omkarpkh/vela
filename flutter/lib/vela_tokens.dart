@@ -1217,9 +1217,10 @@ abstract final class VelaSizing {
   static const double toastWidth = 360;
 }
 
-/// Motion: three durations and the one curve. A press lands on [durationInstant]; pointer
+/// Motion: the durations and the curves. A press lands on [durationInstant]; pointer
 /// answers and exits use [durationFast]; anything that settles or enters uses
-/// [durationBase]. Same values as tokens.css.
+/// [durationBase]; travel across a distance uses [durationTravel]. Things that move on
+/// screen take [easeStandard], things that enter take [easeOut]. Same values as tokens.css.
 abstract final class VelaMotion {
   /// A press landing. Below the ~85ms where a delay starts to read as lag, so contact and acknowledgement arrive together. Press-in only — the release settles at duration-base.
   static const Duration durationInstant = Duration(milliseconds: 70);
@@ -1227,12 +1228,22 @@ abstract final class VelaMotion {
   static const Duration durationFast = Duration(milliseconds: 120);
   /// Anything that settles or enters: hover out, appearing.
   static const Duration durationBase = Duration(milliseconds: 180);
+  /// Travel across a distance: the Tabs indicator sliding to the tab that was pressed. The one step above duration-base, still under 300ms. The spring curve is drawn over this duration, so the two are used together.
+  static const Duration durationTravel = Duration(milliseconds: 240);
   /// How long the pointer rests on a trigger before its Tooltip opens. A delay, not an animation: it stops tooltips flashing as the pointer crosses a toolbar. Equal to Base UI's default, which applies when the stylesheet is not loaded.
   static const Duration delayTooltip = Duration(milliseconds: 600);
   /// How long a Toast that times out (success or info, with no action) stays before it leaves. A dwell, not an animation: the reduced-motion collapse never touches it, and the timer pauses while the region is hovered or holds focus. Warnings and any toast with an action never time out.
   static const Duration durationToast = Duration(milliseconds: 6000);
-  /// The only curve. Never a bare ease.
+  /// For things that change or move while on screen: a hover colour, a press, a knob sliding. Never a bare ease. Things that enter take ease-out; the spring is only for the moments a spec names.
   static const Cubic easeStandard = Cubic(0.2, 0, 0.2, 1);
+  /// For things that enter. Starts at four times the average speed, so the first frame already shows movement, then slows to rest with no overshoot.
+  static const Cubic easeOut = Cubic(0.25, 1, 0.5, 1);
+  /// A spring for the few moments a spec names, such as the Tabs indicator after a pointer press: it arrives quickly and settles with a slight overshoot. The stiffness, damping and mass in the extension are the source; CSS receives them as a linear() easing drawn over duration-travel. Where linear() is not supported, and in any tool that does not read the spring, the value is ease-out.
+  static const Cubic easeSpring = Cubic(0.25, 1, 0.5, 1);
+  /// The physics of [easeSpring], for `SpringDescription(mass: easeSpringMass, stiffness: easeSpringStiffness, damping: easeSpringDamping)`.
+  static const double easeSpringStiffness = 1200;
+  static const double easeSpringDamping = 56;
+  static const double easeSpringMass = 1;
   /// The spinner appearing. The only blur in the kit: motion is feedback, never decoration.
   static const double blurMaterialize = 2;
 }

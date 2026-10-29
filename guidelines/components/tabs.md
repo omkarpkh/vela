@@ -46,12 +46,59 @@ Navigate between **different** content panels.
   rendering something silently broken. [[rule: tabs-parts-require-provider | runtime]]
 - **Only the active panel renders.** Do not rely on hidden panels holding DOM state. [[rule: tabs-only-active-panel-renders | runtime]]
 - Controlled and uncontrolled are exclusive. [[rule: tabs-controlled-exclusive | compiler]]
+- **The indicator moves by `transform` only.** The bar is the tab list's full width, scaled and
+  translated from its left edge; its `left` and `width` never change and never transition. [[rule: tabs-indicator-moves-by-transform | browser]]
+- **A keyboard switch is instant.** Arrow keys, Home and End change the selection, the colours and
+  the underline at once; nothing in the Tabs animates. [[rule: tabs-keyboard-switch-is-instant | browser]]
+- **A second press mid-flight retargets.** The bar turns towards the new tab from wherever it is
+  and ends under it; it never finishes the old trip first or snaps. [[rule: tabs-indicator-retargets | browser]]
+- **Under reduced motion the switch lands at its end state.** The collapsed transition leaves the
+  bar under the selected tab and hands the underline straight back to the tab. [[rule: tabs-indicator-reduced-motion-end-state | browser]]
+- **At rest the underline is the selected tab's own border.** The bar is shown only while a pointer
+  switch is in flight, so a still tab list renders exactly as it did before the bar existed. [[rule: tabs-indicator-rest-is-the-border | browser]]
 
 ## Token bindings
 
 Trigger rest `--vela-text-de-emphasized`; hover `--vela-text-default`; selected
 `--vela-text-link` with a 2px `--vela-border-active` underline. List rule
-`--vela-border-subtle`.
+`--vela-border-subtle`. The sliding indicator is the same 2px `--vela-border-active` bar, moved
+over `--vela-duration-travel` on `--vela-ease-spring`.
+
+## Motion
+
+A tab switch happens hundreds of times a day, so the selection itself is never animated: the new
+tab's colour, its `aria-selected` and its panel arrive at once. What moves is the underline, and
+only when a pointer pressed the tab — orientation: it shows where the selection went from.
+
+| Moment | What moves | Timing | Why |
+|---|---|---|---|
+| Pointer press on another tab | the indicator slides under it: `translateX` and `scaleX` | `--vela-duration-travel` (240ms), `--vela-ease-spring` | orientation; 95% of the way in about 100ms, then a 1.3% settle |
+| A second press mid-flight | the same transition retargets from where the bar is | as above | continuity: CSS transitions are interruptible |
+| Arrow keys, Home, End, Enter, Space | nothing — colour and underline change at once | none | from the keyboard, nothing animates |
+| Hover | the label colour | `--vela-duration-fast`, `--vela-ease-standard` | unchanged |
+
+How it is built, the same on both implementations and in the one `Tabs.css`:
+
+- **At rest the underline is the selected trigger's own border**, as before. The indicator is a
+  bar inside the tab list that always sits under the selected tab with `opacity: 0`.
+- **A pointer press** (recorded in the capture phase, so it is known before either implementation
+  activates the tab) marks the list `data-vela-moving` in the same commit as the new selection.
+  In that one style change the bar becomes visible, the selected trigger's border is hidden, and
+  the bar's transform gets its new value — so the transition starts from where the bar was. When
+  every animation on the bar has finished, the mark is removed and the border takes over again,
+  in the same place, at once. The end is read from the animations, not a timer, so a slowed
+  review playback still ends correctly.
+- **A keyboard change** marks the root `data-vela-instant` instead (the repository's convention
+  for "this change came from the keyboard"): no transition on the bar or on the triggers' colours.
+  The mark clears when a pointer moves over the list again.
+- **Where the bar goes**: the core measures the selected tab itself (no dependency); the headless
+  implementation renders Base UI's `Tabs.Indicator` and takes the position from its
+  `--active-tab-left` variable and the width from its state. Both feed the same two custom
+  properties, which only `Tabs.css` reads; they are not part of the API.
+- **Reduced motion**: the global collapse in `base.css` shortens the transition to almost nothing,
+  so a pointer switch reads exactly like a keyboard one.
+
+No prop turns this on or off; the prop set stays closed. See [Motion](../foundations/motion.md).
 
 ## Implementations
 

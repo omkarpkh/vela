@@ -19,7 +19,42 @@ cannot be named in one of those words, it does not ship.
   read as lag, so contact and acknowledgement arrive together. Press-in only.
 - `--vela-duration-fast` (120ms): anything else that answers a pointer.
 - `--vela-duration-base` (180ms): anything that settles or appears.
-- `--vela-ease-standard` `cubic-bezier(0.2, 0, 0.2, 1)`: the only curve. Never a bare `ease`.
+- `--vela-duration-travel` (240ms): travel across a distance — the Tabs indicator sliding to the
+  tab that was pressed. The one step above `base`; still under 300ms, past which motion starts to
+  feel like waiting.
+
+Three curves, each for one kind of movement:
+
+| Curve | Value | For |
+|---|---|---|
+| `--vela-ease-standard` | `cubic-bezier(0.2, 0, 0.2, 1)` | things that change or move while on screen: a hover colour, a press, a toggle knob. Never a bare `ease`. |
+| `--vela-ease-out` | `cubic-bezier(0.25, 1, 0.5, 1)` | things that enter. |
+| `--vela-ease-spring` | a spring: stiffness 1200, damping 56, mass 1 | the few moments a spec names — today only the Tabs indicator after a pointer press. Always with `--vela-duration-travel`. |
+
+Why these values:
+
+- **`ease-out`** starts at four times the average speed (its first control point is 0.25 across
+  and 1 up), so on a 180ms entrance the first frame at 60Hz already covers about a third of the
+  way; it is 93% there at half-time and arrives with zero velocity and no overshoot, so it needs no
+  settle. The browser's own `ease-out` (`0, 0, 0.58, 1`) starts at under twice the average speed
+  and reads as late. Stronger curves (an expo-like `0.16, 1, 0.3, 1`) finish visibly in half the
+  stated time and spend the rest creeping by fractions of a pixel. This is the middle.
+- **The spring** has a damping ratio of 0.81: it is 95% of the way in about 100ms, overshoots by
+  1.3% (about 2px on a 150px slide) at about 155ms, and is within 0.2% of rest by 240ms. That one
+  small settle is the "life" — the bar arrives, leans, and stops — without a wobble a console
+  would not tolerate. The three physical values are the source in the token file;
+  `scripts/spring.mjs` solves the spring and writes it as a CSS `linear()` easing, sampled every
+  millisecond and reduced to the points the shape needs. Where `linear()` is not supported the
+  token is `--vela-ease-out`, declared first, with the spring under
+  `@supports (transition-timing-function: linear(0, 1))` in the token stylesheet — a component
+  binds `var(--vela-ease-spring)` and needs no fallback of its own. Flutter receives the three
+  values for its own `SpringDescription`; Figma receives the fallback curve and the values in the
+  variable's description.
+
+**These three — `duration-travel`, `ease-out`, `ease-spring` — are provisional until the owner has
+reviewed their feel** on the playground's Motion review page (`#/motion`), which plays the Tabs
+indicator in both themes and both implementations, with a Replay and a ×5 slow-motion switch.
+Tune by feel, then look again the next day.
 
 - `--vela-delay-tooltip` (600ms): not an animation — how long the pointer rests on a control before
   its Tooltip opens, so a pointer crossing a toolbar does not flash every label. Keyboard focus does
@@ -31,7 +66,8 @@ cannot be named in one of those words, it does not ship.
 
 No component defines its own duration or curve. A new one is a token change, reviewed like a colour.
 
-Overlays (Popover, Tooltip, Dialog, Toast) appear at `--vela-duration-base` on opacity plus a
+Overlays (Popover, Tooltip, Dialog, Toast) still enter on `--vela-ease-standard`; moving them to
+`--vela-ease-out` is a later part of the motion pass. They appear at `--vela-duration-base` on opacity plus a
 `--vela-space-5` step of travel, and leave on opacity alone — softer than they arrived. One opened or
 closed from the keyboard does not animate at all; a toast travels in from the edge it sits on, and a
 swiped one fades where the finger left it.
@@ -48,12 +84,18 @@ to type sits on the component itself.
 ## Rules
 
 1. Only `transform`, `opacity` and `filter` animate. Never width, height, margin, padding or position.
+   A colour may settle (a hover), which is a state, not movement. `scripts/check-css.mjs` fails a
+   component stylesheet whose transition or keyframes move anything else, and a bare duration
+   (which transitions `all`).
    A `transform` that changes an element's size must not change where it can be clicked: scale the
    visual and hold the hit target, or the control moves out from under the pointer that is pressing it.
 2. Pointer states enter faster than they leave (hover in at `fast`, out at `base`; press in at `instant`,
    out at `base`). Things that leave the screen exit more softly than they entered. The asymmetry is the
    point: arrival is information and wants to be immediate, release is resolution and can settle.
 3. Transitions, not keyframes, for anything a person can re-trigger: transitions retarget mid-flight.
+   No JavaScript animation loop either: a `requestAnimationFrame` animation runs on the main
+   thread and drops frames when it is busy, and a CSS transition does not. The spring is a CSS
+   easing for that reason.
 4. Hover only where hover exists. Wrap hover rules in `@media (hover: hover)`; touch gets press feedback.
 5. `prefers-reduced-motion` is handled once, globally, in `src/styles/base.css`: durations collapse, loops
    run once. Every animation must read correctly frozen at its end state. That is the test.
