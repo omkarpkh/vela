@@ -62,7 +62,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   library yet. A playground page shows every glyph at the chosen size and tone.
 - **The first three agentic specs are public, as proposals.** `guidelines/proposals/` holds the
   pressure-tested specs for the Verdict Card (29 rules, 23 with proofs), the Action Impact Card
-  (30, 22) and the Autonomy Ladder (28, 22), with four new closed taxonomies: Verdict, Confidence
+  (30, 22), the Autonomy Ladder (28, 22) and the Approval Queue (27, 21), with four new closed taxonomies: Verdict, Confidence
   band, Reversibility tier and Autonomy rung. Nothing in them is built; the folder's README and
   each file's first line say so, and it is left out of the npm package so a consumer's agent
   cannot mistake a proposal for an export.

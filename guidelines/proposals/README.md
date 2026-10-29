@@ -12,6 +12,7 @@ did: name the closest component that does exist, and flag the gap (`AGENTS.md`, 
 | [Verdict Card](verdict-card.md) | One agent verdict on one case, with the person's decision on it | 29 (23) | pressure-tested |
 | [Action Impact Card](action-impact-card.md) | What one proposed change will do, before it runs and after | 30 (22) | pressure-tested |
 | [Autonomy Ladder](autonomy-ladder.md) | How far an agent may act alone on one action, and why a change landed where it did | 28 (22) | pressure-tested |
+| [Approval Queue](approval-queue.md) | The one place a person decides on what agents propose; undecided means not run | 27 (21) | pressure-tested |
 
 **How a proposal becomes a component.** Each was drafted, then pressure-tested in a written
 review that it answered point by point. When one is built, it moves to `guidelines/components/`,
