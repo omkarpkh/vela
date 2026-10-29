@@ -163,8 +163,12 @@ difference is recorded here:
 - **Generics.** Base UI's `value` is generic (`any`); this spec closes it to `string`, the same way
   Tabs closes its values, so `onValueChange` always receives a string.
 - **Extra attributes.** Base UI adds `data-checked` / `data-unchecked`, `data-disabled` and the
-  composite's `data-highlighted`; the stylesheet keys on the ARIA attributes instead, and none of
-  them is part of the contract. Ids are Base UI's (`base-ui-…`).
+  composite's `data-highlighted`, and a disabled group carries `aria-disabled="true"` on the
+  `radiogroup` as well as the native attribute on every radio; the stylesheet keys on `:disabled`
+  and the ARIA state attributes, and none of the extras is part of the contract. Ids are Base UI's
+  (`base-ui-…`).
+- **Home and End.** Base UI's radio group turns them off (`enableHomeAndEndKeys: false`); this spec
+  does not promise them either, as native radios do not have them.
 
 ## Figma mapping
 
