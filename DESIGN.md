@@ -18,7 +18,7 @@ The React package has two entry points (`decisions/002-agent-ready-direction`): 
 is hand-rolled and has zero runtime dependencies; `@omkarux/vela/headless` builds the same
 specs on Base UI (`@base-ui/react`, an optional peer) and is Experimental. The first headless
 component is Tabs, so the two can be compared against one spec, one stylesheet and one test
-file. Choose the core entry unless you already carry Base UI or need a behaviour the core does
+file; Checkbox and Radio Group were born there and ship from `/headless` only. Choose the core entry unless you already carry Base UI or need a behaviour the core does
 not yet implement; a spec's "Implementations" section lists what each entry ships and where they
 differ.
 
@@ -135,8 +135,9 @@ markup already carries, not a new variant.
   the component) or `:active` without JS, and excluded for `:focus-visible`, so Space and Enter
   never scale: a keyboard press collapses the focus ring instead. The hit target never moves.
 - **Selected / checked / invalid** — CSS keys on the ARIA state the markup already carries:
-  `[aria-selected="true"]` (Tabs), `[aria-checked="true"]` (Toggle), `[aria-invalid="true"]`
-  (Input). A red border without `aria-invalid` is an anti-pattern because the two cannot drift.
+  `[aria-selected="true"]` (Tabs), `[aria-checked="true"]` (Toggle, Checkbox, Radio Group),
+  `[aria-checked="mixed"]` (an indeterminate Checkbox), `[aria-invalid="true"]` (Input, Checkbox,
+  Radio Group). A red border without `aria-invalid` is an anti-pattern because the two cannot drift.
 
 ## Motion
 
