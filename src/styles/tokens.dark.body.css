@@ -75,6 +75,8 @@
   --vela-toggle-off-bg: var(--vela-grey-700);
   --vela-toggle-on-bg: var(--vela-primary-500);
   --vela-toggle-knob: var(--vela-white);
+  --vela-control-check-bg-checked: var(--vela-primary-450);
+  --vela-control-check-mark: var(--vela-white);
 
   /* ---- Severity (6) ---- */
   --vela-bg-severity-success: var(--vela-green-950);

@@ -30,6 +30,52 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   the reviewed version. A test holds `NOTICE`'s Feather list to Lucide's LICENSE. The mock
   Plugin API models `createNodeFromSvg` and `flatten`; the builder has not been run in the
   library yet. A playground page shows every glyph at the chosen size and tone.
+- **`guidelines/figma-map.json`: what to write for each Figma set, on every plan.** Compiled from
+  the specs by `npm run figma:map` (the description sync with `--map`): each set's node id and
+  link, the import, the export to write (`Tabs.Trigger` for the Tab set), every Figma property's
+  prop, and the spec's example. It does the job Code Connect does on an Organization plan;
+  Vela's library is on Professional, where Code Connect is not available. `AGENTS.md` and
+  `llms.txt` tell an agent to use it instead of the markup Figma generates. A test fails when it
+  is stale. Measured against the Figma thread's "before" on Button node 7:7: without it, the
+  design context gives a `<div>` lookalike with no import and raw fallback values.
+- **The library's Changelog and Status pages are compiled from the repository.**
+  `npm run figma:build:pages` prints a Plugin API script per page (each under 50 KB):
+  `scripts/figma/pages/changelog.figma.js` draws one card per released version, newest first —
+  the date, whether it is on npm (read from the committed `scripts/figma/pages/published.json`,
+  or a `--published` list, or the registry with `--npm`), the bold lead-in of every bullet word
+  for word, and a link to the full entry; `status.figma.js` draws GOVERNANCE.md's four labels as
+  neutral outlined chips and one row per component — label from the spec's Status line, Figma
+  set, React export, Since, spec link. Unlike the component builders they are idempotent: each
+  finds its page frame by name and rebuilds it in place, so the frame keeps its id. Both end
+  with a stamp naming the commit they were read from. `scripts/figma/check-pages.mjs` runs them
+  in the mock Plugin API against the reviewer rules (plus no components on a doc page) in
+  `npm test`; `RELEASING.md` step 7 rebuilds them before the library is published.
+- **Checkbox (with Checkbox.Group) — Experimental, `@omkarux/vela/headless` only.** The first
+  component born on Base UI rather than migrated to it (`checkbox.md`; Base UI 1.9 `Checkbox` +
+  `CheckboxGroup`, by per-component subpath). A box that records intent until a Save — the spec
+  settles Checkbox vs Toggle by that button. Closed props: `label` a required string, `checked`
+  or `defaultChecked`, `size` `regular | tiny`, `error` a message, `indeterminate` rendered as
+  `aria-checked="mixed"` with a dash; a Group with a required `label`, `value` or `defaultValue`,
+  `orientation` `vertical | horizontal`, and a named error for a box in a Group with no `value`.
+  The root is a native `<button>` through Base UI's `render` (native `disabled`, the global focus
+  ring); the tick and the dash are inline SVG at `currentColor`. Seven compiler fixtures (six rules), three
+  runtime rules with unit tests, a Figma builder (six variants, no waiver) and a playground page.
+- **Radio Group — Experimental, `@omkarux/vela/headless` only** (`radio-group.md`; Base UI 1.9
+  `RadioGroup` + `Radio`). Two to five visible options, one answer, committed by a Save; the spec
+  sends six or more to a Select List, which is not in the kit. `RadioGroup` takes a required
+  `label`, `value` or `defaultValue` (closed to `string`), `orientation`, `error` as a message and
+  `name`; `RadioGroup.Radio` a required `value` and `label`, `disabled` and `description`. Roving
+  tabindex, arrow keys that move focus and selection in both axes and skip a natively disabled
+  radio, Space selects, Enter does not. Seven compiler fixtures (six rules), three runtime rules
+  with unit tests, a Figma builder for a single Radio (two variants, the circle an ellipse so
+  `radius/full` keeps its scope) and a playground page.
+- **The check family of tokens.** `control-check-bg-checked` (primary-500; dark primary-450,
+  because white on 400 is 3.18:1 and on 450 4.74:1) and `control-check-mark`, shared by the
+  checked box and the selected radio, and four geometry tokens: `control-checkbox-size` (16),
+  `-size-tiny` (12), `control-radio-size` (16), `control-radio-dot` (6). Four new `PAIRS` pass in
+  both themes, including the Input error border, asserted for the first time. The CSS lint now
+  walks `src/headless` as well as `src/components`; `Checkbox.css` and `RadioGroup.css` ship in
+  `dist/vela.css` and carry no waiver. Rule count: 25 of 52 rules are now enforced by the compiler.
 - **A second entry point, `@omkarux/vela/headless` — Experimental** (`GOVERNANCE.md`: may change
   in a minor without a deprecation window). Its first component is Tabs on Base UI 1.9
   (`@base-ui/react`, MIT), listed as an *optional* peer dependency; `@omkarux/vela` is unchanged
@@ -86,8 +132,8 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   `$deprecated` on tokens and `@deprecated` on exports with a dev-only warning), `RELEASING.md`
   (the checklist, tag-driven), `NOTICE` (Open Sans and Oswald under OFL 1.1, the Covenant under
   CC BY 4.0, and Base UI and Lucide listed as planned and not yet included) and
-  `LICENSE-DESIGN.md` (the Figma library on Figma Community under CC BY 4.0 and additionally
-  MIT; attribution "Vela by Omkar Khadamkar (omkarux.com)"). GitHub issue forms for a bug, a
+  `LICENSE-DESIGN.md` (the Figma library under CC BY 4.0 and additionally MIT; the Figma
+  Community listing is planned, not yet live; attribution "Vela by Omkar Khadamkar (omkarux.com)"). GitHub issue forms for a bug, a
   component request (it asks for the closest existing component and why it does not fit) and a
   token request, a PR template that mirrors `CONTRIBUTING.md`, and a contact config pointing
   questions at Discussions.
@@ -111,6 +157,15 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   written; this note is the correction. The related statement in 0.5.0, that writing variables
   through the REST API needs an Enterprise plan, still holds: Figma's variables endpoints say
   "available to full members of Enterprise orgs", so the generated-script route stays.
+  *Further correction, 29 October 2026:* Professional is listed, but Figma Community Support
+  states that on Professional, Code Connect mappings cannot be created through the MCP server
+  (forum thread 59258, 23–27 October 2026); the Figma thread's attempt was rejected with "only
+  Organization or Enterprise libraries". Mappings can still be made in Figma's Code Connect panel
+  by hand, or with the Code Connect CLI if the account's token carries the scope. *Decided,
+  29 October 2026:* the library sits on a Figma Professional plan, which does not offer Code
+  Connect in practice, and no plan upgrade will be bought for it. Code Connect is not wired. The
+  component → export → node mapping is kept as data in the repo, so a later plan or tool can
+  publish it without rework.
 - **The npm `description` and the README now say the same thing about enforcement.** The README
   and `llms.txt` have said "11 of the 27 rules by the TypeScript compiler, the rest at runtime, in
   a real browser, or by review" since the rule-coverage gate landed; the description said nothing

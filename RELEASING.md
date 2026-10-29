@@ -34,6 +34,10 @@ Rename `## [Unreleased]` to `## [X.Y.Z] — YYYY-MM-DD` and open a fresh, empty 
 above it. Read the entry as a consumer would: every number stated, every breaking change marked,
 every deprecation naming its removal release.
 
+Add `X.Y.Z` to `versions` in `scripts/figma/pages/published.json` and set `checked` to today.
+The Figma Changelog page reads "on npm" from that file; the tag in step 8 publishes the version
+and its "Check it landed" line confirms the registry agrees.
+
 ## 5. Decisions
 
 If the release carries out a decision record, add what shipped and the version to that record's
@@ -54,7 +58,14 @@ Run the pipeline against the library so the file matches the tag:
 npm run tokens:figma        # if any token changed
 npm run styles:figma        # if any text style changed
 npm run guidelines:figma    # always: every description ends with the version stamp
+npm run figma:build:pages   # always: the Changelog and Status pages, compiled from the merge commit
 ```
+
+Rebuild the Changelog and Status pages (`npm run figma:build:pages`) and run them in the library
+before publishing: run `npm run -s figma:build:pages -- changelog` and `-- status`, paste each
+script into the library file (Figma MCP `use_figma` or Scripter), and check the stamp at the foot
+of each page names the merge commit. Each script rebuilds its page's frame in place, so the frame
+keeps its id and re-running is safe.
 
 Then publish the library from Figma. The publish description starts with the version and copies
 the changelog entry: `X.Y.Z — <entry>`. Publishing the library is approval-gated: the maintainer
@@ -71,7 +82,8 @@ The tag runs the `publish` job: `verify`, `flutter` and `visual` again, then `np
 npm Trusted Publishing (OIDC, with a provenance attestation). No token exists and none should be
 created. If the version is already on the registry the job skips, so re-running a tag is safe.
 
-Check it landed: `npm view @omkarux/vela version`.
+Check it landed: `npm view @omkarux/vela version`, and `npm run figma:build:pages -- --check-npm`
+(exits 1 if the registry and `scripts/figma/pages/published.json` disagree).
 
 ## 9. GitHub release
 

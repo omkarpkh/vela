@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { Button, Toggle, Input, ContextualAlert, StatusIndicator, RiskPill, Tabs, Icon, ICON_NAMES } from '../../src'
 import type { Severity, Status, Risk, IconName, IconSize, IconTone } from '../../src'
-import { Tabs as HeadlessTabs } from '../../src/headless'
+import { Tabs as HeadlessTabs, Checkbox, RadioGroup } from '../../src/headless'
 import { PlusIcon } from '../../src/lib/icons'
 import { printJsx, type Control, type Spec } from './spec'
 import buttonMd from '../../guidelines/components/button.md?raw'
@@ -12,6 +12,8 @@ import statusMd from '../../guidelines/components/status-indicator.md?raw'
 import riskMd from '../../guidelines/components/risk-pill.md?raw'
 import tabsMd from '../../guidelines/components/tabs.md?raw'
 import iconMd from '../../guidelines/components/icon.md?raw'
+import checkboxMd from '../../guidelines/components/checkbox.md?raw'
+import radioGroupMd from '../../guidelines/components/radio-group.md?raw'
 
 export type Values = Record<string, string | boolean | undefined>
 
@@ -24,8 +26,11 @@ export interface Implementation {
   id: string
   /** Where a consumer imports it from. */
   entry: '@omkarux/vela' | '@omkarux/vela/headless'
-  /** Shown as "Dependencies: …"; a component with one implementation reads this from its spec. */
-  dependencies: string
+  /**
+   * Shown as "Dependencies: …". Omitted, it is read from the spec's `**Dependencies:**` line — what a
+   * component with a single implementation (Checkbox, Radio Group: headless only) does.
+   */
+  dependencies?: string
 }
 
 export interface Entry {
@@ -47,7 +52,10 @@ export interface Entry {
    * row under "Also in the API" — the prop is real, the demonstration is not.
    */
   noControl?: string[]
-  /** Alternative implementations of the same spec; absent means the core entry only. */
+  /**
+   * The implementations of the spec; absent means the core entry only. Two or more give the page an
+   * "Implementation" control; one names the entry a headless-only component ships from.
+   */
   implementations?: Implementation[]
   /** Mirrors the type-level rules: invalid combinations do not exist, so they cannot be picked. */
   constrain?: (v: Values) => Values
@@ -270,5 +278,74 @@ export const REGISTRY: Entry[] = [
       )
     },
     code: (v, spec) => printJsx('Icon', { name: str(v.name) || 'shield-x', size: v.size, tone: v.tone, label: v.label }, defaultsOf(spec)),
+  },
+  {
+    id: 'checkbox',
+    file: 'checkbox.md',
+    src: 'Checkbox',
+    name: 'Checkbox',
+    spec: checkboxMd,
+    seed: { label: 'Accept the data-processing terms', defaultChecked: true, description: '', error: '' },
+    // `checked` is the controlled arm: on this stage it would freeze the box, so the page drives
+    // defaultChecked instead. name and value only mean anything inside a <form> or a Group.
+    hide: ['checked'],
+    noControl: ['name', 'value'],
+    // Headless-born: one implementation, so no Implementation control; the Dependencies line is the spec's.
+    implementations: [{ id: 'headless', entry: '@omkarux/vela/headless' }],
+    render: (v) => (
+      <Checkbox
+        label={str(v.label) || 'Label'}
+        defaultChecked={bool(v.defaultChecked)}
+        indeterminate={bool(v.indeterminate)}
+        disabled={bool(v.disabled)}
+        size={(str(v.size) || 'regular') as 'regular' | 'tiny'}
+        description={str(v.description) || undefined}
+        error={str(v.error) || undefined}
+      />
+    ),
+    code: (v, spec) =>
+      printJsx(
+        'Checkbox',
+        { label: v.label, defaultChecked: v.defaultChecked, indeterminate: v.indeterminate, disabled: v.disabled, size: v.size, description: v.description, error: v.error },
+        defaultsOf(spec),
+      ),
+    bindingKey: (v) =>
+      bool(v.disabled) ? 'disabled (any)' : str(v.error) ? 'error (any)' : bool(v.defaultChecked) || bool(v.indeterminate) ? 'checked / indeterminate' : 'unchecked',
+  },
+  {
+    id: 'radio-group',
+    file: 'radio-group.md',
+    src: 'RadioGroup',
+    name: 'Radio Group',
+    spec: radioGroupMd,
+    seed: { label: 'Enforcement', defaultValue: 'block', error: '' },
+    // `value` is the controlled arm (it would freeze the stage); `defaultValue` becomes a select of
+    // the three enabled options below. name only means anything inside a <form>.
+    hide: ['value', 'defaultValue'],
+    noControl: ['name'],
+    extra: [{ prop: 'defaultValue', kind: 'select', type: 'string', options: ['monitor', 'block', 'quarantine'], default: 'block', notes: 'Uncontrolled initial selection.' }],
+    implementations: [{ id: 'headless', entry: '@omkarux/vela/headless' }],
+    render: (v) => (
+      <RadioGroup
+        label={str(v.label) || 'Label'}
+        defaultValue={str(v.defaultValue) || undefined}
+        disabled={bool(v.disabled)}
+        orientation={(str(v.orientation) || 'vertical') as 'vertical' | 'horizontal'}
+        error={str(v.error) || undefined}
+      >
+        <RadioGroup.Radio value="monitor" label="Monitor" description="Log the match, allow the traffic" />
+        <RadioGroup.Radio value="block" label="Block" />
+        <RadioGroup.Radio value="isolate" label="Isolate" disabled />
+        <RadioGroup.Radio value="quarantine" label="Quarantine" />
+      </RadioGroup>
+    ),
+    code: (v, spec) =>
+      `${printJsx('RadioGroup', { label: v.label, defaultValue: v.defaultValue, disabled: v.disabled, orientation: v.orientation, error: v.error }, defaultsOf(spec)).replace(' />', '>')}
+  <RadioGroup.Radio value="monitor" label="Monitor" description="Log the match, allow the traffic" />
+  <RadioGroup.Radio value="block" label="Block" />
+  <RadioGroup.Radio value="isolate" label="Isolate" disabled />
+  <RadioGroup.Radio value="quarantine" label="Quarantine" />
+</RadioGroup>`,
+    bindingKey: (v) => (bool(v.disabled) ? 'disabled (any)' : str(v.error) ? 'error (any)' : str(v.defaultValue) ? 'selected' : 'unselected'),
   },
 ]

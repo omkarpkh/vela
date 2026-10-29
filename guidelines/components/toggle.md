@@ -5,8 +5,8 @@ A binary setting that takes effect **immediately**. No Save step.
 ## When to use Toggle
 
 - Notifications on/off, dark mode, "enable this rule" → **Toggle**.
-- Records intent until a Save click (accept terms, pick scope in a form) → **Checkbox**,
-  which is not in this kit. Flag the gap rather than substituting a Toggle.
+- Records intent until a Save click (accept terms, pick scope in a form) → **Checkbox**
+  (`checkbox.md`, from `@omkarux/vela/headless`). Never substitute a Toggle.
 - More than two states → not a Toggle.
 
 ## Props

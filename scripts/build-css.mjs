@@ -47,6 +47,10 @@ const COMPONENTS = [
   'src/components/RiskPill/RiskPill.css',
   'src/components/Tabs/Tabs.css',
   'src/components/Icon/Icon.css',
+  // Headless-born (no core implementation): the stylesheet lives beside the Base UI component, and
+  // ships in the one bundle like every other — the styles carry no dependency, only the JS does.
+  'src/headless/Checkbox/Checkbox.css',
+  'src/headless/RadioGroup/RadioGroup.css',
 ]
 
 const banner = `/*! @omkarux/vela — design tokens + component styles. MIT. */\n`

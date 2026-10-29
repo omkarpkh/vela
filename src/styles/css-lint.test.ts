@@ -6,15 +6,17 @@ import { checkCss, lintCss } from '../../scripts/check-css.mjs'
 
 // The first two non-negotiables — semantic tokens only, units carried by the token — were
 // review conventions in the component stylesheets. This makes them a failing test: a raw
-// colour or a bare length in src/components/**/*.css fails `npm test` unless the line carries
+// colour or a bare length in src/components/**/*.css or src/headless/**/*.css fails `npm test` unless the line carries
 // a `/* vela-allow: <reason> */` waiver, and every waiver is printed, never silent.
 describe('component CSS binds tokens', () => {
   const report = checkCss()
 
   it('lints every component stylesheet', () => {
-    expect(report.map((r) => r.file).sort()).toEqual(
-      ['Button', 'ContextualAlert', 'Icon', 'Input', 'RiskPill', 'StatusIndicator', 'Tabs', 'Toggle'].map((c) => `src/components/${c}/${c}.css`),
-    )
+    expect(report.map((r) => r.file).sort()).toEqual([
+      ...['Button', 'ContextualAlert', 'Icon', 'Input', 'RiskPill', 'StatusIndicator', 'Tabs', 'Toggle'].map((c) => `src/components/${c}/${c}.css`),
+      // The headless-born components keep their stylesheets beside their implementation.
+      ...['Checkbox', 'RadioGroup'].map((c) => `src/headless/${c}/${c}.css`),
+    ])
   })
 
   it.each(report.map((r) => r.file))('%s has no raw colour, primitive or bare length without a waiver', (file) => {
@@ -30,8 +32,8 @@ describe('component CSS binds tokens', () => {
     // scripts/build-css.mjs assembles dist/vela.css; src/styles/index.css is the dev and demo entry.
     // Both list the stylesheets by hand, and the Icon page's e2e found the dev entry one short.
     const read = (p: string) => readFileSync(resolve(process.cwd(), p), 'utf8')
-    const bundle = [...read('scripts/build-css.mjs').matchAll(/'src\/(components\/\w+\/\w+\.css)'/g)].map((m) => m[1])
-    const dev = [...read('src/styles/index.css').matchAll(/@import '\.\.\/(components\/\w+\/\w+\.css)'/g)].map((m) => m[1])
+    const bundle = [...read('scripts/build-css.mjs').matchAll(/'src\/((?:components|headless)\/\w+\/\w+\.css)'/g)].map((m) => m[1])
+    const dev = [...read('src/styles/index.css').matchAll(/@import '\.\.\/((?:components|headless)\/\w+\/\w+\.css)'/g)].map((m) => m[1])
     expect(dev).toEqual(bundle)
     expect(bundle).toEqual(report.map((r) => r.file.replace(/^src\//, '')).sort((a, b) => bundle.indexOf(a) - bundle.indexOf(b)))
   })

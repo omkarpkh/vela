@@ -23,6 +23,7 @@
  *   raw-size           a fixed-size box whose width or height is not bound to a variable
  *   raw-colour         a fill or stroke that is not bound to a colour variable
  *   raw-radius         a corner radius that is not 0 and not bound
+ *   component-on-doc-page  (doc pages, check-pages.mjs) a component, set or instance on a doc page
  * A builder may waive a rule with `// @allow <rule> <why>`; the waiver is printed, never silent.
  * Glyph geometry inside a BOOLEAN_OPERATION and a main component's own canvas width are exempt.
  */
@@ -39,7 +40,10 @@ const doc = JSON.parse(readFileSync(join(root, 'tokens/vela.tokens.json'), 'utf8
 const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor
 
 // ---------- the dump: one definition, run inside Figma and against the mock ----------
-export const DUMP_SRC = `
+// `fullText` keeps every character instead of the first 40 (the doc pages carry sentences; the
+// component read script stays short because the MCP caps a return at 20 KB); `links` records a
+// text node's hyperlink and list type. check-pages.mjs asks for both; the component paths use the defaults.
+export const dumpSource = ({ fullText = false, links = false } = {}) => `
 const LS = String.fromCharCode(8232), PS = String.fromCharCode(8233);
 const clean = (s) => typeof s === 'string' ? s.split(LS).join(' ').split(PS).join(' ') : s;
 const vcache = {}, scache = {};
@@ -69,8 +73,10 @@ async function dump(n, depth) {
     o.font = n.fontName === figma.mixed ? 'mixed' : (n.fontName.family + ' ' + n.fontName.style);
     o.fs = n.fontSize === figma.mixed ? 'mixed' : n.fontSize;
     o.lh = n.lineHeight === figma.mixed ? 'mixed' : (n.lineHeight.unit === 'PIXELS' ? n.lineHeight.value : n.lineHeight.unit);
-    o.chars = clean(n.characters).slice(0, 40);
-    o.tar = n.textAutoResize; o.ta = n.textAlignHorizontal;
+    o.chars = clean(n.characters)${fullText ? '' : '.slice(0, 40)'};
+    o.tar = n.textAutoResize; o.ta = n.textAlignHorizontal;${links ? `
+    if (n.hyperlink && n.hyperlink !== figma.mixed && n.hyperlink.type === 'URL') o.link = n.hyperlink.value;
+    if (n.characters.length) { const l = n.getRangeListOptions(0, n.characters.length); if (l && l !== figma.mixed && l.type !== 'NONE') o.list = l.type; }` : ''}
   }
   if (n.type === 'POLYGON') o.pts = n.pointCount;
   if (n.type === 'BOOLEAN_OPERATION') o.op = n.booleanOperation;
@@ -84,9 +90,11 @@ async function dumpSet(set, a, b) {
   for (const v of kids) variants.push(await dump(v, 0));
   return { set: set.name, count: set.children.length, defs, variants };
 }`
+export const DUMP_SRC = dumpSource()
 
 // ---------- building a component in the mock ----------
-function loadVariables() {
+/** The library's variables as the mock wants them, resolved to light-mode values — from scripts/sync-figma.mjs ENTRIES. */
+export function loadVariables() {
   const script = execFileSync('node', [join(root, 'scripts/sync-figma.mjs')], { encoding: 'utf8' })
   const entries = JSON.parse(script.match(/const ENTRIES = (\[.*?\]);\n/s)[1])
   const byKey = Object.fromEntries(entries.map((e) => [e.collection + '|' + e.name, e]))
@@ -119,12 +127,19 @@ export async function dumpTree(figma, set, a, b) {
 
 // ---------- the rules ----------
 const DEFAULT_NAMES = /^(Frame|Component|Text|Rectangle|Ellipse|Polygon|Union|Vector|Group|Line|Star|Instance)( \d+)?$/
-export function lint(set, allow = []) {
+/**
+ * @param set    the component set — or, for a doc page, its page frame
+ * @param allow  the builder's waivers
+ * @param docPage  true for a doc page: its frame's canvas width is exempt (as a set's variants' are),
+ *                 and the `component-on-doc-page` rule applies — a doc page holds no components or instances
+ */
+export function lint(set, allow = [], { docPage = false } = {}) {
   const problems = []
   const waived = new Set(allow.map((a) => a.rule))
   const hit = (rule, node, what) => problems.push({ rule, node: node.name, what, waived: waived.has(rule) })
   const walk = (n, inBool, isRoot) => {
     const bound = (f) => !!(n.boundVariables && n.boundVariables[f])
+    if (docPage && /^(COMPONENT|COMPONENT_SET|INSTANCE)$/.test(n.type)) hit('component-on-doc-page', n, n.type)
     if (n.type !== 'COMPONENT_SET') {
       if (/placeholder/i.test(n.name) || DEFAULT_NAMES.test(n.name)) hit('bad-name', n, `"${n.name}"`)
       for (const p of [...(n.fills || []), ...(n.strokes || [])]) if (!(p.boundVariables && p.boundVariables.color)) hit('raw-colour', n, p.type)
@@ -146,7 +161,7 @@ export function lint(set, allow = []) {
     }
     for (const c of n.children || []) walk(c, inBool || n.type === 'BOOLEAN_OPERATION', n.type === 'COMPONENT_SET')
   }
-  walk(set, false, false)
+  walk(set, false, docPage)
   return problems
 }
 

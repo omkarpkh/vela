@@ -191,6 +191,44 @@ export const back = (p: HeadlessTabsProps): CoreTabsProps => p
   check(headlessOk, 'headless entry resolves, typechecks, and its Tabs API is the core API')
   rmSync(join(app, 'valid-headless.tsx'))
 
+  // -- the headless-born components: every documented shape compiles --
+  // Checkbox and Radio Group exist only on `/headless`. Their rejection fixtures below are only
+  // meaningful if the valid shapes compile against the same .d.ts — an import that failed to
+  // resolve would make every fixture "rejected" for the wrong reason.
+  writeFileSync(join(app, 'valid-born-headless.tsx'), `
+import { Checkbox, RadioGroup } from '@omkarux/vela/headless'
+import type { CheckboxProps, CheckboxGroupProps, RadioGroupProps, RadioProps } from '@omkarux/vela/headless'
+
+export const A = () => <Checkbox label="Accept the terms" defaultChecked onCheckedChange={(v: boolean) => v} />
+export const B = () => <Checkbox label="Accept" checked={false} size="tiny" description="Required" error="Accept to continue" name="terms" value="yes" />
+export const C = () => <Checkbox label="Select all" indeterminate disabled />
+export const D = () => (
+  <Checkbox.Group label="Scan scope" defaultValue={['users']} onValueChange={(v: string[]) => v} orientation="horizontal">
+    <Checkbox value="users" label="Users" />
+    <Checkbox value="apps" label="Applications" disabled />
+  </Checkbox.Group>
+)
+export const E = () => <Checkbox.Group label="Scope" value={[]} disabled><Checkbox value="a" label="A" /></Checkbox.Group>
+export const F = () => (
+  <RadioGroup label="Enforcement" defaultValue="block" onValueChange={(v: string) => v} name="mode" error="Choose one" orientation="horizontal">
+    <RadioGroup.Radio value="monitor" label="Monitor" description="Log the match" />
+    <RadioGroup.Radio value="block" label="Block" disabled />
+  </RadioGroup>
+)
+export const G = () => <RadioGroup label="Retention" value="30" disabled><RadioGroup.Radio value="30" label="30 days" /></RadioGroup>
+export const H = () => <RadioGroup label="Retention"><RadioGroup.Radio value="30" label="30 days" /></RadioGroup>
+export const props: [CheckboxProps, CheckboxGroupProps, RadioGroupProps, RadioProps] = [
+  { label: 'A' }, { label: 'G' }, { label: 'R' }, { value: 'a', label: 'A' },
+]
+`)
+  let bornOk = true
+  try { run(tsc, ['--noEmit', '-p', 'tsconfig.json'], app) } catch (e) {
+    bornOk = false
+    console.log((e.stdout || '').toString().split('\n').slice(0, 8).join('\n'))
+  }
+  check(bornOk, 'headless Checkbox, Checkbox.Group and RadioGroup typecheck in every documented shape')
+  rmSync(join(app, 'valid-born-headless.tsx'))
+
   // -- invalid usage must NOT compile --
   // Each of these is a rule from the guidelines. If any compiles, the design
   // constraint is documentation only, which is how systems drift.
@@ -218,6 +256,21 @@ export const back = (p: HeadlessTabsProps): CoreTabsProps => p
     ['input-error-is-a-message', 'error as a boolean', `<Input label="Tenant" error />`],
     ['tabs-controlled-exclusive', 'tabs both controlled and uncontrolled', `<Tabs value="a" defaultValue="a"><Tabs.List aria-label="V"><Tabs.Trigger value="a">A</Tabs.Trigger></Tabs.List></Tabs>`],
     ['toggle-controlled-exclusive', 'toggle both controlled and uncontrolled', `<Toggle label="Alerts" checked defaultChecked />`],
+    // Checkbox and Radio Group ship from `@omkarux/vela/headless` only; the fixture file imports them from there.
+    ['checkbox-label-required', 'checkbox with no label', `<Checkbox />`],
+    ['checkbox-label-required', 'checkbox label as a node', `<Checkbox label={<b>Accept</b>} />`],
+    ['checkbox-controlled-exclusive', 'checkbox both controlled and uncontrolled', `<Checkbox label="Accept" checked defaultChecked />`],
+    ['checkbox-sizes-closed', 'invented checkbox size', `<Checkbox label="Accept" size="small" />`],
+    ['checkbox-error-is-a-message', 'checkbox error as a boolean', `<Checkbox label="Accept" error />`],
+    ['checkbox-group-label-required', 'checkbox group with no label', `<Checkbox.Group><Checkbox value="a" label="A" /></Checkbox.Group>`],
+    ['checkbox-group-controlled-exclusive', 'checkbox group both controlled and uncontrolled', `<Checkbox.Group label="Scope" value={['a']} defaultValue={['a']}><Checkbox value="a" label="A" /></Checkbox.Group>`],
+    ['radio-group-label-required', 'radio group with no label', `<RadioGroup><RadioGroup.Radio value="a" label="A" /></RadioGroup>`],
+    ['radio-group-controlled-exclusive', 'radio group both controlled and uncontrolled', `<RadioGroup label="Mode" value="a" defaultValue="a"><RadioGroup.Radio value="a" label="A" /></RadioGroup>`],
+    ['radio-group-error-is-a-message', 'radio group error as a boolean', `<RadioGroup label="Mode" error><RadioGroup.Radio value="a" label="A" /></RadioGroup>`],
+    ['radio-group-orientation-closed', 'invented radio group orientation', `<RadioGroup label="Mode" orientation="grid"><RadioGroup.Radio value="a" label="A" /></RadioGroup>`],
+    ['radio-value-required', 'radio with no value', `<RadioGroup label="Mode"><RadioGroup.Radio label="A" /></RadioGroup>`],
+    ['radio-label-required', 'radio with no label', `<RadioGroup label="Mode"><RadioGroup.Radio value="a" /></RadioGroup>`],
+    ['radio-label-required', 'radio label as a node', `<RadioGroup label="Mode"><RadioGroup.Radio value="a" label={<b>A</b>} /></RadioGroup>`],
     ['icon-name-closed-set', 'unknown icon name', `<Icon name="shield" />`],
     ['icon-name-closed-set', 'a Lucide glyph outside the curated set', `<Icon name="airplay" />`],
     ['icon-name-closed-set', 'a Lucide alias instead of the canonical name', `<Icon name="trash-2" />`],
@@ -231,7 +284,8 @@ export const back = (p: HeadlessTabsProps): CoreTabsProps => p
   ]
   for (const [id, name, snippet] of violations) {
     writeFileSync(join(app, 'invalid.tsx'),
-      `import { Button, ContextualAlert, Icon, Input, RiskPill, StatusIndicator, Tabs, Toggle } from '@omkarux/vela'\nexport const X = () => (${snippet})\n`)
+      `import { Button, ContextualAlert, Icon, Input, RiskPill, StatusIndicator, Tabs, Toggle } from '@omkarux/vela'\n` +
+      `import { Checkbox, RadioGroup } from '@omkarux/vela/headless'\nexport const X = () => (${snippet})\n`)
     let rejected = false
     try { run(tsc, ['--noEmit', '-p', 'tsconfig.json'], app) } catch { rejected = true }
     check(rejected, `compiler rejects: ${name}  [${id}]`)
@@ -252,6 +306,8 @@ export const back = (p: HeadlessTabsProps): CoreTabsProps => p
   check(css.includes('--vela-text-default'), 'shipped CSS defines semantic tokens')
   check(css.includes('[data-theme="dark"]'), 'shipped CSS carries the explicit dark theme')
   check(css.includes('prefers-color-scheme: dark'), 'shipped CSS respects the OS preference')
+  check(css.includes('.vela-checkbox__box') && css.includes('.vela-radio__circle'),
+    'shipped CSS carries the headless-born Checkbox and Radio Group styles')
 } finally {
   rmSync(app, { recursive: true, force: true })
   rmSync(tarball, { force: true })

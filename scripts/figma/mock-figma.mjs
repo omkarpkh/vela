@@ -101,8 +101,16 @@ class TextNode extends SceneNode {
   constructor(figma) {
     super('TEXT', figma)
     this._f = { fontName: { family: 'Inter', style: 'Regular' }, fontSize: 12, lineHeight: { unit: 'AUTO' }, letterSpacing: { unit: 'PERCENT', value: 0 } }
-    this.textStyleId = ''; this.textAutoResize = 'WIDTH_AND_HEIGHT'; this.textAlignHorizontal = 'LEFT'; this.characters = ''
+    this.textStyleId = ''; this.textAutoResize = 'WIDTH_AND_HEIGHT'; this.textAlignHorizontal = 'LEFT'
+    this._chars = ''; this._name = DEFAULT_NAME.TEXT; this.autoRename = true; this.hyperlink = null
   }
+  // As in Figma: a text layer is named after its characters until a name is set, which turns autoRename off.
+  get name() { return this._name } set name(v) { this._name = v; this.autoRename = false }
+  get characters() { return this._chars } set characters(v) { this._chars = v; if (this.autoRename) this._name = v }
+  setRangeHyperlink(start, end, target) { if (start === 0 && end === this._chars.length) this.hyperlink = target }
+  // Whole-node list options only — the page builders set a list over all of a text's characters.
+  setRangeListOptions(start, end, options) { if (start === 0 && end === this._chars.length) this._list = options }
+  getRangeListOptions() { return this._list ?? { type: 'NONE' } }
   _defaultLs(axis) { return this.textAutoResize === 'WIDTH_AND_HEIGHT' ? 'HUG' : this.textAutoResize === 'HEIGHT' && axis === 'v' ? 'HUG' : 'FIXED' }
   // Setting a typography property on a styled node detaches the style — exactly what Figma does.
   get fontName() { return this._f.fontName } set fontName(v) { this._f.fontName = v; this.textStyleId = '' }
@@ -162,8 +170,11 @@ export function createMockFigma({ variables, styles, pages }) {
     currentPage: null,
     _styles: Object.fromEntries(styleList.map((s) => [s.id, s])),
     async setCurrentPageAsync(p) { figma.currentPage = p },
+    createPage() { const p = new PageNode('Page'); figma.root.children.push(p); return p },
     async loadFontAsync() {},
     createFrame() { const n = new FrameNode('FRAME', figma); figma.currentPage.appendChild(n); return n },
+    // As documented: a frame with auto layout on in `direction` (HORIZONTAL by default), both axes hugging. It takes no name.
+    createAutoLayout(direction = 'HORIZONTAL') { const n = new FrameNode('FRAME', figma); figma.currentPage.appendChild(n); n.layoutMode = direction; return n },
     createComponent() { const n = new FrameNode('COMPONENT', figma); figma.currentPage.appendChild(n); return n },
     createText() { const n = new TextNode(figma); figma.currentPage.appendChild(n); return n },
     createRectangle() { const n = new RectangleNode(figma); figma.currentPage.appendChild(n); return n },

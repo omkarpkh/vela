@@ -74,6 +74,7 @@ npm run tokens:figma            # variables, create-or-update by name
 npm run styles:figma            # text styles bound to those variables
 npm run figma:build <name>      # a component set, created once from scripts/figma/components/<name>.figma.js
 npm run components:figma:lint   # every builder, run in the mock Plugin API against the reviewer rules; runs in npm test
+npm run figma:build:pages       # the Changelog and Status doc pages, compiled from the repo; rebuilt in place on each run
 npm run guidelines:figma        # each spec's summary into its set's description
 ```
 
