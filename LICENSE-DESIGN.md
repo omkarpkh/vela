@@ -11,12 +11,12 @@ the demo site and the decision records.
 
 ## The Figma library: CC BY 4.0, and also MIT
 
-The Figma library **Vela Design System** (file key `XO2rmeCcgOjyKe4oipgF4j`) is published on
-Figma Community under the
+The Figma library **Vela Design System** (file key `XO2rmeCcgOjyKe4oipgF4j`) is offered under the
 [Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/)
-licence, which is the licence Figma Community offers. Creative Commons does not recommend its
-licences for software, so the same file is **additionally** granted under the MIT License in
-`LICENSE`. Take it under either; you do not need both.
+licence, which is the licence Figma Community offers; the Community listing is not yet live, and
+this file says so until it is. Creative Commons does not recommend its licences for software, so
+the same file is **additionally** granted under the MIT License in `LICENSE`. Take it under
+either; you do not need both.
 
 What this means in practice:
 
@@ -43,5 +43,6 @@ What this means in practice:
 
 The library is compiled from `tokens/vela.tokens.json` and the specs in `guidelines/` by the
 scripts in `scripts/figma/`. A single licence for the whole system was the aim, and MIT is that
-licence. CC BY 4.0 is added on the Figma file because it is what Figma Community publishes
-under, and because designers recognise it. Where the two disagree, the one you chose applies.
+licence. CC BY 4.0 is added on the Figma file because it is what a Figma Community listing
+publishes under, and because designers recognise it. Where the two disagree, the one you chose
+applies.

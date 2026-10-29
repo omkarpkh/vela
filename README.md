@@ -238,6 +238,6 @@ explicitly so an agent flags the gap instead of inventing one.
 
 ## License
 
-MIT for the code, tokens and documentation ([`LICENSE`](LICENSE)). The Figma library is
-published on Figma Community under CC BY 4.0 and additionally under MIT; see
+MIT for the code, tokens and documentation ([`LICENSE`](LICENSE)). The Figma library is offered
+under CC BY 4.0 and additionally under MIT (a Figma Community listing is planned, not yet live); see
 [`LICENSE-DESIGN.md`](LICENSE-DESIGN.md).

@@ -50,8 +50,8 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   `$deprecated` on tokens and `@deprecated` on exports with a dev-only warning), `RELEASING.md`
   (the checklist, tag-driven), `NOTICE` (Open Sans and Oswald under OFL 1.1, the Covenant under
   CC BY 4.0, and Base UI and Lucide listed as planned and not yet included) and
-  `LICENSE-DESIGN.md` (the Figma library on Figma Community under CC BY 4.0 and additionally
-  MIT; attribution "Vela by Omkar Khadamkar (omkarux.com)"). GitHub issue forms for a bug, a
+  `LICENSE-DESIGN.md` (the Figma library under CC BY 4.0 and additionally MIT; the Figma
+  Community listing is planned, not yet live; attribution "Vela by Omkar Khadamkar (omkarux.com)"). GitHub issue forms for a bug, a
   component request (it asks for the closest existing component and why it does not fit) and a
   token request, a PR template that mirrors `CONTRIBUTING.md`, and a contact config pointing
   questions at Discussions.
@@ -75,6 +75,12 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   written; this note is the correction. The related statement in 0.5.0, that writing variables
   through the REST API needs an Enterprise plan, still holds: Figma's variables endpoints say
   "available to full members of Enterprise orgs", so the generated-script route stays.
+  *Further correction, 29 October 2026:* Professional is listed, but Figma Community Support
+  states that on Professional, Code Connect mappings cannot be created through the MCP server
+  (forum thread 59258, 23–27 October 2026); the Figma thread's attempt was rejected with "only
+  Organization or Enterprise libraries". Mappings can still be made in Figma's Code Connect panel
+  by hand, or with the Code Connect CLI if the account's token carries the scope. The route is
+  decided in `requests/figma-thread-to-repo.md` (R7) and recorded here when it lands.
 - **The npm `description` and the README now say the same thing about enforcement.** The README
   and `llms.txt` have said "11 of the 27 rules by the TypeScript compiler, the rest at runtime, in
   a real browser, or by review" since the rule-coverage gate landed; the description said nothing
