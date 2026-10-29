@@ -91,8 +91,11 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   states that on Professional, Code Connect mappings cannot be created through the MCP server
   (forum thread 59258, 23–27 October 2026); the Figma thread's attempt was rejected with "only
   Organization or Enterprise libraries". Mappings can still be made in Figma's Code Connect panel
-  by hand, or with the Code Connect CLI if the account's token carries the scope. The route is
-  decided in `requests/figma-thread-to-repo.md` (R7) and recorded here when it lands.
+  by hand, or with the Code Connect CLI if the account's token carries the scope. *Decided,
+  29 October 2026:* the library sits on a Figma Professional plan, which does not offer Code
+  Connect in practice, and no plan upgrade will be bought for it. Code Connect is not wired. The
+  component → export → node mapping is kept as data in the repo, so a later plan or tool can
+  publish it without rework.
 - **The npm `description` and the README now say the same thing about enforcement.** The README
   and `llms.txt` have said "11 of the 27 rules by the TypeScript compiler, the rest at runtime, in
   a real browser, or by review" since the rule-coverage gate landed; the description said nothing
