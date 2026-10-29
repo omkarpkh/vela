@@ -274,7 +274,7 @@ type RouteReason =
   | { kind: "unknown-radius-limit" }
   | { kind: "partial-radius"; atLeast: number; routedAs: string }   // the band it was routed as
   | { kind: "stale-estimate-limit" }
-  | { kind: "low-confidence"; band: string; gate: string }   // gate: the Gate's `because`, e.g. "thin"
+  | { kind: "low-confidence"; band: string; gate: GateReason }   // the Gate's `because`, e.g. "thin" (Calibrated Confidence Gate)
   | { kind: "delegated-limit"; rung: AutonomyRung }
   | { kind: "no-policy-cell"; tier: string; band: string }
   | { kind: "hold-not-set" }
