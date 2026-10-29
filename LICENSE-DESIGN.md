@@ -35,6 +35,11 @@ What this means in practice:
 
 - **The fonts.** Open Sans and Oswald are licensed separately under the SIL Open Font License 1.1
   by their authors; see `NOTICE`. The library names them and does not contain them.
+- **The icon glyphs.** The `Icon` page contains Lucide glyphs, Copyright (c) 2026 Lucide Icons and
+  Contributors, under the ISC licence (a subset derives from Feather Icons, MIT, Cole Bemis); the
+  full notice is in `NOTICE`. The arrangement — the component set, its variants and its variable
+  bindings — is Vela's and is covered above; the glyph geometry is Lucide's and stays under ISC
+  whichever licence you take the library under.
 - **The name.** Neither licence grants the name "Vela". A fork is welcome to the file and the
   code; it should not publish under the same name in a way that reads as the original.
 - **Your content.** Nothing here claims anything over what you build with the system.
