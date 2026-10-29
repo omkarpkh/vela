@@ -5,6 +5,17 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+### Fixed
+- **Tabs: no stray vertical scrollbar, and the selected tab keeps its colour under the pointer.**
+  The tab list scrolled sideways with `overflow-x: auto`, which left `overflow-y` on auto too; the
+  underline's 1px past the padding box became a vertical scroll range, and a touch browser drew a
+  grey scrollbar at the end of the list. It is now `overflow-y: hidden`, which clips the same
+  pixels. Hovering the selected tab no longer dims its label from the link colour.
+- **Playground: the Tabs stage holds the tab list still.** The frame centred a body that hugged
+  its content, so a panel with shorter text moved the whole list sideways and up or down on a
+  switch. The body now takes the frame's width and sits at the top. A new e2e test holds the
+  list's position across a switch, on both implementations, at phone width.
+
 ### Added
 - **Motion pass, part 1: an entering curve, a spring, and a sliding Tabs indicator.** Three motion
   tokens, all **provisional until the owner has reviewed their feel**: `--vela-ease-out`
