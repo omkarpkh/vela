@@ -60,11 +60,16 @@ describe('the agent-facing contract is complete', () => {
   })
 
   it('names every component that is NOT in the kit, so an agent flags a gap instead of inventing one', () => {
-    // Checkbox and Radio left this list in Phase 1 (they ship from /headless); the sentence that
-    // names the rest has to survive, and it must no longer call either of them missing.
+    // Checkbox and Radio left this list in Phase 1 (they ship from /headless), and so did Modal and
+    // Tooltip when Dialog and Tooltip arrived; the sentence that names the rest has to survive, and
+    // it must no longer call any of them missing.
     const notInKit = overview.match(/Not yet specced: ([^.]+)\./)?.[1] ?? ''
-    for (const missing of ['Select List', 'Token Pill', 'Modal', 'Tooltip', 'Icon Button', 'View Switcher'])
+    for (const missing of ['Select List', 'Token Pill', 'Icon Button', 'Actions Dropdown', 'View Switcher'])
       expect(notInKit).toContain(missing)
-    for (const shipped of ['Checkbox', 'Radio']) expect(notInKit).not.toContain(shipped)
+    for (const shipped of ['Checkbox', 'Radio', 'Modal', 'Tooltip', 'Popover', 'Dialog']) expect(notInKit).not.toContain(shipped)
+    // DESIGN.md carries the same list, and the same removals.
+    const designNotInKit = readFileSync(resolve(root, 'DESIGN.md'), 'utf8').match(/Not yet specced: ([^.]+)\./)?.[1] ?? ''
+    for (const shipped of ['Modal', 'Tooltip']) expect(designNotInKit).not.toContain(shipped)
+    expect(designNotInKit).toContain('Select List')
   })
 })

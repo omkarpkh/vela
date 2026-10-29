@@ -18,7 +18,8 @@ The React package has two entry points (`decisions/002-agent-ready-direction`): 
 is hand-rolled and has zero runtime dependencies; `@omkarux/vela/headless` builds the same
 specs on Base UI (`@base-ui/react`, an optional peer) and is Experimental. The first headless
 component is Tabs, so the two can be compared against one spec, one stylesheet and one test
-file; Checkbox and Radio Group were born there and ship from `/headless` only. Choose the core entry unless you already carry Base UI or need a behaviour the core does
+file; Checkbox, Radio Group and the three overlays — Popover, Tooltip, Dialog — were born there and
+ship from `/headless` only. Choose the core entry unless you already carry Base UI or need a behaviour the core does
 not yet implement; a spec's "Implementations" section lists what each entry ships and where they
 differ.
 
@@ -146,12 +147,17 @@ one of three reasons — feedback, orientation, continuity — and a movement wh
 be named in one of those words does not ship. The frequency gate: something triggered hundreds
 of times a day gets instant feedback under 200ms; from the keyboard, nothing animates.
 
-Four tokens, and no component defines its own duration or curve:
+Four tokens, and no component defines its own duration or curve (`--vela-delay-tooltip`, 600ms,
+is a wait before a Tooltip opens on hover, not an animation; see the overlays bullet below):
 
 - `--vela-duration-instant` (70ms) — a press landing; press-in only.
 - `--vela-duration-fast` (120ms) — anything else that answers a pointer.
 - `--vela-duration-base` (180ms) — anything that settles or appears.
 - `--vela-ease-standard` `cubic-bezier(0.2, 0, 0.2, 1)` — the only curve. Never a bare `ease`.
+
+Overlays (Popover, Tooltip, Dialog) appear at `base` on opacity plus a `--vela-space-5` step of
+travel, and leave on opacity alone; one opened or closed from the keyboard does not animate
+(`data-vela-instant`). A Tooltip waits `--vela-delay-tooltip` on hover and opens at once on focus.
 
 Only `transform`, `opacity` and `filter` animate. Pointer states enter faster than they leave
 (hover in at `fast`, out at `base`; press in at `instant`, out at `base`). Transitions, not
@@ -279,6 +285,10 @@ Semantics and labels
 - Tabs for the same dataset in a different view → View Switcher; Tabs as page navigation → use real links; keeping hidden panels mounted to preserve form state → lift the state.
 - Using a Contextual Alert as a toast → it is inline and does not float; a dismissible critical alert with no other resolution path; an info alert with `role="alert"`.
 - A click handler, a hover state or a dismiss "×" on a Risk Pill → that is a Token Pill, not in this kit.
+- A Popover holding the only copy of something the task needs; a list of commands in a Popover → an Actions Dropdown, not in this kit.
+- A link or a button in a Tooltip (will not compile) → a Popover; a Tooltip as the only name of an icon-only control → `aria-label` on the control; a Tooltip on a disabled control → adjacent text.
+- A destructive confirmation in a standard Dialog → `variant="alert"`, whose confirm is always destructive; a Dialog that only says "OK" → a Contextual Alert.
+- A shadow on an overlay → no elevation token exists; the border (Popover) or the scrim (Dialog) separates it.
 
 Accessibility
 - Conveying severity, status or risk by colour alone; a bare dot in a table with no label and no header context; `label="87"` on a coloured pill → name the level.
@@ -291,10 +301,12 @@ Accessibility
 
 Do not invent one silently. State that the kit has no component for the need and pick the
 closest match while flagging the gap. Not yet specced: Dropdown List, Select List, Token Pill,
-Number Stepper, Text Area, Modal, Tooltip, Icon Button, Actions Dropdown, View Switcher. Flag
-rather than guess. Checkbox (with Checkbox.Group) and Radio Group are specced and ship from
-`@omkarux/vela/headless` only (Experimental). The disambiguations agents most often get wrong
-— Toggle vs Checkbox, Radio Group vs Select List, Tabs vs View Switcher, Alert vs Status
+Number Stepper, Text Area, Icon Button, Actions Dropdown, View Switcher. Flag rather than
+guess. Checkbox (with Checkbox.Group), Radio Group, Popover, Tooltip and Dialog (with its `alert`
+variant — the kit's modal) are specced and ship from `@omkarux/vela/headless` only
+(Experimental). The disambiguations agents most often get wrong
+— Toggle vs Checkbox, Radio Group vs Select List, Tabs vs View Switcher, Popover vs Tooltip vs
+Dialog, Alert vs Status
 Indicator vs Risk Pill — are in `guidelines/overview.md`.
 
 ## How to add a component
