@@ -1,0 +1,52 @@
+/* ------------------------------------------------------------- Text Area -- */
+/* The label, hint and error rows are Input's (.vela-field*). The field is content-box on
+   purpose: the kit is border-box everywhere else, but here min-height must be exactly `rows`
+   lines, and in content-box the padding and the hairline border sit outside it. The width
+   still fills the column — a flex column stretches the margin box, whatever the box-sizing. */
+.vela-text-area {
+  box-sizing: content-box;
+  display: block;
+  min-width: 0;
+  margin: 0;
+  background: var(--vela-control-bg);
+  color: var(--vela-text-default);
+  border: 1px solid var(--vela-control-border);
+  border-radius: var(--vela-radius-4);
+  font-family: var(--vela-font-family-primary);
+  font-size: var(--vela-text-body-size);
+  line-height: var(--vela-text-body-line-height);
+  min-height: calc(var(--vela-text-area-rows, 3) * var(--vela-text-body-line-height));
+  transition: border-color var(--vela-duration-fast) var(--vela-ease-standard);
+}
+.vela-text-area--tiny {
+  padding: var(--vela-space-5);
+  font-size: var(--vela-text-meta-size);
+  line-height: var(--vela-text-meta-line-height);
+  min-height: calc(var(--vela-text-area-rows, 3) * var(--vela-text-meta-line-height));
+}
+.vela-text-area--regular { padding: var(--vela-space-5) var(--vela-space-10); }
+.vela-text-area--large   { padding: var(--vela-space-10); }
+
+/* Vertical or not at all — never horizontal, never both. */
+.vela-text-area--resize-vertical { resize: vertical; }
+.vela-text-area--resize-none     { resize: none; }
+
+.vela-text-area::placeholder { color: var(--vela-control-placeholder); }
+@media (hover: hover) {
+  .vela-text-area:hover:not(:disabled):not(:read-only):not([aria-invalid='true']) { border-color: var(--vela-control-border-hover); }
+}
+.vela-text-area:focus { border-color: var(--vela-control-border-active); }
+.vela-text-area[aria-invalid='true'] { border-color: var(--vela-control-border-error); }
+.vela-text-area:disabled { background: var(--vela-control-bg-disabled); color: var(--vela-text-inactive); border-color: var(--vela-border-inactive); cursor: not-allowed; resize: none; }
+
+/* Hint on the left, count on the right; the count drops below when the line is too short. */
+.vela-text-area__footer { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: var(--vela-space-10); }
+.vela-text-area__footer .vela-field__hint { flex: 1 1 auto; min-width: 0; }
+.vela-text-area__count {
+  margin-left: auto;
+  font-size: var(--vela-text-meta-size);
+  line-height: var(--vela-text-meta-line-height);
+  color: var(--vela-text-de-emphasized);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}

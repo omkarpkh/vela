@@ -78,11 +78,14 @@ const PAD=['paddingTop','paddingRight','paddingBottom','paddingLeft'],RAD=['topL
 const box=(parent,name,o={})=>{const f=figma.createAutoLayout(o.dir||'VERTICAL');f.name=name;f.fills=o.fill?[paint(o.fill)]:[];if(o.stroke){f.strokes=[paint(o.stroke)];f.strokeWeight=1;}if(o.gap!==0)bind(f,['itemSpacing'],o.gap||'space/10');if(o.padY)bind(f,['paddingTop','paddingBottom'],o.padY);if(o.padX)bind(f,['paddingLeft','paddingRight'],o.padX);if(o.r)bind(f,RAD,o.r);if(parent){parent.appendChild(f);if(o.fillW!==false)f.layoutSizingHorizontal='FILL';}return f;};
 const txt=async(parent,chars,style,color,o={})=>{const t=figma.createText();await t.setTextStyleIdAsync(need(S,style,'text style').id);t.characters=chars;t.fills=[paint(color)];parent.appendChild(t);if(o.w){t.resize(o.w,t.height);t.textAutoResize='HEIGHT';t.layoutSizingHorizontal='FIXED';}else if(o.hug){t.textAutoResize='WIDTH_AND_HEIGHT';}else{t.layoutSizingHorizontal='FILL';t.textAutoResize='HEIGHT';}if(o.link)t.setRangeHyperlink(0,chars.length,{type:'URL',value:o.link});if(o.list)t.setRangeListOptions(0,chars.length,{type:'UNORDERED'});return t;};
 // Idempotent: the frame of this name on the page is emptied and redrawn in place (its id and
-// position survive); it is created at 0,0 only when there is none.
+// position survive); it is created at 0,0 only when there is none. A reused frame's fills are
+// cleared before the paint is set again: re-assigning an identically bound paint leaves the base
+// colour at the placeholder {0,0,0} in the real file (a black page, 29 Oct 2026). It is the only
+// node a page builder reuses; every other node is created fresh, so its first paint is a new binding.
 let REUSED=false;
 const pageFrame=(name)=>{let f=figma.currentPage.children.find(n=>n.type==='FRAME'&&n.name===name);REUSED=!!f;
   if(f){for(const c of [...f.children])c.remove();f.layoutMode='VERTICAL';}else{f=figma.createAutoLayout('VERTICAL');f.name=name;figma.currentPage.appendChild(f);f.x=0;f.y=0;}
-  f.resize(1080,f.height);f.layoutSizingHorizontal='FIXED';f.layoutSizingVertical='HUG';f.fills=[paint('surface/global')];f.strokes=[];bind(f,PAD,'space/60');bind(f,['itemSpacing'],'space/30');return f;};
+  f.resize(1080,f.height);f.layoutSizingHorizontal='FIXED';f.layoutSizingVertical='HUG';if(REUSED)f.fills=[];f.fills=[paint('surface/global')];f.strokes=[];bind(f,PAD,'space/60');bind(f,['itemSpacing'],'space/30');return f;};
 `
 
 export function generate(which, opts = {}) {

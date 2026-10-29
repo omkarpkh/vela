@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { execFileSync } from 'node:child_process'
-import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { readFileSync, writeFileSync, mkdtempSync } from 'node:fs'
+import { resolve, join } from 'node:path'
+import { tmpdir } from 'node:os'
 
 // scripts/figma/components/*.figma.js are the source of the library's component sets, and they
 // can only run inside Figma. check-components.mjs runs them against a mock of the Plugin API, so
@@ -17,7 +18,7 @@ const cli = (...args: string[]) => {
 const lintReport: Record<string, { problems: { rule: string; node: string; what: string; waived: boolean }[]; allow: { rule: string; reason: string }[] }> = JSON.parse(cli('--lint'))
 const dump = (name: string) => JSON.parse(cli('--dump', name))
 const styles: any[] = JSON.parse(execFileSync('node', ['scripts/figma/text-styles.mjs', '--json'], { cwd: root, encoding: 'utf8' }))
-const BUILDERS = ['button', 'checkbox', 'contextual-alert', 'icon', 'input', 'radio-group', 'risk-pill', 'status-indicator', 'tabs', 'toggle']
+const BUILDERS = ['button', 'checkbox', 'contextual-alert', 'icon', 'input', 'radio-group', 'risk-pill', 'status-indicator', 'tabs', 'text-area', 'toggle']
 
 describe('Figma builders, built in the mock Plugin API', () => {
   it('runs every builder', () => {
@@ -27,6 +28,41 @@ describe('Figma builders, built in the mock Plugin API', () => {
   it.each(BUILDERS)('%s passes the reviewer rules', (name) => {
     const bad = lintReport[name].problems.filter((p) => !p.waived)
     expect(bad.map((p) => `${p.rule}  ${p.node}: ${p.what}`)).toEqual([])
+  })
+
+  it('a TEXT property bound only where every variant writes the same word: Toggle, Checkbox and Radio keep theirs', () => {
+    for (const [name, word] of [['toggle', 'Email alerts'], ['checkbox', 'Accept the terms'], ['radio-group', 'Monitor']]) {
+      const d = dump(name)
+      const key = Object.keys(d.defs).find((k) => k.startsWith('Label text#'))!
+      expect(d.defs[key], name).toBe(`TEXT=${JSON.stringify(word)}`)
+      for (const v of d.variants) expect(JSON.stringify(v), `${name} ${v.n}`).toContain(`"chars":${JSON.stringify(word)}`)
+    }
+  })
+
+  it('fails a builder that binds one TEXT property in variants whose texts differ (text-property-collapse)', () => {
+    // Figma holds one default per TEXT property for the whole set: binding Low / Medium / High to
+    // it shows the last word in every variant. This is the Risk Pill builder before the fix.
+    const dir = mkdtempSync(join(tmpdir(), 'vela-figma-'))
+    const file = join(dir, 'collapsing.figma.js')
+    writeFileSync(file, `// @page Fixture
+// @set  Fixture
+const variants = [];
+for (const w of ['Low', 'Medium', 'High']) {
+  const c = figma.createComponent(); c.name = 'Word=' + w; c.layoutMode = 'HORIZONTAL'; c.fills = [];
+  const t = figma.createText(); t.name = 'Label'; t.characters = w; await t.setTextStyleIdAsync(style('Body/Meta').id);
+  t.fills = [paint('text/default')]; c.appendChild(t); variants.push(c);
+}
+const set = figma.combineAsVariants(variants, page); set.name = SET;
+const key = set.addComponentProperty('Label text', 'TEXT', 'Low');
+for (const v of set.children) v.findOne(n => n.name === 'Label').componentPropertyReferences = { characters: key };
+return { created: SET };
+`)
+    const r = JSON.parse(cli('--lint', file))[file]
+    expect(r.problems.filter((p: any) => !p.waived).map((p: any) => p.rule)).toEqual(['text-property-collapse'])
+    expect(r.problems[0].what).toContain('"Low", "Medium", "High"')
+    // and the mock shows what the live file showed: every variant says the last word
+    const d = dump(file)
+    expect(d.variants.map((v: any) => v.ch[0].chars)).toEqual(['High', 'High', 'High'])
   })
 
   it('only the builders with recorded literal geometry carry waivers', () => {
@@ -95,10 +131,15 @@ describe('Risk Pill, as the builder creates it', () => {
   const pill = dump('risk-pill')
   const RISK = ['low', 'medium', 'high']
 
-  it('has Risk × Size variants and the Label text property, nothing literal', () => {
+  it('has Risk × Size variants and no TEXT property, nothing literal', () => {
     expect(pill.variants.map((v: any) => v.n)).toEqual(RISK.flatMap((r) => ['regular', 'small'].map((s) => `Risk=${r}, Size=${s}`)))
-    expect(Object.keys(pill.defs).map((k) => k.replace(/#.*$/, '')).sort()).toEqual(['Label text', 'Risk', 'Size'])
+    expect(Object.keys(pill.defs).map((k) => k.replace(/#.*$/, '')).sort()).toEqual(['Risk', 'Size'])
     expect(lintReport['risk-pill'].allow).toEqual([])
+  })
+
+  it('keeps each variant’s own level word in an unbound Label layer: Low, Medium, High', () => {
+    const words = pill.variants.map((v: any) => v.ch.find((c: any) => c.n === 'Label').chars)
+    expect(words).toEqual(['Low', 'Low', 'Medium', 'Medium', 'High', 'High'])
   })
 
   it('binds every fill, stroke and label to that level’s own risk row — never severity, never status', () => {
@@ -110,7 +151,7 @@ describe('Risk Pill, as the builder creates it', () => {
       expect(v.rad[1]).toBe('radius/3')
       const label = v.ch.find((c: any) => c.t === 'TEXT')
       expect([label.n, label.style, label.fill]).toEqual(['Label', 'Body/Meta', [`risk/${risk}/text`]])
-      expect(Object.keys(label.ref)).toEqual(['characters'])
+      expect(label.ref).toBeUndefined()
     }
   })
 
@@ -249,8 +290,14 @@ describe('text styles have a source', () => {
     expect(styles.map((s) => s.name)).toEqual([
       'Heading/H1', 'Heading/H2', 'Heading/H3', 'Heading/H4', 'Heading/H5', 'Heading/H6',
       'Body/Default', 'Body/Meta', 'Button/Tiny', 'Button/Regular', 'Button/Large', 'Button/Huge',
-      'Tab/Default', 'Tab/Large', 'Body/Link', 'Tab/Count', 'Tab/Count Large',
+      'Tab/Default', 'Tab/Large', 'Body/Link', 'Tab/Count', 'Tab/Count Large', 'Mono/Meta',
     ])
+  })
+
+  it('draws Mono/Meta as Body/Meta in Roboto Mono: same size, line height, weight and tracking variables', () => {
+    const mono = styles.find((s) => s.name === 'Mono/Meta'), meta = styles.find((s) => s.name === 'Body/Meta')
+    expect(mono.fontName).toEqual({ family: 'Roboto Mono', style: 'Regular' })
+    for (const k of ['size', 'lineHeight', 'weight', 'tracking']) expect(mono[k], k).toEqual(meta[k])
   })
 
   it('binds Tab/Count to size/tab, line-height/tab and weight/semibold, and Tab/Count Large to the large pair', () => {

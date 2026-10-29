@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Button, Toggle, Input, ContextualAlert, StatusIndicator, RiskPill, Tabs, Icon, ICON_NAMES } from '../../src'
+import { Button, Toggle, Input, TextArea, ContextualAlert, StatusIndicator, RiskPill, Tabs, Icon, ICON_NAMES } from '../../src'
 import type { Severity, Status, Risk, IconName, IconSize, IconTone } from '../../src'
 import { Tabs as HeadlessTabs, Checkbox, RadioGroup } from '../../src/headless'
 import { PlusIcon } from '../../src/lib/icons'
@@ -7,6 +7,7 @@ import { printJsx, type Control, type Spec } from './spec'
 import buttonMd from '../../guidelines/components/button.md?raw'
 import toggleMd from '../../guidelines/components/toggle.md?raw'
 import inputMd from '../../guidelines/components/input.md?raw'
+import textAreaMd from '../../guidelines/components/text-area.md?raw'
 import alertMd from '../../guidelines/components/contextual-alert.md?raw'
 import statusMd from '../../guidelines/components/status-indicator.md?raw'
 import riskMd from '../../guidelines/components/risk-pill.md?raw'
@@ -154,6 +155,48 @@ export const REGISTRY: Entry[] = [
       />
     ),
     code: (v, spec) => printJsx('Input', { label: v.label, hint: v.hint, error: v.error, size: v.size, required: v.required }, defaultsOf(spec)),
+  },
+  {
+    id: 'text-area',
+    file: 'text-area.md',
+    src: 'TextArea',
+    name: 'Text Area',
+    spec: textAreaMd,
+    seed: { label: 'Justification', hint: 'Shown to the approver', error: '', defaultValue: 'Blocking the transfer: the destination bucket is public.' },
+    // `value` is the controlled arm: on this stage it would freeze the field, so the page drives
+    // defaultValue instead. rows and maxLength are numbers, so they become selects of a few values.
+    hide: ['value'],
+    extra: [
+      { prop: 'rows', kind: 'select', type: 'number', options: ['2', '3', '5'], default: '3', notes: 'Minimum height, in lines.' },
+      { prop: 'maxLength', kind: 'select', type: 'number', options: ['none', '140', '280'], default: '140', notes: 'The limit, in characters; shows the live count.' },
+    ],
+    render: (v) => (
+      <TextArea
+        label={str(v.label) || 'Label'}
+        defaultValue={str(v.defaultValue)}
+        hint={str(v.hint) || undefined}
+        error={str(v.error) || undefined}
+        size={(str(v.size) || 'regular') as 'tiny' | 'regular' | 'large'}
+        rows={Number(str(v.rows) || 3)}
+        maxLength={str(v.maxLength) && v.maxLength !== 'none' ? Number(v.maxLength) : undefined}
+        resize={(str(v.resize) || 'vertical') as 'vertical' | 'none'}
+        disabled={bool(v.disabled)}
+        readOnly={bool(v.readOnly)}
+        required={bool(v.required)}
+        placeholder="Why is this action needed?"
+      />
+    ),
+    code: (v, spec) =>
+      printJsx(
+        'TextArea',
+        { label: v.label, hint: v.hint, error: v.error, size: v.size, resize: v.resize, disabled: v.disabled, readOnly: v.readOnly, required: v.required },
+        defaultsOf(spec),
+        undefined,
+        {
+          ...(str(v.rows) && v.rows !== '3' ? { rows: str(v.rows) } : {}),
+          ...(str(v.maxLength) && v.maxLength !== 'none' ? { maxLength: str(v.maxLength) } : {}),
+        },
+      ),
   },
   {
     id: 'contextual-alert',
