@@ -153,14 +153,17 @@ difference is recorded here:
 
 ## Figma mapping
 
-Library file: **Vela Design System** → page `Tooltip`. One component with a `Content` text
-property; there is no variant axis, because placement has no visual expression without an arrow
-and Vela overlays carry none. The set is created by `scripts/figma/components/tooltip.figma.js`;
-until that builder has been run in the file, the library has no Tooltip set.
+Library file: **Vela Design System** → page `Tooltip`. Two variants, `Lines` (one / two), plus a
+`Content` text property. `Lines` is not a prop: a one-line tooltip hugs its text and a two-line one
+is `tooltip/width-max` wide and wraps, which is the only place the cap is visible in the file. There
+is no placement axis: without an arrow — Vela overlays carry none — the four placements look the
+same. The set is created by `scripts/figma/components/tooltip.figma.js`; until that builder has
+been run in the file, the library has no Tooltip set.
 
 | Figma property | Code prop |
 |---|---|
 | `Content` | `content` |
+| `Lines` | none — the length of `content` decides where it wraps |
 
 **The delay, the hover and focus triggers, Escape and the aria-describedby wiring exist only in
 code. The popup fills `surface/tooltip`, rounds at `radius/4`, pads `space/5` by `space/10`, and its
