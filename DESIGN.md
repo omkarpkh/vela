@@ -18,8 +18,8 @@ The React package has two entry points (`decisions/002-agent-ready-direction`): 
 is hand-rolled and has zero runtime dependencies; `@omkarux/vela/headless` builds the same
 specs on Base UI (`@base-ui/react`, an optional peer) and is Experimental. The first headless
 component is Tabs, so the two can be compared against one spec, one stylesheet and one test
-file; Checkbox, Radio Group and the three overlays — Popover, Tooltip, Dialog — were born there and
-ship from `/headless` only. Choose the core entry unless you already carry Base UI or need a behaviour the core does
+file; Checkbox, Radio Group, the three overlays — Popover, Tooltip, Dialog — and Toast were born
+there and ship from `/headless` only. Choose the core entry unless you already carry Base UI or need a behaviour the core does
 not yet implement; a spec's "Implementations" section lists what each entry ships and where they
 differ.
 
@@ -74,7 +74,7 @@ dot). They are three vocabularies with three token rows, and they are never inte
 
 | Taxonomy | Values | Describes | Owned by | Tokens |
 |---|---|---|---|---|
-| **Severity** (6) | `success` · `info` · `warning` · `minor` · `major` · `critical` | an event the user must read | Contextual Alert | `--vela-{bg,border,signal,icon,text}-severity-*`, `--vela-border-severity-*-indicator` |
+| **Severity** (6) | `success` · `info` · `warning` · `minor` · `major` · `critical` | an event the user must read | Contextual Alert (a Toast carries only `success` · `info` · `warning`) | `--vela-{bg,border,signal,icon,text}-severity-*`, `--vela-border-severity-*-indicator` |
 | **Risk** (3) | `low` · `medium` · `high` | a score on an object | Risk Pill | the same six roles, `--vela-*-risk-*` |
 | **Status** (5) | `unknown` · `healthy` · `warning` · `medium` · `unhealthy` | an object's ongoing health | Status Indicator | `--vela-signal-status-*` — one row, five swatches, no other roles |
 
@@ -155,9 +155,12 @@ is a wait before a Tooltip opens on hover, not an animation; see the overlays bu
 - `--vela-duration-base` (180ms) — anything that settles or appears.
 - `--vela-ease-standard` `cubic-bezier(0.2, 0, 0.2, 1)` — the only curve. Never a bare `ease`.
 
-Overlays (Popover, Tooltip, Dialog) appear at `base` on opacity plus a `--vela-space-5` step of
-travel, and leave on opacity alone; one opened or closed from the keyboard does not animate
+Overlays (Popover, Tooltip, Dialog, Toast) appear at `base` on opacity plus a `--vela-space-5` step
+of travel, and leave on opacity alone; one opened or closed from the keyboard does not animate
 (`data-vela-instant`). A Tooltip waits `--vela-delay-tooltip` on hover and opens at once on focus.
+A Toast stays `--vela-duration-toast` (6000ms) — a dwell, not an animation, paused on hover and
+focus, untouched by the reduced-motion collapse — and only when it is a `success` or `info` with no
+action; a warning or a toast with an action stays until dismissed.
 
 Only `transform`, `opacity` and `filter` animate. Pointer states enter faster than they leave
 (hover in at `fast`, out at `base`; press in at `instant`, out at `base`). Transitions, not
@@ -284,6 +287,7 @@ Semantics and labels
 - A Toggle behind a Save button → that is a Checkbox; Toggles for more than two states.
 - Tabs for the same dataset in a different view → View Switcher; Tabs as page navigation → use real links; keeping hidden panels mounted to preserve form state → lift the state.
 - Using a Contextual Alert as a toast → it is inline and does not float; a dismissible critical alert with no other resolution path; an info alert with `role="alert"`.
+- A Toast as the only record of what happened, or the only place an Undo lives → the page carries both; a Toast that asks a question or offers two buttons → a Dialog; a `critical` or `major` toast, or a failure in a toast (will not compile for the severities) → a Contextual Alert where the work is.
 - A click handler, a hover state or a dismiss "×" on a Risk Pill → that is a Token Pill, not in this kit.
 - A Popover holding the only copy of something the task needs; a list of commands in a Popover → an Actions Dropdown, not in this kit.
 - A link or a button in a Tooltip (will not compile) → a Popover; a Tooltip as the only name of an icon-only control → `aria-label` on the control; a Tooltip on a disabled control → adjacent text.
@@ -302,11 +306,11 @@ Accessibility
 Do not invent one silently. State that the kit has no component for the need and pick the
 closest match while flagging the gap. Not yet specced: Dropdown List, Select List, Token Pill,
 Number Stepper, Text Area, Icon Button, Actions Dropdown, View Switcher. Flag rather than
-guess. Checkbox (with Checkbox.Group), Radio Group, Popover, Tooltip and Dialog (with its `alert`
-variant — the kit's modal) are specced and ship from `@omkarux/vela/headless` only
+guess. Checkbox (with Checkbox.Group), Radio Group, Popover, Tooltip, Dialog (with its `alert`
+variant — the kit's modal) and Toast are specced and ship from `@omkarux/vela/headless` only
 (Experimental). The disambiguations agents most often get wrong
 — Toggle vs Checkbox, Radio Group vs Select List, Tabs vs View Switcher, Popover vs Tooltip vs
-Dialog, Alert vs Status
+Dialog, Toast vs Alert vs Dialog, Alert vs Status
 Indicator vs Risk Pill — are in `guidelines/overview.md`.
 
 ## How to add a component

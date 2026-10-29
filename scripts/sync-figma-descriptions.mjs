@@ -28,7 +28,7 @@ const version = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).ver
 
 // spec file → Figma component set name and source directory. `entry` is the source tree the
 // component lives in: `components` (the core, `@omkarux/vela`) unless it says `headless`
-// (`@omkarux/vela/headless` only — Checkbox, Radio Group, Popover, Tooltip and Dialog have no core
+// (`@omkarux/vela/headless` only — Checkbox, Radio Group, Popover, Tooltip, Dialog and Toast have no core
 // implementation). There is no `--map` mode on this base, so no Figma node ids are carried here.
 const SETS = {
   'button.md': { set: 'Button', src: 'Button' },
@@ -43,6 +43,7 @@ const SETS = {
   'popover.md': { set: 'Popover', src: 'Popover', entry: 'headless' },
   'tooltip.md': { set: 'Tooltip', src: 'Tooltip', entry: 'headless' },
   'dialog.md': { set: 'Dialog', src: 'Dialog', entry: 'headless' },
+  'toast.md': { set: 'Toast', src: 'Toast', entry: 'headless' },
 }
 
 // `[[rule: id | enforcement]]` is metadata for scripts/check-rules.mjs, not prose: it is stripped
