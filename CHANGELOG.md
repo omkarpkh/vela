@@ -6,6 +6,18 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Unreleased]
 
 ### Added
+- **The library's Changelog and Status pages are compiled from the repository.**
+  `npm run figma:build:pages` prints a Plugin API script per page (each under 50 KB):
+  `scripts/figma/pages/changelog.figma.js` draws one card per released version, newest first —
+  the date, whether it is on npm (read from the committed `scripts/figma/pages/published.json`,
+  or a `--published` list, or the registry with `--npm`), the bold lead-in of every bullet word
+  for word, and a link to the full entry; `status.figma.js` draws GOVERNANCE.md's four labels as
+  neutral outlined chips and one row per component — label from the spec's Status line, Figma
+  set, React export, Since, spec link. Unlike the component builders they are idempotent: each
+  finds its page frame by name and rebuilds it in place, so the frame keeps its id. Both end
+  with a stamp naming the commit they were read from. `scripts/figma/check-pages.mjs` runs them
+  in the mock Plugin API against the reviewer rules (plus no components on a doc page) in
+  `npm test`; `RELEASING.md` step 7 rebuilds them before the library is published.
 - **The docs site carries the project record.** New routes: `#/status` (every component's
   lifecycle label, read from the `**Status:**` line in its spec, so site and spec cannot
   disagree), `#/changelog`, `#/roadmap`, `#/contributing` and `#/accessibility`, each rendered
