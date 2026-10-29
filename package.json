@@ -89,7 +89,8 @@
     "typecheck": "tsc --noEmit",
     "contrast": "node scripts/contrast-report.mjs",
     "verify": "npm run tokens:check && npm run rules:check && npm run typecheck && npm run test && npm run checks:check && npm run build && node scripts/verify-pack.mjs",
-    "prepublishOnly": "npm run verify"
+    "prepublishOnly": "npm run verify",
+    "figma:map": "node scripts/sync-figma-descriptions.mjs --map > guidelines/figma-map.json"
   },
   "peerDependencies": {
     "@base-ui/react": "1.9.x",

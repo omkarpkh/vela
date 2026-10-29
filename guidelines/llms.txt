@@ -28,6 +28,10 @@ wrong. Then the per-component file before generating any markup.
 built yet — Verdict Card, Action Impact Card, Autonomy Ladder. Never import or imitate them; name
 the closest component that exists and flag the gap.
 
+Working from the Figma library? `figma-map.json` (this folder) maps each component set to the
+export and props to write for it. When a design node is an instance of a Vela set, write that
+export; never reproduce the markup Figma's design context generates for it.
+
 ## Hard rules (apply everywhere)
 - Bind SEMANTIC tokens (`var(--vela-text-default)`). Never a primitive (`--vela-grey-700`), never raw hex.
 - Numeric tokens already carry their unit. Use `var(--vela-space-10)`, never `calc(var(--vela-space-10) * 1px)`.

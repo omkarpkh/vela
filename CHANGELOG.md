@@ -12,6 +12,14 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   band, Reversibility tier and Autonomy rung. Nothing in them is built; the folder's README and
   each file's first line say so, and it is left out of the npm package so a consumer's agent
   cannot mistake a proposal for an export.
+- **`guidelines/figma-map.json`: what to write for each Figma set, on every plan.** Compiled from
+  the specs by `npm run figma:map` (the description sync with `--map`): each set's node id and
+  link, the import, the export to write (`Tabs.Trigger` for the Tab set), every Figma property's
+  prop, and the spec's example. It does the job Code Connect does on an Organization plan;
+  Vela's library is on Professional, where Code Connect is not available. `AGENTS.md` and
+  `llms.txt` tell an agent to use it instead of the markup Figma generates. A test fails when it
+  is stale. Measured against the Figma thread's "before" on Button node 7:7: without it, the
+  design context gives a `<div>` lookalike with no import and raw fallback values.
 - **The library's Changelog and Status pages are compiled from the repository.**
   `npm run figma:build:pages` prints a Plugin API script per page (each under 50 KB):
   `scripts/figma/pages/changelog.figma.js` draws one card per released version, newest first —
