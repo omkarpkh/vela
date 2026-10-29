@@ -109,6 +109,9 @@ icon/stroke × icon/size ÷ 24 = 1.33.
 - `README.md` listed six components in "What is actually in here" (Risk Pill was missing) and said
   "All six are currently Approved" while Risk Pill was Experimental. Both now name the eight
   components and the two Experimental ones.
+- `src/styles/index.css`, the dev and demo stylesheet entry, lists the component stylesheets by
+  hand beside `scripts/build-css.mjs`; the Icon page's e2e caught it one short (the glyph rendered
+  at 83px). A test in `css-lint.test.ts` now holds the two lists equal.
 - `--vela-icon-strong` and `--vela-icon-default` existed with no consumer and no contrast pair.
   Both now have a component and are in `PAIRS`.
 
