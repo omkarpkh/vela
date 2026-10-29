@@ -6,6 +6,34 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Unreleased]
 
 ### Added
+- **Table — Experimental, `@omkarux/vela` (core, zero dependencies).** The primitives a console's
+  data views are built on (`table.md`), presentational on purpose: no data fetching, no
+  virtualisation, no sort state. Compound parts on native elements — `Table` (required `caption`
+  string, `captionHidden`, `density` `comfortable | compact` (DESIGN.md's two steps), `layout` `auto | fixed`,
+  `stickyHeader`), `Table.Head`, `Table.Body`, `Table.Row` (`selected` → `aria-selected` plus a
+  `border-active` start marker, `aria-current`), `Table.HeaderCell` (`scope` `col | row`, `align`,
+  `sort={{ direction, onSort }}` rendering a real button named "Last seen, sort ascending" and
+  `aria-sort` on the sorted column only; `onSort` receives the direction the name promised),
+  `Table.Cell` (`align`, `numeric` → tabular numerals, end-aligned) and `Table.Empty` (required
+  message). The wrapper is an inline-size container, so a wide table never widens its host; it
+  scrolls inside a `role="region"` labelled by the caption and always focusable. No `striped`
+  prop: zebra competes with the hover and selected tints and reads as grouping. 19 rules —
+  nine compiler (twelve fixtures), five runtime, two browser (the scroll stays in the region, a
+  mutant without the container fails it; the sticky header pins), four convention. A Figma
+  builder declaring three sets (Header Cell 16 variants, Cell 4, Row 8; no waiver; each TEXT
+  property writes one word in every variant, so none collapses under `text-property-collapse`;
+  Figma state `none`, with the Cell and Row sets under `also` in the map, each described with the
+  same import and the part it is) — the builder
+  pipeline now accepts more than one `// @set` and `--set=<name>` on dump, read and diff — and a
+  playground page whose host owns the sort and the selection.
+- **Two row surfaces and a primitive.** `bg-row-hover` (grey-50; dark grey-900) and
+  `bg-row-selected` (new `blue-50` #f2f7fd; dark blue-950), because the existing ones fail a
+  console row: `bg-selected` puts the `unknown` status dot at 2.97:1 and de-emphasized text at
+  4.20:1, `bg-hover` in dark puts links at 4.35:1. 19 new `PAIRS` (text, secondary text, link,
+  marker and all five status dots on both rows, and the unsorted sort glyph) pass in both themes;
+  the tightest shipped pair is now the `unknown` dot on a selected row at 3.22:1 (was the input
+  border at 3.29:1), recorded in `DESIGN.md` and `foundations/color.md`. Rule count, with Icon and
+  Text Area merged: 43 of 93 rules are enforced by the compiler.
 - **The Calibrated Confidence Gate is public, as a proposal** (21 rules, 17 with proofs). It owns the
   Confidence band taxonomy and decides, through `gateBand(reading, now)`, which band the kit may act
   on: a stated band counts only once at least 30 person-reviewed conclusions for the same agent

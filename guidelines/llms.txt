@@ -4,7 +4,7 @@
 > deliberately separate status taxonomies, full light and dark theming, zero runtime dependencies
 > in the core entry (the `/headless` entry needs one optional peer, Base UI, and is where Checkbox
 > and Radio Group ship from).
-> 34 of the 73 design rules are enforced by the TypeScript types; the rest are checked at runtime, in a
+> 43 of the 93 design rules are enforced by the TypeScript types; the rest are checked at runtime, in a
 > real browser, or by review. Each rule in the component guidelines is tagged with its level.
 >
 > THESE SPECS ARE FRAMEWORK-AGNOSTIC. The published package is a React implementation of them, and
@@ -73,3 +73,4 @@ behaviour has no Figma expression at all.
 - [Icon](components/icon.md) — 50 curated Lucide glyphs (ISC, see NOTICE), compiled into the core entry; `ICON_NAMES` is the closed list
 - [Checkbox](components/checkbox.md) — `@omkarux/vela/headless` only, Experimental
 - [Radio Group](components/radio-group.md) — `@omkarux/vela/headless` only, Experimental
+- [Table](components/table.md) — `@omkarux/vela`, Experimental

@@ -207,6 +207,85 @@
       "spec": "guidelines/components/status-indicator.md"
     },
     {
+      "set": "Table Header Cell",
+      "page": "Table",
+      "state": "none",
+      "node": null,
+      "url": null,
+      "import": "import { Table } from '@omkarux/vela'",
+      "write": "Table.HeaderCell",
+      "figmaToProp": [
+        {
+          "figma": "Density",
+          "prop": "density on <Table>"
+        },
+        {
+          "figma": "Sort=unsortable",
+          "prop": "no sort prop"
+        },
+        {
+          "figma": "Sort=none",
+          "prop": "sort={{ direction: \"none\", … }}"
+        },
+        {
+          "figma": "Sort=ascending",
+          "prop": "sort={{ direction: \"ascending\", … }}"
+        },
+        {
+          "figma": "Sort=descending",
+          "prop": "sort={{ direction: \"descending\", … }}"
+        },
+        {
+          "figma": "Align",
+          "prop": "align; a numeric column is Align=end with numeric on the cell"
+        },
+        {
+          "figma": "State=default",
+          "prop": "—"
+        },
+        {
+          "figma": "State=hover",
+          "prop": "the pointer, not a prop"
+        },
+        {
+          "figma": "State=selected",
+          "prop": "selected on <Table.Row>"
+        },
+        {
+          "figma": "State=current",
+          "prop": "aria-current on <Table.Row>"
+        },
+        {
+          "figma": "Label text",
+          "prop": "the header cell's children"
+        },
+        {
+          "figma": "Value text",
+          "prop": "the cell's children"
+        }
+      ],
+      "example": "<Table caption=\"Assets\" density=\"compact\" stickyHeader>\n  <Table.Head>\n    <Table.Row>\n      <Table.HeaderCell sort={{ direction: sort.name, onSort: (next) => setSort({ name: next }) }}>Asset</Table.HeaderCell>\n      <Table.HeaderCell>Status</Table.HeaderCell>\n      <Table.HeaderCell>Risk</Table.HeaderCell>\n      <Table.HeaderCell align=\"end\">Open findings</Table.HeaderCell>\n    </Table.Row>\n  </Table.Head>\n  <Table.Body>\n    {rows.length === 0 && <Table.Empty colSpan={4}>No assets match these filters</Table.Empty>}\n    {rows.map((r) => (\n      <Table.Row key={r.id} selected={picked.has(r.id)}>\n        <Table.HeaderCell scope=\"row\">{r.name}</Table.HeaderCell>\n        <Table.Cell><StatusIndicator status={r.status} label={r.statusLabel} /></Table.Cell>\n        <Table.Cell><RiskPill risk={r.risk} /></Table.Cell>\n        <Table.Cell numeric>{r.findings}</Table.Cell>\n      </Table.Row>\n    ))}\n  </Table.Body>\n</Table>",
+      "spec": "guidelines/components/table.md",
+      "also": [
+        {
+          "set": "Table Cell",
+          "state": "none",
+          "node": null,
+          "url": null,
+          "import": "import { Table } from '@omkarux/vela'",
+          "write": "Table.Cell"
+        },
+        {
+          "set": "Table Row",
+          "state": "none",
+          "node": null,
+          "url": null,
+          "import": "import { Table } from '@omkarux/vela'",
+          "write": "Table.Row"
+        }
+      ]
+    },
+    {
       "set": "Tab",
       "page": "Tabs",
       "state": "published",

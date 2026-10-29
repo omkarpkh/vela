@@ -1,6 +1,6 @@
-import type { ReactNode } from 'react'
-import { Button, Toggle, Input, TextArea, ContextualAlert, StatusIndicator, RiskPill, Tabs, Icon, ICON_NAMES } from '../../src'
-import type { Severity, Status, Risk, IconName, IconSize, IconTone } from '../../src'
+import { useState, type ReactNode } from 'react'
+import { Button, Toggle, Input, TextArea, ContextualAlert, StatusIndicator, RiskPill, Tabs, Icon, ICON_NAMES, Table } from '../../src'
+import type { Severity, Status, Risk, IconName, IconSize, IconTone, TableSortDirection } from '../../src'
 import { Tabs as HeadlessTabs, Checkbox, RadioGroup } from '../../src/headless'
 import { PlusIcon } from '../../src/lib/icons'
 import { printJsx, type Control, type Spec } from './spec'
@@ -15,6 +15,7 @@ import tabsMd from '../../guidelines/components/tabs.md?raw'
 import iconMd from '../../guidelines/components/icon.md?raw'
 import checkboxMd from '../../guidelines/components/checkbox.md?raw'
 import radioGroupMd from '../../guidelines/components/radio-group.md?raw'
+import tableMd from '../../guidelines/components/table.md?raw'
 
 export type Values = Record<string, string | boolean | undefined>
 
@@ -70,6 +71,77 @@ export interface Entry {
   figma?: string
   /** Or a predicate for which of the spec's tokens the current values bind. */
   highlight?: (v: Values) => (token: string) => boolean
+}
+
+// The Table page's stage: a host that owns the rows, the sort and the selection, as the spec says
+// a host must. The table itself holds none of it.
+const ASSETS: { name: string; status: Status; statusLabel: string; risk: Risk; findings: number; seen: string }[] = [
+  { name: 'api-gateway-01', status: 'healthy', statusLabel: 'Healthy', risk: 'low', findings: 2, seen: '2026-10-29 08:12' },
+  { name: 'db-primary-eu-west-1', status: 'warning', statusLabel: 'Warning', risk: 'high', findings: 41, seen: '2026-10-29 07:58' },
+  { name: 'vpn-edge-02', status: 'unhealthy', statusLabel: 'Unreachable', risk: 'high', findings: 17, seen: '2026-10-28 23:40' },
+  { name: 'build-runner-14', status: 'medium', statusLabel: 'Degraded', risk: 'medium', findings: 9, seen: '2026-10-29 06:03' },
+  { name: 'laptop-omk-7f3a9c2e', status: 'unknown', statusLabel: 'No agent', risk: 'medium', findings: 0, seen: '2026-10-21 17:30' },
+  { name: 'k8s-node-pool-b-3', status: 'healthy', statusLabel: 'Healthy', risk: 'low', findings: 1204, seen: '2026-10-29 08:10' },
+  { name: 'mail-relay-01', status: 'healthy', statusLabel: 'Healthy', risk: 'low', findings: 3, seen: '2026-10-29 08:01' },
+]
+type AssetKey = 'name' | 'findings' | 'seen'
+
+function TableStage({ v }: { v: Values }) {
+  const [sort, setSort] = useState<{ key: AssetKey; direction: TableSortDirection }>({ key: 'name', direction: 'ascending' })
+  const [picked, setPicked] = useState<Set<string>>(() => new Set(['db-primary-eu-west-1']))
+  const rows = [...ASSETS].sort((a, b) => {
+    const d = sort.key === 'findings' ? a.findings - b.findings : String(a[sort.key]).localeCompare(String(b[sort.key]))
+    return sort.direction === 'descending' ? -d : d
+  })
+  const sortOf = (key: AssetKey) => ({
+    direction: sort.key === key ? sort.direction : ('none' as const),
+    onSort: (next: 'ascending' | 'descending') => setSort({ key, direction: next }),
+  })
+  const empty = bool(v.empty)
+  return (
+    <Table
+      caption={str(v.caption) || 'Assets'}
+      captionHidden={bool(v.captionHidden)}
+      density={(str(v.density) || 'comfortable') as 'comfortable' | 'compact'}
+      layout={(str(v.layout) || 'auto') as 'auto' | 'fixed'}
+      stickyHeader={bool(v.stickyHeader)}
+      className={bool(v.stickyHeader) ? 'pg-table-bounded' : undefined}
+    >
+      <Table.Head>
+        <Table.Row>
+          <Table.HeaderCell><span className="vela-sr-only">Selected</span></Table.HeaderCell>
+          <Table.HeaderCell sort={sortOf('name')}>Asset</Table.HeaderCell>
+          <Table.HeaderCell>Status</Table.HeaderCell>
+          <Table.HeaderCell>Risk</Table.HeaderCell>
+          <Table.HeaderCell align="end" sort={sortOf('findings')}>Open findings</Table.HeaderCell>
+          <Table.HeaderCell sort={sortOf('seen')}>Last seen</Table.HeaderCell>
+        </Table.Row>
+      </Table.Head>
+      <Table.Body>
+        {empty ? (
+          <Table.Empty colSpan={6}>No assets match these filters</Table.Empty>
+        ) : (
+          rows.map((r) => (
+            <Table.Row key={r.name} selected={picked.has(r.name)}>
+              <Table.Cell>
+                <Checkbox
+                  label={`Select ${r.name}`}
+                  size="tiny"
+                  checked={picked.has(r.name)}
+                  onCheckedChange={(on) => setPicked((p) => { const n = new Set(p); if (on) n.add(r.name); else n.delete(r.name); return n })}
+                />
+              </Table.Cell>
+              <Table.HeaderCell scope="row">{r.name}</Table.HeaderCell>
+              <Table.Cell><StatusIndicator status={r.status} label={r.statusLabel} /></Table.Cell>
+              <Table.Cell><RiskPill risk={r.risk} size="small" /></Table.Cell>
+              <Table.Cell numeric>{r.findings.toLocaleString('en-US')}</Table.Cell>
+              <Table.Cell>{r.seen}</Table.Cell>
+            </Table.Row>
+          ))
+        )}
+      </Table.Body>
+    </Table>
+  )
 }
 
 const defaultsOf = (spec: Spec) => Object.fromEntries(spec.controls.map((c) => [c.prop, c.default]))
@@ -390,5 +462,38 @@ export const REGISTRY: Entry[] = [
   <RadioGroup.Radio value="quarantine" label="Quarantine" />
 </RadioGroup>`,
     bindingKey: (v) => (bool(v.disabled) ? 'disabled (any)' : str(v.error) ? 'error (any)' : str(v.defaultValue) ? 'selected' : 'unselected'),
+  },
+  {
+    id: 'table',
+    file: 'table.md',
+    src: 'Table',
+    name: 'Table',
+    spec: tableMd,
+    seed: { caption: 'Assets' },
+    // children is the composition below, not a value a control can hold.
+    hide: ['children'],
+    extra: [{ prop: 'empty', kind: 'boolean', type: 'boolean', default: false, notes: 'Stage only: render Table.Empty instead of the rows.' }],
+    render: (v) => <TableStage v={v} />,
+    highlight: () => (t) => /--vela-(bg-row-|bg-global|border-(default|subtle|active)|text-default|icon-default)/.test(t),
+    code: (v, spec) =>
+      `${printJsx('Table', { caption: v.caption, captionHidden: v.captionHidden, density: v.density, layout: v.layout, stickyHeader: v.stickyHeader }, defaultsOf(spec)).replace(' />', '>')}
+  <Table.Head>
+    <Table.Row>
+      <Table.HeaderCell sort={{ direction: sort.name, onSort: (next) => setSort({ name: next }) }}>Asset</Table.HeaderCell>
+      <Table.HeaderCell>Status</Table.HeaderCell>
+      <Table.HeaderCell align="end" sort={…}>Open findings</Table.HeaderCell>
+    </Table.Row>
+  </Table.Head>
+  <Table.Body>
+    ${bool(v.empty) ? '<Table.Empty colSpan={6}>No assets match these filters</Table.Empty>' : `{rows.map((r) => (
+      <Table.Row key={r.id} selected={picked.has(r.id)}>
+        <Table.Cell><Checkbox label={\`Select \${r.name}\`} size="tiny" … /></Table.Cell>
+        <Table.HeaderCell scope="row">{r.name}</Table.HeaderCell>
+        <Table.Cell><StatusIndicator status={r.status} label={r.statusLabel} /></Table.Cell>
+        <Table.Cell numeric>{r.findings}</Table.Cell>
+      </Table.Row>
+    ))}`}
+  </Table.Body>
+</Table>`,
   },
 ]

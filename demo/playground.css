@@ -72,3 +72,10 @@
 .pg-icon__grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: var(--vela-space-5) var(--vela-space-10); }
 .pg-icon__cell { display: flex; align-items: center; gap: var(--vela-space-5); min-width: 0; color: var(--vela-text-de-emphasized); }
 .pg-icon__name { overflow-wrap: anywhere; }
+
+/* Table (Phase 1). The frame body hugs its content, and a Table's width never comes from its
+   content — it is an inline-size container, so a wide table cannot widen its host. Here the host
+   gives it the frame's width, as a page column would. The bounded height is the host's half of
+   stickyHeader: the region fills it and scrolls, and the header pins to its top. */
+.pg-frame-body:has(> .vela-table) { width: 100%; }
+.pg-table-bounded { max-block-size: 220px; }

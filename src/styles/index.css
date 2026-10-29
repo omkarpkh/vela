@@ -12,5 +12,6 @@
 @import '../components/RiskPill/RiskPill.css';
 @import '../components/Tabs/Tabs.css';
 @import '../components/Icon/Icon.css';
+@import '../components/Table/Table.css';
 @import '../headless/Checkbox/Checkbox.css';
 @import '../headless/RadioGroup/RadioGroup.css';

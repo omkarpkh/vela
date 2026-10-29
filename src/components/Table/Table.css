@@ -1,0 +1,146 @@
+/* ----------------------------------------------------------------- Table -- */
+/* The wrapper is an inline-size container: its width never comes from the table inside it, so a
+   wide table cannot push a grid track, a flex row or the page wider than the host gave it. The
+   table scrolls inside the region instead. It is a column flexbox so a height the host sets on
+   the wrapper bounds the region, which then scrolls vertically too (what stickyHeader needs). */
+.vela-table {
+  container-type: inline-size;
+  inline-size: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.vela-table__region {
+  flex: 1 1 auto;
+  min-block-size: 0;
+  overflow: auto;
+  background: var(--vela-bg-global);
+}
+
+.vela-table__table {
+  inline-size: 100%;
+  /* separate, not collapse: collapsed borders do not travel with a sticky header cell. */
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: auto;
+}
+.vela-table--fixed .vela-table__table { table-layout: fixed; }
+
+.vela-table__caption {
+  caption-side: top;
+  text-align: start;
+  padding-block-end: var(--vela-space-10);
+  font-size: var(--vela-text-h5-size);
+  font-weight: var(--vela-text-h5-weight);
+  line-height: var(--vela-text-h5-line-height);
+  color: var(--vela-text-heading);
+}
+
+/* ---- cells ---- */
+.vela-table__header-cell,
+.vela-table__cell {
+  padding: var(--vela-space-10);
+  vertical-align: baseline;
+  text-align: start;
+  color: var(--vela-text-default);
+}
+.vela-table--compact .vela-table__header-cell,
+.vela-table--compact .vela-table__cell {
+  padding-block: var(--vela-space-5);
+}
+
+.vela-table__header-cell--end,
+.vela-table__cell--end { text-align: end; }
+
+/* Column headers: H6 metrics in the body colour, one strong rule under the row. */
+.vela-table__head .vela-table__header-cell {
+  font-size: var(--vela-text-h6-size);
+  font-weight: var(--vela-text-h6-weight);
+  line-height: var(--vela-text-h6-line-height);
+  background: var(--vela-bg-global);
+  border-bottom: 1px solid var(--vela-border-default);
+  white-space: nowrap;
+}
+
+.vela-table__body .vela-table__header-cell,
+.vela-table__body .vela-table__cell {
+  font-size: var(--vela-text-body-size);
+  line-height: var(--vela-text-body-line-height);
+  font-weight: var(--vela-font-weight-regular);
+  border-bottom: 1px solid var(--vela-border-subtle);
+}
+/* A row header names its row: same scale as the cells, semibold. */
+.vela-table__body .vela-table__header-cell--row { font-weight: var(--vela-font-weight-semibold); }
+
+/* Never truncate. In auto layout a long token (a hash, a hostname) widens its column and the
+   region scrolls; in fixed layout the column cannot widen, so the token wraps inside it. */
+.vela-table--fixed .vela-table__cell,
+.vela-table--fixed .vela-table__header-cell { overflow-wrap: anywhere; white-space: normal; }
+
+.vela-table__cell--numeric {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ---- sticky header ---- */
+.vela-table--sticky-header .vela-table__head .vela-table__header-cell {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+/* ---- sort ---- */
+.vela-table__sort {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--vela-space-5);
+  min-block-size: var(--vela-control-height-24);   /* the target holds at compact density */
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: inherit;
+  cursor: pointer;
+}
+/* End-aligned (numeric) columns put the glyph first, so the label lines up with the numbers. */
+.vela-table__header-cell--end .vela-table__sort { flex-direction: row-reverse; }
+.vela-table__sort-icon {
+  flex: none;
+  inline-size: var(--vela-icon-12);
+  block-size: var(--vela-icon-12);
+  color: var(--vela-icon-default);
+}
+.vela-table__sort--sorted .vela-table__sort-icon { color: var(--vela-text-default); }
+@media (hover: hover) {
+  .vela-table__sort:hover { color: var(--vela-text-heading); }
+  .vela-table__sort:hover .vela-table__sort-icon { color: var(--vela-text-default); }
+}
+
+/* ---- row states ---- */
+/* Hover is a reading aid across a wide row, not a meaning: pointer only, never on a selected row. */
+@media (hover: hover) {
+  .vela-table__body .vela-table__row:not([aria-selected='true']):hover > * { background: var(--vela-bg-row-hover); }
+}
+/* Selection keys on the ARIA state the row carries, never on a class alone, and is never colour
+   alone: the start edge carries a border-active marker as well as the tint. */
+.vela-table__row[aria-selected='true'] > * { background: var(--vela-bg-row-selected); }
+.vela-table__row[aria-selected='true'] > :first-child,
+.vela-table__row[aria-current]:not([aria-current='false']) > :first-child {
+  box-shadow: inset var(--vela-stroke-2) 0 0 0 var(--vela-border-active);
+}
+.vela-table__row[aria-selected='true'] > :first-child:dir(rtl),
+.vela-table__row[aria-current]:not([aria-current='false']) > :first-child:dir(rtl) {
+  box-shadow: inset calc(var(--vela-stroke-2) * -1) 0 0 0 var(--vela-border-active);
+}
+
+/* ---- empty ---- */
+.vela-table__empty {
+  padding: var(--vela-space-30) var(--vela-space-10);
+  text-align: center;
+  font-size: var(--vela-text-body-size);
+  line-height: var(--vela-text-body-line-height);
+  color: var(--vela-text-de-emphasized);
+  border-bottom: 1px solid var(--vela-border-subtle);
+}

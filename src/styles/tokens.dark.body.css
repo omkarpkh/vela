@@ -16,6 +16,8 @@
   --vela-bg-tooltip: var(--vela-grey-700);
   --vela-bg-inactive: var(--vela-grey-900);
   --vela-bg-selected: var(--vela-blue-950);
+  --vela-bg-row-hover: var(--vela-grey-900);
+  --vela-bg-row-selected: var(--vela-blue-950);
   --vela-primary-tint: var(--vela-blue-950);
   --vela-primary-active-bg: var(--vela-primary-500);
 

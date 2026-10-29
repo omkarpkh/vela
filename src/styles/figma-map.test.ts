@@ -44,11 +44,29 @@ describe('Figma → code map', () => {
     }
   })
 
+  it('lists every extra set of a multi-set component with its own export (Table: header cell, cell, row)', () => {
+    for (const s of map.sets) for (const a of s.also ?? []) {
+      expect(a.write.split('.')[0], a.set).toBe(s.write.split('.')[0])
+      expect(core, a.set).toMatch(new RegExp(`export \\{ ${a.write.split('.')[0]} \\}`))
+      expect(a.state, a.set).toBe(s.state)
+      expect(a.import, a.set).toBe(s.import)
+      if (a.node) expect(a.url).toContain(`node-id=${a.node.replace(':', '-')}`)
+      else expect(a.url).toBeNull()
+    }
+    const table = map.sets.find((s: any) => s.spec.endsWith('/table.md'))
+    expect([table.set, table.write, table.import]).toEqual(['Table Header Cell', 'Table.HeaderCell', "import { Table } from '@omkarux/vela'"])
+    expect(table.also.map((a: any) => [a.set, a.write])).toEqual([['Table Cell', 'Table.Cell'], ['Table Row', 'Table.Row']])
+    for (const a of table.also) expect([a.state, a.import], a.set).toEqual([table.state, table.import])
+  })
+
   it('starts every Figma description\'s CODE block with the same import the map has', () => {
-    const entries: { set: string; description: string }[] = JSON.parse(execFileSync('node', [resolve(root, 'scripts/sync-figma-descriptions.mjs'), '--json'], { encoding: 'utf8' }))
-    expect(entries.map((e) => e.set).sort()).toEqual(map.sets.map((s: any) => s.set).sort())
-    for (const s of map.sets) {
-      const d = entries.find((e) => e.set === s.set)!.description
+    const entries: { sets: { name: string; description: string }[] }[] = JSON.parse(execFileSync('node', [resolve(root, 'scripts/sync-figma-descriptions.mjs'), '--json'], { encoding: 'utf8' }))
+    // A multi-set component (Table) describes each of its sets; each extra set is checked as its own row.
+    const described = entries.flatMap((e) => e.sets)
+    const all = map.sets.flatMap((s: any) => [s, ...(s.also ?? [])])
+    expect(described.map((e) => e.name).sort()).toEqual(all.map((s: any) => s.set).sort())
+    for (const s of all) {
+      const d = described.find((e) => e.name === s.set)!.description
       const lines = d.split('\n')
       const at = lines.indexOf('CODE')
       expect(lines[at - 1], s.set).toBe('Use the library component; do not rebuild it from this frame.')
@@ -61,7 +79,7 @@ describe('Figma → code map', () => {
   })
 
   it('gives every set a state from the closed set: a published set always has a node, a none set never does', () => {
-    for (const s of map.sets) {
+    for (const s of map.sets.flatMap((s: any) => [s, ...(s.also ?? [])])) {
       expect(['published', 'built', 'none'], s.set).toContain(s.state)
       if (s.state === 'published') expect(s.node, s.set).toMatch(/^\d+:\d+$/)
       if (s.state === 'none') expect(s.node, s.set).toBeNull()
@@ -71,7 +89,7 @@ describe('Figma → code map', () => {
     expect(pub).toEqual(['Button', 'Contextual Alert', 'Input', 'Status Indicator', 'Tab', 'Toggle'])
     // Risk Pill's set exists in the file but is being rebuilt: its node is null until the Figma thread posts it.
     expect(map.sets.find((s: any) => s.set === 'Risk Pill')).toMatchObject({ state: 'built', node: null })
-    expect(map.sets.filter((s: any) => s.state === 'none').map((s: any) => s.set).sort()).toEqual(['Checkbox', 'Icon', 'Radio', 'Text Area'])
+    expect(map.sets.filter((s: any) => s.state === 'none').map((s: any) => s.set).sort()).toEqual(['Checkbox', 'Icon', 'Radio', 'Table Header Cell', 'Text Area'])
   })
 
   it('maps the Tab set to Tabs.Trigger, because the set is one trigger', () => {
