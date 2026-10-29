@@ -59,9 +59,10 @@ Navigate between **different** content panels.
 
 ## Token bindings
 
-Trigger rest `--vela-text-de-emphasized`; hover `--vela-text-default`; selected
-`--vela-text-link` with a 2px `--vela-border-active` underline. List rule
-`--vela-border-subtle`. The sliding indicator is the same 2px `--vela-border-active` bar, moved
+Trigger rest `--vela-text-de-emphasized`; hover `--vela-text-default` (an unselected trigger only:
+the selected one keeps `--vela-text-link` under the pointer); selected `--vela-text-link` with a
+2px `--vela-border-active` underline. List rule `--vela-border-subtle`. The list scrolls
+sideways only (`overflow-x: auto; overflow-y: hidden`). The sliding indicator is the same 2px `--vela-border-active` bar, moved
 over `--vela-duration-travel` on `--vela-ease-spring`.
 
 ## Motion
