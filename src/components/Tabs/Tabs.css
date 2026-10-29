@@ -2,6 +2,7 @@
 .vela-tabs { display: flex; flex-direction: column; }
 
 .vela-tabs__list {
+  position: relative; /* the indicator's containing block; it scrolls with the tabs */
   display: flex; align-items: stretch; gap: var(--vela-space-20);
   border-bottom: 1px solid var(--vela-border-subtle);
   overflow-x: auto;
@@ -18,8 +19,9 @@
   color: var(--vela-text-de-emphasized);
   cursor: pointer; white-space: nowrap;
   border-bottom: var(--vela-stroke-2) solid transparent;
-  transition: color var(--vela-duration-fast) var(--vela-ease-standard),
-              border-color var(--vela-duration-fast) var(--vela-ease-standard);
+  /* Colour only. The underline does not fade: at rest it is this border, in flight it is the
+     indicator below, and the hand-over between them must be instant to be invisible. */
+  transition: color var(--vela-duration-fast) var(--vela-ease-standard);
 }
 .vela-tabs--large .vela-tabs__trigger { font-size: var(--vela-text-tab-large-size); line-height: var(--vela-text-tab-large-line-height); }
 
@@ -28,6 +30,31 @@
 }
 .vela-tabs__trigger[aria-selected='true'] { color: var(--vela-text-link); border-bottom-color: var(--vela-border-active); }
 .vela-tabs__trigger:disabled { color: var(--vela-text-inactive); cursor: not-allowed; }
+
+/* From the keyboard nothing animates: a keyboard switch changes colour and underline at once. */
+.vela-tabs[data-vela-instant] .vela-tabs__trigger { transition: none; }
+
+/* The selected indicator (guidelines/components/tabs.md#motion). At rest the underline is the
+   selected trigger's own border above, so a still tab list renders exactly as it did before this
+   bar existed. The bar always sits under the selected tab, invisible; while a pointer switch is in
+   flight (data-vela-moving, set in the same commit as the new selection) it is shown, the
+   selected trigger's border is hidden, and the bar's transform travels to the new tab — the full
+   list width scaled down from its left edge, so only transform ever moves. Same geometry as the
+   border: a stroke-2 bar whose bottom edge is the trigger's (1px below the list's padding box). */
+.vela-tabs__indicator {
+  position: absolute; left: 0; bottom: -1px;
+  width: 100%; height: var(--vela-stroke-2);
+  background: var(--vela-border-active);
+  transform-origin: 0 0;
+  transform: translateX(var(--vela-tabs-indicator-x, 0)) scaleX(var(--vela-tabs-indicator-scale, 0));
+  opacity: 0;
+  pointer-events: none;
+}
+.vela-tabs__list[data-vela-moving] .vela-tabs__indicator {
+  opacity: 1;
+  transition: transform var(--vela-duration-travel) var(--vela-ease-spring);
+}
+.vela-tabs__list[data-vela-moving] .vela-tabs__trigger[aria-selected='true'] { border-bottom-color: transparent; }
 
 .vela-tabs__count { margin-left: var(--vela-space-5); font-weight: var(--vela-font-weight-semibold); }
 

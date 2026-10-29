@@ -13,6 +13,12 @@
  *   primitive       var(--vela-grey-700), var(--vela-white): a primitive bound directly, which
  *                   is what breaks dark mode (the theme re-points semantics only).
  *   raw-length      a bare px / rem / em length that should be a token.
+ *   motion-property a transition or a keyframe that moves anything but transform (with its
+ *                   `translate` / `scale` / `rotate` longhands), opacity or filter
+ *                   (foundations/motion.md, rule 1). Colour properties may also transition —
+ *                   a hover colour is a state settling, not movement — but width, height,
+ *                   margin, padding, left/top, `all`, or a bare duration (which means `all`)
+ *                   fail. Inside @keyframes only the moving properties are allowed.
  *
  * Allowed without a waiver: `0` in any unit; `1px` (and `-1px`) where it is a hairline or the
  * compensation for one — border*, outline*, inset*, margin*, top/right/bottom/left; `100%` and
@@ -65,6 +71,28 @@ const LENGTH = /(?<![\w.-])(-?\d*\.?\d+)(px|rem|em)\b/g
 // Where ±1px is a hairline, or the compensation for one.
 const HAIRLINE_PROPS = /^(border|outline|inset|margin|top|right|bottom|left)/
 const WAIVER = /\/\*\s*vela-allow:\s*([^*]*?)\s*\*\//
+// What may move (foundations/motion.md, rule 1), and the colour properties that may settle.
+const MOVES = new Set(['transform', 'translate', 'scale', 'rotate', 'opacity', 'filter'])
+const COLOUR_PROPS = /^(color|background-color|border(-(top|right|bottom|left|block|inline)(-(start|end))?)?-color|outline-color|fill|stroke|text-decoration-color|caret-color|accent-color)$/
+const TIME = /^-?\d*\.?\d+m?s$/
+/** Split on commas outside parentheses: `color 1s, transform 2s cubic-bezier(0, 0, 1, 1)` → two items. */
+const topLevel = (v) => {
+  const out = []
+  let depth = 0, cur = ''
+  for (const ch of v) {
+    if (ch === '(') depth++
+    if (ch === ')') depth--
+    if (ch === ',' && depth === 0) { out.push(cur); cur = '' } else cur += ch
+  }
+  out.push(cur)
+  return out.map((x) => x.trim()).filter(Boolean)
+}
+/** The properties a `transition` / `transition-property` value names; a bare duration means `all`. */
+const transitioned = (prop, value) => topLevel(value).map((item) => {
+  if (prop === 'transition-property') return item.toLowerCase()
+  const first = item.split(/\s+/)[0].toLowerCase()
+  return TIME.test(first) || first.startsWith('var(') || first.startsWith('cubic-bezier(') || first.startsWith('linear') || first.startsWith('ease') || first.startsWith('steps(') ? 'all' : first
+})
 
 const walk = (dir) => {
   const out = []
@@ -103,6 +131,7 @@ export function lintCss(source) {
   let buf = ''
   let line = 1
   let start = 1
+  const blocks = []   // the selector or at-rule of each open block, so a declaration knows it is in @keyframes
   const flush = (isDecl) => {
     const text = buf
     buf = ''
@@ -128,6 +157,18 @@ export function lintCss(source) {
     for (const word of value.toLowerCase().match(/[a-z]+/g) ?? [])
       if (NAMED.has(word)) hit('raw-colour', `named colour "${word}" — bind a --vela-* semantic token`)
 
+    // Motion: what a transition or a keyframe may move.
+    const inKeyframes = blocks.some((b) => /^@(-webkit-)?keyframes\b/.test(b))
+    if (inKeyframes && !MOVES.has(prop) && !prop.startsWith('--')) hit('motion-property', `@keyframes animate ${prop} — only transform, translate, scale, rotate, opacity and filter move`)
+    if (prop === 'transition' || prop === 'transition-property') {
+      for (const p of transitioned(prop, value)) {
+        if (p === 'none' || MOVES.has(p) || COLOUR_PROPS.test(p)) continue
+        hit('motion-property', p === 'all'
+          ? 'transitions `all` (a bare duration means all) — name the property: transform, opacity, filter, or a colour'
+          : `transitions ${p} — only transform, opacity and filter move; colours may settle; layout never animates`)
+      }
+    }
+
     for (const l of value.matchAll(LENGTH)) {
       const n = Number(l[1])
       if (n === 0) continue
@@ -138,8 +179,9 @@ export function lintCss(source) {
   for (let i = 0; i < code.length; i++) {
     const ch = code[i]
     if (ch === '\n') line++
-    if (ch === '{') { flush(false); start = line; continue }
-    if (ch === ';' || ch === '}') { flush(true); start = line; continue }
+    if (ch === '{') { blocks.push(buf.trim()); flush(false); start = line; continue }
+    if (ch === ';') { flush(true); start = line; continue }
+    if (ch === '}') { flush(true); blocks.pop(); start = line; continue }
     if (!buf.trim() && ch !== '\n') start = line
     buf += ch
   }

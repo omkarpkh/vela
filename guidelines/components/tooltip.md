@@ -5,8 +5,8 @@ full text of a truncated value — shown on hover after a short rest and at once
 dismissed by Escape. **Text only.** A user who never sees it misses nothing they need.
 
 **Status:** Experimental — born in `@omkarux/vela/headless` (Base UI 1.9) with Popover and Dialog;
-there is no core implementation and no Figma set yet (the builder is
-`scripts/figma/components/tooltip.figma.js`). Approved once the API has settled and the set is
+there is no core implementation, and its Figma set is built in the library file (from
+`scripts/figma/components/tooltip.figma.js`) but not published yet. Approved once the API has settled and the set is
 published; see `GOVERNANCE.md`.
 **Dependencies:** @base-ui/react (optional peer, via /headless)
 

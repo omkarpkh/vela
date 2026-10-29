@@ -27,7 +27,9 @@ describe('Figma → code map', () => {
       const name = s.write.split('.')[0]
       const fromHeadless = s.import.endsWith(`'@omkarux/vela/headless'`)
       expect(fromHeadless ? headless : core, s.set).toMatch(new RegExp(`export \\{ (?:\\w+, )*${name}(?:, \\w+)* \\}`))
-      expect(s.import).toBe(`import { ${name} } from '@omkarux/vela${fromHeadless ? '/headless' : ''}'`)
+      // Most sets import the one name an agent writes; Toast also needs its provider (R14).
+      const names = s.set === 'Toast' ? 'ToastProvider, useToast' : name
+      expect(s.import).toBe(`import { ${names} } from '@omkarux/vela${fromHeadless ? '/headless' : ''}'`)
     }
   })
 
@@ -87,9 +89,11 @@ describe('Figma → code map', () => {
     }
     const pub = map.sets.filter((s: any) => s.state === 'published').map((s: any) => s.set).sort()
     expect(pub).toEqual(['Button', 'Contextual Alert', 'Input', 'Status Indicator', 'Tab', 'Toggle'])
-    // Risk Pill's set exists in the file but is being rebuilt: its node is null until the Figma thread posts it.
-    expect(map.sets.find((s: any) => s.set === 'Risk Pill')).toMatchObject({ state: 'built', node: null })
-    expect(map.sets.filter((s: any) => s.state === 'none').map((s: any) => s.set).sort()).toEqual(['Checkbox', 'Dialog', 'Icon', 'Popover', 'Radio', 'Table Header Cell', 'Text Area', 'Toast', 'Tooltip'])
+    // Every other set is in the file, built from main 60d80ef and not yet published (requests R13).
+    expect(map.sets.find((s: any) => s.set === 'Risk Pill')).toMatchObject({ state: 'built', node: '127:14' })
+    expect(map.sets.filter((s: any) => s.state === 'built').map((s: any) => s.set).sort()).toEqual(['Checkbox', 'Dialog', 'Icon', 'Popover', 'Radio', 'Risk Pill', 'Table Header Cell', 'Text Area', 'Toast', 'Tooltip'])
+    expect(map.sets.filter((s: any) => s.state === 'none')).toEqual([])
+    for (const s of map.sets.filter((s: any) => s.state === 'built')) expect(s.node, s.set).toMatch(/^\d+:\d+$/)
   })
 
   it('maps the Tab set to Tabs.Trigger, because the set is one trigger', () => {

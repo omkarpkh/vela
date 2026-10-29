@@ -26,7 +26,7 @@ import { readFileSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { parse, defineConfig } from '@terrazzo/parser'
-import { loadTokenSet, VENDOR, isAlias, aliasPath, hexOf, msOf, pxOf, RESOLVER_FILE } from './tokens-core.mjs'
+import { loadTokenSet, VENDOR, isAlias, aliasPath, hexOf, msOf, pxOf, RESOLVER_FILE, springOf } from './tokens-core.mjs'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const problems = []
@@ -115,7 +115,9 @@ for (const [group, tokens] of Object.entries(baseDoc)) {
     }
     const ext = t.$extensions ?? {}
     for (const k of Object.keys(ext)) if (k !== VENDOR) fail(`${where} $extensions key "${k}" — vendor data belongs under "${VENDOR}"`)
-    for (const k of Object.keys(ext[VENDOR] ?? {})) if (!['figma', 'raw'].includes(k)) fail(`${where} unknown vendor extension key "${k}" (dark values live in tokens/vela.dark.tokens.json)`)
+    for (const k of Object.keys(ext[VENDOR] ?? {})) if (!['figma', 'raw', 'spring'].includes(k)) fail(`${where} unknown vendor extension key "${k}" (dark values live in tokens/vela.dark.tokens.json)`)
+    // A spring's physics (springOf in tokens-core): only on a cubicBezier, whose $value is the fallback curve.
+    if (ext[VENDOR]?.spring !== undefined && set) { try { springOf(set, name) } catch (e) { fail(`${where} ${e.message}`) } }
     if (['color', 'dimension', 'number', 'duration', 'cubicBezier'].includes(type) && !ext[VENDOR]?.figma) fail(`${where} has no Figma variable name`)
     if (![true, false, undefined].includes(t.$deprecated) && typeof t.$deprecated !== 'string') fail(`${where} $deprecated must be true, false or a string`)
   }

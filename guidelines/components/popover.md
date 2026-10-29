@@ -5,8 +5,8 @@ detail behind a count, a short form that edits one thing — dismissed by Escape
 outside, or by the trigger again, with the rest of the page still usable.
 
 **Status:** Experimental — born in `@omkarux/vela/headless` (Base UI 1.9) with Tooltip and Dialog;
-there is no core implementation and no Figma set yet (the builder is
-`scripts/figma/components/popover.figma.js`). Approved once the API has settled and the set is
+there is no core implementation, and its Figma set is built in the library file (from
+`scripts/figma/components/popover.figma.js`) but not published yet. Approved once the API has settled and the set is
 published; see `GOVERNANCE.md`.
 **Dependencies:** @base-ui/react (optional peer, via /headless)
 

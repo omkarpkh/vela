@@ -164,13 +164,27 @@ one of three reasons — feedback, orientation, continuity — and a movement wh
 be named in one of those words does not ship. The frequency gate: something triggered hundreds
 of times a day gets instant feedback under 200ms; from the keyboard, nothing animates.
 
-Four tokens, and no component defines its own duration or curve (`--vela-delay-tooltip`, 600ms,
-is a wait before a Tooltip opens on hover, not an animation; see the overlays bullet below):
+Four durations and three curves, and no component defines its own duration or curve
+(`--vela-delay-tooltip`, 600ms, is a wait before a Tooltip opens on hover, not an animation; see
+the overlays bullet below):
 
 - `--vela-duration-instant` (70ms) — a press landing; press-in only.
 - `--vela-duration-fast` (120ms) — anything else that answers a pointer.
 - `--vela-duration-base` (180ms) — anything that settles or appears.
-- `--vela-ease-standard` `cubic-bezier(0.2, 0, 0.2, 1)` — the only curve. Never a bare `ease`.
+- `--vela-duration-travel` (240ms) — travel across a distance (the Tabs indicator). Still under 300ms.
+- `--vela-ease-standard` `cubic-bezier(0.2, 0, 0.2, 1)` — things that change or move while on
+  screen: hover colours, a press, a knob. Never a bare `ease`.
+- `--vela-ease-out` `cubic-bezier(0.25, 1, 0.5, 1)` — things that enter: fast at the start, at
+  rest at the end, no overshoot.
+- `--vela-ease-spring` — a spring (stiffness 1200, damping 56, mass 1), generated into a CSS
+  `linear()` easing over `--vela-duration-travel` at token build time; `--vela-ease-out` where
+  `linear()` is not supported. Only for the moments a spec names (today: the Tabs indicator after
+  a pointer press), always paired with `--vela-duration-travel`.
+
+The three new values (`duration-travel`, `ease-out`, `ease-spring`) are **provisional** until the
+owner has reviewed their feel on the playground's Motion review page (`#/motion`). The overlays
+still enter on `--vela-ease-standard`; moving them to `--vela-ease-out` is a later part of the
+motion pass, not this rule silently unmet.
 
 Overlays (Popover, Tooltip, Dialog, Toast) appear at `base` on opacity plus a `--vela-space-5` step
 of travel, and leave on opacity alone; one opened or closed from the keyboard does not animate
@@ -179,7 +193,9 @@ A Toast stays `--vela-duration-toast` (6000ms) — a dwell, not an animation, pa
 focus, untouched by the reduced-motion collapse — and only when it is a `success` or `info` with no
 action; a warning or a toast with an action stays until dismissed.
 
-Only `transform`, `opacity` and `filter` animate. Pointer states enter faster than they leave
+Only `transform`, `opacity` and `filter` animate (a colour may settle, as a hover does; layout
+never moves), and `scripts/check-css.mjs` fails a transition or keyframe that moves anything
+else. Pointer states enter faster than they leave
 (hover in at `fast`, out at `base`; press in at `instant`, out at `base`). Transitions, not
 keyframes, for anything a person can re-trigger. No looping attention-seekers — the loading
 spinner is the one loop. **`prefers-reduced-motion` is handled once, globally**, in

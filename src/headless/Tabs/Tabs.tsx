@@ -7,6 +7,7 @@ import type {
   TabTriggerProps,
   TabPanelProps,
 } from '../../components/Tabs/Tabs'
+import { useIndicatorMotion, indicatorVars, type IndicatorMotion } from '../../components/Tabs/motion'
 
 /**
  * Tabs on Base UI — the Phase 1 proving case for `@omkarux/vela/headless`.
@@ -26,16 +27,24 @@ import type {
  *   is skipped and `Tabs.css` keys on `:disabled`, so the trigger renders the native `disabled`
  *   attribute through Base UI's `render` prop instead; Base UI's roving focus skips a natively
  *   disabled element, the browser keeps it out of the tab order and swallows its clicks.
+ * - **The selected indicator.** Base UI's `Tabs.Indicator` measures the selected tab and exposes
+ *   it as `--active-tab-left` / `--active-tab-width` (and as numbers in its state). The indicator
+ *   here maps those onto the two properties the shared `Tabs.css` reads, and the motion state —
+ *   pointer slides, keyboard is instant — is the same hook the core uses
+ *   (`components/Tabs/motion.ts`).
  */
 
 // Vela's own provider guard, so the named error is the same one the core implementation throws
-// (Base UI's message is different, and in a production build it is an error code).
-const VelaTabsContext = React.createContext(false)
+// (Base UI's message is different, and in a production build it is an error code). It also
+// carries the indicator's motion state, which Base UI has no notion of.
+const VelaTabsContext = React.createContext<IndicatorMotion | null>(null)
 
-function useVelaTabs(component: string) {
-  if (!React.useContext(VelaTabsContext)) {
+function useVelaTabs(component: string): IndicatorMotion {
+  const motion = React.useContext(VelaTabsContext)
+  if (!motion) {
     throw new Error(`<Tabs.${component}> must be rendered inside <Tabs>.`)
   }
+  return motion
 }
 
 export function Tabs({
@@ -46,21 +55,27 @@ export function Tabs({
   children,
   className,
 }: TabsProps) {
+  const motion = useIndicatorMotion()
+  const { onChange } = motion
   const handleValueChange = React.useCallback(
-    (next: unknown) => {
+    (next: unknown, details?: { event?: Event }) => {
+      // A person's change carries its event; Base UI's own automatic changes (an initial or a
+      // missing value) do not, and they are not a switch the indicator should answer.
+      if (details?.event) onChange()
       // Vela tab values are strings; Base UI's are `any` (and `null` when nothing is active).
       if (typeof next === 'string') onValueChange?.(next)
     },
-    [onValueChange],
+    [onValueChange, onChange],
   )
 
   return (
-    <VelaTabsContext.Provider value={true}>
+    <VelaTabsContext.Provider value={motion}>
       <BaseTabs.Root
         value={value}
         defaultValue={defaultValue}
         onValueChange={handleValueChange}
         className={cn('vela-tabs', `vela-tabs--${size}`, className)}
+        data-vela-instant={motion.instant || undefined}
       >
         {children}
       </BaseTabs.Root>
@@ -69,12 +84,39 @@ export function Tabs({
 }
 
 function TabList({ children, className, ...rest }: TabListProps) {
-  useVelaTabs('List')
+  const { moving, changes, settle, listProps } = useVelaTabs('List')
+  const listRef = React.useRef<HTMLDivElement>(null)
+  const indicatorRef = React.useRef<HTMLSpanElement>(null)
+
+  // Base UI writes the indicator's new position during the commit that changes the selection;
+  // this runs after it, so the bar's transition already exists when settle() asks for it.
+  React.useLayoutEffect(() => {
+    if (moving) settle(indicatorRef.current)
+  }, [moving, changes, settle])
+
   return (
     // activateOnFocus: the spec's automatic activation — an arrow key both moves focus and
     // selects. loopFocus (Base UI's default) is the spec's "the list wraps".
-    <BaseTabs.List activateOnFocus className={cn('vela-tabs__list', className)} {...rest}>
+    <BaseTabs.List
+      ref={listRef}
+      activateOnFocus
+      {...listProps}
+      data-vela-moving={moving || undefined}
+      className={cn('vela-tabs__list', className)}
+      {...rest}
+    >
       {children}
+      <BaseTabs.Indicator
+        ref={indicatorRef}
+        className="vela-tabs__indicator"
+        aria-hidden="true"
+        // Position from Base UI's own variable; the scale needs a plain number (CSS cannot divide
+        // one length by another everywhere yet), so it comes from Base UI's state and the list's width.
+        style={(state) => {
+          const width = listRef.current?.clientWidth
+          return state.activeTabSize && width ? indicatorVars('var(--active-tab-left)', state.activeTabSize.width / width) : {}
+        }}
+      />
     </BaseTabs.List>
   )
 }

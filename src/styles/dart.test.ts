@@ -59,9 +59,19 @@ describe('Dart target', () => {
       else if (t.$type === 'number' && name in doc.typography) expect(dart, name).toContain(`static const FontWeight ${ident(name)} = FontWeight.w${t.$value};`)
       else if (t.$type === 'number') expect(dart, name).toContain(`static const double ${ident(name)} = ${t.$value};`)
       else if (t.$type === 'duration') expect(dart, name).toContain(`static const Duration ${ident(name)} = Duration(milliseconds: ${t.$value.unit === 's' ? t.$value.value * 1000 : t.$value.value});`)
-      else if (t.$type === 'cubicBezier') expect(dart, name).toContain(`static const Cubic ${ident(name)} = Cubic(${t.$value.join(', ')});`)
+      // A spring's $value aliases its fallback curve; the Dart field holds the curve it resolves to.
+      else if (t.$type === 'cubicBezier') expect(dart, name).toContain(`static const Cubic ${ident(name)} = Cubic(${all[terminal(name, 'light')].$value.join(', ')});`)
       else if (t.$type === 'fontFamily') expect(dart, name).toContain(`static const String ${ident(name)} = `)
       else throw new Error(`unmapped token type ${t.$type} on ${name}`)
+    }
+  })
+
+  it('carries a spring\'s physics beside its fallback curve, as SpringDescription arguments', () => {
+    const springs = Object.entries(doc.motion as Record<string, any>).filter(([, t]) => t.$extensions?.['com.omkarux.vela']?.spring)
+    expect(springs.map(([n]) => n)).toEqual(['ease-spring'])
+    for (const [name, t] of springs) {
+      const s = t.$extensions['com.omkarux.vela'].spring
+      for (const k of ['stiffness', 'damping', 'mass']) expect(dart, `${name} ${k}`).toContain(`static const double ${ident(name)}${k[0].toUpperCase()}${k.slice(1)} = ${s[k]};`)
     }
   })
 

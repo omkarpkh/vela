@@ -4,8 +4,8 @@ A short list of options where **exactly one** is chosen — an enforcement mode,
 period, a severity to assign — all visible at once, committed by a Save.
 
 **Status:** Experimental — born in `@omkarux/vela/headless` (Base UI 1.9) alongside Checkbox;
-there is no core implementation and no Figma set yet (the builder is
-`scripts/figma/components/radio-group.figma.js`). Approved once the API has settled and the set
+there is no core implementation, and its Figma set is built in the library file (from
+`scripts/figma/components/radio-group.figma.js`) but not published yet. Approved once the API has settled and the set
 is published; see `GOVERNANCE.md`.
 **Dependencies:** @base-ui/react (optional peer, via /headless)
 

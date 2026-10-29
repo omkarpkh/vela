@@ -112,6 +112,32 @@ describe.each(IMPLEMENTATIONS)('Tabs (%s)', (_name, Tabs) => {
     expect(container.querySelector('.vela-tabs')).toHaveClass('vela-tabs--large')
   })
 
+  // The sliding indicator (tabs.md, Motion). Its movement needs layout and Web Animations, so the
+  // browser rules are proved in tests/e2e; what jsdom can prove is the markup and the modality.
+  it('renders the indicator inside the list as a decorative element, never as a tab', () => {
+    const { container } = render(<Fixture />)
+    const bar = container.querySelector('.vela-tabs__indicator')!
+    expect(bar).not.toBeNull()
+    expect(bar.closest('.vela-tabs__list')).toBe(screen.getByRole('tablist'))
+    expect(bar).toHaveAttribute('aria-hidden', 'true')
+    expect(screen.getAllByRole('tab')).toHaveLength(3)
+  })
+
+  it('marks a keyboard switch instant and a pointer switch not', async () => {
+    const { container } = render(<Fixture />)
+    const root = container.querySelector('.vela-tabs')!
+    expect(root).not.toHaveAttribute('data-vela-instant')
+    focus(screen.getByRole('tab', { name: /Alerts/ }))
+    await userEvent.keyboard('{ArrowRight}')
+    expect(screen.getByRole('tab', { name: 'Assets' })).toHaveAttribute('aria-selected', 'true')
+    expect(root).toHaveAttribute('data-vela-instant')
+    await userEvent.click(screen.getByRole('tab', { name: /Alerts/ }))
+    expect(screen.getByRole('tab', { name: /Alerts/ })).toHaveAttribute('aria-selected', 'true')
+    expect(root).not.toHaveAttribute('data-vela-instant')
+    // jsdom runs no animations, so a pointer flight ends in the same commit it starts.
+    expect(screen.getByRole('tablist')).not.toHaveAttribute('data-vela-moving')
+  })
+
   // [[rule: tabs-parts-require-provider]]
   it('fails loudly when a part is used outside Tabs', () => {
     const spy = vi.spyOn(console, 'error').mockImplementation(() => {})
