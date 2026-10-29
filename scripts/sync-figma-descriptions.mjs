@@ -26,10 +26,13 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const dir = join(root, 'guidelines/components')
 const version = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).version
 
-// spec file → Figma component set name and source directory
+// spec file → Figma component set name and source directory. `entry` is the source tree the
+// component lives in: `components` (the core, `@omkarux/vela`) unless it says `headless`
+// (`@omkarux/vela/headless` only — Checkbox and Radio Group have no core implementation).
 // `node` is the component set's id in the library file (XO2rmeCcgOjyKe4oipgF4j), read by the Figma
 // thread on 28 Oct 2026; null until the set exists. `export` is what an agent writes for an
-// instance of the set — for Tab it is the trigger, because the set is one trigger, not the tablist.
+// instance of the set — for Tab it is the trigger, because the set is one trigger, not the tablist;
+// for Radio it is the radio inside its group.
 const SETS = {
   'button.md': { set: 'Button', src: 'Button', node: '7:122', export: 'Button' },
   'toggle.md': { set: 'Toggle', src: 'Toggle', node: '8:49', export: 'Toggle' },
@@ -38,6 +41,8 @@ const SETS = {
   'status-indicator.md': { set: 'Status Indicator', src: 'StatusIndicator', node: '8:32', export: 'StatusIndicator' },
   'risk-pill.md': { set: 'Risk Pill', src: 'RiskPill', node: null, export: 'RiskPill' },
   'tabs.md': { set: 'Tab', src: 'Tabs', node: '11:20', export: 'Tabs.Trigger' },
+  'checkbox.md': { set: 'Checkbox', src: 'Checkbox', entry: 'headless', node: null, export: 'Checkbox' },
+  'radio-group.md': { set: 'Radio', src: 'RadioGroup', entry: 'headless', node: null, export: 'RadioGroup.Radio' },
 }
 const FILE_KEY = 'XO2rmeCcgOjyKe4oipgF4j'
 
@@ -84,7 +89,7 @@ function parse(file) {
     'RULES  ' + rules.join('. ') + '.',
     ...(motion.length ? ['', 'MOTION  ' + motion.join('  ·  ')] : []),
     '',
-    `src/components/${SETS[file].src}/${SETS[file].src}.tsx  ·  guidelines/components/${file}`,
+    `src/${SETS[file].entry ?? 'components'}/${SETS[file].src}/${SETS[file].src}.tsx  ·  guidelines/components/${file}`,
     `@omkarux/vela ${version}`,
   ].join('\n')
 
@@ -95,7 +100,7 @@ function parse(file) {
     url: SETS[file].node
       ? `https://www.figma.com/design/${FILE_KEY}/Vela-Design-System?node-id=${SETS[file].node.replace(':', '-')}`
       : null,
-    import: `import { ${SETS[file].export.split('.')[0]} } from '@omkarux/vela'`,
+    import: `import { ${SETS[file].export.split('.')[0]} } from '@omkarux/vela${SETS[file].entry === 'headless' ? '/headless' : ''}'`,
     write: SETS[file].export,
     figmaToProp: [...section(md, 'Figma mapping').matchAll(/^\| `([^`]+)`[^|]*\| (.+?) \|/gm)]
       .filter((m) => !/^Figma property/.test(m[1]))

@@ -31,6 +31,34 @@
       "spec": "guidelines/components/button.md"
     },
     {
+      "set": "Checkbox",
+      "page": "Checkbox",
+      "node": null,
+      "url": null,
+      "import": "import { Checkbox } from '@omkarux/vela/headless'",
+      "write": "Checkbox",
+      "figmaToProp": [
+        {
+          "figma": "State",
+          "prop": "checked / defaultChecked, or indeterminate"
+        },
+        {
+          "figma": "Size",
+          "prop": "size"
+        },
+        {
+          "figma": "Label text",
+          "prop": "label"
+        },
+        {
+          "figma": "Description",
+          "prop": "description"
+        }
+      ],
+      "example": "<Checkbox label=\"Accept the data-processing terms\" defaultChecked onCheckedChange={setAccepted} />\n\n<Checkbox.Group label=\"Scan scope\" defaultValue={['users']} onValueChange={setScope}>\n  <Checkbox value=\"users\" label=\"Users\" />\n  <Checkbox value=\"devices\" label=\"Devices\" description=\"Managed endpoints only\" />\n  <Checkbox value=\"apps\" label=\"Applications\" disabled />\n</Checkbox.Group>",
+      "spec": "guidelines/components/checkbox.md"
+    },
+    {
       "set": "Contextual Alert",
       "page": "Contextual Alert",
       "node": "77:15",
@@ -81,6 +109,30 @@
       ],
       "example": "<Input label=\"Tenant name\" hint=\"Lowercase letters only\" error={err} size=\"regular\" />",
       "spec": "guidelines/components/input.md"
+    },
+    {
+      "set": "Radio",
+      "page": "Radio Group",
+      "node": null,
+      "url": null,
+      "import": "import { RadioGroup } from '@omkarux/vela/headless'",
+      "write": "RadioGroup.Radio",
+      "figmaToProp": [
+        {
+          "figma": "State",
+          "prop": "value / defaultValue on <RadioGroup>"
+        },
+        {
+          "figma": "Label text",
+          "prop": "label on <RadioGroup.Radio>"
+        },
+        {
+          "figma": "Description",
+          "prop": "description on <RadioGroup.Radio>"
+        }
+      ],
+      "example": "<RadioGroup label=\"Enforcement\" defaultValue=\"block\" onValueChange={setMode}>\n  <RadioGroup.Radio value=\"monitor\" label=\"Monitor\" description=\"Log the match, allow the traffic\" />\n  <RadioGroup.Radio value=\"block\" label=\"Block\" />\n  <RadioGroup.Radio value=\"isolate\" label=\"Isolate\" disabled />\n</RadioGroup>",
+      "spec": "guidelines/components/radio-group.md"
     },
     {
       "set": "Risk Pill",

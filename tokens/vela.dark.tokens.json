@@ -123,6 +123,9 @@
     "toggle-off-bg": {
       "$value": "{primitives.grey-700}"
     },
+    "control-check-bg-checked": {
+      "$value": "{primitives.primary-450}"
+    },
     "bg-severity-success": {
       "$value": "{primitives.green-950}"
     },

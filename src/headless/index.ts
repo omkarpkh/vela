@@ -1,7 +1,8 @@
 /**
  * @omkarux/vela/headless — the Base UI-backed entry point. Experimental (GOVERNANCE.md).
  *
- * Same specs, same CSS, same tests as `@omkarux/vela`; the behaviour comes from Base UI
+ * Same specs, same CSS, same tests as `@omkarux/vela` where a component ships from both (Tabs);
+ * Checkbox and Radio Group were born here and ship from this entry only. The behaviour comes from Base UI
  * (`@base-ui/react`, MIT), which is an OPTIONAL peer dependency: install it to import from here.
  * The default entry point `@omkarux/vela` does not import this module and keeps zero runtime
  * dependencies — `scripts/verify-pack.mjs` asserts that against the built output.
@@ -14,3 +15,9 @@
 
 export { Tabs } from './Tabs'
 export type { TabsProps, TabListProps, TabTriggerProps, TabPanelProps } from './Tabs'
+
+// Headless-born: no core implementation (guidelines/components/checkbox.md, radio-group.md).
+export { Checkbox } from './Checkbox'
+export type { CheckboxProps, CheckboxGroupProps, CheckboxSize } from './Checkbox'
+export { RadioGroup } from './RadioGroup'
+export type { RadioGroupProps, RadioProps } from './RadioGroup'

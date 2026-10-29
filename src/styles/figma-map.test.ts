@@ -9,7 +9,8 @@ const root = resolve(process.cwd())
 const committed = readFileSync(resolve(root, 'guidelines/figma-map.json'), 'utf8')
 const fresh = execFileSync('node', [resolve(root, 'scripts/sync-figma-descriptions.mjs'), '--map'], { encoding: 'utf8' })
 const map = JSON.parse(committed)
-const exported = readFileSync(resolve(root, 'src/index.ts'), 'utf8')
+const core = readFileSync(resolve(root, 'src/index.ts'), 'utf8')
+const headless = readFileSync(resolve(root, 'src/headless/index.ts'), 'utf8')
 
 describe('Figma → code map', () => {
   it('is current with the specs (run `npm run figma:map`)', () => {
@@ -21,11 +22,18 @@ describe('Figma → code map', () => {
     expect(map.sets.map((s: any) => s.spec.split('/').pop()).sort()).toEqual(specs.sort())
   })
 
-  it('names an export the package really has, imported from @omkarux/vela', () => {
+  it('names an export the package really has, imported from the entry point that has it', () => {
     for (const s of map.sets) {
       const name = s.write.split('.')[0]
-      expect(exported, s.set).toMatch(new RegExp(`\\b${name}\\b`))
-      expect(s.import).toBe(`import { ${name} } from '@omkarux/vela'`)
+      const fromHeadless = s.import.endsWith(`'@omkarux/vela/headless'`)
+      expect(fromHeadless ? headless : core, s.set).toMatch(new RegExp(`export \\{ ${name} \\}`))
+      expect(s.import).toBe(`import { ${name} } from '@omkarux/vela${fromHeadless ? '/headless' : ''}'`)
+    }
+  })
+
+  it('imports a headless-born component from /headless, never from the core', () => {
+    for (const n of ['Checkbox', 'Radio']) {
+      expect(map.sets.find((s: any) => s.set === n).import).toMatch(/'@omkarux\/vela\/headless'$/)
     }
   })
 

@@ -144,6 +144,8 @@
   @toggle-off-bg
   @toggle-on-bg
   @toggle-knob
+  @control-check-bg-checked
+  @control-check-mark
 
   /* ============================================================================
      SEVERITY — 6 levels. Describes events and alerts.
@@ -299,6 +301,10 @@
   @toggle-knob-size
   @toggle-knob-size-tiny
   @toggle-knob-inset
+  @control-checkbox-size
+  @control-checkbox-size-tiny
+  @control-radio-size
+  @control-radio-dot
   @status-dot
   @status-dot-small
 

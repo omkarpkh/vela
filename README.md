@@ -5,13 +5,14 @@
 [![Licence: MIT](https://img.shields.io/badge/licence-MIT-blue)](LICENSE)
 
 A token-first design system. The tokens and the component specs are framework-agnostic;
-this repository is a **React implementation** of them. Seven components, two themes, zero runtime
+this repository is a **React implementation** of them. Nine components, two themes, zero runtime
 dependencies in the core entry — and every design rule in the documentation is tagged with how it is
-enforced: 13 of the 32 by the TypeScript compiler, the rest at runtime, in a real browser, or by review
+enforced: 25 of the 52 by the TypeScript compiler, the rest at runtime, in a real browser, or by review
 (counted by `npm run rules:check`).
 
 **Status:** every component carries a lifecycle label — Approved, Known bugs, Experimental or
-Retired, defined in [`GOVERNANCE.md`](GOVERNANCE.md). All six are currently **Approved**.
+Retired, defined in [`GOVERNANCE.md`](GOVERNANCE.md). Six are **Approved**; Risk Pill, Checkbox
+and Radio Group are **Experimental**.
 
 ```bash
 npm install @omkarux/vela
@@ -20,7 +21,9 @@ npm install @omkarux/vela
 The core entry point, `@omkarux/vela`, has zero runtime dependencies. A second, Experimental
 entry point, `@omkarux/vela/headless`, builds the same specs on [Base UI](https://base-ui.com)
 and needs one optional peer: `npm install @base-ui/react@1.9` — only if you import from it. Its
-first component is Tabs; the spec's "Implementations" section says how the two compare.
+first component is Tabs, which ships from both entries (the spec's "Implementations" section says
+how the two compare); Checkbox (with Checkbox.Group) and Radio Group were born there and ship from
+`@omkarux/vela/headless` only.
 
 ```tsx
 import '@omkarux/vela/styles.css'
@@ -47,13 +50,13 @@ link to each, and the number of automated checks, written by the test runners ra
 
 | | |
 |---|---|
-| **Components** | Button · Toggle · Input · ContextualAlert · StatusIndicator · Tabs |
+| **Components** | Button · Toggle · Input · ContextualAlert · StatusIndicator · RiskPill · Tabs, from `@omkarux/vela` (Tabs also from `/headless`) · Checkbox (with Checkbox.Group) · RadioGroup, from `@omkarux/vela/headless` only |
 | **Tokens** | 242 CSS custom properties, two layers (primitives → semantics) |
 | **Themes** | Light + dark. OS preference by default, `data-theme` to override |
 | **Dependencies** | None in the core entry. `react` / `react-dom` are peers (18.3 or 19). The `/headless` entry needs one optional peer, `@base-ui/react` 1.9.x (MIT) |
 | **Format** | ESM, `preserveModules` for tree-shaking, full `.d.ts` |
-| **Tests** | 375 automated checks — 294 unit and contract (48 contrast pairs, each asserted in both themes), 78 browser (68 screenshots at four widths, 8 playground, 2 docs), 3 Flutter — counted by `npm run checks` |
-| **Packed size** | 87.2 kB, 65 files, as `npm run verify` measures it (README and CHANGELOG ship in the tarball, so this moves when they do) |
+| **Tests** | 443 automated checks — 360 unit and contract (52 contrast pairs, each asserted in both themes), 80 browser (68 screenshots at four widths, 10 playground, 2 docs), 3 Flutter — counted by `npm run checks` |
+| **Packed size** | 102.5 kB, 73 files, as `npm run verify` measures it (README and CHANGELOG ship in the tarball, so this moves when they do) |
 
 ## The three ideas worth stealing
 
@@ -148,7 +151,7 @@ document.documentElement.removeAttribute('data-theme')        // follow the OS
 
 ```bash
 npm run dev        # demo showcase at localhost:5174
-npm test           # 294 unit and contract tests, of 375 checks in all — the numbers are generated into demo/checks.json
+npm test           # 360 unit and contract tests, of 443 checks in all — the numbers are generated into demo/checks.json
 npm run checks     # counts every automated check into demo/checks.json (diffed in verify)
 npm run contrast   # WCAG report for both themes
 npm run verify     # tokens:check + rules:check + typecheck + tests + checks:check + build + pack-and-consume gate
@@ -221,10 +224,11 @@ or a new rule arrives untagged.
 
 ## Scope
 
-Seven components, chosen to exercise every foundation and all three taxonomies (Severity, Risk,
-Status). Not yet specced: Checkbox, Radio, Dropdown List, Select List, Token Pill, Number Stepper, Text Area,
-Modal, Tooltip, Icon Button, Actions Dropdown, View Switcher. The guidelines name these
-explicitly so an agent flags the gap instead of inventing one.
+Nine components, chosen to exercise every foundation and all three taxonomies (Severity, Risk,
+Status), and the first form controls born on the headless entry (Checkbox, Radio Group). Not yet
+specced: Dropdown List, Select List, Token Pill, Number Stepper, Text Area, Modal, Tooltip, Icon
+Button, Actions Dropdown, View Switcher. The guidelines name these explicitly so an agent flags the
+gap instead of inventing one.
 
 ## Project files
 
