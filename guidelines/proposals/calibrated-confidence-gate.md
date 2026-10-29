@@ -26,6 +26,12 @@ It takes ownership of the **Confidence band** taxonomy from the Verdict Card.
 **Dependencies:** none for `inline`; @base-ui/react (optional peer, via /headless) for `full`,
 which uses Table primitives and Popover.
 
+> **Changed 29 Oct 2026 — breaking.** With the [Agent Provenance Badge](agent-provenance-badge.md),
+> `reading.producer` is `Provenance["agent"] & { model }`, which adds a required `id` and the model
+> that answered. The calibration record is keyed by agent version **and** model: it gains
+> `producerModel`, and a reading from another model gates as `new-version` unless the host declares
+> it compatible. A model swap under an unchanged agent version cannot inherit the old model's record.
+
 ## Intent
 
 A person reading a conclusion should be able to answer four questions from the Gate. How sure does
@@ -87,7 +93,7 @@ scope given, and is a hint about the next case, not a guarantee.
   size="full"
   reading={{
     band: "high",
-    producer: { name: "Triage agent", version: "2.4" },
+    producer: { id: "agt_triage", name: "Triage agent", version: "2.4", model: "example-large-2026-09" },
     bandSource: { owner: "Security lead", version: "v3", href: "…" },
     wouldChange: { items: [
       "A sign-in from the user's usual device inside the same 9 minutes",
@@ -96,6 +102,7 @@ scope given, and is a hint about the next case, not a guarantee.
     calibration: {
       band: "high",
       producerVersion: "2.4",
+      producerModel: "example-large-2026-09",
       scope: "Phishing verdicts",
       minReviewed: 30,
       windows: [
@@ -142,7 +149,8 @@ type CalibrationWindow = {
 // "Reviewed", for the floor, is the three person counts: overturnedByPerson + confirmedOnReview + confirmedByAccept.
 
 type CalibrationRecord<B extends StatedBand = StatedBand> =
-  | { band: B; producerVersion: string; compatibleWith?: string[]   // versions the host declares this record covers
+  | { band: B; producerVersion: string; producerModel: string      // the record belongs to this agent version and model
+      compatibleWith?: string[]                                     // versions or models the host declares this record covers
       scope: string; minReviewed: number                            // Vela floor: 30; a host may only raise it
       windows: [CalibrationWindow, ...CalibrationWindow[]] }        // latest end first; the first one gates
   | { band: B; none: string }                                       // no history yet, with why
@@ -151,7 +159,7 @@ type CalibrationRecord<B extends StatedBand = StatedBand> =
 type ConfidenceReading =
   | { [B in StatedBand]: {
         band: B
-        producer: { name: string; version: string }
+        producer: Provenance["agent"] & { model: string }   // model: the one that answered (Agent Provenance Badge)
         bandSource: { owner: string; version: string; href?: string }   // who maps scores to bands
         wouldChange: { items: [string, ...string[]] } | { notStated: string }
         calibration: CalibrationRecord<B>
@@ -159,7 +167,7 @@ type ConfidenceReading =
         score?: never; percent?: never; probability?: never
       } }[StatedBand]
   | { band: "unrated"
-      producer: { name: string; version: string }
+      producer: Provenance["agent"] & { model: string }
       reason: string                                           // why there is no band
       wouldChange: { items: [string, ...string[]] } | { notStated: string }
       calibration?: never; bandSource?: never; otherBands?: never
@@ -195,7 +203,7 @@ it. Otherwise it returns `unrated`.
 | The record does not add up: the five counts do not equal `stated`, a count is negative, or the windows are not ordered latest end first | `unrated` | `does-not-add-up` |
 | The record is `{ unavailable }` | `unrated` | `unavailable` |
 | The record is `{ none }` | `unrated` | `none` |
-| `producerVersion` is not `reading.producer.version`, and that version is not in `compatibleWith` | `unrated` | `new-version` |
+| `producerVersion` is not `reading.producer.version`, or `producerModel` is not `reading.producer.model`, and the differing version or model is not in `compatibleWith` | `unrated` | `new-version` |
 | The gating window (`windows[0]`) ended more than 30 days before `now` | `unrated` | `stale-record` |
 | In the gating window, the person-reviewed count is below `max(minReviewed, 30)` | `unrated` | `thin` |
 | A lower band in `otherBands` is also calibrated, and in a window with the same dates it was confirmed more often per reviewed conclusion | `unrated` | `bands-inverted` |
@@ -206,10 +214,13 @@ and the Gate prints "30 needed (Vela minimum)" when the host asked for less. A h
 window length, but a gating window that ended more than 30 days ago no longer gates. Both numbers
 are assumptions to measure, not findings.
 
-**A new version starts from nothing.** A record belongs to the agent version that earned it.
-Version 2.5 does not inherit 2.4's record unless the host declares it compatible, and the Gate
-says so in words: "record from 2.4, declared compatible by Security lead". This mirrors the Ladder,
-where the system only ever steps down.
+**A new version or a new model starts from nothing.** A record belongs to the agent version
+*and* the model that earned it. Version 2.5 does not inherit 2.4's record, and 2.4 answering on a
+different model does not inherit the record earned on the old one, unless the host declares it
+compatible. The Gate says so in words: "record from 2.4, declared compatible by Security lead".
+A routing fallback or a provider swap can change an agent's behaviour without changing its
+version; keying the record by model too means that change cannot borrow trust. This mirrors the
+Ladder, where the system only ever steps down.
 
 **Calibrating before go-live: shadow mode.** There is no opt-out from "uncalibrated means unrated".
 The honest way to calibrate faster is to run the agent in **shadow mode** before go-live. People
@@ -280,10 +291,12 @@ Rule ids are listed with their proof level; they become `[[rule: … ]]` tags wh
   five counts do not equal `stated`, or the windows are out of order, the Gate shows "Calibration
   counts do not add up — not shown", and `gateBand` returns `unrated`. Evidence only ever overturns:
   there is no "confirmed by evidence" count. `gate-record-adds-up` · runtime
-- **The record is current.** A record from another agent version gates as `unrated`, unless the host
-  lists that version in `compatibleWith`. A gating window that ended more than 30 days before `now`
-  gates as `unrated`. The Gate says which applies: "Record is for 2.4; this is 2.5 — treated as
-  unrated" or "Record ends 12 Aug — more than 30 days ago, treated as unrated".
+- **The record is current.** A record from another agent version, or earned on another model,
+  gates as `unrated`, unless the host lists that version or model in `compatibleWith`. A gating
+  window that ended more than 30 days before `now` gates as `unrated`. The Gate says which applies:
+  "Record is for 2.4; this is 2.5 — treated as unrated", "Record was earned on
+  example-large-2026-09; this answer came from example-small-2026-08 — treated as unrated", or
+  "Record ends 12 Aug — more than 30 days ago, treated as unrated".
   `gate-record-is-current` · runtime
 - **Unreviewed is never confirmed, and the floor is 30.** Unreviewed counts are shown, and never
   folded into confirmed. The floor counts only the three person outcomes, and is
@@ -363,6 +376,7 @@ Applied in this same change to `verdict-card.md` and `autonomy-ladder.md`:
 | Thin | "Confidence: Agent says High — 6 of 30 reviewed, treated as unrated" | As calibrated, with the "treated as unrated" line first and the record shown as it is. |
 | No history | "Confidence: Agent says High — no record yet, treated as unrated" | The reason from `{ none }`; no table. |
 | New version | "Confidence: Agent says High — record is for 2.4, this is 2.5; treated as unrated" | The same sentence; the 2.4 record is shown, marked "earlier version". |
+| New model | "Confidence: Agent says High — record was earned on another model; treated as unrated" | Both model names; the old record is shown, marked "earned on another model". |
 | Declared compatible | As calibrated, plus "record from 2.4, declared compatible by Security lead" | The same line under the band source. |
 | Stale record | "Confidence: Agent says High — record ends 12 Aug, more than 30 days ago; treated as unrated" | The same sentence; the old record is shown with its dates. |
 | Floor applied | As thin: "— 22 of 30 reviewed (Vela minimum); treated as unrated" | The same, and the host's lower `minReviewed` is not shown as the target. |

@@ -25,6 +25,10 @@ The spec covers two components and two functions, which ship together:
 **Status:** Experimental — specced, not yet built or tested; no Figma set.
 **Dependencies:** @base-ui/react (optional peer, via /headless)
 
+> **Changed 29 Oct 2026 — breaking.** With the [Agent Provenance Badge](agent-provenance-badge.md),
+> `agent` is `Provenance["agent"]`, which adds a required `id`, so the ladder, the route line and
+> the badge name an agent the same way.
+
 ## Intent
 
 A security lead should be able to answer five questions from the ladder alone. How far may this
@@ -118,7 +122,7 @@ them:
 
 ```tsx
 <AutonomyLadder
-  agent={{ name: "Containment agent", version: "3.1" }}
+  agent={{ id: "agt_contain", name: "Containment agent", version: "3.1" }}
   action={{ id: "isolate-host", label: "Isolate host", tool: "edr.hosts.isolate" }}
   ceiling="person-reviews-after"
   reach={[
@@ -149,7 +153,7 @@ them:
 
 | Prop | Type | Default | Notes |
 |---|---|---|---|
-| `agent` | `{ name: string; version: string }` | — | **Required.** Replaced by an **Agent Provenance badge** slot when that spec lands. |
+| `agent` | `Provenance["agent"]` — `{ id; name; version }` | — | **Required.** The agent this permission is for, named as the **Agent Provenance Badge** names it. *(Breaking change, 29 Oct 2026: `id` added and required.)* |
 | `action` | `{ id: string; label: string; tool: string }` | — | **Required.** One action class, one tool. A compound action is split before it reaches a ladder. |
 | `ceiling` | `AutonomyRung` | — | **Required.** The highest rung this action may route to on any target. |
 | `cap` | `{ rung: AutonomyRung; setBy: string; reason: string }` | — | A limit set outside the ladder by the policy owner. The ceiling cannot be raised above it here. |
@@ -561,8 +565,9 @@ edit mode does not change.
 - **Button** (core) to save and cancel.
 - **Contextual Alert** (core) for the record and policy warnings.
 - **Toast**, optional, to confirm a saved change. Never the only record.
-- Later slots: **Agent Provenance badge** replaces `agent`. The **Calibrated Confidence Gate**
-  supplies the band that the confidence rule reads.
+- **Agent Provenance Badge**: `agent` is `Provenance["agent"]`, so the ladder, the route line and
+  the badge name an agent the same way.
+- The **Calibrated Confidence Gate** supplies the band that the confidence rule reads.
 - Reads from: the **Action Impact Card**'s `reversibility`, `blastRadius` and `isEstimateStale`,
   through `RouteInput.change`.
 - Placed by: the **Approval Queue** and the **Rule Builder**, which put `AutonomyRoute` into the
