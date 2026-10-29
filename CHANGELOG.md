@@ -31,6 +31,11 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   Roboto Mono, the stack's Google-hosted member. Flutter carries `fontFamilyMono` ('SF Mono')
   with its fallbacks; the MUI bridge is unchanged. 255 tokens, was 254 (the README's "242" had gone stale and
   now says 255).
+- **Four contrast pairs the agentic-component specs rely on**, asserted in both themes:
+  `--vela-text-default` on `--vela-bg-raised` (7.69:1 light, 8.84:1 dark), on
+  `--vela-bg-selected` (6.59 / 11.12), `--vela-text-heading` on `--vela-bg-selected`
+  (14.54 / 16.48) and `--vela-border-active` on `--vela-bg-container` as UI (5.39 / 5.06). All
+  pass with no token change; `PAIRS` is 52, was 48.
 - **The docs site carries the project record.** New routes: `#/status` (every component's
   lifecycle label, read from the `**Status:**` line in its spec, so site and spec cannot
   disagree), `#/changelog`, `#/roadmap`, `#/contributing` and `#/accessibility`, each rendered
