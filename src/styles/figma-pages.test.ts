@@ -148,10 +148,16 @@ describe('the Status page', () => {
     expect(JSON.stringify(tree)).not.toMatch(/"(severity|risk|status)\//)
   })
 
-  it('has seven rows in registry order: Risk Pill Experimental, the other six Approved', () => {
-    expect(rows.map((r) => r.n)).toEqual(['Button', 'Toggle', 'Input', 'Contextual Alert', 'Status Indicator', 'Risk Pill', 'Tabs'])
-    expect(rows.filter((r) => label(r) === 'Approved')).toHaveLength(6)
-    expect(label(rows.find((r) => r.n === 'Risk Pill')!)).toBe('Experimental')
+  it('has one row per registered component, in registry order, each with its spec\'s label', () => {
+    expect(rows.map((r) => r.n)).toEqual(['Button', 'Toggle', 'Input', 'Contextual Alert', 'Status Indicator', 'Risk Pill', 'Tabs', 'Checkbox', 'Radio Group'])
+    expect(rows.filter((r) => label(r) === 'Approved').map((r) => r.n)).toEqual(['Button', 'Toggle', 'Input', 'Contextual Alert', 'Status Indicator', 'Tabs'])
+    for (const n of ['Risk Pill', 'Checkbox', 'Radio Group']) expect(label(rows.find((r) => r.n === n)!), n).toBe('Experimental')
+  })
+
+  it('names the headless entry point for a component born there', () => {
+    const exp = (n: string) => rows.find((r) => r.n === n)!.ch!.filter((c) => c.t === 'TEXT')[2].chars
+    expect(exp('Checkbox')).toBe('Checkbox · @omkarux/vela/headless')
+    expect(exp('Radio Group')).toBe('RadioGroup · @omkarux/vela/headless')
   })
 
   it('fills Figma set, React export, Since and Spec from the repository', () => {

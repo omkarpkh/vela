@@ -16,11 +16,106 @@ test('the Button page constrains text-link the way the type does, and the code f
 test('navigation reaches every component and each page lists its tokens', async ({ page }) => {
   await page.goto('/')
   const nav = page.getByRole('navigation', { name: 'Site' })
-  for (const name of ['Button', 'Toggle', 'Input', 'Contextual Alert', 'Status Indicator', 'Risk Pill', 'Tabs']) {
+  for (const name of ['Button', 'Toggle', 'Input', 'Contextual Alert', 'Status Indicator', 'Risk Pill', 'Tabs', 'Checkbox', 'Radio Group']) {
     await nav.getByRole('link', { name, exact: true }).click()
     await expect(page.getByRole('heading', { level: 1, name })).toBeVisible()
     await expect(page.getByRole('tab', { name: /^Tokens/ })).not.toHaveText(/Tokens\s*0$/)
   }
+})
+
+// Two entry points, one playground (decisions/002): the Tabs page renders the same props through
+// the core or the headless (Base UI) implementation, and the Code tab's import line and
+// "Dependencies" line follow the choice. Both implementations must behave the same on the stage.
+test('the Tabs page switches implementation, and the import and Dependencies lines follow', async ({ page }) => {
+  await page.goto('/#/components/tabs')
+  await expect(page.getByRole('heading', { level: 1, name: 'Tabs' })).toBeVisible()
+  const contract = page.getByRole('region', { name: 'Contract' })
+  await expect(contract.locator('.pg-install')).toContainText("import { Tabs } from '@omkarux/vela'")
+  await expect(contract.locator('.pg-dependencies')).toHaveText('Dependencies: none')
+
+  await page.getByRole('group', { name: 'Implementation' }).getByRole('button', { name: 'headless' }).click()
+  await expect(contract.locator('.pg-install')).toContainText("import { Tabs } from '@omkarux/vela/headless'")
+  await expect(contract.locator('.pg-dependencies')).toHaveText('Dependencies: @base-ui/react (optional peer, via /headless)')
+
+  // The light frame's tabs, now rendered by Base UI, still honour the spec: arrow keys select,
+  // the disabled tab is skipped, only the active panel is mounted, the stylesheet applies.
+  const frame = page.locator('.pg-frame[data-theme="light"] .pg-frame-body')
+  const alerts = frame.getByRole('tab', { name: /^Alerts/ })
+  await expect(alerts).toHaveAttribute('aria-selected', 'true')
+  await expect(frame.getByRole('tab', { name: 'Audit' })).toBeDisabled()
+  await alerts.focus()
+  await page.keyboard.press('ArrowRight')
+  await expect(frame.getByRole('tab', { name: /^Assets/ })).toHaveAttribute('aria-selected', 'true')
+  await expect(frame.getByRole('tabpanel')).toHaveText('Only the active panel is mounted.')
+  await page.keyboard.press('ArrowRight')   // Audit is disabled: wraps to Alerts
+  await expect(alerts).toBeFocused()
+  await expect(alerts).toHaveAttribute('aria-selected', 'true')
+  // Tabs.css keys on `[aria-selected='true']` and `:disabled`; Base UI's markup must hit both.
+  const underline = (name: RegExp | string) => frame.getByRole('tab', { name }).evaluate((el) => getComputedStyle(el).borderBottomColor)
+  expect(await underline(/^Alerts/)).not.toBe('rgba(0, 0, 0, 0)')
+  expect(await underline(/^Assets/)).toBe('rgba(0, 0, 0, 0)')
+  await expect(frame.getByRole('tab', { name: 'Audit' })).toHaveCSS('cursor', 'not-allowed')
+})
+
+// Checkbox and Radio Group are headless-born: one implementation, so no Implementation control,
+// the import line names `/headless` and the Dependencies line is the spec's. On the stage the
+// Base UI markup must hit the stylesheet: the fill keys on aria-checked, disabled on :disabled.
+test('the Checkbox page renders the headless Checkbox: Space toggles, the fill follows aria-checked', async ({ page }) => {
+  await page.goto('/#/components/checkbox')
+  await expect(page.getByRole('heading', { level: 1, name: 'Checkbox' })).toBeVisible()
+  await expect(page.getByRole('group', { name: 'Implementation' })).toHaveCount(0)
+  const contract = page.getByRole('region', { name: 'Contract' })
+  await expect(contract.locator('.pg-install')).toContainText("import { Checkbox } from '@omkarux/vela/headless'")
+  await expect(contract.locator('.pg-dependencies')).toHaveText('Dependencies: @base-ui/react (optional peer, via /headless)')
+
+  const frame = page.locator('.pg-frame[data-theme="light"] .pg-frame-body')
+  const box = frame.getByRole('checkbox', { name: 'Accept the data-processing terms' })
+  await expect(box).toHaveAttribute('aria-checked', 'true')
+  // The fill transitions (control fill at --vela-duration-fast), so the assertions retry.
+  const checkedFill = await box.evaluate((el) => getComputedStyle(el).backgroundColor)
+  await box.focus()
+  await page.keyboard.press('Space')
+  await expect(box).toHaveAttribute('aria-checked', 'false')
+  await expect(box).not.toHaveCSS('background-color', checkedFill)
+  await page.keyboard.press('Enter')   // Enter submits a form; it never toggles
+  await expect(box).toHaveAttribute('aria-checked', 'false')
+  await frame.getByText('Accept the data-processing terms').click()
+  await expect(box).toHaveAttribute('aria-checked', 'true')
+  await expect(box).toHaveCSS('background-color', checkedFill)
+
+  const props = page.getByRole('complementary', { name: 'Props' })
+  await props.getByRole('switch', { name: 'indeterminate' }).click()
+  await expect(frame.getByRole('checkbox')).toHaveAttribute('aria-checked', 'mixed')
+  await props.getByRole('switch', { name: 'disabled' }).click()
+  await expect(frame.getByRole('checkbox')).toBeDisabled()
+  await expect(frame.getByRole('checkbox')).toHaveCSS('cursor', 'not-allowed')
+})
+
+test('the Radio Group page renders the headless group: arrows move the selection and skip the disabled radio', async ({ page }) => {
+  await page.goto('/#/components/radio-group')
+  await expect(page.getByRole('heading', { level: 1, name: 'Radio Group' })).toBeVisible()
+  await expect(page.getByRole('group', { name: 'Implementation' })).toHaveCount(0)
+  const contract = page.getByRole('region', { name: 'Contract' })
+  await expect(contract.locator('.pg-install')).toContainText("import { RadioGroup } from '@omkarux/vela/headless'")
+  await expect(contract.locator('.pg-dependencies')).toHaveText('Dependencies: @base-ui/react (optional peer, via /headless)')
+
+  const frame = page.locator('.pg-frame[data-theme="light"] .pg-frame-body')
+  await expect(frame.getByRole('radiogroup', { name: 'Enforcement' })).toBeVisible()
+  const block = frame.getByRole('radio', { name: 'Block' })
+  const quarantine = frame.getByRole('radio', { name: 'Quarantine' })
+  await expect(block).toHaveAttribute('aria-checked', 'true')
+  await expect(frame.getByRole('radio', { name: 'Isolate' })).toBeDisabled()
+  await block.focus()
+  await page.keyboard.press('ArrowDown')   // Isolate is disabled: skipped
+  await expect(quarantine).toBeFocused()
+  await expect(quarantine).toHaveAttribute('aria-checked', 'true')
+  await expect(block).toHaveAttribute('aria-checked', 'false')
+  // RadioGroup.css keys the fill on aria-checked: the selected circle is filled, the others are not.
+  const bg = (name: string) => frame.getByRole('radio', { name }).evaluate((el) => getComputedStyle(el).backgroundColor)
+  await expect.poll(async () => (await bg('Quarantine')) !== (await bg('Block'))).toBe(true)
+  await expect(frame.getByRole('radio', { name: 'Isolate' })).toHaveCSS('cursor', 'not-allowed')
+  // The circle is a circle: border-radius 50%, not the radius scale.
+  await expect(block).toHaveCSS('border-radius', '50%')
 })
 
 test('the nav filter narrows the list and the menu button collapses it', async ({ page }) => {

@@ -26,7 +26,9 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const dir = join(root, 'guidelines/components')
 const version = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).version
 
-// spec file → Figma component set name and source directory
+// spec file → Figma component set name and source directory. `entry` is the source tree the
+// component lives in: `components` (the core, `@omkarux/vela`) unless it says `headless`
+// (`@omkarux/vela/headless` only — Checkbox and Radio Group have no core implementation).
 const SETS = {
   'button.md': { set: 'Button', src: 'Button' },
   'toggle.md': { set: 'Toggle', src: 'Toggle' },
@@ -35,6 +37,8 @@ const SETS = {
   'status-indicator.md': { set: 'Status Indicator', src: 'StatusIndicator' },
   'risk-pill.md': { set: 'Risk Pill', src: 'RiskPill' },
   'tabs.md': { set: 'Tab', src: 'Tabs' },
+  'checkbox.md': { set: 'Checkbox', src: 'Checkbox', entry: 'headless' },
+  'radio-group.md': { set: 'Radio', src: 'RadioGroup', entry: 'headless' },
 }
 
 // `[[rule: id | enforcement]]` is metadata for scripts/check-rules.mjs, not prose: it is stripped
@@ -80,7 +84,7 @@ function parse(file) {
     'RULES  ' + rules.join('. ') + '.',
     ...(motion.length ? ['', 'MOTION  ' + motion.join('  ·  ')] : []),
     '',
-    `src/components/${SETS[file].src}/${SETS[file].src}.tsx  ·  guidelines/components/${file}`,
+    `src/${SETS[file].entry ?? 'components'}/${SETS[file].src}/${SETS[file].src}.tsx  ·  guidelines/components/${file}`,
     `@omkarux/vela ${version}`,
   ].join('\n')
 

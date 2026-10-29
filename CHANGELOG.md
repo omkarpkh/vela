@@ -18,6 +18,44 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   with a stamp naming the commit they were read from. `scripts/figma/check-pages.mjs` runs them
   in the mock Plugin API against the reviewer rules (plus no components on a doc page) in
   `npm test`; `RELEASING.md` step 7 rebuilds them before the library is published.
+- **Checkbox (with Checkbox.Group) — Experimental, `@omkarux/vela/headless` only.** The first
+  component born on Base UI rather than migrated to it (`checkbox.md`; Base UI 1.9 `Checkbox` +
+  `CheckboxGroup`, by per-component subpath). A box that records intent until a Save — the spec
+  settles Checkbox vs Toggle by that button. Closed props: `label` a required string, `checked`
+  or `defaultChecked`, `size` `regular | tiny`, `error` a message, `indeterminate` rendered as
+  `aria-checked="mixed"` with a dash; a Group with a required `label`, `value` or `defaultValue`,
+  `orientation` `vertical | horizontal`, and a named error for a box in a Group with no `value`.
+  The root is a native `<button>` through Base UI's `render` (native `disabled`, the global focus
+  ring); the tick and the dash are inline SVG at `currentColor`. Seven compiler fixtures (six rules), three
+  runtime rules with unit tests, a Figma builder (six variants, no waiver) and a playground page.
+- **Radio Group — Experimental, `@omkarux/vela/headless` only** (`radio-group.md`; Base UI 1.9
+  `RadioGroup` + `Radio`). Two to five visible options, one answer, committed by a Save; the spec
+  sends six or more to a Select List, which is not in the kit. `RadioGroup` takes a required
+  `label`, `value` or `defaultValue` (closed to `string`), `orientation`, `error` as a message and
+  `name`; `RadioGroup.Radio` a required `value` and `label`, `disabled` and `description`. Roving
+  tabindex, arrow keys that move focus and selection in both axes and skip a natively disabled
+  radio, Space selects, Enter does not. Seven compiler fixtures (six rules), three runtime rules
+  with unit tests, a Figma builder for a single Radio (two variants, the circle an ellipse so
+  `radius/full` keeps its scope) and a playground page.
+- **The check family of tokens.** `control-check-bg-checked` (primary-500; dark primary-450,
+  because white on 400 is 3.18:1 and on 450 4.74:1) and `control-check-mark`, shared by the
+  checked box and the selected radio, and four geometry tokens: `control-checkbox-size` (16),
+  `-size-tiny` (12), `control-radio-size` (16), `control-radio-dot` (6). Four new `PAIRS` pass in
+  both themes, including the Input error border, asserted for the first time. The CSS lint now
+  walks `src/headless` as well as `src/components`; `Checkbox.css` and `RadioGroup.css` ship in
+  `dist/vela.css` and carry no waiver. Rule count: 25 of 52 rules are now enforced by the compiler.
+- **A second entry point, `@omkarux/vela/headless` — Experimental** (`GOVERNANCE.md`: may change
+  in a minor without a deprecation window). Its first component is Tabs on Base UI 1.9
+  (`@base-ui/react`, MIT), listed as an *optional* peer dependency; `@omkarux/vela` is unchanged
+  and `npm run verify` now asserts, against the built module graph, that the core entry imports
+  nothing but React. Same spec, same `Tabs.css`, same unit tests (`Tabs.test.tsx` runs every
+  case against both implementations) and the same compiler fixtures, which the pack gate now
+  also runs against the headless export. Where Base UI's defaults differ from the spec — manual
+  activation, focusable-while-disabled tabs, `aria-controls` only on the active tab — the
+  headless Tabs maps to the spec and `tabs.md` records each difference under a new
+  "Implementations" section. The playground's Tabs page gets an *Implementation* control
+  (core | headless) and every component page an import line with "Dependencies: …", read from a
+  `**Dependencies:**` line in the spec (default `none`).
 - **The docs site carries the project record.** New routes: `#/status` (every component's
   lifecycle label, read from the `**Status:**` line in its spec, so site and spec cannot
   disagree), `#/changelog`, `#/roadmap`, `#/contributing` and `#/accessibility`, each rendered

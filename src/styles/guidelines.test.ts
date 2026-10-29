@@ -34,7 +34,8 @@ describe('component specs → Figma descriptions', () => {
     expect(d).toContain('CODE\n<')
     expect(d).toMatch(/FIGMA → PROP\n.+→/)
     expect(d).toMatch(/RULES {2}\S/)
-    expect(d).toMatch(/src\/components\/\w+\/\w+\.tsx {2}· {2}guidelines\/components\/[\w-]+\.md\n@omkarux\/vela \d+\.\d+\.\d+$/)
+    // A headless-only component (Checkbox, Radio Group) lives under src/headless, not src/components.
+    expect(d).toMatch(/src\/(components|headless)\/\w+\/\w+\.tsx {2}· {2}guidelines\/components\/[\w-]+\.md\n@omkarux\/vela \d+\.\d+\.\d+$/)
   })
 })
 
@@ -59,7 +60,11 @@ describe('the agent-facing contract is complete', () => {
   })
 
   it('names every component that is NOT in the kit, so an agent flags a gap instead of inventing one', () => {
-    for (const missing of ['Checkbox', 'Modal', 'Tooltip', 'Icon Button', 'View Switcher'])
-      expect(overview).toContain(missing)
+    // Checkbox and Radio left this list in Phase 1 (they ship from /headless); the sentence that
+    // names the rest has to survive, and it must no longer call either of them missing.
+    const notInKit = overview.match(/Not yet specced: ([^.]+)\./)?.[1] ?? ''
+    for (const missing of ['Select List', 'Token Pill', 'Modal', 'Tooltip', 'Icon Button', 'View Switcher'])
+      expect(notInKit).toContain(missing)
+    for (const shipped of ['Checkbox', 'Radio']) expect(notInKit).not.toContain(shipped)
   })
 })

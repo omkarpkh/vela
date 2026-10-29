@@ -173,10 +173,18 @@ export function dependenciesOf(spec) {
 /** Where the component's React export ships from: the headless entry point when the spec names a dependency, the core package otherwise. */
 export const entryPointOf = (spec) => (/^none\b/i.test(dependenciesOf(spec)) ? PACKAGE : HEADLESS)
 
-/** The name src/index.ts exports for a source folder (`ContextualAlert` for ./components/ContextualAlert). */
-export function exportNameOf(src, index = read('src/index.ts')) {
-  const m = index.match(new RegExp(`^export \\{ (\\w+) \\} from '\\./components/${src}'`, 'm'))
-  if (!m) throw new Error(`src/index.ts exports nothing from ./components/${src}`)
+/**
+ * The name an entry point exports for a source folder: src/index.ts for the core package
+ * (`ContextualAlert` for ./components/ContextualAlert), src/headless/index.ts for the headless one
+ * (`Checkbox` for ./Checkbox). A headless-born component has no core export, so the spec's
+ * `**Dependencies:**` line decides which index is read.
+ */
+export function exportNameOf(src, entry = PACKAGE) {
+  const headless = entry === HEADLESS
+  const file = headless ? 'src/headless/index.ts' : 'src/index.ts'
+  const from = headless ? `\\./${src}` : `\\./components/${src}`
+  const m = read(file).match(new RegExp(`^export \\{ (\\w+) \\} from '${from}'`, 'm'))
+  if (!m) throw new Error(`${file} exports nothing from ${from.replace(/\\/g, '')}`)
   return m[1]
 }
 
@@ -235,7 +243,7 @@ export function statusData() {
     const onBranch = since === 'Unreleased'
     return {
       name, label, figmaSet,
-      reactExport: `${exportNameOf(o.src)} · ${entryPointOf(spec)}`,
+      reactExport: `${exportNameOf(o.src, entryPointOf(spec))} · ${entryPointOf(spec)}`,
       since,
       spec: { text: o.file + (onBranch ? ' (branch)' : ''), url: `${REPO}/blob/${onBranch ? s.branch : 'main'}/guidelines/components/${o.file}` },
     }

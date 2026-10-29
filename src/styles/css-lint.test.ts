@@ -4,15 +4,17 @@ import { checkCss, lintCss } from '../../scripts/check-css.mjs'
 
 // The first two non-negotiables — semantic tokens only, units carried by the token — were
 // review conventions in the component stylesheets. This makes them a failing test: a raw
-// colour or a bare length in src/components/**/*.css fails `npm test` unless the line carries
+// colour or a bare length in src/components/**/*.css or src/headless/**/*.css fails `npm test` unless the line carries
 // a `/* vela-allow: <reason> */` waiver, and every waiver is printed, never silent.
 describe('component CSS binds tokens', () => {
   const report = checkCss()
 
   it('lints every component stylesheet', () => {
-    expect(report.map((r) => r.file).sort()).toEqual(
-      ['Button', 'ContextualAlert', 'Input', 'RiskPill', 'StatusIndicator', 'Tabs', 'Toggle'].map((c) => `src/components/${c}/${c}.css`),
-    )
+    expect(report.map((r) => r.file).sort()).toEqual([
+      ...['Button', 'ContextualAlert', 'Input', 'RiskPill', 'StatusIndicator', 'Tabs', 'Toggle'].map((c) => `src/components/${c}/${c}.css`),
+      // The headless-born components keep their stylesheets beside their implementation.
+      ...['Checkbox', 'RadioGroup'].map((c) => `src/headless/${c}/${c}.css`),
+    ])
   })
 
   it.each(report.map((r) => r.file))('%s has no raw colour, primitive or bare length without a waiver', (file) => {

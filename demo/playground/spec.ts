@@ -73,19 +73,24 @@ export function parseSpec(md: string, known: readonly string[] = []): Spec {
   if (propsSection) {
     const { header, rows } = tableRows(propsSection.body)
     const hasPart = header[0]?.toLowerCase() === 'part'
+    // A Composition table may carry a Default column (Checkbox, Radio Group do; Tabs does not).
+    const defaultCol = hasPart ? header.findIndex((h) => h.toLowerCase() === 'default') : -1
     let part = ''
     for (const r of rows) {
       if (hasPart) {
         if (r[0]) part = unquote(r[0])
-        props.push({ part, prop: unquote(r[1]), type: r[2] ?? '', notes: r[3] ?? '' })
+        const notes = r[defaultCol > 0 ? defaultCol + 1 : 3] ?? ''
+        props.push({ part, prop: unquote(r[1]), type: r[2] ?? '', default: defaultCol > 0 ? r[defaultCol] : undefined, notes })
       } else {
         props.push({ prop: unquote(r[0]), type: r[1] ?? '', default: r[2], notes: r[3] ?? '' })
       }
     }
   }
-  // Composition tables describe several parts; only the root part's props are controls.
+  // Composition tables describe several parts; only the root part's props are controls. The root
+  // part is written as code (`RadioGroup`) and the title as words ("Radio Group"); compare without spaces.
+  const compact = (s: string) => s.replace(/\s+/g, '')
   const controls = props
-    .filter((r) => !r.part || r.part === title)
+    .filter((r) => !r.part || compact(r.part) === compact(title))
     .map(controlFor)
     .filter((c): c is Control => c !== null)
 

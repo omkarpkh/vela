@@ -1,7 +1,7 @@
 {
   "name": "@omkarux/vela",
   "version": "0.12.1",
-  "description": "A token-first design system: framework-agnostic tokens and component specs with a React implementation. Tokens compile to CSS, a Figma library, a Flutter theme and a Material UI theme from one source. Two-layer colour architecture, separate severity, risk and status taxonomies, light and dark theming, WCAG AA asserted in CI, zero runtime dependencies. Every design rule is tagged with how it is enforced: 13 of 32 by the TypeScript compiler, the rest at runtime, in a browser, or by review.",
+  "description": "A token-first design system: framework-agnostic tokens and component specs with a React implementation. Tokens compile to CSS, a Figma library, a Flutter theme and a Material UI theme from one source. Two-layer colour architecture, separate severity, risk and status taxonomies, light and dark theming, WCAG AA asserted in CI, zero runtime dependencies (a second entry point, @omkarux/vela/headless, builds on Base UI as an optional peer). Every design rule is tagged with how it is enforced: 25 of 52 by the TypeScript compiler, the rest at runtime, in a browser, or by review.",
   "type": "module",
   "license": "MIT",
   "author": "Omkar Khadamkar",
@@ -22,6 +22,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./headless": {
+      "types": "./dist/headless/index.d.ts",
+      "import": "./dist/headless/index.js"
     },
     "./styles.css": "./dist/vela.css",
     "./tokens.css": "./dist/tokens.css",
@@ -87,10 +91,17 @@
     "prepublishOnly": "npm run verify"
   },
   "peerDependencies": {
+    "@base-ui/react": "1.9.x",
     "react": "^18.3 || ^19",
     "react-dom": "^18.3 || ^19"
   },
+  "peerDependenciesMeta": {
+    "@base-ui/react": {
+      "optional": true
+    }
+  },
   "devDependencies": {
+    "@base-ui/react": "1.9.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@mui/material": "^9.4.0",

@@ -34,14 +34,15 @@ Contributor Covenant, version 2.1
 
 PLANNED — NOT YET INCLUDED
 
-Named in decisions/002-agent-ready-direction. Neither is a dependency of @omkarux/vela 0.12.1,
-and this section is corrected the day one lands.
+Named in decisions/002-agent-ready-direction. Base UI landed on 28 Oct 2026 as an optional peer of
+the /headless entry only; the core entry and the tarball carry no dependency. Lucide is not yet
+included.
 
-Base UI (@base-ui-components/react)
+Base UI (@base-ui/react, 1.9.x)
   Licence: MIT — https://github.com/mui/base-ui/blob/master/LICENSE
-  Planned use: behaviour and accessibility primitives under Vela's own CSS, as an optional peer
-  dependency of a separate entry point (@omkarux/vela/headless). The default entry point stays
-  zero-dependency.
+  Use: behaviour and accessibility primitives under Vela's own CSS, as an optional peer
+  dependency of the @omkarux/vela/headless entry point (Tabs today). The default entry point stays
+  zero-dependency; Base UI is not bundled and not in the tarball.
 
 Lucide
   Licence: ISC, with portions of Feather Icons under MIT — https://github.com/lucide-icons/lucide/blob/main/LICENSE
