@@ -56,7 +56,7 @@ link to each, and the number of automated checks, written by the test runners ra
 | **Dependencies** | None in the core entry. `react` / `react-dom` are peers (18.3 or 19). The `/headless` entry needs one optional peer, `@base-ui/react` 1.9.x (MIT) |
 | **Icons** | 50 curated [Lucide](https://lucide.dev) 1.63.0 glyphs (ISC; a subset from Feather, MIT), compiled into the core entry at build time — no icon dependency, `lucide` is a devDependency only. The ISC notice ships in [`NOTICE`](NOTICE) |
 | **Format** | ESM, `preserveModules` for tree-shaking, full `.d.ts` |
-| **Tests** | 586 automated checks — 501 unit and contract (59 contrast pairs, each asserted in both themes), 82 browser (68 screenshots at four widths, 12 playground, 2 docs), 3 Flutter — counted by `npm run checks` |
+| **Tests** | 597 automated checks — 512 unit and contract (59 contrast pairs, each asserted in both themes), 82 browser (68 screenshots at four widths, 12 playground, 2 docs), 3 Flutter — counted by `npm run checks` |
 | **Packed size** | 128.2 kB, 187 files (the fifty glyph modules and their .d.ts are most of the growth), as `npm run verify` measures it (README and CHANGELOG ship in the tarball, so this moves when they do) |
 
 ## The three ideas worth stealing
@@ -152,7 +152,7 @@ document.documentElement.removeAttribute('data-theme')        // follow the OS
 
 ```bash
 npm run dev        # demo showcase at localhost:5174
-npm test           # 501 unit and contract tests, of 586 checks in all — the numbers are generated into demo/checks.json
+npm test           # 512 unit and contract tests, of 597 checks in all — the numbers are generated into demo/checks.json
 npm run checks     # counts every automated check into demo/checks.json (diffed in verify)
 npm run contrast   # WCAG report for both themes
 npm run verify     # tokens:check + icons:check + rules:check + typecheck + tests + checks:check + build + pack-and-consume gate

@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { execFileSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
+import { stampParts, onMain } from '../../scripts/figma/page-data.mjs'
+import { createMockFigma } from '../../scripts/figma/mock-figma.mjs'
 
 // scripts/figma/pages/*.figma.js draw the library's Changelog and Status pages from the
 // repository (build-pages.mjs compiles the data in). check-pages.mjs runs each one in the mock
@@ -11,7 +13,7 @@ const cli = (...args: string[]) => {
   try { return execFileSync('node', ['scripts/figma/check-pages.mjs', ...args, '--json'], { cwd: root, encoding: 'utf8' }) }
   catch (e: any) { return e.stdout as string }
 }
-type Node = { t: string; n: string; ch?: Node[]; chars?: string; style?: string | null; fill?: string[]; stroke?: string[]; link?: string; list?: string; rad?: [number, string | null]; wh?: [number, number, string | null, string | null] }
+type Node = { t: string; n: string; ch?: Node[]; chars?: string; style?: string | null; fill?: string[]; rgb?: (string | null)[]; stroke?: string[]; link?: string; list?: string; rad?: [number, string | null]; wh?: [number, number, string | null, string | null] }
 const lintReport: Record<string, { problems: { rule: string; node: string; what: string; waived: boolean }[]; allow: { rule: string; reason: string }[]; bytes: number }> = JSON.parse(cli('--lint'))
 const built = (page: string) => JSON.parse(cli('--dump', page, '--runs', '2')) as { bytes: number; runs: { result: any; topLevel: { id: string; type: string; name: string }[] }[]; tree: Node }
 const all = (n: Node): Node[] => [n, ...(n.ch ?? []).flatMap(all)]
@@ -52,6 +54,12 @@ describe.each(['changelog', 'status'])('the %s page', (page) => {
     expect(b.tree.wh![0]).toBe(1080)
     expect(b.tree.fill).toEqual(['surface/global'])
     expect(all(b.tree).filter((n) => /COMPONENT|INSTANCE/.test(n.t))).toEqual([])
+  })
+
+  it('a second run leaves the reused frame white, not black: its fills are cleared before the paint is set again', () => {
+    // Re-assigning an identically bound paint keeps the placeholder {0,0,0} in the real file; the
+    // mock models that, so without `if(REUSED)f.fills=[]` in pageFrame() this reads #000000.
+    expect(b.tree.rgb).toEqual(['#ffffff'])
   })
 
   it('gives every text a text style and binds every fill and stroke to a variable', () => {
@@ -107,7 +115,23 @@ describe('the Changelog page', () => {
       'The code draws the same boxes.',
       'npm run tokens:figma --only <Collection> wrote empty values.',
     ])
-    expect(kid(cards.find((x) => x.n === '0.1.0')!, 'Added').ch![1].chars!.split('\n')[0]).toBe('Components:')
+    // A bold lead-in ending in a colon is a label: it carries the rest of its line to the first sentence end.
+    expect(kid(cards.find((x) => x.n === '0.1.0')!, 'Added').ch![1].chars!.split('\n').slice(0, 3)).toEqual([
+      'Components: Button, Toggle, Input, ContextualAlert, StatusIndicator, Tabs.',
+      'Tokens: 239 CSS custom properties in two layers (primitives → semantics), covering colour, spacing, sizing, radius and typography.',
+      'Themes: light and dark.',
+    ])
+  })
+
+  it('has no empty or label-only bullet, and keeps the release-specific sections that have bullets', () => {
+    for (const c of cards) for (const sec of c.ch!.filter((s) => s.t === 'FRAME' && s.n !== 'Header')) {
+      for (const line of sec.ch![1].chars!.split('\n')) expect(line, `${c.n} ${sec.n}`).toMatch(/\S.*[^:\s]$/)
+    }
+    const sections = (v: string) => cards.find((x) => x.n === v)!.ch!.filter((s) => s.t === 'FRAME' && s.n !== 'Header').map((s) => s.n)
+    expect(sections('0.3.0')).toEqual(['Added', 'Companion Figma library'])
+    expect(sections('0.1.0')).toEqual(['Added', 'Accessibility decisions worth recording'])
+    expect(sections('0.2.0')).toEqual(['Changed', 'Fixed'])
+    expect(kid(cards.find((x) => x.n === '0.3.0')!, 'Companion Figma library').ch![1].chars!.split('\n')[0]).toBe('Toggle track and knob geometry is literal in both CSS and Figma, not tokenised.')
   })
 
   it('links every card to its full entry on GitHub', () => {
@@ -166,14 +190,58 @@ describe('the Status page', () => {
     const [, set, exp, since, spec] = cells('Contextual Alert')
     expect([set.chars, exp.chars, since.chars, spec.chars]).toEqual(['Contextual Alert · page Contextual Alert', 'ContextualAlert · @omkarux/vela', '0.1.0', 'contextual-alert.md'])
     expect(spec.link).toBe('https://github.com/omkarpkh/vela/blob/main/guidelines/components/contextual-alert.md')
+    // Risk Pill's set is built in the file, not published; its spec is on main, so no "(branch)".
     const [, rset, , rsince, rspec] = cells('Risk Pill')
-    expect([rset.chars, rsince.chars, rspec.chars]).toEqual(['None yet — the builder is ready (risk-pill.figma.js)', 'Unreleased', 'risk-pill.md (branch)'])
-    expect(rspec.link).not.toContain('/blob/main/')
+    expect([rset.chars, rsince.chars, rspec.chars]).toEqual(['Built, not published', 'Unreleased', 'risk-pill.md'])
+    expect(rspec.link).toBe('https://github.com/omkarpkh/vela/blob/main/guidelines/components/risk-pill.md')
+    expect(cells('Checkbox')[1].chars).toBe('None yet — the builder is ready (checkbox.figma.js)')
+    expect(cells('Tabs')[1].chars).toBe('Tab · page Tabs')
     // Icon is core and unreleased; 0.12.1's `Icon` box (a Figma layer inside Button) does not date it.
+    // It has no Figma set yet; its spec is on main, so no "(branch)".
     const [, iset, iexp, isince, ispec] = cells('Icon')
-    expect([iset.chars, iexp.chars, isince.chars, ispec.chars]).toEqual(['None yet — the builder is ready (icon.figma.js)', 'Icon · @omkarux/vela', 'Unreleased', 'icon.md (branch)'])
-    // Text Area is core and unreleased too, so it has a builder but no set yet.
+    expect([iset.chars, iexp.chars, isince.chars, ispec.chars]).toEqual(['None yet — the builder is ready (icon.figma.js)', 'Icon · @omkarux/vela', 'Unreleased', 'icon.md'])
+    // Text Area is core and unreleased; its spec is not on main yet, so it carries "(branch)".
     const [, tset, texp, tsince, tspec] = cells('Text Area')
     expect([tset.chars, texp.chars, tsince.chars, tspec.chars]).toEqual(['None yet — the builder is ready (text-area.figma.js)', 'TextArea · @omkarux/vela', 'Unreleased', 'text-area.md (branch)'])
+    for (const r of rows) if (r.n !== 'Text Area') expect(cells(r.n)[4].chars, r.n).not.toContain('(branch)')
+  })
+})
+
+describe('page data: git refs', () => {
+  const git = (ref: string) => (...a: string[]) => (a.join(' ') === 'rev-parse --abbrev-ref HEAD' ? ref : a.join(' ') === 'rev-parse --short HEAD' ? 'abc1234' : '')
+
+  it('stampParts() falls back to main when the ref is HEAD (a detached CI checkout)', () => {
+    expect(stampParts({ git: git('HEAD') })).toMatchObject({ branch: 'main', sha: 'abc1234', dirty: false })
+    expect(stampParts({ git: git('HEAD') }).at).toMatch(/^main abc1234 \(/)
+    expect(stampParts({ git: git('fix/figma-r9-r12') }).branch).toBe('fix/figma-r9-r12')
+    expect(stampParts({ git: git('') }).branch).toBe('main')
+  })
+
+  it('onMain() checks main, then origin/main, and assumes present when neither ref exists', () => {
+    const repo = (refs: Record<string, string[]>) => (...a: string[]) => {
+      if (a[0] === 'rev-parse') return a[3].replace('^{commit}', '') in refs
+      const [ref, path] = a[2].split(':')
+      return (refs[ref] ?? []).includes(path)
+    }
+    expect(onMain('x.md', { ok: repo({}) })).toBe(true)
+    expect(onMain('x.md', { ok: repo({ main: [] }) })).toBe(false)
+    expect(onMain('x.md', { ok: repo({ main: [], 'origin/main': ['x.md'] }) })).toBe(true)
+    expect(onMain('x.md', { ok: repo({ 'origin/main': ['x.md'] }) })).toBe(true)
+    expect(onMain('x.md', { ok: repo({ main: ['y.md'], 'origin/main': ['y.md'] }) })).toBe(false)
+  })
+})
+
+describe('the mock models how a reused node re-resolves a bound paint', () => {
+  it('keeps the placeholder colour when the same bound paint is re-assigned, and resolves after a clear', async () => {
+    const figma: any = createMockFigma({ variables: [{ name: 'surface/global', resolvedType: 'COLOR', collection: 'Color', value: '#ffffff' }], styles: [], pages: ['P'] })
+    const v = (await figma.variables.getLocalVariablesAsync('COLOR'))[0]
+    const paint = () => figma.variables.setBoundVariableForPaint({ type: 'SOLID', color: { r: 0, g: 0, b: 0 } }, 'color', v)
+    const f = figma.createFrame()
+    f.fills = [paint()]
+    expect(f.fills[0].color).toEqual({ r: 1, g: 1, b: 1 })
+    f.fills = [paint()]
+    expect(f.fills[0].color).toEqual({ r: 0, g: 0, b: 0 })
+    f.fills = []; f.fills = [paint()]
+    expect(f.fills[0].color).toEqual({ r: 1, g: 1, b: 1 })
   })
 })
