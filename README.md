@@ -57,7 +57,7 @@ link to each, and the number of automated checks, written by the test runners ra
 | **Icons** | 50 curated [Lucide](https://lucide.dev) 1.63.0 glyphs (ISC; a subset from Feather, MIT), compiled into the core entry at build time — no icon dependency, `lucide` is a devDependency only. The ISC notice ships in [`NOTICE`](NOTICE) |
 | **Format** | ESM, `preserveModules` for tree-shaking, full `.d.ts` |
 | **Tests** | 565 automated checks — 481 unit and contract (55 contrast pairs, each asserted in both themes), 81 browser (68 screenshots at four widths, 11 playground, 2 docs), 3 Flutter — counted by `npm run checks` |
-| **Packed size** | 121.4 kB, 183 files (the fifty glyph modules and their .d.ts are most of the growth), as `npm run verify` measures it (README and CHANGELOG ship in the tarball, so this moves when they do) |
+| **Packed size** | 123.1 kB, 183 files (the fifty glyph modules and their .d.ts are most of the growth), as `npm run verify` measures it (README and CHANGELOG ship in the tarball, so this moves when they do) |
 
 ## The three ideas worth stealing
 
