@@ -220,8 +220,10 @@ What CI asserts, and therefore what "accessible" means in a pull request:
 - **Contrast.** Every foreground/background pair the kit ships is listed in `PAIRS` in
   `scripts/contrast-core.mjs` and asserted against WCAG 2.1 AA in `src/styles/contrast.test.ts`,
   in both themes: 4.5:1 for text, 3:1 for UI boundaries and non-text signals. A new colour pair
-  goes into `PAIRS` or it is an unverified claim. The tightest shipped pair is the input border
-  at 3.29:1 against a 3:1 minimum; anything below it is a regression. The deliberate choices this
+  goes into `PAIRS` or it is an unverified claim. The tightest shipped pair is the `unknown`
+  status dot on a selected table row at 3.22:1 against a 3:1 minimum (Table, Phase 1: any tint
+  under a grey-500 dot costs contrast, and this is the lightest selection tint still visible);
+  before it, the input border at 3.29:1. Anything below 3.22:1 is a regression. The deliberate choices this
   produced — destructive buttons on `red-700` not `red-500`, status dots on the 600s and 700s —
   are recorded in `guidelines/foundations/color.md`; do not "fix" them back.
 - **Rule fixtures.** `scripts/check-rules.mjs`: every tagged rule has a proof at its level, and
@@ -291,9 +293,11 @@ Accessibility
 
 Do not invent one silently. State that the kit has no component for the need and pick the
 closest match while flagging the gap. Not yet specced: Dropdown List, Select List, Token Pill,
-Number Stepper, Text Area, Modal, Tooltip, Icon Button, Actions Dropdown, View Switcher. Flag
-rather than guess. Checkbox (with Checkbox.Group) and Radio Group are specced and ship from
-`@omkarux/vela/headless` only (Experimental). The disambiguations agents most often get wrong
+Number Stepper, Text Area, Modal, Tooltip, Icon Button, Actions Dropdown, View Switcher, Data
+Grid (arrow-key cell navigation, `role="grid"`), Card List. Flag rather than guess. Checkbox
+(with Checkbox.Group) and Radio Group are specced and ship from `@omkarux/vela/headless` only
+(Experimental); Table ships from the core entry (Experimental) and is read, not navigated cell by
+cell. The disambiguations agents most often get wrong
 — Toggle vs Checkbox, Radio Group vs Select List, Tabs vs View Switcher, Alert vs Status
 Indicator vs Risk Pill — are in `guidelines/overview.md`.
 
