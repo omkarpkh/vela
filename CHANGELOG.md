@@ -6,6 +6,30 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Unreleased]
 
 ### Added
+- **Icon — Experimental** (`decisions/003-icons-lucide-curated`). Fifty curated
+  [Lucide](https://lucide.dev) 1.63.0 glyphs (ISC; 25 of them Feather-derived, MIT) compiled at
+  build time into zero-dependency React in the core entry: `lucide` is a pinned devDependency,
+  nothing from it is imported at runtime, and `dependencies` stays `{}` — `verify-pack.mjs`
+  still walks the core module graph and finds only React. `<Icon name size tone label>`: `name`
+  is the closed `IconName` union (exported with `ICON_NAMES`), `size` regular | small | large on
+  the new `--vela-icon-size*` tokens (16, 12, 20), `tone` default | muted | inherit on
+  `--vela-icon-strong` / `--vela-icon-default` / `currentColor`, and the stroke on
+  `--vela-icon-stroke` (2 in the 24 grid: 1px at small, 1.33px at regular, 1.67px at large).
+  With `label` it is `role="img"`, without one `aria-hidden`; never focusable, never
+  interactive. Twelve rules, four of them compiler with ten fixtures (an invented name, a Lucide
+  glyph outside the set, an alias such as `trash-2`, a missing name, `size="medium"`,
+  `size={16}`, `tone="critical"`, `tone="high"`, `onClick`, `tabIndex`). Three new `PAIRS`.
+  Core JS grows from 3,675 B to 7,753 B gzip (10 → 63 modules); the glyphs are reached only
+  through `Icon`.
+- **The icon build.** `scripts/icons.list.json` is the set; `npm run icons:build` writes
+  `src/icons/generated/*.tsx`, `src/icons/names.ts` and the Figma builder
+  `scripts/figma/components/icon.figma.js` (one `Glyph` variant per name, box on `icon/size`,
+  stroke on `icon/strong`); `npm run icons:check` fails on any difference from what is committed
+  and runs in `verify`. It refuses a Lucide alias (`filter`, `trash-2`, `history` are `funnel`,
+  `trash`, `rotate-ccw-clock` in Lucide 1.x), an unknown name, or an installed Lucide other than
+  the reviewed version. A test holds `NOTICE`'s Feather list to Lucide's LICENSE. The mock
+  Plugin API models `createNodeFromSvg` and `flatten`; the builder has not been run in the
+  library yet. A playground page shows every glyph at the chosen size and tone.
 - **A second entry point, `@omkarux/vela/headless` — Experimental** (`GOVERNANCE.md`: may change
   in a minor without a deprecation window). Its first component is Tabs on Base UI 1.9
   (`@base-ui/react`, MIT), listed as an *optional* peer dependency; `@omkarux/vela` is unchanged
