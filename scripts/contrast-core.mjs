@@ -139,6 +139,27 @@ export const PAIRS = [
   ...['unknown', 'healthy', 'warning', 'medium', 'unhealthy'].map((s) => [
     `--vela-signal-status-${s}`, '--vela-bg-global', `Status dot: ${s}`, 'ui',
   ]),
+
+  // Table (Phase 1, core). A row is a surface other components sit on, so the pairs are what a
+  // console row actually carries: body text, secondary text, a link, a Status Indicator dot, and
+  // the border-active marker a selected or current row draws at its start edge. Two row surfaces
+  // were added because the existing ones fail here: bg-selected (blue-100) puts the unknown dot at
+  // 2.97:1 and de-emphasized text at 4.20:1; bg-hover (grey-850 dark) puts links at 4.35:1 and
+  // de-emphasized text at 3.99:1. The header sits on bg-global, already asserted above; the
+  // unsorted sort glyph is icon-default on it.
+  ...['--vela-bg-row-hover', '--vela-bg-row-selected'].flatMap((bg) => {
+    const row = bg.endsWith('hover') ? 'hovered row' : 'selected row'
+    return [
+      ['--vela-text-default',       bg, `Table text on a ${row}`,           'text'],
+      ['--vela-text-de-emphasized', bg, `Table secondary text on a ${row}`, 'text'],
+      ['--vela-text-link',          bg, `Table link on a ${row}`,           'text'],
+      ['--vela-border-active',      bg, `Table row marker on a ${row}`,     'ui'],
+      ...['unknown', 'healthy', 'warning', 'medium', 'unhealthy'].map((s) => [
+        `--vela-signal-status-${s}`, bg, `Status dot: ${s}, on a ${row}`, 'ui',
+      ]),
+    ]
+  }),
+  ['--vela-icon-default', '--vela-bg-global', 'Table sort glyph, unsorted column', 'ui'],
 ]
 
 export const THRESHOLD = { text: 4.5, ui: 3.0 }

@@ -16,9 +16,9 @@ const cli = (...args: string[]) => {
   catch (e: any) { return e.stdout as string }
 }
 const lintReport: Record<string, { problems: { rule: string; node: string; what: string; waived: boolean }[]; allow: { rule: string; reason: string }[] }> = JSON.parse(cli('--lint'))
-const dump = (name: string) => JSON.parse(cli('--dump', name))
+const dump = (name: string, set?: string) => JSON.parse(set ? cli('--dump', name, `--set=${set}`) : cli('--dump', name))
 const styles: any[] = JSON.parse(execFileSync('node', ['scripts/figma/text-styles.mjs', '--json'], { cwd: root, encoding: 'utf8' }))
-const BUILDERS = ['button', 'checkbox', 'contextual-alert', 'dialog', 'icon', 'input', 'popover', 'radio-group', 'risk-pill', 'status-indicator', 'tabs', 'text-area', 'toggle', 'tooltip']
+const BUILDERS = ['button', 'checkbox', 'contextual-alert', 'dialog', 'icon', 'input', 'popover', 'radio-group', 'risk-pill', 'status-indicator', 'table', 'tabs', 'text-area', 'toggle', 'tooltip']
 
 describe('Figma builders, built in the mock Plugin API', () => {
   it('runs every builder', () => {
@@ -249,6 +249,74 @@ describe('Checkbox and Radio, as the builders create them', () => {
         expect(dot.wh.slice(2)).toEqual(['control/radio/dot', 'control/radio/dot'])
       } else expect(slot.ch).toHaveLength(1)
     }
+  })
+})
+
+describe('Table, as the builder creates its three sets', () => {
+  const head = dump('table', 'Table Header Cell')
+  const cell = dump('table', 'Table Cell')
+  const row = dump('table', 'Table Row')
+  const D = ['comfortable', 'compact']
+  const pads = (density: string) => ['space/' + (density === 'compact' ? 5 : 10), 'space/10', 'space/' + (density === 'compact' ? 5 : 10), 'space/10']
+
+  it('declares three sets on one page, linted together, with no waiver', () => {
+    expect([head.set, cell.set, row.set]).toEqual(['Table Header Cell', 'Table Cell', 'Table Row'])
+    expect(lintReport.table.allow).toEqual([])
+    expect(lintReport.table.problems).toEqual([])
+  })
+
+  it('writes one word in every variant of each TEXT property, so neither collapses (text-property-collapse)', () => {
+    for (const [d, prop, layer, word] of [[head, 'Label text', 'Label', 'Last seen'], [cell, 'Value text', 'Value', 'api-gateway-01']] as const) {
+      const key = Object.keys(d.defs).find((k) => k.startsWith(prop + '#'))!
+      expect(d.defs[key], prop).toBe(`TEXT=${JSON.stringify(word)}`)
+      for (const v of d.variants) expect(v.ch.find((c: any) => c.n === layer).chars, `${prop} ${v.n}`).toBe(word)
+    }
+  })
+
+  it('Header Cell is Density × Sort × Align with a Label text property; the header sits on surface/global over a border/default rule', () => {
+    expect(head.variants.map((v: any) => v.n)).toEqual(
+      D.flatMap((d) => ['unsortable', 'none', 'ascending', 'descending'].flatMap((s) => ['start', 'end'].map((a) => `Density=${d}, Sort=${s}, Align=${a}`))),
+    )
+    expect(Object.keys(head.defs).map((k) => k.replace(/#.*$/, '')).sort()).toEqual(['Align', 'Density', 'Label text', 'Sort'])
+    for (const v of head.variants) {
+      const [, density, sort, align] = v.n.match(/Density=(\w+), Sort=(\w+), Align=(\w+)/)!
+      expect(v.fill).toEqual(['surface/global'])
+      expect([v.stroke, v.swx]).toEqual([['border/default'], [0, 0, 1, 0]])
+      expect(v.pad.map((p: any) => p[1])).toEqual(pads(density))
+      expect(v.ax).toBe(`${align === 'end' ? 'MAX' : 'MIN'}/CENTER`)
+      const label = v.ch.find((c: any) => c.n === 'Label')
+      expect([label.style, label.fill]).toEqual(['Heading/H6', ['text/default']])
+      const icon = v.ch.find((c: any) => c.n === 'Sort icon')
+      if (sort === 'unsortable') { expect(icon).toBeUndefined(); continue }
+      expect(icon.wh.slice(2)).toEqual(['icon/12', 'icon/12'])
+      expect(icon.ch[0]).toMatchObject({ t: 'BOOLEAN_OPERATION', n: `Glyph / sort ${sort}`, op: 'UNION', fill: [sort === 'none' ? 'icon/default' : 'text/default'] })
+      // an end-aligned column puts the glyph first, as the code's row-reverse does
+      expect(v.ch.map((c: any) => c.n)).toEqual(align === 'end' ? ['Sort icon', 'Label'] : ['Label', 'Sort icon'])
+    }
+  })
+
+  it('Cell is Density × Align with a Value text property, unfilled, over a border/subtle rule', () => {
+    expect(cell.variants.map((v: any) => v.n)).toEqual(D.flatMap((d) => ['start', 'end'].map((a) => `Density=${d}, Align=${a}`)))
+    expect(Object.keys(cell.defs).map((k) => k.replace(/#.*$/, '')).sort()).toEqual(['Align', 'Density', 'Value text'])
+    for (const v of cell.variants) {
+      expect(v.fill).toEqual([])
+      expect([v.stroke, v.swx]).toEqual([['border/subtle'], [0, 0, 1, 0]])
+      expect(v.pad.map((p: any) => p[1])).toEqual(pads(v.n.includes('compact') ? 'compact' : 'comfortable'))
+      expect(v.ch[0].style).toBe('Body/Default')
+    }
+  })
+
+  it('Row is Density × State; selected and current carry a border/active start stroke, and no row binds a taxonomy colour', () => {
+    expect(row.variants.map((v: any) => v.n)).toEqual(D.flatMap((d) => ['default', 'hover', 'selected', 'current'].map((s) => `Density=${d}, State=${s}`)))
+    const FILL: Record<string, string> = { default: 'surface/global', hover: 'surface/row-hover', selected: 'surface/row-selected', current: 'surface/global' }
+    for (const v of row.variants) {
+      const state = v.n.split('State=')[1]
+      expect(v.fill).toEqual([FILL[state]])
+      if (state === 'selected' || state === 'current') expect([v.stroke, v.swx]).toEqual([['border/active'], [0, 0, 0, 2]])
+      else expect(v.stroke).toEqual([])
+      expect(v.ch.map((c: any) => c.n)).toEqual(['Cell / asset', 'Cell / status', 'Cell / findings'])
+    }
+    expect(JSON.stringify([head, cell, row])).not.toMatch(/severity|status\/|risk\//)
   })
 })
 

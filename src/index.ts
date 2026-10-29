@@ -47,4 +47,19 @@ export type { IconProps, IconSize, IconTone } from './components/Icon'
 export { ICON_NAMES } from './icons/names'
 export type { IconName } from './icons/names'
 
+export { Table } from './components/Table'
+export type {
+  TableProps,
+  TableSectionProps,
+  TableRowProps,
+  TableHeaderCellProps,
+  TableCellProps,
+  TableEmptyProps,
+  TableSort,
+  TableSortDirection,
+  TableDensity,
+  TableLayout,
+  TableAlign,
+} from './components/Table'
+
 export { cn } from './lib/cn'

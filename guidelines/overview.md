@@ -18,13 +18,14 @@ below, then open the per-component file for props, tokens, and anti-patterns.
 | Icon | One of fifty curated glyphs beside text or in another component's icon slot — never a control, never a taxonomy mark | `components/icon.md` |
 | Checkbox | Recording intent until a Save — alone, or any-of-several in a Checkbox.Group (headless entry only) | `components/checkbox.md` |
 | Radio Group | Exactly one of two to five visible options, committed by a Save (headless entry only) | `components/radio-group.md` |
+| Table | Records compared across named columns — sortable headers, two densities, a scroll region (Experimental) | `components/table.md` |
 | Popover | A non-modal panel opened from a button — filters, detail, a short edit — with the page still usable (headless entry only) | `components/popover.md` |
 | Tooltip | A short text-only label on hover and focus; supplementary, never the only copy (headless entry only) | `components/tooltip.md` |
 | Dialog | A modal decision that blocks the task; `variant="alert"` confirms a destructive action (headless entry only) | `components/dialog.md` |
 
 Checkbox, Radio Group, Popover, Tooltip and Dialog ship from `@omkarux/vela/headless` (Base UI as
-an optional peer) and are Experimental; the other nine ship from `@omkarux/vela` with no
-dependencies.
+an optional peer) and are Experimental; the other ten ship from `@omkarux/vela` with no
+dependencies (Risk Pill, Icon, Text Area and Table are Experimental there).
 
 ## Disambiguations (where AI usually picks wrong)
 
@@ -47,6 +48,11 @@ dependencies.
 - **Contextual Alert vs Status Indicator vs Risk Pill** — an event the user must read →
   **Alert**. An object's ongoing health, usually in a table cell → **Status Indicator**. A
   risk *score* on an object → **Risk Pill**. A removable filter chip → Token Pill, not in this kit.
+- **Table vs Data Grid vs a list** — records read and compared across columns → **Table**.
+  Cells edited or navigated with the arrow keys like a spreadsheet → Data Grid, not in this kit.
+  One record's fields → a description list. Cards below a width → a card list, not in this kit;
+  never restyle a table into cards. Status and risk go **in cells**, as Status Indicator and Risk
+  Pill — never as a colour on the row.
 - **Input vs Text Area** — one line (a name, a hostname, a CIDR) → **Input**. Free text that
   runs past a line (a justification, an incident note) → **Text Area**. Neither is a code
   editor; syntax-highlighted entry is not in this kit.
@@ -64,7 +70,8 @@ dependencies.
 
 Do not invent one silently. State that the kit has no component for the need and pick the
 closest match while flagging the gap. Not yet specced: Dropdown List, Select List, Token Pill,
-Number Stepper, Icon Button, Actions Dropdown, View Switcher. Flag rather than guess.
+Number Stepper, Icon Button, Actions Dropdown, View Switcher, Data Grid, Card List.
+Flag rather than guess.
 
 ## How each component file is structured
 

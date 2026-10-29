@@ -24,6 +24,12 @@
     "bg-selected": {
       "$value": "{primitives.blue-950}"
     },
+    "bg-row-hover": {
+      "$value": "{primitives.grey-900}"
+    },
+    "bg-row-selected": {
+      "$value": "{primitives.blue-950}"
+    },
     "primary-tint": {
       "$value": "{primitives.blue-950}"
     },

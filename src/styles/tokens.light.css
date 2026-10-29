@@ -32,6 +32,7 @@
   --vela-primary-450: #187e91;
   --vela-primary-500: #0a6c7d;
   --vela-primary-600: #075462;
+  --vela-blue-50: #f2f7fd;
   --vela-blue-100: #e6eefb;
   --vela-blue-150: #cfdff7;
   --vela-blue-300: #85aae8;
@@ -82,6 +83,8 @@
   --vela-bg-scrim: var(--vela-black);
   --vela-bg-inactive: var(--vela-grey-100);
   --vela-bg-selected: var(--vela-blue-100);
+  --vela-bg-row-hover: var(--vela-grey-50);      /* table row, hovered — see table.md */
+  --vela-bg-row-selected: var(--vela-blue-50);   /* table row, selected — not bg-selected, which fails AA for the unknown dot */
   --vela-primary-tint: var(--vela-blue-100);
   --vela-primary-active-bg: var(--vela-primary-500);
 

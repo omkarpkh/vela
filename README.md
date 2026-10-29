@@ -5,15 +5,15 @@
 [![Licence: MIT](https://img.shields.io/badge/licence-MIT-blue)](LICENSE)
 
 A token-first design system. The tokens and the component specs are framework-agnostic;
-this repository is a **React implementation** of them. Fourteen components, two themes, zero runtime
+this repository is a **React implementation** of them. Fifteen components, two themes, zero runtime
 dependencies in the core entry — and every design rule in the documentation is tagged with how it is
-enforced: 48 of the 106 by the TypeScript compiler, the rest at runtime, in a real browser, or by review
+enforced: 57 of the 126 by the TypeScript compiler, the rest at runtime, in a real browser, or by review
 (counted by `npm run rules:check`).
 
 **Status:** every component carries a lifecycle label — Approved, Known bugs, Experimental or
 Retired, defined in [`GOVERNANCE.md`](GOVERNANCE.md). Six are **Approved**; Risk Pill, Icon, Text Area,
-Checkbox, Radio Group, Popover, Tooltip and Dialog are **Experimental** (Icon and Text Area until their
-Figma sets are published).
+Checkbox, Radio Group, Popover, Tooltip, Dialog and Table are **Experimental** (Icon and Text Area
+until their Figma sets are published).
 
 ```bash
 npm install @omkarux/vela
@@ -52,14 +52,14 @@ link to each, and the number of automated checks, written by the test runners ra
 
 | | |
 |---|---|
-| **Components** | Button · Toggle · Input · TextArea · ContextualAlert · StatusIndicator · RiskPill · Tabs · Icon, from `@omkarux/vela` (Tabs also from `/headless`) · Checkbox (with Checkbox.Group) · RadioGroup · Popover · Tooltip · Dialog (with `variant="alert"`), from `@omkarux/vela/headless` only |
-| **Tokens** | 275 CSS custom properties, two layers (primitives → semantics) |
+| **Components** | Button · Toggle · Input · TextArea · ContextualAlert · StatusIndicator · RiskPill · Tabs · Icon · Table, from `@omkarux/vela` (Tabs also from `/headless`) · Checkbox (with Checkbox.Group) · RadioGroup · Popover · Tooltip · Dialog (with `variant="alert"`), from `@omkarux/vela/headless` only |
+| **Tokens** | 278 CSS custom properties, two layers (primitives → semantics) |
 | **Themes** | Light + dark. OS preference by default, `data-theme` to override |
 | **Dependencies** | None in the core entry. `react` / `react-dom` are peers (18.3 or 19). The `/headless` entry needs one optional peer, `@base-ui/react` 1.9.x (MIT) |
 | **Icons** | 50 curated [Lucide](https://lucide.dev) 1.63.0 glyphs (ISC; a subset from Feather, MIT), compiled into the core entry at build time — no icon dependency, `lucide` is a devDependency only. The ISC notice ships in [`NOTICE`](NOTICE) |
 | **Format** | ESM, `preserveModules` for tree-shaking, full `.d.ts` |
-| **Tests** | 671 automated checks — 582 unit and contract (64 contrast pairs, each asserted in both themes), 86 browser (68 screenshots at four widths, 16 playground, 2 docs), 3 Flutter — counted by `npm run checks` |
-| **Packed size** | 154.1 kB, 201 files (the fifty glyph modules and their .d.ts are most of the growth), as `npm run verify` measures it (README and CHANGELOG ship in the tarball, so this moves when they do) |
+| **Tests** | 739 automated checks — 647 unit and contract (83 contrast pairs, each asserted in both themes), 89 browser (68 screenshots at four widths, 19 playground, 2 docs), 3 Flutter — counted by `npm run checks` |
+| **Packed size** | 167.1 kB, 205 files (the fifty glyph modules and their .d.ts are most of the growth since 0.12.1), as `npm run verify` measures it (README and CHANGELOG ship in the tarball, so this moves when they do) |
 
 ## The three ideas worth stealing
 
@@ -154,7 +154,7 @@ document.documentElement.removeAttribute('data-theme')        // follow the OS
 
 ```bash
 npm run dev        # demo showcase at localhost:5174
-npm test           # 582 unit and contract tests, of 671 checks in all — the numbers are generated into demo/checks.json
+npm test           # 647 unit and contract tests, of 739 checks in all — the numbers are generated into demo/checks.json
 npm run checks     # counts every automated check into demo/checks.json (diffed in verify)
 npm run contrast   # WCAG report for both themes
 npm run verify     # tokens:check + icons:check + rules:check + typecheck + tests + checks:check + build + pack-and-consume gate
@@ -228,11 +228,12 @@ or a new rule arrives untagged.
 
 ## Scope
 
-Fourteen components, chosen to exercise every foundation and all three taxonomies (Severity, Risk,
+Fifteen components, chosen to exercise every foundation and all three taxonomies (Severity, Risk,
 Status), the curated Icon set they draw from, the first form controls born on the headless entry
-(Checkbox, Radio Group) and the three overlays (Popover, Tooltip, Dialog). Not yet specced: Dropdown
-List, Select List, Token Pill, Number Stepper, Icon Button, Actions Dropdown, View Switcher. The
-guidelines name these explicitly so an agent flags the gap instead of inventing one.
+(Checkbox, Radio Group), the three overlays (Popover, Tooltip, Dialog) and the Table primitives a
+console's data views are built on. Not yet specced: Dropdown List, Select List, Token Pill, Number
+Stepper, Icon Button, Actions Dropdown, View Switcher, Data Grid, Card List. The guidelines name
+these explicitly so an agent flags the gap instead of inventing one.
 
 ## Project files
 

@@ -344,6 +344,24 @@
         }
       }
     },
+    "blue-50": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.9490196078431372,
+          0.9686274509803922,
+          0.9921568627450981
+        ],
+        "hex": "#f2f7fd"
+      },
+      "$description": "Primitive. Do not bind directly — bind a semantic token.",
+      "$extensions": {
+        "com.omkarux.vela": {
+          "figma": "blue/50"
+        }
+      }
+    },
     "blue-100": {
       "$type": "color",
       "$value": {
@@ -1064,6 +1082,26 @@
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "surface/selected"
+        }
+      }
+    },
+    "bg-row-hover": {
+      "$type": "color",
+      "$value": "{primitives.grey-50}",
+      "$description": "A hovered table row (pointer only). Lighter than bg-hover in light mode and darker than it in dark, so every status dot, de-emphasized text and links still pass on it: grey-100 / grey-850 drop de-emphasized text under 4.5:1 and, in dark, links to 4.35:1.",
+      "$extensions": {
+        "com.omkarux.vela": {
+          "figma": "surface/row-hover"
+        }
+      }
+    },
+    "bg-row-selected": {
+      "$type": "color",
+      "$value": "{primitives.blue-50}",
+      "$description": "A selected table row. Not bg-selected: on blue-100 the unknown status dot is 2.97:1 and de-emphasized text 4.20:1, both under AA. Never the only signal: the row also carries aria-selected and a border-active marker.",
+      "$extensions": {
+        "com.omkarux.vela": {
+          "figma": "surface/row-selected"
         }
       }
     },
