@@ -13,7 +13,7 @@ describe('component CSS binds tokens', () => {
     expect(report.map((r) => r.file).sort()).toEqual([
       ...['Button', 'ContextualAlert', 'Input', 'RiskPill', 'StatusIndicator', 'Tabs', 'Toggle'].map((c) => `src/components/${c}/${c}.css`),
       // The headless-born components keep their stylesheets beside their implementation.
-      ...['Checkbox', 'Dialog', 'Popover', 'RadioGroup', 'Tooltip'].map((c) => `src/headless/${c}/${c}.css`),
+      ...['Checkbox', 'Dialog', 'Popover', 'RadioGroup', 'Toast', 'Tooltip'].map((c) => `src/headless/${c}/${c}.css`),
     ])
   })
 

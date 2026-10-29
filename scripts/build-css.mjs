@@ -54,6 +54,7 @@ const COMPONENTS = [
   'src/headless/Popover/Popover.css',
   'src/headless/Tooltip/Tooltip.css',
   'src/headless/Dialog/Dialog.css',
+  'src/headless/Toast/Toast.css',
 ]
 
 const banner = `/*! @omkarux/vela — design tokens + component styles. MIT. */\n`

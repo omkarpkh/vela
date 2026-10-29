@@ -58,12 +58,15 @@ function remove() {
 | | `label` | `string` | `"Notifications"` | The region's accessible name — the landmark F6 lands on. |
 | | `dismissLabel` | `string` | `"Dismiss"` | The accessible name of every toast's close button. |
 | | `children` | `ReactNode` | — | **Required.** The app. |
-| `useToast()` | returns | `{ add, dismiss }` | — | **Inside a `ToastProvider` only**; outside one it throws a named error. |
-| `add(options)` | `title` | `string` | — | **Required.** What happened, past tense: "Policy saved". The toast's accessible name. |
+| `useToast()` | `add` | `(options: ToastOptions) => string` | — | Raises a toast with the options below and returns its id. **Inside a `ToastProvider` only**; outside one `useToast()` throws a named error. |
+| | `dismiss` | `(id: string) => void` | — | Dismisses the toast `add` returned that id for. |
+| `Toast` | `title` | `string` | — | **Required.** What happened, past tense: "Policy saved". The toast's accessible name. |
 | | `description` | `string` | — | One sentence of detail, wired as the toast's description. |
-| | `severity` | `"success" \| "info" \| "warning"` | `"info"` | **These three only** — a subset of the Severity taxonomy. Returns the toast's id. |
+| | `severity` | `"success" \| "info" \| "warning"` | `"info"` | **These three only** — a subset of the Severity taxonomy. |
 | | `action` | `{ label: string; onClick: () => void }` | — | **At most one.** A shortcut — "View", "Undo" — to something that also exists on the page. Activating it runs `onClick` and dismisses the toast. |
-| `dismiss(id)` | `id` | `string` | — | Dismisses the toast `add` returned that id for. |
+
+`Toast` is not a component you render: its rows are `ToastOptions`, what `add` takes. There is no
+`<Toast>` element — a toast exists only as something the app raised.
 
 There is no `timeout`, no `duration`, no `priority` and no `id` option: how long a toast stays and
 how it is announced follow from its severity and its action (below), not from the caller.
