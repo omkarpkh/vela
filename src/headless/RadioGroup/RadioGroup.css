@@ -1,0 +1,65 @@
+/* ----------------------------------------------------------- Radio Group -- */
+/* guidelines/components/radio-group.md. Keys on [aria-checked], [aria-invalid] and :disabled,
+   never on Base UI's data-* attributes. The circle is border-radius 50% — a circle's own
+   geometry — so --vela-radius-full keeps its scope (the status dot and the toggle track). */
+.vela-radio-group { display: flex; flex-direction: column; gap: var(--vela-space-5); }
+.vela-radio-group__label {
+  font-size: var(--vela-text-h6-size); font-weight: var(--vela-font-weight-semibold); line-height: var(--vela-text-h6-line-height);
+  color: var(--vela-text-default);
+}
+.vela-radio-group--disabled .vela-radio-group__label { color: var(--vela-text-inactive); }
+.vela-radio-group__items { display: flex; flex-direction: column; align-items: flex-start; gap: var(--vela-space-10); }
+/* Horizontal wraps rather than scrolls; the arrow keys work in both axes wherever the wrap falls. */
+.vela-radio-group--horizontal .vela-radio-group__items { flex-direction: row; flex-wrap: wrap; gap: var(--vela-space-10) var(--vela-space-20); }
+.vela-radio-group__error { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-error); }
+
+.vela-radio {
+  position: relative; /* contains Base UI's visually hidden <input> */
+  display: inline-flex; align-items: flex-start; gap: var(--vela-space-10);
+  max-width: 100%;
+}
+
+.vela-radio__circle {
+  flex: none;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: var(--vela-control-radio-size); height: var(--vela-control-radio-size);
+  /* The circle sits on the label's first line, centred on it, and never follows a wrap. */
+  margin-top: calc((var(--vela-text-body-line-height) - var(--vela-control-radio-size)) / 2);
+  padding: 0;
+  background: var(--vela-control-bg);
+  border: 1px solid var(--vela-control-border);
+  border-radius: 50%;
+  color: var(--vela-control-check-mark);
+  cursor: pointer;
+  transition: background-color var(--vela-duration-fast) var(--vela-ease-standard),
+              border-color var(--vela-duration-fast) var(--vela-ease-standard);
+}
+.vela-radio__indicator { display: flex; }
+.vela-radio__dot { display: block; width: var(--vela-control-radio-dot); height: var(--vela-control-radio-dot); }
+
+@media (hover: hover) {
+  .vela-radio:hover .vela-radio__circle[aria-checked='false']:not(:disabled) { border-color: var(--vela-control-border-hover); }
+}
+.vela-radio__circle[aria-checked='true'] {
+  background: var(--vela-control-check-bg-checked);
+  border-color: var(--vela-control-check-bg-checked);
+}
+.vela-radio-group__items[aria-invalid='true'] .vela-radio__circle { border-color: var(--vela-control-border-error); }
+.vela-radio__circle:disabled,
+.vela-radio-group__items[aria-invalid='true'] .vela-radio__circle:disabled {
+  background: var(--vela-control-bg-disabled);
+  border-color: var(--vela-border-inactive);
+  color: var(--vela-icon-disabled);
+  cursor: not-allowed;
+  transition: none;
+}
+
+.vela-radio__text { display: flex; flex-direction: column; min-width: 0; }
+.vela-radio__label {
+  font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height);
+  color: var(--vela-text-default);
+  cursor: pointer;
+  overflow-wrap: break-word;
+}
+.vela-radio__description { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-de-emphasized); }
+.vela-radio--disabled .vela-radio__label { color: var(--vela-text-inactive); cursor: not-allowed; }

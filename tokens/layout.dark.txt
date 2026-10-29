@@ -75,6 +75,8 @@
   @toggle-off-bg
   @toggle-on-bg
   @toggle-knob
+  @control-check-bg-checked
+  @control-check-mark
 
   /* ---- Severity (6) ---- */
   @bg-severity-success

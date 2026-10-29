@@ -1,0 +1,71 @@
+/* -------------------------------------------------------------- Checkbox -- */
+/* guidelines/components/checkbox.md. Keys on the ARIA state the markup carries ([aria-checked],
+   [aria-invalid]) and the native :disabled, never on Base UI's data-* attributes. */
+.vela-checkbox {
+  position: relative; /* contains Base UI's visually hidden <input> */
+  display: inline-flex; align-items: flex-start; gap: var(--vela-space-10);
+  max-width: 100%;
+}
+
+.vela-checkbox__box {
+  flex: none;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: var(--vela-control-checkbox-size); height: var(--vela-control-checkbox-size);
+  /* The box sits on the label's first line, centred on it, and never follows a wrap. */
+  margin-top: calc((var(--vela-text-body-line-height) - var(--vela-control-checkbox-size)) / 2);
+  padding: 0;
+  background: var(--vela-control-bg);
+  border: 1px solid var(--vela-control-border);
+  border-radius: var(--vela-radius-3);
+  color: var(--vela-control-check-mark);
+  cursor: pointer;
+  transition: background-color var(--vela-duration-fast) var(--vela-ease-standard),
+              border-color var(--vela-duration-fast) var(--vela-ease-standard);
+}
+.vela-checkbox--tiny .vela-checkbox__box {
+  width: var(--vela-control-checkbox-size-tiny); height: var(--vela-control-checkbox-size-tiny);
+  margin-top: calc((var(--vela-text-meta-line-height) - var(--vela-control-checkbox-size-tiny)) / 2);
+}
+
+.vela-checkbox__indicator { display: flex; width: 100%; height: 100%; }
+.vela-checkbox__glyph { display: block; width: 100%; height: 100%; }
+
+@media (hover: hover) {
+  .vela-checkbox:hover .vela-checkbox__box[aria-checked='false']:not(:disabled):not([aria-invalid='true']) { border-color: var(--vela-control-border-hover); }
+}
+.vela-checkbox__box[aria-checked='true'],
+.vela-checkbox__box[aria-checked='mixed'] {
+  background: var(--vela-control-check-bg-checked);
+  border-color: var(--vela-control-check-bg-checked);
+}
+.vela-checkbox__box[aria-invalid='true'] { border-color: var(--vela-control-border-error); }
+.vela-checkbox__box:disabled {
+  background: var(--vela-control-bg-disabled);
+  border-color: var(--vela-border-inactive);
+  color: var(--vela-icon-disabled);
+  cursor: not-allowed;
+  transition: none;
+}
+
+.vela-checkbox__text { display: flex; flex-direction: column; min-width: 0; }
+.vela-checkbox__label {
+  font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height);
+  color: var(--vela-text-default);
+  cursor: pointer;
+  overflow-wrap: break-word;
+}
+.vela-checkbox--tiny .vela-checkbox__label { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); }
+.vela-checkbox__description { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-de-emphasized); }
+.vela-checkbox__error { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-error); }
+.vela-checkbox--disabled .vela-checkbox__label { color: var(--vela-text-inactive); cursor: not-allowed; }
+
+/* -------------------------------------------------------- Checkbox.Group -- */
+.vela-checkbox-group { display: flex; flex-direction: column; gap: var(--vela-space-5); }
+.vela-checkbox-group__label {
+  font-size: var(--vela-text-h6-size); font-weight: var(--vela-font-weight-semibold); line-height: var(--vela-text-h6-line-height);
+  color: var(--vela-text-default);
+}
+.vela-checkbox-group--disabled .vela-checkbox-group__label { color: var(--vela-text-inactive); }
+.vela-checkbox-group__items { display: flex; flex-direction: column; align-items: flex-start; gap: var(--vela-space-10); }
+/* Horizontal wraps rather than scrolls: a row that scrolls hides options, a row that wraps shows them. */
+.vela-checkbox-group--horizontal .vela-checkbox-group__items { flex-direction: row; flex-wrap: wrap; gap: var(--vela-space-10) var(--vela-space-20); }
