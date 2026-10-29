@@ -6,6 +6,18 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Unreleased]
 
 ### Added
+- **A second entry point, `@omkarux/vela/headless` — Experimental** (`GOVERNANCE.md`: may change
+  in a minor without a deprecation window). Its first component is Tabs on Base UI 1.9
+  (`@base-ui/react`, MIT), listed as an *optional* peer dependency; `@omkarux/vela` is unchanged
+  and `npm run verify` now asserts, against the built module graph, that the core entry imports
+  nothing but React. Same spec, same `Tabs.css`, same unit tests (`Tabs.test.tsx` runs every
+  case against both implementations) and the same compiler fixtures, which the pack gate now
+  also runs against the headless export. Where Base UI's defaults differ from the spec — manual
+  activation, focusable-while-disabled tabs, `aria-controls` only on the active tab — the
+  headless Tabs maps to the spec and `tabs.md` records each difference under a new
+  "Implementations" section. The playground's Tabs page gets an *Implementation* control
+  (core | headless) and every component page an import line with "Dependencies: …", read from a
+  `**Dependencies:**` line in the spec (default `none`).
 - **The docs site carries the project record.** New routes: `#/status` (every component's
   lifecycle label, read from the `**Status:**` line in its spec, so site and spec cannot
   disagree), `#/changelog`, `#/roadmap`, `#/contributing` and `#/accessibility`, each rendered

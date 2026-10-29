@@ -7,7 +7,9 @@ npm install @omkarux/vela
 ```
 
 `react` and `react-dom` (v18.3 or v19) are peer dependencies — the consuming app supplies
-them. Vela has **zero runtime dependencies** of its own.
+them. The core entry has **zero runtime dependencies** of its own. The `@omkarux/vela/headless`
+entry (Experimental; Tabs today) needs one optional peer, `@base-ui/react` 1.9.x — install it only
+if you import from `/headless`.
 
 ## Import the stylesheet once, at the app root
 

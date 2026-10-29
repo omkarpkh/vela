@@ -23,6 +23,40 @@ test('navigation reaches every component and each page lists its tokens', async 
   }
 })
 
+// Two entry points, one playground (decisions/002): the Tabs page renders the same props through
+// the core or the headless (Base UI) implementation, and the Code tab's import line and
+// "Dependencies" line follow the choice. Both implementations must behave the same on the stage.
+test('the Tabs page switches implementation, and the import and Dependencies lines follow', async ({ page }) => {
+  await page.goto('/#/components/tabs')
+  await expect(page.getByRole('heading', { level: 1, name: 'Tabs' })).toBeVisible()
+  const contract = page.getByRole('region', { name: 'Contract' })
+  await expect(contract.locator('.pg-install')).toContainText("import { Tabs } from '@omkarux/vela'")
+  await expect(contract.locator('.pg-dependencies')).toHaveText('Dependencies: none')
+
+  await page.getByRole('group', { name: 'Implementation' }).getByRole('button', { name: 'headless' }).click()
+  await expect(contract.locator('.pg-install')).toContainText("import { Tabs } from '@omkarux/vela/headless'")
+  await expect(contract.locator('.pg-dependencies')).toHaveText('Dependencies: @base-ui/react (optional peer, via /headless)')
+
+  // The light frame's tabs, now rendered by Base UI, still honour the spec: arrow keys select,
+  // the disabled tab is skipped, only the active panel is mounted, the stylesheet applies.
+  const frame = page.locator('.pg-frame[data-theme="light"] .pg-frame-body')
+  const alerts = frame.getByRole('tab', { name: /^Alerts/ })
+  await expect(alerts).toHaveAttribute('aria-selected', 'true')
+  await expect(frame.getByRole('tab', { name: 'Audit' })).toBeDisabled()
+  await alerts.focus()
+  await page.keyboard.press('ArrowRight')
+  await expect(frame.getByRole('tab', { name: /^Assets/ })).toHaveAttribute('aria-selected', 'true')
+  await expect(frame.getByRole('tabpanel')).toHaveText('Only the active panel is mounted.')
+  await page.keyboard.press('ArrowRight')   // Audit is disabled: wraps to Alerts
+  await expect(alerts).toBeFocused()
+  await expect(alerts).toHaveAttribute('aria-selected', 'true')
+  // Tabs.css keys on `[aria-selected='true']` and `:disabled`; Base UI's markup must hit both.
+  const underline = (name: RegExp | string) => frame.getByRole('tab', { name }).evaluate((el) => getComputedStyle(el).borderBottomColor)
+  expect(await underline(/^Alerts/)).not.toBe('rgba(0, 0, 0, 0)')
+  expect(await underline(/^Assets/)).toBe('rgba(0, 0, 0, 0)')
+  await expect(frame.getByRole('tab', { name: 'Audit' })).toHaveCSS('cursor', 'not-allowed')
+})
+
 test('the nav filter narrows the list and the menu button collapses it', async ({ page }) => {
   await page.goto('/#/foundations/motion')
   await expect(page.getByRole('heading', { level: 1, name: 'Motion' })).toBeVisible()
