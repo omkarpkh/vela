@@ -55,7 +55,9 @@ const scopesFor = (group, figmaName, cssName, type) => {
     return SCOPES[head] ?? SCOPES.bg
   }
   if (group === 'sizing') {
-    if (head === 'icon') return SCOPES.iconSize
+    // icon/12…24 and icon/size* are glyph boxes (width/height); icon/stroke is the glyph's stroke
+    // weight and belongs in the stroke-weight picker with focus/ring-width and stroke/2.
+    if (head === 'icon') return last === 'stroke' ? SCOPES.stroke : SCOPES.iconSize
     if (head === 'focus') return SCOPES.focusSize
     return SCOPES[head] ?? ['WIDTH_HEIGHT']
   }

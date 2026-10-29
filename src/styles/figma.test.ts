@@ -101,6 +101,10 @@ describe('Figma sync: variable scopes match the property each token is for', () 
     ['blur-materialize', ['EFFECT_FLOAT']],
     ['toggle-track-width', ['WIDTH_HEIGHT']],
     ['status-dot', ['WIDTH_HEIGHT']],
+    // The Icon component's tokens (29 Oct 2026): the three boxes go in the width/height picker like
+    // icon/12…24; the glyph stroke goes in the stroke-weight picker, not width/height.
+    ['icon-size', ['WIDTH_HEIGHT']],
+    ['icon-stroke', ['STROKE_FLOAT']],
     ['space-10', ['WIDTH_HEIGHT', 'GAP']],
     ['radius-4', ['CORNER_RADIUS']],
   ])('%s → %j', (css, scopes) => {
