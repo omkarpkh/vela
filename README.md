@@ -47,7 +47,7 @@ link to each, and the number of automated checks, written by the test runners ra
 | **Themes** | Light + dark. OS preference by default, `data-theme` to override |
 | **Dependencies** | None. `react` / `react-dom` are peers (18.3 or 19) |
 | **Format** | ESM, `preserveModules` for tree-shaking, full `.d.ts` |
-| **Tests** | 356 automated checks — 276 unit and contract (48 contrast pairs, each asserted in both themes), 77 browser (68 screenshots at four widths, 7 playground, 2 docs), 3 Flutter — counted by `npm run checks` |
+| **Tests** | 361 automated checks — 281 unit and contract (48 contrast pairs, each asserted in both themes), 77 browser (68 screenshots at four widths, 7 playground, 2 docs), 3 Flutter — counted by `npm run checks` |
 | **Packed size** | 72.3 kB, 53 files, as `npm run verify` measures it (README and CHANGELOG ship in the tarball, so this moves when they do) |
 
 ## The three ideas worth stealing
@@ -143,7 +143,7 @@ document.documentElement.removeAttribute('data-theme')        // follow the OS
 
 ```bash
 npm run dev        # demo showcase at localhost:5174
-npm test           # 276 unit and contract tests, of 356 checks in all — the numbers are generated into demo/checks.json
+npm test           # 281 unit and contract tests, of 361 checks in all — the numbers are generated into demo/checks.json
 npm run checks     # counts every automated check into demo/checks.json (diffed in verify)
 npm run contrast   # WCAG report for both themes
 npm run verify     # tokens:check + rules:check + typecheck + tests + checks:check + build + pack-and-consume gate

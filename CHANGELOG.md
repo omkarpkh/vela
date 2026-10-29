@@ -6,6 +6,14 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Unreleased]
 
 ### Added
+- **`guidelines/figma-map.json`: what to write for each Figma set, on every plan.** Compiled from
+  the specs by `npm run figma:map` (the description sync with `--map`): each set's node id and
+  link, the import, the export to write (`Tabs.Trigger` for the Tab set), every Figma property's
+  prop, and the spec's example. It does the job Code Connect does on an Organization plan;
+  Vela's library is on Professional, where Code Connect is not available. `AGENTS.md` and
+  `llms.txt` tell an agent to use it instead of the markup Figma generates. A test fails when it
+  is stale. Measured against the Figma thread's "before" on Button node 7:7: without it, the
+  design context gives a `<div>` lookalike with no import and raw fallback values.
 - **The docs site carries the project record.** New routes: `#/status` (every component's
   lifecycle label, read from the `**Status:**` line in its spec, so site and spec cannot
   disagree), `#/changelog`, `#/roadmap`, `#/contributing` and `#/accessibility`, each rendered

@@ -22,6 +22,10 @@ rules, what CI asserts for accessibility, every anti-pattern, and what is not in
 `overview.md`, which maps a user need to a component and lists the choices agents most often get
 wrong. Then the per-component file before generating any markup.
 
+Working from the Figma library? `figma-map.json` (this folder) maps each component set to the
+export and props to write for it. When a design node is an instance of a Vela set, write that
+export; never reproduce the markup Figma's design context generates for it.
+
 ## Hard rules (apply everywhere)
 - Bind SEMANTIC tokens (`var(--vela-text-default)`). Never a primitive (`--vela-grey-700`), never raw hex.
 - Numeric tokens already carry their unit. Use `var(--vela-space-10)`, never `calc(var(--vela-space-10) * 1px)`.
