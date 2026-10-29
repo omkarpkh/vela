@@ -56,7 +56,7 @@ link to each, and the number of automated checks, written by the test runners ra
 | **Dependencies** | None in the core entry. `react` / `react-dom` are peers (18.3 or 19). The `/headless` entry needs one optional peer, `@base-ui/react` 1.9.x (MIT) |
 | **Format** | ESM, `preserveModules` for tree-shaking, full `.d.ts` |
 | **Tests** | 525 automated checks — 439 unit and contract (71 contrast pairs, each asserted in both themes), 83 browser (68 screenshots at four widths, 13 playground, 2 docs), 3 Flutter — counted by `npm run checks` |
-| **Packed size** | 101.1 kB, 72 files, as `npm run verify` measures it (README and CHANGELOG ship in the tarball, so this moves when they do) |
+| **Packed size** | 113.3 kB, 76 files, as `npm run verify` measures it (README and CHANGELOG ship in the tarball, so this moves when they do) |
 
 ## The three ideas worth stealing
 
