@@ -45,6 +45,7 @@ export const SETS = {
   'status-indicator.md': { set: 'Status Indicator', src: 'StatusIndicator', state: 'published', node: '8:32', export: 'StatusIndicator' },
   'risk-pill.md': { set: 'Risk Pill', src: 'RiskPill', state: 'built', node: null, export: 'RiskPill' },
   'tabs.md': { set: 'Tab', src: 'Tabs', state: 'published', node: '11:20', export: 'Tabs.Trigger' },
+  'icon.md': { set: 'Icon', src: 'Icon', state: 'none', node: null, export: 'Icon' },
   'checkbox.md': { set: 'Checkbox', src: 'Checkbox', entry: 'headless', state: 'none', node: null, export: 'Checkbox' },
   'radio-group.md': { set: 'Radio', src: 'RadioGroup', entry: 'headless', state: 'none', node: null, export: 'RadioGroup.Radio' },
 }

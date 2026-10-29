@@ -4,8 +4,9 @@ Copyright (c) 2026 Omkar Khadamkar
 Vela's code, tokens and documentation are licensed under the MIT License (see LICENSE).
 The Figma library is additionally licensed as LICENSE-DESIGN.md states.
 
-This file lists third-party material Vela uses or names. Licence texts are not copied here;
-each entry links to the canonical text.
+This file lists third-party material Vela uses or names. Licence texts are not copied here
+unless the licence asks for its notice to travel with every copy; each entry links to the
+canonical text. This file ships in the npm tarball (package.json "files").
 
 ------------------------------------------------------------------------------------------
 
@@ -30,21 +31,52 @@ Contributor Covenant, version 2.1
   Source: https://www.contributor-covenant.org/version/2/1/code_of_conduct/
   Use: CODE_OF_CONDUCT.md is the Covenant text with the contact address filled in.
 
+Lucide (the `lucide` npm package, version 1.63.0)
+  Copyright (c) 2026 Lucide Icons and Contributors
+  Licence: ISC — https://github.com/lucide-icons/lucide/blob/main/LICENSE
+  Source: https://github.com/lucide-icons/lucide (packages/lucide); https://lucide.dev
+  Use: the Icon component's glyphs. scripts/build-icons.mjs reads the glyph geometry of the names
+  in scripts/icons.list.json from node_modules/lucide/dist/esm/icons/*.mjs at build time and
+  writes src/icons/generated/*.tsx — zero-dependency React components that ship in dist/. Lucide
+  is a devDependency only: nothing from it is imported at runtime, and `lucide-react` is not used.
+  The Figma library's Icon page holds the same glyphs (LICENSE-DESIGN.md). Each generated file
+  names this version and this licence in its header. The ISC licence asks that its copyright and
+  permission notice appear in all copies, so the notice is reproduced here in full:
+
+    ISC License
+
+    Copyright (c) 2026 Lucide Icons and Contributors
+
+    Permission to use, copy, modify, and/or distribute this software for any purpose with or
+    without fee is hereby granted, provided that the above copyright notice and this permission
+    notice appear in all copies.
+
+    THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS
+    SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL
+    THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY
+    DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
+    CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
+    OR PERFORMANCE OF THIS SOFTWARE.
+
+  Lucide's LICENSE further states that a set of its icons is derived from the Feather project
+  and carries the MIT License, Copyright (c) 2013-present Cole Bemis. Of Vela's curated set, these
+  are the Feather-derived glyphs (Lucide's current names; the generator resolves Feather's old
+  names through Lucide's alias table and a test holds this list to what it finds):
+  arrow-left, arrow-right, arrow-up-right, calendar, check, chevron-down, chevron-left,
+  chevron-right, chevron-up, circle-alert, circle-x, clock, download, ellipsis, external-link,
+  info, lock, minus, plus, search, terminal, trash, triangle-alert, upload, x.
+  The MIT text is in LICENSE; the copyright line for these glyphs is the one above.
+
 ------------------------------------------------------------------------------------------
 
 PLANNED — NOT YET INCLUDED
 
 Named in decisions/002-agent-ready-direction. Base UI landed on 28 Oct 2026 as an optional peer of
-the /headless entry only; the core entry and the tarball carry no dependency. Lucide is not yet
-included.
+the /headless entry only; the core entry and the tarball carry no dependency. Lucide landed on
+29 Oct 2026 as a build-time devDependency (above; decisions/003-icons-lucide-curated).
 
 Base UI (@base-ui/react, 1.9.x)
   Licence: MIT — https://github.com/mui/base-ui/blob/master/LICENSE
   Use: behaviour and accessibility primitives under Vela's own CSS, as an optional peer
   dependency of the @omkarux/vela/headless entry point (Tabs today). The default entry point stays
   zero-dependency; Base UI is not bundled and not in the tarball.
-
-Lucide
-  Licence: ISC, with portions of Feather Icons under MIT — https://github.com/lucide-icons/lucide/blob/main/LICENSE
-  Planned use: the icon set. Vela currently ships a handful of inline SVG glyphs of its own in
-  src/lib/icons.tsx.

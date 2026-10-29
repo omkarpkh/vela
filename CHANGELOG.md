@@ -6,6 +6,30 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Unreleased]
 
 ### Added
+- **Icon — Experimental** (`decisions/003-icons-lucide-curated`). Fifty curated
+  [Lucide](https://lucide.dev) 1.63.0 glyphs (ISC; 25 of them Feather-derived, MIT) compiled at
+  build time into zero-dependency React in the core entry: `lucide` is a pinned devDependency,
+  nothing from it is imported at runtime, and `dependencies` stays `{}` — `verify-pack.mjs`
+  still walks the core module graph and finds only React. `<Icon name size tone label>`: `name`
+  is the closed `IconName` union (exported with `ICON_NAMES`), `size` regular | small | large on
+  the new `--vela-icon-size*` tokens (16, 12, 20), `tone` default | muted | inherit on
+  `--vela-icon-strong` / `--vela-icon-default` / `currentColor`, and the stroke on
+  `--vela-icon-stroke` (2 in the 24 grid: 1px at small, 1.33px at regular, 1.67px at large).
+  With `label` it is `role="img"`, without one `aria-hidden`; never focusable, never
+  interactive. Twelve rules, four of them compiler with ten fixtures (an invented name, a Lucide
+  glyph outside the set, an alias such as `trash-2`, a missing name, `size="medium"`,
+  `size={16}`, `tone="critical"`, `tone="high"`, `onClick`, `tabIndex`). Three new `PAIRS`.
+  Core JS grows from 3,675 B to 7,753 B gzip (10 → 63 modules); the glyphs are reached only
+  through `Icon`.
+- **The icon build.** `scripts/icons.list.json` is the set; `npm run icons:build` writes
+  `src/icons/generated/*.tsx`, `src/icons/names.ts` and the Figma builder
+  `scripts/figma/components/icon.figma.js` (one `Glyph` variant per name, box on `icon/size`,
+  stroke on `icon/strong`); `npm run icons:check` fails on any difference from what is committed
+  and runs in `verify`. It refuses a Lucide alias (`filter`, `trash-2`, `history` are `funnel`,
+  `trash`, `rotate-ccw-clock` in Lucide 1.x), an unknown name, or an installed Lucide other than
+  the reviewed version. A test holds `NOTICE`'s Feather list to Lucide's LICENSE. The mock
+  Plugin API models `createNodeFromSvg` and `flatten`; the builder has not been run in the
+  library yet. A playground page shows every glyph at the chosen size and tone.
 - **The first three agentic specs are public, as proposals.** `guidelines/proposals/` holds the
   pressure-tested specs for the Verdict Card (29 rules, 23 with proofs), the Action Impact Card
   (30, 22) and the Autonomy Ladder (28, 22), with four new closed taxonomies: Verdict, Confidence
@@ -186,7 +210,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   the builder is ready" though its set exists in the file. Each entry of the set table now has a
   `state` from a closed set — `published` (the six live sets, with their node ids), `built` (in the
   file, not published: Risk Pill, node null until the rebuilt set's id is known) or `none` (no set
-  yet: Checkbox, Radio Group) — and the page shows "Built, not published" for Risk Pill;
+  yet: Checkbox, Radio Group, Icon) — and the page shows "Built, not published" for Risk Pill;
   `figma-map.json` carries `state` and `node`. "(branch)" was added to every spec first named in
   the Unreleased entry; it now marks only a spec that is not on `main` (checked against `main`,
   then `origin/main`). The Changelog page showed 0.1.0's lead-ins as bare labels ("Components:")

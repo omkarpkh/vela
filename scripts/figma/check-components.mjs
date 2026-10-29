@@ -72,7 +72,7 @@ async function dump(n, depth) {
   if ('width' in n) { const w = await bv(n, 'width'), h = await bv(n, 'height'); o.wh = [Math.round(n.width * 10) / 10, Math.round(n.height * 10) / 10, w, h]; }
   if ('fills' in n && n.fills !== figma.mixed) o.fill = await paintName(n.fills);${colours ? `
   if ('fills' in n && Array.isArray(n.fills) && n.fills.length) o.rgb = n.fills.map(p => p.type === 'SOLID' && p.color ? '#' + ['r', 'g', 'b'].map(k => Math.round(p.color[k] * 255).toString(16).padStart(2, '0')).join('') : null);` : ''}
-  if ('strokes' in n) { o.stroke = await paintName(n.strokes); if (n.strokes.length) { o.sw = n.strokeWeight === figma.mixed ? 'mixed' : n.strokeWeight; o.swx = [n.strokeTopWeight, n.strokeRightWeight, n.strokeBottomWeight, n.strokeLeftWeight]; o.sa = n.strokeAlign; } }
+  if ('strokes' in n) { o.stroke = await paintName(n.strokes); if (n.strokes.length) { o.sw = n.strokeWeight === figma.mixed ? 'mixed' : Math.round(n.strokeWeight * 100) / 100; o.swx = [n.strokeTopWeight, n.strokeRightWeight, n.strokeBottomWeight, n.strokeLeftWeight]; o.sa = n.strokeAlign; } }
   if ('topLeftRadius' in n) o.rad = [n.topLeftRadius, await bv(n, 'topLeftRadius')];
   if (n.type === 'TEXT') {
     o.style = await sn(n.textStyleId === figma.mixed ? null : n.textStyleId);

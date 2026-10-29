@@ -235,12 +235,17 @@ export function registryOrder() {
 
 const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
-/** The oldest release whose entry names the component; "Unreleased" when only the Unreleased entry does; "—" when none. */
+/**
+ * The oldest release whose entry names the component; "Unreleased" when only the Unreleased entry
+ * does; "—" when none. Code spans are not prose naming a component: 0.12.1 mentions an `Icon` box
+ * (a Figma layer inside Button) long before the Icon component exists, so they are skipped.
+ */
 export function sinceOf(name, entries = changelog()) {
   const needle = new RegExp(`\\b(${escapeRe(name)}|${escapeRe(name.replace(/\s+/g, ''))})\\b`)
-  const oldest = entries.filter((e) => e.released).reverse().find((e) => needle.test(e.text))
+  const names = (e) => needle.test(e.text.replace(/`[^`\n]*`/g, ''))
+  const oldest = entries.filter((e) => e.released).reverse().find(names)
   if (oldest) return oldest.version
-  return entries.some((e) => !e.released && needle.test(e.text)) ? 'Unreleased' : '—'
+  return entries.some((e) => !e.released && names(e)) ? 'Unreleased' : '—'
 }
 
 /**

@@ -244,6 +244,12 @@
   --vela-icon-20: 20px;
   --vela-icon-24: 24px;
 
+  /* ---- Icon component: its three sizes and the glyph stroke (24-grid units) ---- */
+  --vela-icon-size: 16px;
+  --vela-icon-size-small: 12px;
+  --vela-icon-size-large: 20px;
+  --vela-icon-stroke: 2px;
+
   /* ---- Control heights ---- */
   --vela-control-height-24: 24px;
   --vela-control-height-25: 25px;
