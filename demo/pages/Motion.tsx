@@ -4,6 +4,7 @@ import { Tabs as HeadlessTabs } from '../../src/headless'
 import tokensJson from '../../tokens/vela.tokens.json'
 import { springAt, springLinear } from '../../scripts/spring.mjs'
 import '../playground.css'
+import { TabsPreviewProto } from './motion/TabsPreviewProto'
 
 // The motion pass, part 1, for the owner's review: the Tabs indicator in both implementations and
 // both themes, a Replay that presses the tabs the way a pointer does, a slow-motion switch, and
@@ -189,6 +190,10 @@ export function Motion() {
           ))}
         </div>
       </section>
+
+      {/* Prototype, not shipped: the Tabs hover preview. The slow-motion state is shared, so the
+          frame loop above slows its transitions too. */}
+      <TabsPreviewProto slow={slow} onSlowChange={setSlow} />
 
       <section className="motion-section" aria-labelledby="motion-curves">
         <h2 id="motion-curves" className="vela-h3">The curves</h2>

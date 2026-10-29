@@ -1,0 +1,189 @@
+/* ------------------------------------------------- Tabs hover preview (PROTOTYPE) --
+   Not shipped. Demo-only rules for the Seed and its control, scoped under .tp, on top of the real
+   core Tabs and its unchanged Tabs.css. Semantic tokens only; only transform and opacity animate
+   (tests/e2e/tabs-preview-proto.spec.ts runs scripts/check-css.mjs's lint over this file).
+
+   State machine, per trigger, all driven by the cascade (no timers, no JavaScript animation):
+     hidden    an unselected tab, no pointer on it: the layers are at opacity 0
+     preview   an unselected tab under a resting pointer: the Seed (or the hairline) fades in
+     selected  A: the Seed has grown into a square full-width underline; B and the control: hidden
+   A transition's timing comes from the state it goes TO, so each state names how it is entered.
+   The list's data-vela-moving (a pointer switch, set in the same commit as the new selection) and
+   the root's data-vela-instant (a keyboard or code switch) are the shipped component's own marks. */
+
+.tp {
+  /* PROVISIONAL prototype values, not tokens. The strength would become --vela-opacity-preview
+     (beside --vela-opacity-scrim) if the Seed ships, and the rest delay a delay token beside
+     --vela-delay-tooltip. Not added in this PR: no shipped token moves for a prototype. */
+  --tp-strength: 0.4;
+  --tp-rest: 80ms;           /* the pointer must rest this long before the preview starts */
+  --tp-seed-scale: 0.3333;   /* the Seed is a third of the tab */
+  --tp-hair-strength: 0.4;   /* the control is fixed at ~40% */
+  --tp-bloom-strength: 0.15; /* the bloom, very low */
+}
+.tp[data-strength='55'] { --tp-strength: 0.55; }
+
+.tp-frame { background: var(--vela-bg-global); color: var(--vela-text-default); min-height: 0; justify-content: flex-start; }
+.tp-frame__body { width: 100%; }
+.tp-panel { margin: 0; color: var(--vela-text-de-emphasized); }
+.tp-toolbar { align-items: flex-end; }
+.tp-note { margin: var(--vela-space-10) 0 0; color: var(--vela-text-de-emphasized); }
+
+/* ---- the layers: hidden unless the variant uses them ---- */
+.tp .tp-l { position: absolute; left: 0; right: 0; display: none; opacity: 0; pointer-events: none; }
+.tp[data-variant='seed'] .tp-seed,
+.tp[data-variant='seed'][data-click='grow'] .tp-line,
+.tp[data-variant='seed'][data-bloom='on'] .tp-bloom,
+.tp[data-variant='hairline'] .tp-hair { display: block; }
+
+/* Hidden state, and how a layer leaves the preview: opacity only, at base (pointer out is slower
+   than pointer in is fast to start; foundations/motion.md rule 2). */
+.tp .tp-l { transition: opacity var(--vela-duration-base) var(--vela-ease-standard); }
+
+/* The Seed and the A underline sit exactly where the selected trigger's border sits: the 2px
+   border area below the trigger's padding box (the list clips its lower pixel, as it does the
+   border's). Both are the full trigger width, scaled from the centre, so growth is transform. */
+.tp .tp-seed,
+.tp .tp-line {
+  bottom: calc(-1 * var(--vela-stroke-2)); height: var(--vela-stroke-2);
+  background: var(--vela-border-active);
+  transform-origin: 50% 50%;
+  transform: scaleX(var(--tp-seed-scale));
+}
+/* Soft ends: a static alpha mask, in the Seed's own box, so it scales with the Seed. */
+.tp .tp-seed {
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 30%, #000 70%, transparent); /* vela-allow: mask alpha only, not a colour */
+  mask-image: linear-gradient(90deg, transparent, #000 30%, #000 70%, transparent); /* vela-allow: mask alpha only, not a colour */
+}
+
+/* Dawn bloom: rises from the Seed into the trigger's bottom padding (--vela-space-10), and is
+   --vela-space-5 tall, so it always ends below the label's text box and never sits behind a glyph. */
+.tp .tp-bloom {
+  bottom: 0; height: var(--vela-space-5);
+  background: linear-gradient(to top, var(--vela-border-active), transparent);
+  transform-origin: 50% 50%;
+  transform: scaleX(var(--tp-seed-scale));
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 30%, #000 70%, transparent); /* vela-allow: mask alpha only, not a colour */
+  mask-image: linear-gradient(90deg, transparent, #000 30%, #000 70%, transparent); /* vela-allow: mask alpha only, not a colour */
+}
+
+/* The control: a full-width 1px hairline, feathered at the ends, on the visible pixel of the
+   underline's area. */
+.tp .tp-hair {
+  bottom: -1px; height: 1px; /* vela-allow: a hairline; there is no 1px stroke token */
+  background: var(--vela-border-active);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 15%, #000 85%, transparent); /* vela-allow: mask alpha only, not a colour */
+  mask-image: linear-gradient(90deg, transparent, #000 15%, #000 85%, transparent); /* vela-allow: mask alpha only, not a colour */
+}
+
+/* ---- preview: hover only where hover exists, and only after the pointer rests ----
+   The delay is on the way in only: a pointer that leaves within --tp-rest cancels the transition
+   before it has moved anything, so a sweep across the row shows nothing. Never the selected tab,
+   never a disabled one, never from focus. */
+@media (hover: hover) and (pointer: fine) {
+  .tp:not([data-between='glide']) .vela-tabs__trigger:hover:not(:disabled):not([aria-selected='true']) :is(.tp-seed, .tp-bloom, .tp-hair) {
+    transition: opacity var(--vela-duration-travel) var(--vela-ease-out) var(--tp-rest);
+  }
+  .tp:not([data-between='glide']) .vela-tabs__trigger:hover:not(:disabled):not([aria-selected='true']) .tp-seed { opacity: var(--tp-strength); }
+  .tp:not([data-between='glide']) .vela-tabs__trigger:hover:not(:disabled):not([aria-selected='true']) .tp-bloom { opacity: var(--tp-bloom-strength); }
+  .tp .vela-tabs__trigger:hover:not(:disabled):not([aria-selected='true']) .tp-hair { opacity: var(--tp-hair-strength); }
+}
+
+/* ---- selected, B and the control: the shipped travel; the marker fades over its first half ---- */
+.tp .vela-tabs__trigger[aria-selected='true'] .tp-l {
+  opacity: 0;
+  transition: opacity calc(var(--vela-duration-travel) / 2) var(--vela-ease-standard);
+}
+
+/* ---- selected, A: grow in place ----
+   The trigger's own border and the shipped travelling bar are set aside (the bar keeps running,
+   invisibly, so the shipped data-vela-moving still ends when its flight would have); the underline
+   is .tp-line. On a pointer press the Seed grows from its centre to the full width and full
+   strength on the spring, and the square-ended line grows with it while it fades in on the
+   standard curve (slow at first), so the soft ends become square as the growth completes. (A first
+   cut faded the line in over the second half only; the Seed's feathered ends, scaled up with it,
+   then hid the growth and it read as a short line that snapped full at the end.) A press before the Seed appeared grows from the
+   centre anyway: the scale is a third whether or not the Seed was visible. */
+.tp[data-variant='seed'][data-click='grow'] .vela-tabs__trigger[aria-selected='true'] { border-bottom-color: transparent; }
+.tp[data-variant='seed'][data-click='grow'] .vela-tabs__indicator { visibility: hidden; }
+.tp[data-variant='seed'][data-click='grow'] .vela-tabs__trigger[aria-selected='true'] .tp-seed {
+  opacity: 1; transform: scaleX(1);
+  transition: transform var(--vela-duration-travel) var(--vela-ease-spring), opacity var(--vela-duration-travel) var(--vela-ease-out);
+}
+.tp[data-variant='seed'][data-click='grow'] .vela-tabs__trigger[aria-selected='true'] .tp-line {
+  opacity: 1; transform: scaleX(1);
+  transition:
+    transform var(--vela-duration-travel) var(--vela-ease-spring),
+    opacity var(--vela-duration-travel) var(--vela-ease-standard);
+}
+/* …and at the same moment the old underline dissolves where it is: back to a third, towards its
+   centre, and out, over the same duration. Only a pointer switch marks the list moving. */
+.tp[data-variant='seed'][data-click='grow'] .vela-tabs__list[data-vela-moving] .vela-tabs__trigger[aria-selected='false'] :is(.tp-seed, .tp-line) {
+  transition: transform var(--vela-duration-travel) var(--vela-ease-spring), opacity var(--vela-duration-travel) var(--vela-ease-out);
+}
+
+/* ---- Seed between tabs: Glide ----
+   One row-level Seed in the tab list, the shipped indicator's geometry (the list's full width at
+   its left edge, on the underline's 2px), scaled to a third of the rested tab and translated under
+   its centre from two custom properties the controller measures (TabsPreviewProto.tsx, useGlide).
+   The controller does the resting (a pointer timer); the CSS does every movement:
+     data-shown + data-move="jump"   appear: the transform jumps while invisible, opacity fades in
+     data-shown + data-move="glide"  travel from the last rested tab: transform only, fast, ease-out
+     data-hide="leave"               out of the row, or too far to glide: fade out where it is
+     data-hide="select"              its tab was selected: out over the first half of the travel
+   The per-tab Seeds stop answering hover in this mode; they still carry A's grow on a press, and
+   the row Seed fading out over it keeps the hand-over from dipping. No mid-way contraction: it
+   would need keyframes, and a re-triggerable movement is a transition (foundations/motion.md). */
+.tp .tp-glide {
+  position: absolute; left: 0; bottom: -1px;
+  width: 100%; height: var(--vela-stroke-2);
+  display: none; opacity: 0; pointer-events: none;
+  transform-origin: 0 0;
+  transform: translateX(var(--tp-gx, 0)) scaleX(var(--tp-gs, 0));
+  transition: opacity var(--vela-duration-base) var(--vela-ease-standard);
+}
+.tp[data-between='glide'] .tp-glide { display: block; }
+.tp .tp-glide__seed, .tp .tp-glide__bloom {
+  position: absolute; left: 0; right: 0;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 30%, #000 70%, transparent); /* vela-allow: mask alpha only, not a colour */
+  mask-image: linear-gradient(90deg, transparent, #000 30%, #000 70%, transparent); /* vela-allow: mask alpha only, not a colour */
+}
+.tp .tp-glide__seed { top: 0; bottom: 0; background: var(--vela-border-active); }
+/* The bloom rides on the gliding Seed, above it, inside the trigger's bottom padding. Its opacity
+   multiplies with the Seed's, so it is divided back out to land at the same absolute strength. */
+.tp .tp-glide__bloom {
+  bottom: 100%; height: var(--vela-space-5); display: none;
+  background: linear-gradient(to top, var(--vela-border-active), transparent);
+  opacity: calc(var(--tp-bloom-strength) / var(--tp-strength));
+}
+.tp[data-bloom='on'] .tp-glide__bloom { display: block; }
+.tp .tp-glide[data-shown] { opacity: var(--tp-strength); transition: opacity var(--vela-duration-travel) var(--vela-ease-out); }
+.tp .tp-glide[data-shown][data-move='glide'] {
+  transition: opacity var(--vela-duration-travel) var(--vela-ease-out), transform var(--vela-duration-fast) var(--vela-ease-out);
+}
+.tp .tp-glide[data-hide='select'] { transition: opacity calc(var(--vela-duration-travel) / 2) var(--vela-ease-standard); }
+
+/* ---- keyboard (and code): nothing animates ---- */
+.tp .vela-tabs[data-vela-instant] :is(.tp-l, .tp-glide) { transition: none !important; }
+
+/* ---- reduced motion: the global collapse in base.css shortens every duration, so A lands square
+   and B's marker is gone at once. The rest delay stays: it is a wait, like --vela-delay-tooltip,
+   not an animation. ---- */
+
+/* ---- forced colours: a solid 1px line in Highlight, no gradient, no bloom ---- */
+@media (forced-colors: active) {
+  .tp .tp-seed,
+  .tp .tp-hair {
+    forced-color-adjust: none;
+    background: Highlight;
+    -webkit-mask-image: none; mask-image: none;
+    bottom: -1px; height: 1px; /* vela-allow: a hairline; there is no 1px stroke token */
+  }
+  .tp .tp-line { forced-color-adjust: none; background: ButtonText; }
+  .tp .tp-bloom, .tp .tp-glide__bloom { display: none !important; }
+  .tp .tp-glide__seed { forced-color-adjust: none; background: Highlight; -webkit-mask-image: none; mask-image: none; bottom: auto; height: 1px; } /* vela-allow: a hairline; there is no 1px stroke token */
+  .tp .tp-glide[data-shown] { opacity: 1; }
+}
+@media (forced-colors: active) and (hover: hover) and (pointer: fine) {
+  .tp:not([data-between='glide']) .vela-tabs__trigger:hover:not(:disabled):not([aria-selected='true']) :is(.tp-seed, .tp-hair) { opacity: 1; }
+}
