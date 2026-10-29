@@ -157,6 +157,29 @@ test('the Radio Group page renders the headless group: arrows move the selection
 // Table (Phase 1, core). The stage is a host that owns the rows, the sort and the selection; the
 // table renders aria-sort and a real button, and the host re-sorts. The button's name is asserted
 // exactly, in a real browser: "Open findings, sort ascending", label first, no stray space.
+// The Tabs stage at phone width: the frame used to centre a body that hugs its content, so a
+// panel with shorter text moved the whole tab list. And the list scrolls sideways only: the
+// underline's 1px past the padding box must not become a vertical scroll range, which a touch
+// browser shows as a stray scrollbar at the list's end.
+test('on the Tabs page the tab list stays put when the panel changes, and never scrolls vertically', async ({ page }) => {
+  await page.setViewportSize({ width: 412, height: 900 })
+  for (const impl of ['core', 'headless'] as const) {
+    await page.goto('/#/components/tabs')
+    if (impl === 'headless') await page.getByRole('group', { name: 'Implementation' }).getByRole('button', { name: 'headless' }).click()
+    const frame = page.locator('.pg-frame[data-theme="light"]')
+    const list = frame.getByRole('tablist')
+    await expect(list).toBeVisible()
+    const before = (await list.boundingBox())!
+    await frame.getByRole('tab', { name: /Assets/ }).click()
+    await expect(frame.getByRole('tab', { name: /Assets/ })).toHaveAttribute('aria-selected', 'true')
+    const after = (await list.boundingBox())!
+    expect([after.x, after.y, after.width], impl).toEqual([before.x, before.y, before.width])
+    // Hidden, not auto: no vertical scroll range a person can reach, so no scrollbar to draw.
+    await expect(list).toHaveCSS('overflow-y', 'hidden')
+    await expect(list).toHaveCSS('overflow-x', 'auto')
+  }
+})
+
 test('the Table page sorts through the host: the button names the next direction, aria-sort follows', async ({ page }) => {
   await page.goto('/#/components/table')
   await expect(page.getByRole('heading', { level: 1, name: 'Table' })).toBeVisible()

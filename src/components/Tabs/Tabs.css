@@ -5,7 +5,12 @@
   position: relative; /* the indicator's containing block; it scrolls with the tabs */
   display: flex; align-items: stretch; gap: var(--vela-space-20);
   border-bottom: 1px solid var(--vela-border-subtle);
-  overflow-x: auto;
+  /* Scroll sideways only. The selected underline (the trigger's border, and the indicator) sits
+     1px past the padding box, over the list's own border, and is clipped there either way; with
+     overflow-y left to follow overflow-x (auto), that 1px became a vertical scroll range, and a
+     touch browser drew a stray vertical scrollbar at the list's end. Hidden clips the same pixels
+     and scrolls nothing. */
+  overflow-x: auto; overflow-y: hidden;
 }
 
 .vela-tabs__trigger {
@@ -26,7 +31,8 @@
 .vela-tabs--large .vela-tabs__trigger { font-size: var(--vela-text-tab-large-size); line-height: var(--vela-text-tab-large-line-height); }
 
 @media (hover: hover) {
-  .vela-tabs__trigger:hover:not(:disabled) { color: var(--vela-text-default); }
+  /* Not the selected tab: hovering it must not dim its link colour to the default text. */
+  .vela-tabs__trigger:hover:not(:disabled):not([aria-selected='true']) { color: var(--vela-text-default); }
 }
 .vela-tabs__trigger[aria-selected='true'] { color: var(--vela-text-link); border-bottom-color: var(--vela-border-active); }
 .vela-tabs__trigger:disabled { color: var(--vela-text-inactive); cursor: not-allowed; }

@@ -83,4 +83,9 @@
    gives it the frame's width, as a page column would. The bounded height is the host's half of
    stickyHeader: the region fills it and scrolls, and the header pins to its top. */
 .pg-frame-body:has(> .vela-table) { width: 100%; }
+/* Tabs: the frame centres a body that hugs its content, and each panel's text is a different
+   length and height, so switching tabs moved the whole tab list sideways and up or down. Give
+   the body the frame's width and hold it at the top, so the list stays put and only the panel
+   below it changes, as on a real page. */
+.pg-frame-body:has(> .vela-tabs) { width: 100%; align-self: flex-start; }
 .pg-table-bounded { max-block-size: 220px; }
