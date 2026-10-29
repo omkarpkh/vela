@@ -46,6 +46,7 @@ const COMPONENTS = [
   'src/components/StatusIndicator/StatusIndicator.css',
   'src/components/RiskPill/RiskPill.css',
   'src/components/Tabs/Tabs.css',
+  'src/components/Icon/Icon.css',
 ]
 
 const banner = `/*! @omkarux/vela — design tokens + component styles. MIT. */\n`
