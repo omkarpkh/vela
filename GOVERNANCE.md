@@ -26,11 +26,11 @@ and not yet code; the first component to leave Approved brings the code with it.
 |---|---|---|
 | **Approved** | Specced, built, tested, in the Figma library, every rule tagged and proved. | Semver applies in full. Breaking changes follow `VERSIONING.md`. |
 | **Known bugs** | Approved, with an open defect that changes behaviour or appearance. | Still safe to use. The defects are linked from the spec. Fixed in a patch; no API change. |
-| **Experimental** | Specced and built, but the API or the visuals may still change. | May change in a minor release without a deprecation window. Not in the Figma library yet. |
+| **Experimental** | Specced and built, but the API or the visuals may still change. | May change in a minor release without a deprecation window. Its Figma set may be in the library, marked Experimental on the Status page. |
 | **Retired** | Replaced or removed. | Stays one deprecation window (two minors) with a dev-only warning, then is deleted. The spec names the replacement. |
 
-A fifth label applies to the Figma file, not to a component: **"Main components — do not
-touch."** It marks the source component sets on the library's component pages. They are created
+**"Main components — do not touch"** is not a label: it is the banner on each component page of
+the Figma file. It marks the source component sets there. They are created
 and updated by the scripts in `scripts/figma/`; a change made by hand on the canvas is lost on
 the next rebuild and is a drift the check reports. Design with instances; change the source
 through the pipeline.
@@ -38,7 +38,8 @@ through the pipeline.
 ### What moves a component
 
 - **Into Experimental:** a spec with every required heading, an implementation, unit tests, and
-  a changelog entry. It ships with `Experimental` in its spec and does not get a Figma set yet.
+  a changelog entry. It ships with `Experimental` in its spec. Its Figma set may be built
+  and published from its builder while it is Experimental; the Status page carries the label.
 - **Experimental → Approved:** every `## Hard constraints` bullet tagged and proved by
   `rules:check`; every colour pair it introduces in `PAIRS`; visual baselines committed; the
   Figma set built from a builder in `scripts/figma/components/` and diffed clean against the
@@ -50,7 +51,8 @@ through the pipeline.
   0.x, a minor announced as breaking) at least two minors later.
 
 Six components are Approved: Button, Toggle, Input, Contextual Alert, Status Indicator and
-Tabs. Risk Pill, Icon and Text Area are Experimental until their Figma sets are published. The docs site lists every
+Tabs. The other ten are Experimental: Text Area, Risk Pill, Icon and Table in the core entry, and
+Checkbox, Radio Group, Popover, Tooltip, Dialog and Toast in `/headless`. The docs site lists every
 component's label on its Status page, read from the spec.
 
 ## Breaking changes

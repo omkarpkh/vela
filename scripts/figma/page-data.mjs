@@ -302,7 +302,7 @@ export function statusData() {
     page: 'Status',
     intro: 'Every component in Vela, with its lifecycle label. The labels and what moves a component between them are set in GOVERNANCE.md. A spec states its label on a Status line under its intent; Approved is the default and is not written down.',
     legend: LABELS.map((label) => ({ label, text: `${table[label].meaning} ${table[label].promise}` })),
-    legendNote: 'A lifecycle label is not a severity, a risk or a status, so it carries no taxonomy colour: the word is the signal. “Main components — do not touch” is the fifth label, and it applies to the Figma file, not to a component: it marks the source sets on the component pages, which scripts/figma/ creates and updates.',
+    legendNote: 'A lifecycle label is not a severity, a risk or a status, so it carries no taxonomy colour: the word is the signal. “Main components — do not touch” is not a label: it is the banner on each component page, marking the source sets that scripts/figma/ creates and updates.',
     rows,
     stamp: `Read from guidelines/components/*.md, GOVERNANCE.md and CHANGELOG.md at ${s.at}. The label is each spec’s Status line, Approved when it has none; Since is the first release whose changelog entry names the component.`,
     governance: `${REPO}/blob/main/GOVERNANCE.md`,

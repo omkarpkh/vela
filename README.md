@@ -59,7 +59,7 @@ link to each, and the number of automated checks, written by the test runners ra
 | **Icons** | 50 curated [Lucide](https://lucide.dev) 1.63.0 glyphs (ISC; a subset from Feather, MIT), compiled into the core entry at build time — no icon dependency, `lucide` is a devDependency only. The ISC notice ships in [`NOTICE`](NOTICE) |
 | **Format** | ESM, `preserveModules` for tree-shaking, full `.d.ts` |
 | **Tests** | 836 automated checks — 700 unit and contract (86 contrast pairs, each asserted in both themes), 133 browser (68 screenshots at four widths, 63 playground, 2 docs), 3 Flutter — counted by `npm run checks` |
-| **Packed size** | 199.6 kB, 213 files (the fifty glyph modules and their .d.ts are most of the growth since 0.12.1), as `npm run verify` measures it (README and CHANGELOG ship in the tarball, so this moves when they do) |
+| **Packed size** | 199.9 kB, 213 files (the fifty glyph modules and their .d.ts are most of the growth since 0.12.1), as `npm run verify` measures it (README and CHANGELOG ship in the tarball, so this moves when they do) |
 
 ## The three ideas worth stealing
 
@@ -162,7 +162,7 @@ npm run verify     # tokens:check + icons:check + rules:check + typecheck + test
 
 The counts are copied from `demo/checks.json`, which `scripts/count-checks.mjs` writes from the
 test runners' own output and `verify` diffs, so that file cannot go stale. This README copy is
-checked at each release; the numbers here are for 0.12.1.
+checked at each release; the numbers here are for 0.13.0.
 
 ## Editing tokens — one source, five targets
 

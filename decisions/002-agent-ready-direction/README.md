@@ -6,7 +6,9 @@ a second entry point `@omkarux/vela/headless` carrying Base UI as an optional pe
 `@omkarux/vela` stays zero-dependency; one playground for both. The thing Vela does that other
 systems do not is a security-console agentic component set. Everything stays public at zero
 spend on GitHub Pages, under the `@omkarux` namespace. Pushes to `main`, npm and the Figma
-library stay approval-gated. Nothing has shipped from this record yet.**
+library stay approval-gated. Shipped in 0.13.0: the `@omkarux/vela/headless` entry on Base UI
+1.9, with Tabs, Checkbox, Radio Group, Popover, Tooltip, Dialog and Toast; the core stays
+zero-dependency. The agentic set is public as proposals, not built.**
 
 ---
 
