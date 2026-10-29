@@ -55,8 +55,8 @@ link to each, and the number of automated checks, written by the test runners ra
 | **Themes** | Light + dark. OS preference by default, `data-theme` to override |
 | **Dependencies** | None in the core entry. `react` / `react-dom` are peers (18.3 or 19). The `/headless` entry needs one optional peer, `@base-ui/react` 1.9.x (MIT) |
 | **Format** | ESM, `preserveModules` for tree-shaking, full `.d.ts` |
-| **Tests** | 443 automated checks — 360 unit and contract (52 contrast pairs, each asserted in both themes), 80 browser (68 screenshots at four widths, 10 playground, 2 docs), 3 Flutter — counted by `npm run checks` |
-| **Packed size** | 102.5 kB, 73 files, as `npm run verify` measures it (README and CHANGELOG ship in the tarball, so this moves when they do) |
+| **Tests** | 465 automated checks — 382 unit and contract (52 contrast pairs, each asserted in both themes), 80 browser (68 screenshots at four widths, 10 playground, 2 docs), 3 Flutter — counted by `npm run checks` |
+| **Packed size** | 103.0 kB, 73 files, as `npm run verify` measures it (README and CHANGELOG ship in the tarball, so this moves when they do) |
 
 ## The three ideas worth stealing
 
@@ -151,7 +151,7 @@ document.documentElement.removeAttribute('data-theme')        // follow the OS
 
 ```bash
 npm run dev        # demo showcase at localhost:5174
-npm test           # 360 unit and contract tests, of 443 checks in all — the numbers are generated into demo/checks.json
+npm test           # 382 unit and contract tests, of 465 checks in all — the numbers are generated into demo/checks.json
 npm run checks     # counts every automated check into demo/checks.json (diffed in verify)
 npm run contrast   # WCAG report for both themes
 npm run verify     # tokens:check + rules:check + typecheck + tests + checks:check + build + pack-and-consume gate
@@ -181,6 +181,7 @@ npm run tokens:figma    # → a Plugin API script that creates-or-updates every 
 npm run styles:figma    # → a script that creates-or-updates every Figma text style, bound to those variables
 npm run components:figma:lint   # builds every component builder in a mock Plugin API and applies the reviewer rules
 npm run components:figma:check <name> <live.json>   # diffs the live set against what a rebuild would create
+npm run figma:build:pages      # → the library's Changelog and Status pages, compiled from CHANGELOG.md and the specs
 npm run tokens:check    # fails if the CSS was hand-edited instead of the JSON (runs in CI)
 npm run guidelines:figma # → a script that writes each spec's summary into its Figma description
 ```
