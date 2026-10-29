@@ -282,7 +282,7 @@ Accessibility
 
 Do not invent one silently. State that the kit has no component for the need and pick the
 closest match while flagging the gap. Not yet specced: Checkbox, Radio, Dropdown List,
-Select List, Token Pill, Number Stepper, Text Area, Modal, Tooltip, Icon Button,
+Select List, Token Pill, Number Stepper, Modal, Tooltip, Icon Button,
 Actions Dropdown, View Switcher. Flag rather than guess. The disambiguations agents most often
 get wrong — Toggle vs Checkbox, Tabs vs View Switcher, Alert vs Status Indicator vs Risk Pill
 — are in `guidelines/overview.md`.

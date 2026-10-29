@@ -31,6 +31,7 @@ const SETS = {
   'button.md': { set: 'Button', src: 'Button' },
   'toggle.md': { set: 'Toggle', src: 'Toggle' },
   'input.md': { set: 'Input', src: 'Input' },
+  'text-area.md': { set: 'Text Area', src: 'TextArea' },
   'contextual-alert.md': { set: 'Contextual Alert', src: 'ContextualAlert' },
   'status-indicator.md': { set: 'Status Indicator', src: 'StatusIndicator' },
   'risk-pill.md': { set: 'Risk Pill', src: 'RiskPill' },

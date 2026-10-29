@@ -2,7 +2,7 @@
 
 > A token-first design system. Two-layer colour architecture (primitives -> semantics), three
 > deliberately separate status taxonomies, full light and dark theming, zero runtime dependencies.
-> 13 of the 32 design rules are enforced by the TypeScript types; the rest are checked at runtime, in a
+> 18 of the 41 design rules are enforced by the TypeScript types; the rest are checked at runtime, in a
 > real browser, or by review. Each rule in the component guidelines is tagged with its level.
 >
 > THESE SPECS ARE FRAMEWORK-AGNOSTIC. The published package is a React implementation of them, and
@@ -54,6 +54,7 @@ behaviour has no Figma expression at all.
 - [Button](components/button.md)
 - [Toggle](components/toggle.md)
 - [Input](components/input.md)
+- [Text Area](components/text-area.md)
 - [Contextual Alert](components/contextual-alert.md)
 - [Status Indicator](components/status-indicator.md)
 - [Risk Pill](components/risk-pill.md)

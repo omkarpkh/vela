@@ -5,13 +5,13 @@
 [![Licence: MIT](https://img.shields.io/badge/licence-MIT-blue)](LICENSE)
 
 A token-first design system. The tokens and the component specs are framework-agnostic;
-this repository is a **React implementation** of them. Seven components, two themes, zero runtime
+this repository is a **React implementation** of them. Eight components, two themes, zero runtime
 dependencies in the core entry — and every design rule in the documentation is tagged with how it is
-enforced: 13 of the 32 by the TypeScript compiler, the rest at runtime, in a real browser, or by review
+enforced: 18 of the 41 by the TypeScript compiler, the rest at runtime, in a real browser, or by review
 (counted by `npm run rules:check`).
 
 **Status:** every component carries a lifecycle label — Approved, Known bugs, Experimental or
-Retired, defined in [`GOVERNANCE.md`](GOVERNANCE.md). All six are currently **Approved**.
+Retired, defined in [`GOVERNANCE.md`](GOVERNANCE.md). Six are **Approved**; Risk Pill and Text Area are **Experimental** until their Figma sets are published.
 
 ```bash
 npm install @omkarux/vela
@@ -42,7 +42,7 @@ link to each, and the number of automated checks, written by the test runners ra
 
 | | |
 |---|---|
-| **Components** | Button · Toggle · Input · ContextualAlert · StatusIndicator · Tabs |
+| **Components** | Button · Toggle · Input · TextArea · ContextualAlert · StatusIndicator · RiskPill · Tabs |
 | **Tokens** | 242 CSS custom properties, two layers (primitives → semantics) |
 | **Themes** | Light + dark. OS preference by default, `data-theme` to override |
 | **Dependencies** | None. `react` / `react-dom` are peers (18.3 or 19) |
@@ -216,8 +216,8 @@ or a new rule arrives untagged.
 
 ## Scope
 
-Seven components, chosen to exercise every foundation and all three taxonomies (Severity, Risk,
-Status). Not yet specced: Checkbox, Radio, Dropdown List, Select List, Token Pill, Number Stepper, Text Area,
+Eight components, chosen to exercise every foundation and all three taxonomies (Severity, Risk,
+Status). Not yet specced: Checkbox, Radio, Dropdown List, Select List, Token Pill, Number Stepper,
 Modal, Tooltip, Icon Button, Actions Dropdown, View Switcher. The guidelines name these
 explicitly so an agent flags the gap instead of inventing one.
 

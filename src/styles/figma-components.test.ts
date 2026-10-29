@@ -17,7 +17,7 @@ const cli = (...args: string[]) => {
 const lintReport: Record<string, { problems: { rule: string; node: string; what: string; waived: boolean }[]; allow: { rule: string; reason: string }[] }> = JSON.parse(cli('--lint'))
 const dump = (name: string) => JSON.parse(cli('--dump', name))
 const styles: any[] = JSON.parse(execFileSync('node', ['scripts/figma/text-styles.mjs', '--json'], { cwd: root, encoding: 'utf8' }))
-const BUILDERS = ['button', 'contextual-alert', 'input', 'risk-pill', 'status-indicator', 'tabs', 'toggle']
+const BUILDERS = ['button', 'contextual-alert', 'input', 'risk-pill', 'status-indicator', 'tabs', 'text-area', 'toggle']
 
 describe('Figma builders, built in the mock Plugin API', () => {
   it('runs every builder', () => {

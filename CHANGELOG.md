@@ -6,6 +6,23 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Unreleased]
 
 ### Added
+- **Text Area** — multi-line entry, Input's sibling, in the core entry with no dependency.
+  Closed props mirroring Input (`label` required, `value` / `defaultValue` exclusive, `error`
+  a message, `size` Input's three), plus `rows` (the minimum height in lines), `resize`
+  (`vertical` or `none`; there is no horizontal and no both) and `maxLength` with a live
+  `n / max` count. The count and the limit are both measured in code points, so an emoji is one
+  character in each; the native `maxlength`, which counts UTF-16 units, is not used. The count
+  is spoken by a polite live region only once 10% or less of the limit remains. Nine rules: five
+  `compiler` with six fixtures (`text-area-label-required`, `text-area-controlled-exclusive`,
+  `text-area-error-is-a-message`, `text-area-resize-closed`, `text-area-size-closed`), three
+  `runtime` (`text-area-describedby-only-rendered`, `text-area-count-in-code-points`,
+  `text-area-count-announced-near-limit`) and one `browser`
+  (`text-area-never-resizes-horizontally`: a drag on the handle moves the bottom edge only and
+  stops at `rows`, even under a host `textarea { resize: both }`). Binds Input's tokens and adds
+  none, so no new colour pair. A Figma builder (12 variants, Size x State, clean under the
+  reviewer lint with no waiver) and a playground page; not on the Overview page, so no visual
+  baseline moves. Status: Experimental until its Figma set is published. Rule count 18 of 41
+  compiler-enforced, was 13 of 32.
 - **The docs site carries the project record.** New routes: `#/status` (every component's
   lifecycle label, read from the `**Status:**` line in its spec, so site and spec cannot
   disagree), `#/changelog`, `#/roadmap`, `#/contributing` and `#/accessibility`, each rendered

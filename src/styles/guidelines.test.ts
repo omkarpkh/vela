@@ -62,4 +62,12 @@ describe('the agent-facing contract is complete', () => {
     for (const missing of ['Checkbox', 'Modal', 'Tooltip', 'Icon Button', 'View Switcher'])
       expect(overview).toContain(missing)
   })
+
+  it('keeps a shipped component out of both "not in the kit" lists', () => {
+    const design = readFileSync(resolve(root, 'DESIGN.md'), 'utf8')
+    const notYet = (md: string) => md.match(/Not yet specced:([\s\S]*?)Flag rather than guess/)![1]
+    for (const shipped of ['Text Area', 'Input', 'Tabs'])
+      for (const [name, md] of [['overview.md', overview], ['DESIGN.md', design]] as const)
+        expect(notYet(md), `${shipped} is listed as missing in ${name}`).not.toContain(shipped)
+  })
 })
