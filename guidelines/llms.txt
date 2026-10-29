@@ -4,7 +4,7 @@
 > deliberately separate status taxonomies, full light and dark theming, zero runtime dependencies
 > in the core entry (the `/headless` entry needs one optional peer, Base UI, and is where Checkbox
 > and Radio Group ship from).
-> 25 of the 52 design rules are enforced by the TypeScript types; the rest are checked at runtime, in a
+> 29 of the 64 design rules are enforced by the TypeScript types; the rest are checked at runtime, in a
 > real browser, or by review. Each rule in the component guidelines is tagged with its level.
 >
 > THESE SPECS ARE FRAMEWORK-AGNOSTIC. The published package is a React implementation of them, and
@@ -38,6 +38,7 @@ export; never reproduce the markup Figma's design context generates for it.
 - Prop sets are CLOSED. If a value is not in the component's Props table, it does not exist.
 - Never invent a component. If nothing fits, say so and name the closest match.
 - Severity, Risk and Status are three different taxonomies. Never cross them.
+- Icons come from `ICON_NAMES` only (`<Icon name="…" />`). Never import `lucide-react` or another icon set beside Vela.
 
 ## Figma
 
@@ -68,5 +69,6 @@ behaviour has no Figma expression at all.
 - [Status Indicator](components/status-indicator.md)
 - [Risk Pill](components/risk-pill.md)
 - [Tabs](components/tabs.md)
+- [Icon](components/icon.md) — 50 curated Lucide glyphs (ISC, see NOTICE), compiled into the core entry; `ICON_NAMES` is the closed list
 - [Checkbox](components/checkbox.md) — `@omkarux/vela/headless` only, Experimental
 - [Radio Group](components/radio-group.md) — `@omkarux/vela/headless` only, Experimental

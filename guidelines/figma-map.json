@@ -79,6 +79,22 @@
       "spec": "guidelines/components/contextual-alert.md"
     },
     {
+      "set": "Icon",
+      "page": "Icon",
+      "node": null,
+      "url": null,
+      "import": "import { Icon } from '@omkarux/vela'",
+      "write": "Icon",
+      "figmaToProp": [
+        {
+          "figma": "Glyph",
+          "prop": "name — the same kebab name"
+        }
+      ],
+      "example": "<Icon name=\"shield-x\" /> Blocked by policy\n<Icon name=\"rotate-ccw-clock\" size=\"large\" label=\"Audit history\" />",
+      "spec": "guidelines/components/icon.md"
+    },
+    {
       "set": "Input",
       "page": "Input",
       "node": "8:110",

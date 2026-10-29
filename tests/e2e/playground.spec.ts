@@ -16,7 +16,7 @@ test('the Button page constrains text-link the way the type does, and the code f
 test('navigation reaches every component and each page lists its tokens', async ({ page }) => {
   await page.goto('/')
   const nav = page.getByRole('navigation', { name: 'Site' })
-  for (const name of ['Button', 'Toggle', 'Input', 'Contextual Alert', 'Status Indicator', 'Risk Pill', 'Tabs', 'Checkbox', 'Radio Group']) {
+  for (const name of ['Button', 'Toggle', 'Input', 'Contextual Alert', 'Status Indicator', 'Risk Pill', 'Tabs', 'Icon', 'Checkbox', 'Radio Group']) {
     await nav.getByRole('link', { name, exact: true }).click()
     await expect(page.getByRole('heading', { level: 1, name })).toBeVisible()
     await expect(page.getByRole('tab', { name: /^Tokens/ })).not.toHaveText(/Tokens\s*0$/)
@@ -222,4 +222,23 @@ test('an anchored press does not move the point it was pressed on', async ({ pag
   // Anchored at the left edge: that edge stays, and the far edge is the one that travels.
   expect(Math.abs(pressed.left - box.x)).toBeLessThan(0.75)
   expect(box.x + box.width - pressed.right).toBeGreaterThan(8)
+})
+
+// The Icon stylesheet is the only source of a glyph's box and stroke (icon.md, "Size and stroke
+// come from the tokens"); jsdom cannot resolve either, so the real layout is checked here once.
+test('the Icon page sizes every glyph from the tokens and draws the stroke on the 24 grid', async ({ page }) => {
+  await page.goto('/#/components/icon')
+  await expect(page.getByRole('heading', { level: 1, name: 'Icon' })).toBeVisible()
+  const frame = page.locator('.pg-frame[data-theme="light"] .pg-frame-body')
+  await expect(frame.locator('.pg-icon__grid svg.vela-icon')).toHaveCount(50)
+  const lead = frame.locator('.pg-icon__lead svg')
+  const box = async () => { const b = (await lead.boundingBox())!; return [Math.round(b.width), Math.round(b.height)] }
+  expect(await box()).toEqual([16, 16])
+  await expect(lead).toHaveCSS('stroke-width', '2px')
+  const props = page.getByRole('complementary', { name: 'Props' })
+  await props.getByLabel('size').selectOption('large')
+  expect(await box()).toEqual([20, 20])
+  await props.getByLabel('size').selectOption('small')
+  expect(await box()).toEqual([12, 12])
+  await expect(page.locator('.pg-code')).toContainText('<Icon name="shield-x" size="small" />')
 })

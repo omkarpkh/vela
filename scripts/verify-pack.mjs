@@ -57,6 +57,7 @@ check(files.includes('tokens/vela.tokens.json'), 'tarball contains tokens/vela.t
 check(files.includes('flutter/lib/vela_tokens.dart'), 'tarball contains flutter/lib/vela_tokens.dart')
 check(files.includes('bridges/vela.mui-theme.json'), 'tarball contains bridges/vela.mui-theme.json')
 check(files.some((f) => f.startsWith('guidelines/')), 'tarball contains guidelines/')
+check(files.includes('NOTICE'), 'tarball contains NOTICE (the Lucide ISC notice travels with every copy)')
 check(!files.some((f) => f.startsWith('src/')), 'no src/ leaked into the tarball')
 check(!files.some((f) => f.includes('.test.')), 'no test files leaked into the tarball')
 console.log(`  ....  ${files.length} files, ${(packed.size / 1024).toFixed(1)} kB packed`)
@@ -118,8 +119,8 @@ try {
   // -- valid usage must compile --
   mkdirSync(join(app, 'src'), { recursive: true })
   writeFileSync(join(app, 'valid.tsx'), `
-import { Button, Toggle, Input, ContextualAlert, StatusIndicator, RiskPill, Tabs } from '@omkarux/vela'
-import type { Severity, Status, Risk, ButtonProps } from '@omkarux/vela'
+import { Button, Toggle, Input, ContextualAlert, StatusIndicator, RiskPill, Tabs, Icon, ICON_NAMES } from '@omkarux/vela'
+import type { Severity, Status, Risk, ButtonProps, IconName } from '@omkarux/vela'
 
 export const A = () => <Button variant="primary" appearance="filled" size="huge">Save Changes</Button>
 export const B = () => <Button variant="primary" appearance="text-link" size="tiny">Learn More</Button>
@@ -145,6 +146,11 @@ export const I = () => (
 )
 export const J = () => <Toggle label="Email alerts" checked onChange={(v: boolean) => v} />
 export const props: ButtonProps = { variant: 'standard', children: 'OK' }
+export const K = () => <Icon name="shield-x" />
+export const K2 = () => <Icon name="rotate-ccw-clock" size="large" tone="muted" label="Audit history" />
+export const K3 = () => <Button icon={<Icon name="plus" tone="inherit" />}>Add rule</Button>
+export const K4 = (n: IconName) => <Icon name={n} size="small" />
+export const names: readonly IconName[] = ICON_NAMES
 `)
   const tsc = join(root, 'node_modules', '.bin', 'tsc')
   let validOk = true
@@ -265,10 +271,20 @@ export const props: [CheckboxProps, CheckboxGroupProps, RadioGroupProps, RadioPr
     ['radio-value-required', 'radio with no value', `<RadioGroup label="Mode"><RadioGroup.Radio label="A" /></RadioGroup>`],
     ['radio-label-required', 'radio with no label', `<RadioGroup label="Mode"><RadioGroup.Radio value="a" /></RadioGroup>`],
     ['radio-label-required', 'radio label as a node', `<RadioGroup label="Mode"><RadioGroup.Radio value="a" label={<b>A</b>} /></RadioGroup>`],
+    ['icon-name-closed-set', 'unknown icon name', `<Icon name="shield" />`],
+    ['icon-name-closed-set', 'a Lucide glyph outside the curated set', `<Icon name="airplay" />`],
+    ['icon-name-closed-set', 'a Lucide alias instead of the canonical name', `<Icon name="trash-2" />`],
+    ['icon-name-closed-set', 'icon with no name', `<Icon />`],
+    ['icon-size-closed-set', 'invalid icon size', `<Icon name="check" size="medium" />`],
+    ['icon-size-closed-set', 'icon size as a number', `<Icon name="check" size={16} />`],
+    ['icon-tone-closed-set', 'severity used as an icon tone', `<Icon name="shield-x" tone="critical" />`],
+    ['icon-tone-closed-set', 'risk used as an icon tone', `<Icon name="shield-alert" tone="high" />`],
+    ['icon-not-interactive', 'icon with a click handler', `<Icon name="x" onClick={() => {}} />`],
+    ['icon-not-interactive', 'icon in the tab order', `<Icon name="copy" tabIndex={0} />`],
   ]
   for (const [id, name, snippet] of violations) {
     writeFileSync(join(app, 'invalid.tsx'),
-      `import { Button, ContextualAlert, Input, RiskPill, StatusIndicator, Tabs, Toggle } from '@omkarux/vela'\n` +
+      `import { Button, ContextualAlert, Icon, Input, RiskPill, StatusIndicator, Tabs, Toggle } from '@omkarux/vela'\n` +
       `import { Checkbox, RadioGroup } from '@omkarux/vela/headless'\nexport const X = () => (${snippet})\n`)
     let rejected = false
     try { run(tsc, ['--noEmit', '-p', 'tsconfig.json'], app) } catch { rejected = true }

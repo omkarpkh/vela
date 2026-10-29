@@ -149,9 +149,9 @@ describe('the Status page', () => {
   })
 
   it('has one row per registered component, in registry order, each with its spec\'s label', () => {
-    expect(rows.map((r) => r.n)).toEqual(['Button', 'Toggle', 'Input', 'Contextual Alert', 'Status Indicator', 'Risk Pill', 'Tabs', 'Checkbox', 'Radio Group'])
+    expect(rows.map((r) => r.n)).toEqual(['Button', 'Toggle', 'Input', 'Contextual Alert', 'Status Indicator', 'Risk Pill', 'Tabs', 'Icon', 'Checkbox', 'Radio Group'])
     expect(rows.filter((r) => label(r) === 'Approved').map((r) => r.n)).toEqual(['Button', 'Toggle', 'Input', 'Contextual Alert', 'Status Indicator', 'Tabs'])
-    for (const n of ['Risk Pill', 'Checkbox', 'Radio Group']) expect(label(rows.find((r) => r.n === n)!), n).toBe('Experimental')
+    for (const n of ['Risk Pill', 'Icon', 'Checkbox', 'Radio Group']) expect(label(rows.find((r) => r.n === n)!), n).toBe('Experimental')
   })
 
   it('names the headless entry point for a component born there', () => {
@@ -169,5 +169,8 @@ describe('the Status page', () => {
     const [, rset, , rsince, rspec] = cells('Risk Pill')
     expect([rset.chars, rsince.chars, rspec.chars]).toEqual(['None yet — the builder is ready (risk-pill.figma.js)', 'Unreleased', 'risk-pill.md (branch)'])
     expect(rspec.link).not.toContain('/blob/main/')
+    // Icon is core and unreleased; 0.12.1's `Icon` box (a Figma layer inside Button) does not date it.
+    const [, iset, iexp, isince, ispec] = cells('Icon')
+    expect([iset.chars, iexp.chars, isince.chars, ispec.chars]).toEqual(['None yet — the builder is ready (icon.figma.js)', 'Icon · @omkarux/vela', 'Unreleased', 'icon.md (branch)'])
   })
 })

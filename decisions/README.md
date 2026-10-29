@@ -12,6 +12,7 @@ needs a record; `TEMPLATE.md` is the shape.
 |---|---|---|---|
 | 001 | [Press feedback](press-feedback/README.md) | 23 Sep 2026 | Shipped in 0.12.0. Three holes in the anchored path still open; see the record. |
 | 002 | [Agent-ready direction](002-agent-ready-direction/README.md) | 28 Oct 2026 | Decided. Nothing shipped yet. |
+| 003 | [Icons: a curated Lucide set, compiled into the core](003-icons-lucide-curated/README.md) | 29 Oct 2026 | Shipped as Experimental (unreleased). The Figma set and the move of the kit's own glyphs are open; see the record. |
 
 ## Numbering
 
