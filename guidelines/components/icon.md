@@ -4,9 +4,8 @@ One glyph from a closed, curated set of fifty, drawn from Lucide and compiled in
 at one of three token-bound sizes. It sits beside text, in a table cell or in another
 component's icon slot; it is never a control and never a severity, risk or status mark.
 
-**Status:** Experimental — specced, built and tested, and the glyph list is new; the Figma set's
-builder (`scripts/figma/components/icon.figma.js`) passes the lint in the mock Plugin API but has
-not been run in the library yet. Approved once the set is published and the kit's own inline
+**Status:** Experimental — specced, built and tested, and the glyph list is new; the Figma set is
+built in the library file (from `scripts/figma/components/icon.figma.js`) but not published yet. Approved once the set is published and the kit's own inline
 glyphs (`src/lib/icons.tsx`) have moved onto it; see `GOVERNANCE.md`.
 
 **Dependencies:** none
