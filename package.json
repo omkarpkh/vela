@@ -55,6 +55,8 @@
     "tokens:figma:check": "node scripts/figma-drift.mjs",
     "guidelines:figma": "node scripts/sync-figma-descriptions.mjs",
     "figma:build": "node scripts/figma/build-components.mjs",
+    "figma:build:pages": "node scripts/figma/build-pages.mjs",
+    "pages:figma:lint": "node scripts/figma/check-pages.mjs --lint",
     "styles:figma": "node scripts/figma/text-styles.mjs",
     "components:figma:lint": "node scripts/figma/check-components.mjs --lint",
     "components:figma:read": "node scripts/figma/check-components.mjs --read",
