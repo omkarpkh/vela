@@ -102,6 +102,18 @@ export const PAIRS = [
   ['--vela-control-check-bg-checked', '--vela-bg-global',                'Checked box / selected radio on page',       'ui'],
   ['--vela-control-check-bg-checked', '--vela-bg-container',             'Checked box / selected radio on container',  'ui'],
   ['--vela-control-border-error',     '--vela-control-bg',               'Control error border',                       'ui'],
+  // Overlays (Phase 1, headless): Popover and Dialog sit on --vela-bg-raised (white light, grey-850
+  // dark), which no text pair had been asserted on. Their title is text-heading and their body and
+  // description text-default — not text-de-emphasized, which is grey-500 on grey-850 in dark at
+  // 3.99:1 and fails. A Popover has no shadow (no elevation token exists): its border-default edge is
+  // what separates it from the page or container it floats over. The Tooltip is the one inverted
+  // surface: text-tooltip on bg-tooltip. The tooltip's own edge against the page is deliberately NOT
+  // a pair — it is not a control boundary (WCAG 1.4.11 asks that of things you operate), and in dark
+  // grey-700 on grey-950 is 2.35:1; the text, at 7.69:1 on its surface, is what carries it.
+  ['--vela-text-heading',       '--vela-bg-raised',    'Overlay title on raised surface',  'text'],
+  ['--vela-text-default',       '--vela-bg-raised',    'Overlay body on raised surface',   'text'],
+  ['--vela-border-default',     '--vela-bg-container', 'Overlay edge on container',        'ui'],
+  ['--vela-text-tooltip',       '--vela-bg-tooltip',   'Tooltip text',                     'text'],
   ['--vela-btn-standard-border','--vela-btn-standard-bg', 'Standard button border', 'ui'],
   ['--vela-border-default',     '--vela-bg-global',       'Default border on page', 'ui'],
   ['--vela-border-active',  '--vela-bg-global',  'Focus ring',          'ui'],

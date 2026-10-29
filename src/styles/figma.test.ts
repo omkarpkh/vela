@@ -109,6 +109,14 @@ describe('Figma sync: variable scopes match the property each token is for', () 
     ['control-check-bg-checked', ['FRAME_FILL', 'SHAPE_FILL']],
     ['space-10', ['WIDTH_HEIGHT', 'GAP']],
     ['radius-4', ['CORNER_RADIUS']],
+    // Overlay tokens (Popover, Tooltip, Dialog): widths are width/height, the scrim opacity is a
+    // layer opacity, the z-index layer has no Figma property, the scrim is a fill, tooltip text a text fill.
+    ['popover-width', ['WIDTH_HEIGHT']],
+    ['dialog-width-wide', ['WIDTH_HEIGHT']],
+    ['opacity-scrim', ['OPACITY']],
+    ['layer-overlay', []],
+    ['bg-scrim', ['FRAME_FILL', 'SHAPE_FILL']],
+    ['text-tooltip', ['TEXT_FILL']],
   ])('%s → %j', (css, scopes) => {
     expect(byCss[css], css).toBeDefined()
     expect(byCss[css].scopes).toEqual(scopes)

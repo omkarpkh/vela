@@ -79,6 +79,7 @@
   @bg-raised
   @bg-hover
   @bg-tooltip
+  @bg-scrim
   @bg-inactive
   @bg-selected
   @primary-tint
@@ -100,6 +101,7 @@
   @text-on-brand
   @text-on-tint
   @text-error
+  @text-tooltip
 
   /* ---- Semantic: icon ---- */
   @icon-default
@@ -308,10 +310,20 @@
   @status-dot
   @status-dot-small
 
+  /* ---- Overlays: Popover, Tooltip, Dialog (headless) ---- */
+  @popover-width
+  @popover-width-wide
+  @dialog-width
+  @dialog-width-wide
+  @tooltip-width-max
+  @opacity-scrim
+  @layer-overlay
+
   /* ---- Motion (respects reduced-motion in components.css) ---- */
   @duration-instant
   @duration-fast
   @duration-base
+  @delay-tooltip
   @ease-standard
   @blur-materialize
 }

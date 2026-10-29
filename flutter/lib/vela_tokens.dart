@@ -78,6 +78,7 @@ class VelaColors extends ThemeExtension<VelaColors> {
     required this.bgRaised,
     required this.bgHover,
     required this.bgTooltip,
+    required this.bgScrim,
     required this.bgInactive,
     required this.bgSelected,
     required this.primaryTint,
@@ -95,6 +96,7 @@ class VelaColors extends ThemeExtension<VelaColors> {
     required this.textOnBrand,
     required this.textOnTint,
     required this.textError,
+    required this.textTooltip,
     required this.iconDefault,
     required this.iconStrong,
     required this.iconSelected,
@@ -201,6 +203,9 @@ class VelaColors extends ThemeExtension<VelaColors> {
   final Color bgHover;
   /// `--vela-bg-tooltip` · Figma `surface/tooltip`
   final Color bgTooltip;
+  /// `--vela-bg-scrim` · Figma `surface/scrim`
+  /// The modal backdrop behind a Dialog. Always drawn at opacity-scrim, never opaque: the page under it stays readable as context, and inert.
+  final Color bgScrim;
   /// `--vela-bg-inactive` · Figma `surface/inactive`
   final Color bgInactive;
   /// `--vela-bg-selected` · Figma `surface/selected`
@@ -235,6 +240,9 @@ class VelaColors extends ThemeExtension<VelaColors> {
   final Color textOnTint;
   /// `--vela-text-error` · Figma `text/error`
   final Color textError;
+  /// `--vela-text-tooltip` · Figma `text/tooltip`
+  /// Tooltip text, on bg-tooltip. White on grey-800 (light) and grey-700 (dark); asserted in PAIRS at 4.5:1 in both themes.
+  final Color textTooltip;
   /// `--vela-icon-default` · Figma `icon/default`
   final Color iconDefault;
   /// `--vela-icon-strong` · Figma `icon/strong`
@@ -493,6 +501,7 @@ class VelaColors extends ThemeExtension<VelaColors> {
     bgRaised: VelaPrimitives.white,
     bgHover: VelaPrimitives.grey100,
     bgTooltip: VelaPrimitives.grey800,
+    bgScrim: VelaPrimitives.black,
     bgInactive: VelaPrimitives.grey100,
     bgSelected: VelaPrimitives.blue100,
     primaryTint: VelaPrimitives.blue100,
@@ -510,6 +519,7 @@ class VelaColors extends ThemeExtension<VelaColors> {
     textOnBrand: VelaPrimitives.white,
     textOnTint: VelaPrimitives.grey700,
     textError: VelaPrimitives.red700,
+    textTooltip: VelaPrimitives.white,
     iconDefault: VelaPrimitives.grey500,
     iconStrong: VelaPrimitives.grey700,
     iconSelected: VelaPrimitives.primary500,
@@ -613,6 +623,7 @@ class VelaColors extends ThemeExtension<VelaColors> {
     bgRaised: VelaPrimitives.grey850,
     bgHover: VelaPrimitives.grey850,
     bgTooltip: VelaPrimitives.grey700,
+    bgScrim: VelaPrimitives.black,
     bgInactive: VelaPrimitives.grey900,
     bgSelected: VelaPrimitives.blue950,
     primaryTint: VelaPrimitives.blue950,
@@ -630,6 +641,7 @@ class VelaColors extends ThemeExtension<VelaColors> {
     textOnBrand: VelaPrimitives.white,
     textOnTint: VelaPrimitives.grey300,
     textError: VelaPrimitives.red300,
+    textTooltip: VelaPrimitives.white,
     iconDefault: VelaPrimitives.grey500,
     iconStrong: VelaPrimitives.grey300,
     iconSelected: VelaPrimitives.primary400,
@@ -733,6 +745,7 @@ class VelaColors extends ThemeExtension<VelaColors> {
     Color? bgRaised,
     Color? bgHover,
     Color? bgTooltip,
+    Color? bgScrim,
     Color? bgInactive,
     Color? bgSelected,
     Color? primaryTint,
@@ -750,6 +763,7 @@ class VelaColors extends ThemeExtension<VelaColors> {
     Color? textOnBrand,
     Color? textOnTint,
     Color? textError,
+    Color? textTooltip,
     Color? iconDefault,
     Color? iconStrong,
     Color? iconSelected,
@@ -851,6 +865,7 @@ class VelaColors extends ThemeExtension<VelaColors> {
       bgRaised: bgRaised ?? this.bgRaised,
       bgHover: bgHover ?? this.bgHover,
       bgTooltip: bgTooltip ?? this.bgTooltip,
+      bgScrim: bgScrim ?? this.bgScrim,
       bgInactive: bgInactive ?? this.bgInactive,
       bgSelected: bgSelected ?? this.bgSelected,
       primaryTint: primaryTint ?? this.primaryTint,
@@ -868,6 +883,7 @@ class VelaColors extends ThemeExtension<VelaColors> {
       textOnBrand: textOnBrand ?? this.textOnBrand,
       textOnTint: textOnTint ?? this.textOnTint,
       textError: textError ?? this.textError,
+      textTooltip: textTooltip ?? this.textTooltip,
       iconDefault: iconDefault ?? this.iconDefault,
       iconStrong: iconStrong ?? this.iconStrong,
       iconSelected: iconSelected ?? this.iconSelected,
@@ -974,6 +990,7 @@ class VelaColors extends ThemeExtension<VelaColors> {
       bgRaised: Color.lerp(bgRaised, other.bgRaised, t)!,
       bgHover: Color.lerp(bgHover, other.bgHover, t)!,
       bgTooltip: Color.lerp(bgTooltip, other.bgTooltip, t)!,
+      bgScrim: Color.lerp(bgScrim, other.bgScrim, t)!,
       bgInactive: Color.lerp(bgInactive, other.bgInactive, t)!,
       bgSelected: Color.lerp(bgSelected, other.bgSelected, t)!,
       primaryTint: Color.lerp(primaryTint, other.primaryTint, t)!,
@@ -991,6 +1008,7 @@ class VelaColors extends ThemeExtension<VelaColors> {
       textOnBrand: Color.lerp(textOnBrand, other.textOnBrand, t)!,
       textOnTint: Color.lerp(textOnTint, other.textOnTint, t)!,
       textError: Color.lerp(textError, other.textError, t)!,
+      textTooltip: Color.lerp(textTooltip, other.textTooltip, t)!,
       iconDefault: Color.lerp(iconDefault, other.iconDefault, t)!,
       iconStrong: Color.lerp(iconStrong, other.iconStrong, t)!,
       iconSelected: Color.lerp(iconSelected, other.iconSelected, t)!,
@@ -1154,6 +1172,20 @@ abstract final class VelaSizing {
   static const double statusDot = 10;
   /// Status Indicator dot, small — for dense tables.
   static const double statusDotSmall = 8;
+  /// Popover, size regular: the popup width. Never wider than the space beside its trigger (--available-width).
+  static const double popoverWidth = 280;
+  /// Popover, size wide.
+  static const double popoverWidthWide = 400;
+  /// Dialog, size regular: the popup width. Never wider than the viewport less its gutters.
+  static const double dialogWidth = 480;
+  /// Dialog, size wide.
+  static const double dialogWidthWide = 720;
+  /// Tooltip: the widest a tooltip grows before its text wraps. A tooltip is a phrase, not a paragraph.
+  static const double tooltipWidthMax = 240;
+  /// The opacity bg-scrim is drawn at behind a Dialog. A number, not a colour alpha: primitives are opaque and the Figma sync carries opaque colours only.
+  static const double opacityScrim = 0.5;
+  /// z-index of every overlay (Popover, Tooltip, Dialog) portalled to <body>. One layer: overlays stack among themselves by DOM order, the later one on top.
+  static const double layerOverlay = 1000;
 }
 
 /// Motion: three durations and the one curve. A press lands on [durationInstant]; pointer
@@ -1166,6 +1198,8 @@ abstract final class VelaMotion {
   static const Duration durationFast = Duration(milliseconds: 120);
   /// Anything that settles or enters: hover out, appearing.
   static const Duration durationBase = Duration(milliseconds: 180);
+  /// How long the pointer rests on a trigger before its Tooltip opens. A delay, not an animation: it stops tooltips flashing as the pointer crosses a toolbar. Equal to Base UI's default, which applies when the stylesheet is not loaded.
+  static const Duration delayTooltip = Duration(milliseconds: 600);
   /// The only curve. Never a bare ease.
   static const Cubic easeStandard = Cubic(0.2, 0, 0.2, 1);
   /// The spinner appearing. The only blur in the kit: motion is feedback, never decoration.

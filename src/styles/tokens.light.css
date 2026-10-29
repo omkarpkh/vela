@@ -79,6 +79,7 @@
   --vela-bg-raised: var(--vela-white);
   --vela-bg-hover: var(--vela-grey-100);
   --vela-bg-tooltip: var(--vela-grey-800);
+  --vela-bg-scrim: var(--vela-black);
   --vela-bg-inactive: var(--vela-grey-100);
   --vela-bg-selected: var(--vela-blue-100);
   --vela-primary-tint: var(--vela-blue-100);
@@ -100,6 +101,7 @@
   --vela-text-on-brand: var(--vela-white);
   --vela-text-on-tint: var(--vela-grey-700);
   --vela-text-error: var(--vela-red-700);
+  --vela-text-tooltip: var(--vela-white);
 
   /* ---- Semantic: icon ---- */
   --vela-icon-default: var(--vela-grey-500);
@@ -308,10 +310,20 @@
   --vela-status-dot: 10px;
   --vela-status-dot-small: 8px;
 
+  /* ---- Overlays: Popover, Tooltip, Dialog (headless) ---- */
+  --vela-popover-width: 280px;
+  --vela-popover-width-wide: 400px;
+  --vela-dialog-width: 480px;
+  --vela-dialog-width-wide: 720px;
+  --vela-tooltip-width-max: 240px;
+  --vela-opacity-scrim: 0.5;
+  --vela-layer-overlay: 1000;
+
   /* ---- Motion (respects reduced-motion in components.css) ---- */
   --vela-duration-instant: 70ms;
   --vela-duration-fast: 120ms;
   --vela-duration-base: 180ms;
+  --vela-delay-tooltip: 600ms;
   --vela-ease-standard: cubic-bezier(0.2, 0, 0.2, 1);
   --vela-blur-materialize: 2px;
 }

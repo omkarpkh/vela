@@ -39,6 +39,9 @@ const SCOPES = {
   // three of these right by hand before the sync carried them — figma.test.ts pins them now.
   stroke: ['STROKE_FLOAT'], focusSize: ['STROKE_FLOAT'], field: ['GAP'],
   tracking: ['LETTER_SPACING'], effect: ['EFFECT_FLOAT'],
+  // The overlay tokens (Phase 1): the scrim opacity belongs in the layer-opacity picker; the overlay
+  // z-index has no Figma property at all, so it is offered nowhere (it travels for its code syntax).
+  opacity: ['OPACITY'], layer: [],
 }
 const scopesFor = (group, figmaName, cssName, type) => {
   if (group === 'primitives') return SCOPES.primitive

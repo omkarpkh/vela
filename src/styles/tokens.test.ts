@@ -97,9 +97,11 @@ describe('token source', () => {
     const RULE: Record<string, RegExp> = {
       color: /^(surface|border|text|icon|button|control|severity|risk|status|focus)\//,
       // `control/` carries the Checkbox and Radio geometry (control/checkbox/size, control/radio/dot) since Phase 1.
-      sizing: /^(space|icon|control-height|control|radius|focus|stroke|field|toggle|status)\//,
+      // `popover/`, `dialog/`, `tooltip/`, `opacity/` and `layer/` carry the overlay geometry since Phase 1.
+      sizing: /^(space|icon|control-height|control|radius|focus|stroke|field|toggle|status|popover|dialog|tooltip|opacity|layer)\//,
       typography: /^(size|line-height|weight|tracking)\//,
-      motion: /^(duration|easing|blur)\//,
+      // `delay/tooltip` is a wait before an overlay opens, not an animation, so it is not a duration/.
+      motion: /^(duration|easing|blur|delay)\//,
     }
     const bad: string[] = []
     for (const [group, re] of Object.entries(RULE))
