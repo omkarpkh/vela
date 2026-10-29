@@ -15,15 +15,18 @@
  *
  * Parsing rules, stated so they can be checked:
  *   - A release is a `## [X.Y.Z] — YYYY-MM-DD` heading; `## [Unreleased]` is skipped.
- *   - A section is a `### ` heading whose first word is one of Keep a Changelog's six kinds
- *     (Added, Changed, Fixed, Removed, Deprecated, Security). The heading is kept whole, so
+ *   - A section is any `### ` heading — Keep a Changelog's six kinds (Added, Changed, Fixed,
+ *     Removed, Deprecated, Security) and the release's own ("Companion Figma library" in 0.3.0,
+ *     "Accessibility decisions worth recording" in 0.1.0). The heading is kept whole, so
  *     "Changed — breaking" stays as written; two headings of the same name in one release are
- *     one list. Other `###` headings ("Note on versioning", "Companion Figma library") and
- *     sections with no bullets are dropped — the link to the full entry covers them.
+ *     one list. A section with no bullets ("Note on versioning") is dropped — the link to the
+ *     full entry covers it; prose between a heading and its bullets is not shown.
  *   - A bullet's lead-in is its opening `**bold**`, word for word, with backticks and link
- *     syntax removed. A bullet with no bold lead-in shows its opening and then "…": the whole
- *     bullet when it fits in 90 characters, else its first sentence when that fits, else its
- *     first 90 characters cut at a word. Indented lines belong to their bullet.
+ *     syntax removed. A bold lead-in that ends in a colon ("Components:") is a label, so the rest
+ *     of the bullet is added up to its first sentence end. A bullet with no bold lead-in shows its
+ *     opening and then "…": the whole bullet when it fits in 90 characters, else its first
+ *     sentence when that fits, else its first 90 characters cut at a word. Indented lines belong
+ *     to their bullet.
  *   - The label follows demo/pages/Status.tsx exactly: the `**Status:**` line under the intent
  *     paragraph, the first label word it starts with; Approved when there is no line.
  *   - The React export is the name src/index.ts exports for the component's source folder, from
@@ -31,14 +34,18 @@
  *     names a dependency (no spec has one yet; the headless entry point is Phase 1 work).
  *   - "Since" is the oldest release whose entry names the component, by its title or by its
  *     title with the spaces removed (0.1.0 writes "ContextualAlert"); "Unreleased" when only
- *     the Unreleased entry names it. A released component's spec links to main; an unreleased
- *     one's to the branch the page was built from, the only place it exists yet.
+ *     the Unreleased entry names it. A spec links to main when the file is on main (main, else
+ *     origin/main; assumed so when neither ref exists); otherwise to the branch the page was built
+ *     from, marked "(branch)", the only place it exists yet.
+ *   - The Figma set comes from `state` in SETS (scripts/sync-figma-descriptions.mjs): published →
+ *     the set and its page, built → "Built, not published", none → "None yet — the builder is ready".
  */
 import { readFileSync, readdirSync, existsSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { execFileSync } from 'node:child_process'
 import { meta as builderMeta } from './build-components.mjs'
+import { SETS } from '../sync-figma-descriptions.mjs'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const read = (rel) => readFileSync(join(root, rel), 'utf8')
@@ -54,14 +61,21 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
 export const longDate = (iso) => { const [y, m, d] = iso.split('-').map(Number); return `${d} ${MONTHS[m - 1]} ${y}` }
 
 // ---------- CHANGELOG.md ----------
-const KINDS = /^(Added|Changed|Fixed|Removed|Deprecated|Security)\b/
 const plain = (s) => s.replace(/`([^`]*)`/g, '$1').replace(/\[([^\]]+)\]\([^)]*\)/g, '$1').replace(/\*\*/g, '').replace(/\s+/g, ' ').trim()
 
 /** The lead-in of one bullet: its opening bold, word for word; otherwise its opening sentence, cut to "…" past 90 characters. */
 export function leadOf(bullet) {
   const flat = bullet.replace(/\s+/g, ' ').trim()
   const bold = flat.match(/^\*\*(.+?)\*\*/)
-  if (bold) return plain(bold[1])
+  if (bold) {
+    const lead = plain(bold[1])
+    // A lead-in that ends in a colon ("Components:") is a label, not a statement: it carries the
+    // rest of the bullet up to its first sentence end.
+    if (!lead.endsWith(':')) return lead
+    const rest = plain(flat.slice(bold[0].length))
+    const sentence = (rest.match(/^.*?[.!?](?=\s|$)/) || [rest])[0]
+    return sentence ? `${lead} ${sentence}` : lead
+  }
   const text = plain(flat)
   if (text.length <= 90) return text
   const sentence = (text.match(/^.+?\.(?=\s)/) || [''])[0]
@@ -83,7 +97,7 @@ export function parseChangelog(md) {
     const sections = []
     for (const sec of body.split(/^(?=### )/m)) {
       const sh = sec.match(/^### (.+)$/m)
-      if (!sh || !KINDS.test(sh[1].trim())) continue
+      if (!sh) continue
       const name = sh[1].trim()
       const text = sec.slice(sec.indexOf('\n') + 1)
       // A bullet runs from `- ` at the start of a line to the next one, a blank line followed by prose, or the end.
@@ -122,11 +136,20 @@ export function registryVersions() {
 }
 
 // ---------- the stamp ----------
-/** Branch, short sha ("+uncommitted" when the tree is dirty) and today's date — what every stamp line states. */
-export function stampParts() {
-  const git = (...a) => { try { return execFileSync('git', a, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim() } catch { return '' } }
+/** Run git in the repository; '' when it fails. */
+const runGit = (...a) => { try { return execFileSync('git', a, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim() } catch { return '' } }
+/** Whether git succeeds (exit 0) — for `cat-file -e` and `rev-parse --verify`, whose answer is the exit code. */
+const gitOk = (...a) => { try { execFileSync('git', a, { cwd: root, stdio: 'ignore' }); return true } catch { return false } }
+
+/**
+ * Branch, short sha ("+uncommitted" when the tree is dirty) and today's date — what every stamp
+ * line states. A detached checkout (CI) reports its ref as `HEAD`, which is not a branch a link
+ * can point at, so the branch falls back to `main`. `git` is injectable so a test can mock the ref.
+ */
+export function stampParts({ git = runGit } = {}) {
   const sha = git('rev-parse', '--short', 'HEAD') || 'unknown'
-  const branch = git('rev-parse', '--abbrev-ref', 'HEAD') || 'unknown'
+  const ref = git('rev-parse', '--abbrev-ref', 'HEAD')
+  const branch = !ref || ref === 'HEAD' ? 'main' : ref
   const dirty = git('status', '--porcelain') !== ''
   const date = new Date().toISOString().slice(0, 10)
   return { sha, branch, dirty, date, at: `${branch} ${sha}${dirty ? '+uncommitted' : ''} (${longDate(date)})` }
@@ -225,6 +248,30 @@ export function sinceOf(name, entries = changelog()) {
   return entries.some((e) => !e.released && names(e)) ? 'Unreleased' : '—'
 }
 
+/**
+ * Whether a file is on main: `main:<path>`, else `origin/main:<path>` (a local main can be stale).
+ * When neither ref exists (a shallow CI checkout) it is assumed present. `ok` is injectable for a test.
+ */
+export function onMain(path, { ok = gitOk } = {}) {
+  const refs = ['main', 'origin/main'].filter((r) => ok('rev-parse', '--verify', '--quiet', `${r}^{commit}`))
+  if (!refs.length) return true
+  return refs.some((r) => ok('cat-file', '-e', `${r}:${path}`))
+}
+
+/**
+ * The Figma set cell, from the entry's `state` in SETS (scripts/sync-figma-descriptions.mjs, the
+ * table figma-map.json is generated from): 'published' → the set and its page; 'built' (in the
+ * file, not published) → "Built, not published"; 'none' → "None yet — the builder is ready",
+ * naming the builder when there is one.
+ */
+export function figmaSetOf(file, id) {
+  const entry = SETS[file]
+  const m = existsSync(join(root, 'scripts/figma/components', `${id}.figma.js`)) ? builderMeta(id) : null
+  if (entry && entry.state === 'published') return `${m ? m.set : entry.set} · page ${m ? m.page : entry.set}`
+  if (entry && entry.state === 'built') return 'Built, not published'
+  return m ? `None yet — the builder is ready (${id}.figma.js)` : 'None yet'
+}
+
 export function statusData() {
   const dir = join(root, 'guidelines/components')
   const order = registryOrder()
@@ -238,14 +285,11 @@ export function statusData() {
     const spec = readFileSync(join(dir, o.file), 'utf8')
     const name = (spec.match(/^# (.+)$/m) || [, o.name ?? o.id])[1].trim()
     const { label } = statusOf(spec)
-    // GOVERNANCE.md: an Experimental component "does not get a Figma set yet".
-    const hasBuilder = existsSync(join(root, 'scripts/figma/components', `${o.id}.figma.js`))
-    const m = hasBuilder ? builderMeta(o.id) : null
-    const figmaSet = label === 'Experimental' || !m
-      ? (m ? `None yet — the builder is ready (${o.id}.figma.js)` : 'None yet')
-      : `${m.set} · page ${m.page}`
+    const figmaSet = figmaSetOf(o.file, o.id)
     const since = sinceOf(name, entries)
-    const onBranch = since === 'Unreleased'
+    // "(branch)" and a branch link only for a spec that is not on main yet — not for every
+    // component whose first changelog mention is still Unreleased.
+    const onBranch = !onMain(`guidelines/components/${o.file}`)
     return {
       name, label, figmaSet,
       reactExport: `${exportNameOf(o.src, entryPointOf(spec))} · ${entryPointOf(spec)}`,

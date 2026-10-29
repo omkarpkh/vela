@@ -20,7 +20,7 @@
  */
 import { readFileSync, readdirSync } from 'node:fs'
 import { join, dirname } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const dir = join(root, 'guidelines/components')
@@ -29,23 +29,32 @@ const version = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).ver
 // spec file → Figma component set name and source directory. `entry` is the source tree the
 // component lives in: `components` (the core, `@omkarux/vela`) unless it says `headless`
 // (`@omkarux/vela/headless` only — Checkbox and Radio Group have no core implementation).
-// `node` is the component set's id in the library file (XO2rmeCcgOjyKe4oipgF4j), read by the Figma
-// thread on 28 Oct 2026; null until the set exists. `export` is what an agent writes for an
-// instance of the set — for Tab it is the trigger, because the set is one trigger, not the tablist;
-// for Radio it is the radio inside its group.
-const SETS = {
-  'button.md': { set: 'Button', src: 'Button', node: '7:122', export: 'Button' },
-  'toggle.md': { set: 'Toggle', src: 'Toggle', node: '8:49', export: 'Toggle' },
-  'input.md': { set: 'Input', src: 'Input', node: '8:110', export: 'Input' },
-  'contextual-alert.md': { set: 'Contextual Alert', src: 'ContextualAlert', node: '77:15', export: 'ContextualAlert' },
-  'status-indicator.md': { set: 'Status Indicator', src: 'StatusIndicator', node: '8:32', export: 'StatusIndicator' },
-  'risk-pill.md': { set: 'Risk Pill', src: 'RiskPill', node: null, export: 'RiskPill' },
-  'tabs.md': { set: 'Tab', src: 'Tabs', node: '11:20', export: 'Tabs.Trigger' },
-  'icon.md': { set: 'Icon', src: 'Icon', node: null, export: 'Icon' },
-  'checkbox.md': { set: 'Checkbox', src: 'Checkbox', entry: 'headless', node: null, export: 'Checkbox' },
-  'radio-group.md': { set: 'Radio', src: 'RadioGroup', entry: 'headless', node: null, export: 'RadioGroup.Radio' },
+// `state` is a closed set: 'published' (the set is in the published library, `node` is its id),
+// 'built' (the set exists in the file but is not published — `node` stays null until the Figma
+// thread posts the id; Risk Pill's set is being rebuilt, so its id is not final), 'none' (no set
+// yet, `node` null). `node` is the component set's id in the library file
+// (XO2rmeCcgOjyKe4oipgF4j), read by the Figma thread on 28 Oct 2026. `export` is what an agent
+// writes for an instance of the set — for Tab it is the trigger, because the set is one trigger,
+// not the tablist; for Radio it is the radio inside its group.
+export const STATES = ['published', 'built', 'none']
+export const SETS = {
+  'button.md': { set: 'Button', src: 'Button', state: 'published', node: '7:122', export: 'Button' },
+  'toggle.md': { set: 'Toggle', src: 'Toggle', state: 'published', node: '8:49', export: 'Toggle' },
+  'input.md': { set: 'Input', src: 'Input', state: 'published', node: '8:110', export: 'Input' },
+  'contextual-alert.md': { set: 'Contextual Alert', src: 'ContextualAlert', state: 'published', node: '77:15', export: 'ContextualAlert' },
+  'status-indicator.md': { set: 'Status Indicator', src: 'StatusIndicator', state: 'published', node: '8:32', export: 'StatusIndicator' },
+  'risk-pill.md': { set: 'Risk Pill', src: 'RiskPill', state: 'built', node: null, export: 'RiskPill' },
+  'tabs.md': { set: 'Tab', src: 'Tabs', state: 'published', node: '11:20', export: 'Tabs.Trigger' },
+  'icon.md': { set: 'Icon', src: 'Icon', state: 'none', node: null, export: 'Icon' },
+  'checkbox.md': { set: 'Checkbox', src: 'Checkbox', entry: 'headless', state: 'none', node: null, export: 'Checkbox' },
+  'radio-group.md': { set: 'Radio', src: 'RadioGroup', entry: 'headless', state: 'none', node: null, export: 'RadioGroup.Radio' },
 }
-const FILE_KEY = 'XO2rmeCcgOjyKe4oipgF4j'
+export const FILE_KEY = 'XO2rmeCcgOjyKe4oipgF4j'
+
+/** The import an agent writes for an instance of the set — the same string in the description's CODE block and in figma-map.json. */
+export const importOf = (e) => `import { ${e.export.split('.')[0]} } from '@omkarux/vela${e.entry === 'headless' ? '/headless' : ''}'`
+/** For a set that is one part of a compound component, the line that says which part. */
+const partOf = (e) => (e.export.includes('.') ? [`This set is one ${e.export}.`] : [])
 
 // `[[rule: id | enforcement]]` is metadata for scripts/check-rules.mjs, not prose: it is stripped
 // here so it never reaches a Figma component description, and in demo/playground/Markdown.tsx so
@@ -59,6 +68,12 @@ const section = (md, heading) => {
   return m ? m[1] : ''
 }
 
+for (const [f, e] of Object.entries(SETS)) {
+  if (!STATES.includes(e.state)) throw new Error(`SETS['${f}'].state is "${e.state}"; it is one of ${STATES.join(', ')}`)
+  if (e.state === 'published' && !e.node) throw new Error(`SETS['${f}'] is published but has no node`)
+  if (e.state === 'none' && e.node) throw new Error(`SETS['${f}'] has no set but names node ${e.node}`)
+}
+
 function parse(file) {
   const md = readFileSync(join(dir, file), 'utf8')
   const title = md.match(/^# (.+)$/m)[1]
@@ -69,9 +84,10 @@ function parse(file) {
   const rules = [...section(md, 'Hard constraints').matchAll(/^- \*\*(.+?)\*\*/gm)]
     .map((m) => strip(m[1]).replace(/[.:]$/, ''))
 
-  const mapping = [...section(md, 'Figma mapping').matchAll(/^\| `([^`]+)`[^|]*\| (.+?) \|/gm)]
+  // A qualifier after the property name — "(boolean)", "(text layer, override on the instance)" — is kept.
+  const mapping = [...section(md, 'Figma mapping').matchAll(/^\| `([^`]+)`([^|]*)\| (.+?) \|/gm)]
     .filter((m) => !/^Figma property/.test(m[1]))
-    .map((m) => `${m[1]} → ${strip(m[2])}`)
+    .map((m) => `${m[1]}${m[2].trim() ? ' ' + strip(m[2]) : ''} → ${strip(m[3])}`)
 
   // A bold-led paragraph in the Figma mapping section ships to Figma verbatim; it may wrap.
   const notes = [...section(md, 'Figma mapping').matchAll(/^\*\*([\s\S]+?)\*\*/gm)].map((m) => strip(m[1]))
@@ -83,7 +99,8 @@ function parse(file) {
 
   const body = [
     intent, '',
-    'CODE', code, '',
+    'Use the library component; do not rebuild it from this frame.',
+    'CODE', importOf(SETS[file]), ...partOf(SETS[file]), code, '',
     'FIGMA → PROP', mapping.join('  ·  '),
     ...(notes.length ? ['', ...notes] : []),
     '',
@@ -97,11 +114,12 @@ function parse(file) {
   const map = {
     set: SETS[file].set,
     page,
+    state: SETS[file].state,
     node: SETS[file].node,
     url: SETS[file].node
       ? `https://www.figma.com/design/${FILE_KEY}/Vela-Design-System?node-id=${SETS[file].node.replace(':', '-')}`
       : null,
-    import: `import { ${SETS[file].export.split('.')[0]} } from '@omkarux/vela${SETS[file].entry === 'headless' ? '/headless' : ''}'`,
+    import: importOf(SETS[file]),
     write: SETS[file].export,
     figmaToProp: [...section(md, 'Figma mapping').matchAll(/^\| `([^`]+)`[^|]*\| (.+?) \|/gm)]
       .filter((m) => !/^Figma property/.test(m[1]))
@@ -113,23 +131,25 @@ function parse(file) {
   return { file, title, page, set: SETS[file].set, description: body, map }
 }
 
-const entries = readdirSync(dir).filter((f) => SETS[f]).map(parse)
+export const entries = () => readdirSync(dir).filter((f) => SETS[f]).map(parse)
 
-if (process.argv.includes('--map')) {
+// Imported (scripts/figma/page-data.mjs reads SETS), it prints nothing.
+const isMain = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href
+if (isMain && process.argv.includes('--map')) {
   // guidelines/figma-map.json: what an agent writes for an instance of each library set. It does
   // the job Code Connect would do on an Organization plan, from the specs, on every plan.
   // Regenerate with `npm run figma:map`; src/styles/figma-map.test.ts fails when it is stale.
   const out = {
-    $comment: 'Generated by scripts/sync-figma-descriptions.mjs --map from guidelines/components/*.md — do not edit. When a Figma node is an instance of a set below, write `write` with props from `figmaToProp`, imported as `import`; never reproduce Figma-generated markup.',
+    $comment: 'Generated by scripts/sync-figma-descriptions.mjs --map from guidelines/components/*.md — do not edit. When a Figma node is an instance of a set below, write `write` with props from `figmaToProp`, imported as `import`; never reproduce Figma-generated markup. `state` is published (in the library, with its node), built (in the file, not published; node null until known) or none (no set yet).',
     fileKey: FILE_KEY,
-    sets: entries.map((e) => e.map),
+    sets: entries().map((e) => e.map),
   }
   console.log(JSON.stringify(out, null, 2))
-} else if (process.argv.includes('--json')) {
-  console.log(JSON.stringify(entries, null, 2))
-} else {
+} else if (isMain && process.argv.includes('--json')) {
+  console.log(JSON.stringify(entries(), null, 2))
+} else if (isMain) {
   process.stdout.write(`// Generated by scripts/sync-figma-descriptions.mjs from guidelines/components/*.md — do not edit.
-const ENTRIES = ${JSON.stringify(entries.map(({ page, set, description }) => ({ page, set, description })))};
+const ENTRIES = ${JSON.stringify(entries().map(({ page, set, description }) => ({ page, set, description })))};
 const done = [], missing = [];
 for (const e of ENTRIES) {
   const page = figma.root.children.find(p => p.name === e.page);
