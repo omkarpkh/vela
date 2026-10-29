@@ -200,10 +200,10 @@ describe('the Status page', () => {
     // It has no Figma set yet; its spec is on main, so no "(branch)".
     const [, iset, iexp, isince, ispec] = cells('Icon')
     expect([iset.chars, iexp.chars, isince.chars, ispec.chars]).toEqual(['None yet — the builder is ready (icon.figma.js)', 'Icon · @omkarux/vela', 'Unreleased', 'icon.md'])
-    // Text Area is core and unreleased; its spec is not on main yet, so it carries "(branch)".
+    // Text Area is core and unreleased; its spec is on main, so no "(branch)".
     const [, tset, texp, tsince, tspec] = cells('Text Area')
-    expect([tset.chars, texp.chars, tsince.chars, tspec.chars]).toEqual(['None yet — the builder is ready (text-area.figma.js)', 'TextArea · @omkarux/vela', 'Unreleased', 'text-area.md (branch)'])
-    for (const r of rows) if (r.n !== 'Text Area') expect(cells(r.n)[4].chars, r.n).not.toContain('(branch)')
+    expect([tset.chars, texp.chars, tsince.chars, tspec.chars]).toEqual(['None yet — the builder is ready (text-area.figma.js)', 'TextArea · @omkarux/vela', 'Unreleased', 'text-area.md'])
+    for (const r of rows) expect(cells(r.n)[4].chars, r.n).not.toContain('(branch)')
   })
 })
 
