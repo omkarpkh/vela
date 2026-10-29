@@ -17,6 +17,21 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   list's position across a switch, on both implementations, at phone width.
 
 ### Added
+- **Awareness Clock — proposal, not built** (`guidelines/proposals/awareness-clock.md`). Records
+  when a named person became aware of something reportable under the Cyber Resilience Act, NIS2
+  or DORA, and counts every reporting limit from the right moment. "Report received" and "first
+  detected" never start the clock; awareness is a press that freezes the evidence known then, and
+  only a person answers, presses and signs. Every limit is worded as an outer limit ("without undue
+  delay; at the latest …"), hours are counted as UTC instants at the earliest reading, and a
+  platform time that differs from the law's is shown beside it. Each deadline cites its article as
+  published, with the date it was read. Time pressure carries no colour. 20 rules, 17 with proofs;
+  three closed sets without tokens (Regime 4, Answer 3, Claim check 3). Eight proposals now hold
+  188 rules, 149 with proofs.
+- **Proposals: one weak-claim wording across the Evidence Locker and the Verdict Card**, from a
+  table in the Locker that the card follows word for word (coverage line, withheld-Accept sentence,
+  text summary). The Calibrated Confidence Gate's Limits now say a record belongs to an agent
+  version and a model, its Built from names the Agent Provenance Badge, and its Changes section
+  separates what was public before the badge from what the badge added. None of these is breaking.
 - **Motion pass, part 1: an entering curve, a spring, and a sliding Tabs indicator.** Three motion
   tokens, all **provisional until the owner has reviewed their feel**: `--vela-ease-out`
   `cubic-bezier(0.25, 1, 0.5, 1)` for things that enter (starts at four times the average speed,

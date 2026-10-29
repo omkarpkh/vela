@@ -200,6 +200,18 @@ the Verdict Card's coverage line, withheld-Accept sentence and text summary) bui
 | any kind plus missing | "cites only untrusted content and an item that is not here (2 items)" |
 
 The count is the number of cited ids. No surface says "untrusted" for an agent's summary.
+
+**One wording on every surface.** Each surface builds its sentence from the phrase above, and the
+Locker and the Verdict Card use the same sentences, word for word:
+
+| Surface | One weak claim | More than one |
+|---|---|---|
+| Flag under the claim (Locker) | "This claim about the world *phrase*. Check it against a system record before acting." | one flag per claim |
+| Coverage line (Verdict Card) | "· 1 claim about the world *phrase*" | "· *n* claims about the world are weak", each listed beneath with its phrase |
+| Withheld Accept (Verdict Card) | "A claim about the world *phrase*: '*claim*'. Check it against a system record, or agree through Override with a reason." | "*n* claims about the world are weak: '*claim*' *phrase*; '*claim*' *phrase*. Check them against a system record, or agree through Override with a reason." |
+| Text summary (both) | `Weak claim about the world: "claim" — phrase` | one line per claim |
+
+*Phrase* is the table's phrase with its count, for example "cites only untrusted content (1 item)".
 Without this split, nearly every phishing verdict would be flagged, because the email *is* the
 evidence, and the flag would become noise.
 
@@ -261,8 +273,8 @@ Rule ids are listed with their proof level; they become `[[rule: … ]]` tags wh
   `locker-untrusted-marked-everywhere` · runtime
 - **Weak world-claims are flagged.** The link from a claim to its items is labelled "The agent
   cites:", never "Supported by". Each claim `weakWorldClaims` returns carries a line under it, worded
-  from `cited` by the table above: "A claim about the world — the agent cites only untrusted content
-  (1 item). Check it against a system record before acting." A `the-item` claim is never flagged,
+  by the tables above: "This claim about the world cites only untrusted content (1 item). Check it
+  against a system record before acting." A `the-item` claim is never flagged,
   because the item is shown. Any cited id that is not in `items` is also flagged on its own: "The
   agent cites an item that is not here". The unit test includes a claim citing only a missing id
   (weak, and flagged) and one citing a missing id and a system record (not weak, but flagged). An `agent-output` item with
@@ -347,7 +359,7 @@ None. The container decides the layout.
 | Grouped by claim (default) | Each claim, marked "about the world" or "about this item", then "The agent cites:" and its items, each with its trust and channel. Items no claim cites follow under "Read but not cited". |
 | Grouped by trust | Three groups in this order: "Untrusted content", "Written by agents", "System records". Untrusted comes first so it cannot be skimmed past. |
 | Grouped by time | Items by `retrievedAt`, oldest first, so the order the agent read things is visible. |
-| Weak world-claim | Under the claim: "A claim about the world — the agent cites only untrusted content (1 item). Check it against a system record before acting." The phrase follows what was cited: untrusted, agent-written, both, or not here. |
+| Weak world-claim | Under the claim: "This claim about the world cites only untrusted content (1 item). Check it against a system record before acting." The phrase follows what was cited: untrusted, agent-written, both, or not here. |
 | Cited item missing | "The agent cites an item that is not here." If no system record is cited, the claim is also weak. |
 | Claims not stated | "The agent did not state its claims: *reason*. Evidence cannot be tied to claims." Items group by trust. |
 | Detector flag | Beside the item: "*Detector*: *hint*." |
@@ -384,7 +396,7 @@ The text summary, exactly:
 Evidence for Verdict: Malicious — Case CS-4133, version 3
 Not seen: Endpoint telemetry for LT-0912 (connector offline since 06:10 UTC)
 Items: 3 — 2 system records, 1 untrusted · 2 from tool calls, 1 given
-Weak claims about the world: "The mailbox rule forwards invoices to an outside address" — cites only untrusted content (1 item: Body of the email 'Invoice overdue — action needed', could have been written by the email's sender)
+Weak claim about the world: "The mailbox rule forwards invoices to an outside address" — cites only untrusted content (1 item: Body of the email 'Invoice overdue — action needed', could have been written by the email's sender)
 Confidence: Agent says Low (Triage agent 2.4)
 ```
 
@@ -432,10 +444,10 @@ Applied in this same change to `verdict-card.md`:
    `verdict-not-seen-required` keep their ids and now hold on `evidence.items` and
    `evidence.notSeen`.
 2. The coverage line adds weak world-claims when there are any: "Sources read: 2 of 3 · 1 claim
-   about the world is weak". The detail, worded by what was cited, sits under the line. This folds
-   into `verdict-coverage-separate`.
+   about the world cites only untrusted content (1 item)", or "· 2 claims about the world are weak"
+   with each listed beneath, by the wording table above. This folds into `verdict-coverage-separate`.
 3. Accept is withheld when `weakWorldClaims(evidence.claims, evidence.items)` returns any claim. The
-   sentence names it, worded by what was cited: "A claim about the world cites only untrusted content: 'The mailbox rule
+   sentence names it, by the wording table above: "A claim about the world cites only untrusted content (1 item): 'The mailbox rule
    forwards invoices to an outside address'. Check it against a system record, or agree through
    Override with a reason." This folds into `verdict-accept-withheld`, and the injection case
    fails closed. A `the-item` claim never withholds Accept, so an ordinary phishing verdict is not
