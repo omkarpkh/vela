@@ -163,6 +163,39 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **`.claude/launch.json` carried a personal macOS path** in a second launch configuration that
   had nothing to do with Vela. It is removed; the file keeps the one generic entry, which starts
   the demo on port 5174.
+- **The Risk Pill builder labelled every variant "Low" — in the live file, "High".** A Figma text
+  property holds one default for the whole component set, so binding each variant's `Label` layer
+  to one `Label text` property and writing Low, Medium and High showed the last word written in
+  all six (seen live as High / High / High). `risk-pill.figma.js` no longer adds the property: each
+  variant keeps its own level word in its `Label` layer, overridden on the instance. The spec's
+  Figma mapping row now reads `Label` (text layer, override on the instance) → `label`. The mock
+  Plugin API models the one-default rule, and a new lint rule, `text-property-collapse`, fails any
+  builder that binds a text property in variants whose texts differ; Toggle, Checkbox and Radio,
+  which write the same word in every variant, still pass.
+- **The Figma descriptions did not say what to import.** The CODE block of every component set's
+  description now starts with the import line from `guidelines/figma-map.json`
+  (`import { Button } from '@omkarux/vela'`; Checkbox and Radio from `@omkarux/vela/headless`), Tab
+  and Radio add "This set is one Tabs.Trigger." / "This set is one RadioGroup.Radio.", and a line
+  before the block says "Use the library component; do not rebuild it from this frame."
+- **A re-run of the Changelog or Status page builder turned the page frame black.** Re-assigning
+  an identically bound paint to the reused frame left its colour at the `{0,0,0}` placeholder in
+  the real file. `pageFrame()` now clears the fills before setting `surface/global` again (the
+  frame is the only node a page builder reuses). The mock keeps the placeholder in that case, so
+  the twice-run page test fails without the clear.
+- **The Status and Changelog pages had three data errors.** Risk Pill's Figma set read "None yet —
+  the builder is ready" though its set exists in the file. Each entry of the set table now has a
+  `state` from a closed set — `published` (the six live sets, with their node ids), `built` (in the
+  file, not published: Risk Pill, node null until the rebuilt set's id is known) or `none` (no set
+  yet: Checkbox, Radio Group) — and the page shows "Built, not published" for Risk Pill;
+  `figma-map.json` carries `state` and `node`. "(branch)" was added to every spec first named in
+  the Unreleased entry; it now marks only a spec that is not on `main` (checked against `main`,
+  then `origin/main`). The Changelog page showed 0.1.0's lead-ins as bare labels ("Components:")
+  and dropped 0.3.0's "Companion Figma library" and 0.1.0's "Accessibility decisions worth
+  recording"; a lead-in ending in a colon now carries its line to the first sentence end, and a
+  section of bullets without bold lead-ins is kept, each bullet shown by its opening.
+- **The page stamp said "HEAD" on a detached checkout.** In CI, `git rev-parse --abbrev-ref HEAD`
+  prints `HEAD`, which the stamp and a branch link then used as a branch name; it now falls back
+  to `main`.
 
 ### Changed
 - README: shields.io badges for CI, the npm version and the licence (static badge URLs, no new

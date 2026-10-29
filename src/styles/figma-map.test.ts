@@ -44,6 +44,36 @@ describe('Figma → code map', () => {
     }
   })
 
+  it('starts every Figma description\'s CODE block with the same import the map has', () => {
+    const entries: { set: string; description: string }[] = JSON.parse(execFileSync('node', [resolve(root, 'scripts/sync-figma-descriptions.mjs'), '--json'], { encoding: 'utf8' }))
+    expect(entries.map((e) => e.set).sort()).toEqual(map.sets.map((s: any) => s.set).sort())
+    for (const s of map.sets) {
+      const d = entries.find((e) => e.set === s.set)!.description
+      const lines = d.split('\n')
+      const at = lines.indexOf('CODE')
+      expect(lines[at - 1], s.set).toBe('Use the library component; do not rebuild it from this frame.')
+      expect(lines[at + 1], s.set).toBe(s.import)
+      if (s.write.includes('.')) expect(lines[at + 2], s.set).toBe(`This set is one ${s.write}.`)
+      else expect(lines[at + 2].startsWith('This set is one'), s.set).toBe(false)
+    }
+    expect(map.sets.find((s: any) => s.set === 'Tab').import).toBe(`import { Tabs } from '@omkarux/vela'`)
+    expect(map.sets.find((s: any) => s.set === 'Radio').import).toBe(`import { RadioGroup } from '@omkarux/vela/headless'`)
+  })
+
+  it('gives every set a state from the closed set: a published set always has a node, a none set never does', () => {
+    for (const s of map.sets) {
+      expect(['published', 'built', 'none'], s.set).toContain(s.state)
+      if (s.state === 'published') expect(s.node, s.set).toMatch(/^\d+:\d+$/)
+      if (s.state === 'none') expect(s.node, s.set).toBeNull()
+      if (!s.node) expect(s.url, s.set).toBeNull()
+    }
+    const pub = map.sets.filter((s: any) => s.state === 'published').map((s: any) => s.set).sort()
+    expect(pub).toEqual(['Button', 'Contextual Alert', 'Input', 'Status Indicator', 'Tab', 'Toggle'])
+    // Risk Pill's set exists in the file but is being rebuilt: its node is null until the Figma thread posts it.
+    expect(map.sets.find((s: any) => s.set === 'Risk Pill')).toMatchObject({ state: 'built', node: null })
+    expect(map.sets.filter((s: any) => s.state === 'none').map((s: any) => s.set).sort()).toEqual(['Checkbox', 'Radio'])
+  })
+
   it('maps the Tab set to Tabs.Trigger, because the set is one trigger', () => {
     expect(map.sets.find((s: any) => s.set === 'Tab').write).toBe('Tabs.Trigger')
   })
