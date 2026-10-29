@@ -50,6 +50,8 @@ const scopesFor = (group, figmaName, cssName, type) => {
     if (head === 'button' || head === 'control') {
       if (/text|placeholder/.test(cssName)) return SCOPES.text
       if (/border/.test(cssName)) return SCOPES.border
+      // The check mark and the radio dot (control/check/mark) are glyphs: a shape fill, never a frame.
+      if (/-mark$/.test(cssName)) return SCOPES.icon
       return SCOPES.bg
     }
     return SCOPES[head] ?? SCOPES.bg

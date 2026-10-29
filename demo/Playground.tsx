@@ -102,7 +102,8 @@ function PlaygroundFor({ entry }: { entry: (typeof REGISTRY)[number] }) {
   const unavailable = entry.unavailable?.(v) ?? {}
   const code = entry.code(v, spec)
   // Two entry points, one playground: the import line and the "Dependencies" line follow the chosen
-  // implementation; a component with one implementation reads its dependencies from the spec.
+  // implementation; a component with one implementation (core-only, or headless-born) reads its
+  // dependencies from the spec.
   const impl = entry.implementations?.find((i) => i.id === v.implementation) ?? entry.implementations?.[0]
   const importPath = impl?.entry ?? '@omkarux/vela'
   const dependencies = impl?.dependencies ?? dependenciesOf(entry.spec)
@@ -144,7 +145,7 @@ function PlaygroundFor({ entry }: { entry: (typeof REGISTRY)[number] }) {
                 </Button>
               ))}
             </div>
-            {entry.implementations && (
+            {entry.implementations && entry.implementations.length > 1 && (
               <div className="pg-toolbar__group" role="group" aria-label="Implementation">
                 {entry.implementations.map((i) => (
                   <Button key={i.id} size="tiny" variant={impl?.id === i.id ? 'primary' : 'standard'} appearance={impl?.id === i.id ? 'filled' : 'hollow'} onClick={() => setValues((s) => ({ ...s, implementation: i.id }))}>
