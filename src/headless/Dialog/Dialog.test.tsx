@@ -117,11 +117,13 @@ describe('Dialog (headless)', () => {
     await settle()
     expect(outside.closest('[aria-hidden="true"]')).not.toBeNull()
     expect(screen.queryByRole('button', { name: 'Outside' })).toBeNull() // gone from the accessibility tree
-    expect(document.documentElement.style.overflowY).toBe('hidden')
+    // Base UI locks whichever of <html> and <body> scrolls the viewport; in jsdom that is <html>.
+    const locked = () => [document.documentElement, document.body].some((el) => el.style.overflowY === 'hidden')
+    expect(locked()).toBe(true)
     await userEvent.keyboard('{Escape}')
     await settle()
     expect(outside.closest('[aria-hidden="true"]')).toBeNull()
-    expect(document.documentElement.style.overflowY).not.toBe('hidden')
+    expect(locked()).toBe(false)
   })
 
   // [[rule: dialog-dismissal]]

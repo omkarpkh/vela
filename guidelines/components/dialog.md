@@ -1,7 +1,7 @@
 # Dialog
 
 A **modal** window for a decision that blocks the task — edit one thing and save, or cancel — with
-the page behind it dimmed, inert and scroll-locked until it closes. Its **`alert`** variant
+the page behind it dimmed, inert and scroll-locked until it closes. Its `alert` variant
 confirms a destructive or irreversible action, with an explicit way out.
 
 **Status:** Experimental — born in `@omkarux/vela/headless` (Base UI 1.9) with Popover and Tooltip;

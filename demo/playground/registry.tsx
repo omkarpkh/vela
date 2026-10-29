@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { Button, Toggle, Input, ContextualAlert, StatusIndicator, RiskPill, Tabs } from '../../src'
 import type { Severity, Status, Risk } from '../../src'
-import { Tabs as HeadlessTabs, Checkbox, RadioGroup } from '../../src/headless'
+import { Tabs as HeadlessTabs, Checkbox, RadioGroup, Popover, Tooltip, Dialog } from '../../src/headless'
 import { PlusIcon } from '../../src/lib/icons'
 import { printJsx, type Control, type Spec } from './spec'
 import buttonMd from '../../guidelines/components/button.md?raw'
@@ -13,6 +13,9 @@ import riskMd from '../../guidelines/components/risk-pill.md?raw'
 import tabsMd from '../../guidelines/components/tabs.md?raw'
 import checkboxMd from '../../guidelines/components/checkbox.md?raw'
 import radioGroupMd from '../../guidelines/components/radio-group.md?raw'
+import popoverMd from '../../guidelines/components/popover.md?raw'
+import tooltipMd from '../../guidelines/components/tooltip.md?raw'
+import dialogMd from '../../guidelines/components/dialog.md?raw'
 
 export type Values = Record<string, string | boolean | undefined>
 
@@ -308,5 +311,126 @@ export const REGISTRY: Entry[] = [
   <RadioGroup.Radio value="quarantine" label="Quarantine" />
 </RadioGroup>`,
     bindingKey: (v) => (bool(v.disabled) ? 'disabled (any)' : str(v.error) ? 'error (any)' : str(v.defaultValue) ? 'selected' : 'unselected'),
+  },
+  // The overlays are headless-born too. Each frame of the stage renders its own trigger, and the
+  // overlay it opens is portalled to <body> carrying that frame's data-theme, so the light frame's
+  // popover is light and the dark frame's is dark. `open` is the controlled arm (it would pin the
+  // stage open or shut); `defaultOpen` would open one overlay per frame on load — documented, not
+  // demonstrated.
+  {
+    id: 'popover',
+    file: 'popover.md',
+    src: 'Popover',
+    name: 'Popover',
+    spec: popoverMd,
+    seed: { title: 'Filter alerts', children: 'Show alerts from the last 24 hours, critical and major only.' },
+    hide: ['open'],
+    noControl: ['defaultOpen'],
+    implementations: [{ id: 'headless', entry: '@omkarux/vela/headless' }],
+    render: (v) => (
+      <Popover
+        trigger={<Button>Filters</Button>}
+        title={str(v.title) || 'Title'}
+        placement={(str(v.placement) || 'bottom') as 'top' | 'bottom' | 'start' | 'end'}
+        align={(str(v.align) || 'center') as 'start' | 'center' | 'end'}
+        size={(str(v.size) || 'regular') as 'regular' | 'wide'}
+      >
+        <p className="vela-body pg-overlay-copy">{str(v.children) || 'Body text.'}</p>
+        <Button size="tiny">Apply Filters</Button>
+      </Popover>
+    ),
+    code: (v, spec) =>
+      `${printJsx('Popover', { title: v.title, placement: v.placement, align: v.align, size: v.size }, defaultsOf(spec), undefined, { trigger: '<Button>Filters</Button>' }).replace(' />', '>')}
+  <p>${str(v.children) || 'Body text.'}</p>
+  <Button size="tiny">Apply Filters</Button>
+</Popover>`,
+  },
+  {
+    id: 'tooltip',
+    file: 'tooltip.md',
+    src: 'Tooltip',
+    name: 'Tooltip',
+    spec: tooltipMd,
+    seed: { content: 'Download the last 24 hours as CSV' },
+    implementations: [{ id: 'headless', entry: '@omkarux/vela/headless' }],
+    render: (v) => (
+      <Tooltip
+        content={str(v.content) || 'Label'}
+        placement={(str(v.placement) || 'top') as 'top' | 'bottom' | 'start' | 'end'}
+        align={(str(v.align) || 'center') as 'start' | 'center' | 'end'}
+      >
+        <Button>Export</Button>
+      </Tooltip>
+    ),
+    code: (v, spec) =>
+      `${printJsx('Tooltip', { content: v.content, placement: v.placement, align: v.align }, defaultsOf(spec)).replace(' />', '>')}
+  <Button>Export</Button>
+</Tooltip>`,
+  },
+  {
+    id: 'dialog',
+    file: 'dialog.md',
+    src: 'Dialog',
+    name: 'Dialog',
+    spec: dialogMd,
+    seed: {
+      variant: 'standard',
+      title: 'Edit policy',
+      description: 'Changes apply to every tenant on save.',
+      children: 'Rules in this policy apply in the order they are listed.',
+      cancelLabel: 'Keep Policy',
+      confirmLabel: 'Delete Policy',
+    },
+    hide: ['open'],
+    noControl: ['defaultOpen'],
+    implementations: [{ id: 'headless', entry: '@omkarux/vela/headless' }],
+    render: (v) => {
+      const common = {
+        title: str(v.title) || 'Title',
+        description: str(v.description) || undefined,
+        size: (str(v.size) || 'regular') as 'regular' | 'wide',
+      }
+      return v.variant === 'alert' ? (
+        <Dialog
+          {...common}
+          variant="alert"
+          trigger={<Button variant="destructive">Delete Policy</Button>}
+          cancelLabel={str(v.cancelLabel) || 'Cancel'}
+          confirmLabel={str(v.confirmLabel) || 'Delete'}
+          onConfirm={() => {}}
+        />
+      ) : (
+        <Dialog
+          {...common}
+          trigger={<Button>Edit Policy</Button>}
+          closeLabel={str(v.closeLabel) || undefined}
+          footer={
+            <>
+              <Dialog.Close><Button>Cancel</Button></Dialog.Close>
+              <Dialog.Close><Button variant="primary">Save Changes</Button></Dialog.Close>
+            </>
+          }
+        >
+          <p className="vela-body pg-overlay-copy">{str(v.children) || 'Body text.'}</p>
+          <Input label="Policy name" defaultValue="Block legacy TLS" />
+        </Dialog>
+      )
+    },
+    code: (v, spec) =>
+      v.variant === 'alert'
+        ? printJsx(
+            'Dialog',
+            { variant: 'alert', title: v.title, description: v.description, size: v.size, cancelLabel: v.cancelLabel, confirmLabel: v.confirmLabel },
+            defaultsOf(spec),
+            undefined,
+            { trigger: '<Button variant="destructive">Delete Policy</Button>', onConfirm: 'deletePolicy' },
+          )
+        : `${printJsx('Dialog', { title: v.title, description: v.description, size: v.size, closeLabel: v.closeLabel }, defaultsOf(spec), undefined, {
+            trigger: '<Button>Edit Policy</Button>',
+            footer: '<><Dialog.Close><Button>Cancel</Button></Dialog.Close><Button variant="primary" onClick={save}>Save Changes</Button></>',
+          }).replace(' />', '>')}
+  <p>${str(v.children) || 'Body text.'}</p>
+  <Input label="Policy name" defaultValue="Block legacy TLS" />
+</Dialog>`,
   },
 ]

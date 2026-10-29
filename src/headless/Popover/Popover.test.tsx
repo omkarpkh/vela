@@ -85,8 +85,7 @@ describe('Popover (headless)', () => {
     const outside = screen.getByRole('button', { name: 'Outside' })
     expect(outside.closest('[aria-hidden="true"]')).toBeNull()
     expect(outside.closest('[inert]')).toBeNull()
-    expect(document.documentElement.style.overflow).not.toBe('hidden')
-    expect(document.documentElement.style.overflowY).not.toBe('hidden')
+    for (const el of [document.documentElement, document.body]) expect(el.style.overflowY).not.toBe('hidden')
     // Not trapped: Tab from the last control moves on to the page, and the popover closes behind it.
     expect(screen.getByRole('button', { name: 'Apply' })).toHaveFocus()
     await userEvent.tab()
