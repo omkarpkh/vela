@@ -16,7 +16,7 @@ test('the Button page constrains text-link the way the type does, and the code f
 test('navigation reaches every component and each page lists its tokens', async ({ page }) => {
   await page.goto('/')
   const nav = page.getByRole('navigation', { name: 'Site' })
-  for (const name of ['Button', 'Toggle', 'Input', 'Contextual Alert', 'Status Indicator', 'Risk Pill', 'Tabs', 'Checkbox', 'Radio Group', 'Popover', 'Tooltip', 'Dialog']) {
+  for (const name of ['Button', 'Toggle', 'Input', 'Contextual Alert', 'Status Indicator', 'Risk Pill', 'Tabs', 'Checkbox', 'Radio Group', 'Popover', 'Tooltip', 'Dialog', 'Toast']) {
     await nav.getByRole('link', { name, exact: true }).click()
     await expect(page.getByRole('heading', { level: 1, name })).toBeVisible()
     await expect(page.getByRole('tab', { name: /^Tokens/ })).not.toHaveText(/Tokens\s*0$/)
@@ -265,6 +265,150 @@ test('a tall dialog scrolls its body and keeps its header and footer on screen',
   expect((await save.boundingBox())!.y).toBe(before.save)
   await expect(title).toBeInViewport()
   await expect(save).toBeInViewport()
+})
+
+// Toast is headless-born. Each frame of the stage renders its own ToastProvider, so each frame has
+// its own region, portalled to <body> with that frame's theme; the tests scope to the light one.
+// The dwell is 6000ms; the tests shorten it for every subtree (the light block redeclares it on each
+// [data-theme] frame), which also proves the component reads the token rather than a constant.
+const lightRegion = (page: import('@playwright/test').Page) =>
+  page.locator('.vela-overlay-portal[data-theme="light"]').getByRole('region', { name: 'Notifications' })
+const shortDwell = (page: import('@playwright/test').Page, ms: number) =>
+  page.addStyleTag({ content: `* { --vela-duration-toast: ${ms}ms !important; }` })
+
+test('the Toast page raises a polite, themed toast without moving focus, and its close button dismisses it', async ({ page }) => {
+  await page.goto('/#/components/toast')
+  await expect(page.getByRole('heading', { level: 1, name: 'Toast' })).toBeVisible()
+  await expect(page.getByRole('group', { name: 'Implementation' })).toHaveCount(0)
+  const contract = page.getByRole('region', { name: 'Contract' })
+  await expect(contract.locator('.pg-install')).toContainText("import { ToastProvider, useToast } from '@omkarux/vela/headless'")
+  await expect(contract.locator('.pg-dependencies')).toHaveText('Dependencies: @base-ui/react (optional peer, via /headless)')
+
+  for (const theme of ['light', 'dark'] as const) {
+    const frame = page.locator(`.pg-frame[data-theme="${theme}"] .pg-frame-body`)
+    const save = frame.getByRole('button', { name: 'Save Changes' })
+    await save.click()
+    const region = page.locator(`.vela-overlay-portal[data-theme="${theme}"]`).getByRole('region', { name: 'Notifications' })
+    const toast = region.getByRole('dialog', { name: 'Policy saved' })
+    await expect(toast).toBeVisible()
+    await expect(region).toHaveAttribute('aria-live', 'polite')
+    await expect(toast).toHaveAccessibleDescription('Block legacy TLS now applies to 14 tenants.')
+    // The toast never takes focus, and the page keeps its own record of the save.
+    await expect(save).toBeFocused()
+    await expect(frame).toContainText('Saved 1 time')
+    await expect(toast).toHaveCSS('box-shadow', 'none')
+    await toast.getByRole('button', { name: 'Dismiss' }).click()
+    await expect(toast).toHaveCount(0)
+  }
+})
+
+test('a toast pauses while hovered and while focus is in its region (F6), then leaves with the time it had left', async ({ page }) => {
+  await page.goto('/#/components/toast')
+  await shortDwell(page, 1500)
+  const save = page.locator('.pg-frame[data-theme="light"] .pg-frame-body').getByRole('button', { name: 'Save Changes' })
+  const toast = lightRegion(page).getByRole('dialog', { name: 'Policy saved' })
+
+  // Hover: well past the dwell, it is still there; off it, it leaves.
+  await save.click()
+  await expect(toast).toBeVisible()
+  await toast.hover()
+  await page.waitForTimeout(2500)
+  await expect(toast).toBeVisible()
+  await page.mouse.move(5, 5)
+  await expect(toast).toHaveCount(0, { timeout: 3000 })
+
+  // Focus: F6 moves focus to the region from anywhere and pauses it; Shift+Tab gives focus back.
+  await save.focus()
+  await page.keyboard.press('Enter')
+  await expect(toast).toBeVisible()
+  await expect(save).toBeFocused()
+  await page.keyboard.press('F6')
+  await expect(lightRegion(page)).toBeFocused()
+  await page.waitForTimeout(2500)
+  await expect(toast).toBeVisible()
+  await page.keyboard.press('Shift+Tab')
+  await expect(save).toBeFocused()
+  await expect(toast).toHaveCount(0, { timeout: 3000 })
+})
+
+test('a toast with an action never times out; the action runs the page\'s own Undo and dismisses it; Escape dismisses the focused toast', async ({ page }) => {
+  await page.goto('/#/components/toast')
+  await shortDwell(page, 800)
+  await page.getByRole('complementary', { name: 'Props' }).getByRole('switch', { name: 'action' }).click()
+  const frame = page.locator('.pg-frame[data-theme="light"] .pg-frame-body')
+  const save = frame.getByRole('button', { name: 'Save Changes' })
+  await save.click()
+  const toast = lightRegion(page).getByRole('dialog', { name: 'Policy saved' })
+  await expect(toast).toBeVisible()
+  await page.mouse.move(5, 5)
+  await page.waitForTimeout(1800)   // more than twice the dwell
+  await expect(toast).toBeVisible()
+  // The same Undo the page shows ("Undo Last Save"); the toast's is a shortcut to it.
+  await expect(frame.getByRole('button', { name: 'Undo Last Save' })).toBeVisible()
+  await toast.getByRole('button', { name: 'Undo' }).click()
+  await expect(toast).toHaveCount(0)
+  await expect(frame).toContainText('Nothing saved yet.')
+
+  // Escape: reach the toast from the keyboard, and Escape dismisses it; focus goes back.
+  await save.focus()
+  await page.keyboard.press('Enter')
+  await expect(toast).toBeVisible()
+  await page.keyboard.press('F6')
+  await page.keyboard.press('Tab')
+  await expect.poll(() => toast.evaluate((el) => el.contains(document.activeElement))).toBe(true)
+  await page.keyboard.press('Escape')
+  await expect(toast).toHaveCount(0)
+  await expect(save).toBeFocused()
+})
+
+// [[rule: toast-stays-in-viewport]]
+// Only a real layout shows this: the region sits --vela-space-20 from the viewport's edges at its
+// placement, and a toast is --vela-toast-width wide, never wider than the viewport less the gutters.
+test('the toast region sits at its placement, a gutter from the edges, and narrows with the viewport', async ({ page }) => {
+  // Measured once it has settled: while it enters it is a --vela-space-5 step short of its place.
+  const box = async () => {
+    const toast = lightRegion(page).getByRole('dialog', { name: 'Policy saved' })
+    await expect(toast).toBeVisible()
+    await expect(toast).not.toHaveAttribute('data-starting-style')
+    await expect.poll(() => toast.evaluate((el) => getComputedStyle(el).transform)).toBe('none')
+    return (await toast.boundingBox())!
+  }
+  // From the keyboard: at a phone width the site navigation overlays the stage.
+  const raise = async () => {
+    await page.locator('.pg-frame[data-theme="light"] .pg-frame-body').getByRole('button', { name: 'Save Changes' }).focus()
+    await page.keyboard.press('Enter')
+  }
+  const props = () => page.getByRole('complementary', { name: 'Props' })
+
+  await page.goto('/#/components/toast')
+  let vp = page.viewportSize()!
+  await raise()
+  let b = await box()
+  expect(b.width).toBeCloseTo(360, 0)
+  expect(vp.width - (b.x + b.width)).toBeCloseTo(20, 0)    // bottom-end: the end edge
+  expect(vp.height - (b.y + b.height)).toBeCloseTo(20, 0)  // and the bottom edge
+
+  await props().getByLabel('placement').selectOption('top-end')
+  await raise()
+  b = await box()
+  expect(b.y).toBeCloseTo(20, 0)
+  expect(vp.width - (b.x + b.width)).toBeCloseTo(20, 0)
+
+  await props().getByLabel('placement').selectOption('bottom-center')
+  await raise()
+  b = await box()
+  expect(b.x + b.width / 2).toBeCloseTo(vp.width / 2, 0)
+  expect(vp.height - (b.y + b.height)).toBeCloseTo(20, 0)
+
+  // A phone-width viewport: the toast is the viewport less 20 a side, and nothing leaves the screen.
+  await page.setViewportSize({ width: 360, height: 800 })
+  vp = page.viewportSize()!
+  await props().getByLabel('placement').selectOption('bottom-end')
+  await raise()
+  b = await box()
+  expect(b.width).toBeCloseTo(320, 0)
+  expect(b.x).toBeCloseTo(20, 0)
+  expect(b.x + b.width).toBeLessThanOrEqual(vp.width - 20 + 0.5)
 })
 
 test('the nav filter narrows the list and the menu button collapses it', async ({ page }) => {
