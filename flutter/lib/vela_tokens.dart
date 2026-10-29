@@ -1184,8 +1184,10 @@ abstract final class VelaSizing {
   static const double tooltipWidthMax = 240;
   /// The opacity bg-scrim is drawn at behind a Dialog. A number, not a colour alpha: primitives are opaque and the Figma sync carries opaque colours only.
   static const double opacityScrim = 0.5;
-  /// z-index of every overlay (Popover, Tooltip, Dialog) portalled to <body>. One layer: overlays stack among themselves by DOM order, the later one on top.
+  /// z-index of every overlay (Popover, Tooltip, Dialog, the Toast region) portalled to <body>. One layer: overlays stack among themselves by DOM order, the later one on top.
   static const double layerOverlay = 1000;
+  /// Toast: the width of every toast in the region. Never wider than the viewport less --vela-space-20 a side, so at a 400px viewport it is exactly this.
+  static const double toastWidth = 360;
 }
 
 /// Motion: three durations and the one curve. A press lands on [durationInstant]; pointer
@@ -1200,6 +1202,8 @@ abstract final class VelaMotion {
   static const Duration durationBase = Duration(milliseconds: 180);
   /// How long the pointer rests on a trigger before its Tooltip opens. A delay, not an animation: it stops tooltips flashing as the pointer crosses a toolbar. Equal to Base UI's default, which applies when the stylesheet is not loaded.
   static const Duration delayTooltip = Duration(milliseconds: 600);
+  /// How long a Toast that times out (success or info, with no action) stays before it leaves. A dwell, not an animation: the reduced-motion collapse never touches it, and the timer pauses while the region is hovered or holds focus. Warnings and any toast with an action never time out.
+  static const Duration durationToast = Duration(milliseconds: 6000);
   /// The only curve. Never a bare ease.
   static const Cubic easeStandard = Cubic(0.2, 0, 0.2, 1);
   /// The spinner appearing. The only blur in the kit: motion is feedback, never decoration.

@@ -117,6 +117,8 @@ describe('Figma sync: variable scopes match the property each token is for', () 
     ['layer-overlay', []],
     ['bg-scrim', ['FRAME_FILL', 'SHAPE_FILL']],
     ['text-tooltip', ['TEXT_FILL']],
+    // Toast: its width is a width.
+    ['toast-width', ['WIDTH_HEIGHT']],
   ])('%s → %j', (css, scopes) => {
     expect(byCss[css], css).toBeDefined()
     expect(byCss[css].scopes).toEqual(scopes)
