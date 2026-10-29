@@ -48,7 +48,7 @@ link to each, and the number of automated checks, written by the test runners ra
 | **Dependencies** | None. `react` / `react-dom` are peers (18.3 or 19) |
 | **Format** | ESM, `preserveModules` for tree-shaking, full `.d.ts` |
 | **Tests** | 388 automated checks — 307 unit and contract (52 contrast pairs, each asserted in both themes), 78 browser (68 screenshots at four widths, 8 playground, 2 docs), 3 Flutter — counted by `npm run checks` |
-| **Packed size** | 72.3 kB, 53 files, as `npm run verify` measures it (README and CHANGELOG ship in the tarball, so this moves when they do) |
+| **Packed size** | 89.3 kB, 63 files, as `npm run verify` measures it (README and CHANGELOG ship in the tarball, so this moves when they do) |
 
 ## The three ideas worth stealing
 
