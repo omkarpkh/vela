@@ -16,6 +16,8 @@
   @bg-tooltip
   @bg-inactive
   @bg-selected
+  @bg-row-hover
+  @bg-row-selected
   @primary-tint
   @primary-active-bg
 

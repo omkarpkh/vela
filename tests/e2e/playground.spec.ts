@@ -16,11 +16,47 @@ test('the Button page constrains text-link the way the type does, and the code f
 test('navigation reaches every component and each page lists its tokens', async ({ page }) => {
   await page.goto('/')
   const nav = page.getByRole('navigation', { name: 'Site' })
-  for (const name of ['Button', 'Toggle', 'Input', 'Contextual Alert', 'Status Indicator', 'Risk Pill', 'Tabs', 'Checkbox', 'Radio Group', 'Popover', 'Tooltip', 'Dialog', 'Toast']) {
+  for (const name of ['Button', 'Toggle', 'Input', 'Text Area', 'Contextual Alert', 'Status Indicator', 'Risk Pill', 'Tabs', 'Icon', 'Checkbox', 'Radio Group', 'Table', 'Popover', 'Tooltip', 'Dialog', 'Toast']) {
     await nav.getByRole('link', { name, exact: true }).click()
     await expect(page.getByRole('heading', { level: 1, name })).toBeVisible()
     await expect(page.getByRole('tab', { name: /^Tokens/ })).not.toHaveText(/Tokens\s*0$/)
   }
+})
+
+// [[rule: text-area-never-resizes-horizontally]]
+// The UA default for a <textarea> is `resize: both`, and a host stylesheet can say the same; the
+// component's class must win either way. A drag on the handle is the proof: it may move the
+// bottom edge, never the right one, and never above `rows` lines (3 x the 21px body line here).
+test('the Text Area page counts as you type and the field only ever resizes vertically', async ({ page }) => {
+  await page.goto('/#/components/text-area')
+  await expect(page.getByRole('heading', { level: 1, name: 'Text Area' })).toBeVisible()
+  await page.addStyleTag({ content: 'textarea { resize: both; }' })
+  const field = page.locator('.pg-frame-body textarea').first()
+  const count = page.locator('.pg-frame-body .vela-text-area__count').first()
+  await field.fill('Public bucket 🔒')
+  await expect(count).toHaveText('15 / 140')
+  expect(await field.evaluate((el) => getComputedStyle(el).resize)).toBe('vertical')
+  expect(await field.evaluate((el) => getComputedStyle(el).minHeight)).toBe('63px')
+
+  const before = (await field.boundingBox())!
+  await page.mouse.move(before.x + before.width - 3, before.y + before.height - 3)
+  await page.mouse.down()
+  await page.mouse.move(before.x + before.width + 120, before.y + before.height + 60, { steps: 6 })
+  await page.mouse.up()
+  const grown = (await field.boundingBox())!
+  expect(grown.width).toBeCloseTo(before.width, 0)
+  expect(grown.height).toBeGreaterThan(before.height + 40)
+
+  await page.mouse.move(grown.x + grown.width - 3, grown.y + grown.height - 3)
+  await page.mouse.down()
+  await page.mouse.move(grown.x + grown.width - 3, grown.y + 4, { steps: 6 })
+  await page.mouse.up()
+  const shrunk = (await field.boundingBox())!
+  expect(shrunk.height).toBeCloseTo(before.height, 0)
+
+  await page.getByRole('complementary', { name: 'Props' }).getByLabel('resize').selectOption('none')
+  await expect(page.locator('.pg-code')).toContainText('resize="none"')
+  expect(await page.locator('.pg-frame-body textarea').first().evaluate((el) => getComputedStyle(el).resize)).toBe('none')
 })
 
 // Two entry points, one playground (decisions/002): the Tabs page renders the same props through
@@ -116,6 +152,91 @@ test('the Radio Group page renders the headless group: arrows move the selection
   await expect(frame.getByRole('radio', { name: 'Isolate' })).toHaveCSS('cursor', 'not-allowed')
   // The circle is a circle: border-radius 50%, not the radius scale.
   await expect(block).toHaveCSS('border-radius', '50%')
+})
+
+// Table (Phase 1, core). The stage is a host that owns the rows, the sort and the selection; the
+// table renders aria-sort and a real button, and the host re-sorts. The button's name is asserted
+// exactly, in a real browser: "Open findings, sort ascending", label first, no stray space.
+test('the Table page sorts through the host: the button names the next direction, aria-sort follows', async ({ page }) => {
+  await page.goto('/#/components/table')
+  await expect(page.getByRole('heading', { level: 1, name: 'Table' })).toBeVisible()
+  const frame = page.locator('.pg-frame[data-theme="light"] .pg-frame-body')
+  const region = frame.getByRole('region', { name: 'Assets' })
+  await expect(region).toHaveAttribute('tabindex', '0')
+  const table = region.getByRole('table', { name: 'Assets' })
+  const asset = table.getByRole('columnheader', { name: /^Asset/ })
+  await expect(asset).toHaveAttribute('aria-sort', 'ascending')
+  await expect(table.getByRole('columnheader', { name: /^Status/ })).not.toHaveAttribute('aria-sort')
+  const findings = table.getByRole('button', { name: 'Open findings, sort ascending', exact: true })
+  await expect(findings).toBeVisible()
+  await expect(table.getByRole('columnheader', { name: /^Open findings/ })).not.toHaveAttribute('aria-sort')
+  await findings.click()
+  await expect(table.getByRole('columnheader', { name: /^Open findings/ })).toHaveAttribute('aria-sort', 'ascending')
+  await expect(asset).not.toHaveAttribute('aria-sort')
+  await expect(table.getByRole('button', { name: 'Open findings, sort descending', exact: true })).toBeVisible()
+  // The host re-sorted: the first body row is now the asset with no findings.
+  await expect(table.getByRole('rowheader').first()).toHaveText('laptop-omk-7f3a9c2e')
+  // Selection: the host's Checkbox drives `selected`, which is aria-selected plus the marker.
+  const row = table.getByRole('row', { name: /k8s-node-pool-b-3/ })
+  await expect(row).not.toHaveAttribute('aria-selected')
+  await row.getByRole('checkbox', { name: 'Select k8s-node-pool-b-3' }).click()
+  await expect(row).toHaveAttribute('aria-selected', 'true')
+  const marker = await row.locator('td').first().evaluate((el) => getComputedStyle(el).boxShadow)
+  expect(marker).toMatch(/inset/)
+  // Numeric cells: tabular numerals, end-aligned.
+  const count = table.getByRole('cell', { name: '1,204' })
+  await expect(count).toHaveCSS('font-variant-numeric', 'tabular-nums')
+  await expect(count).toHaveCSS('text-align', 'end')
+})
+
+// [[rule: table-scroll-stays-in-region]]
+// The blow-out case: a wide table dropped into a 1fr grid track (or a flex row) inside a 360px host.
+// Without inline-size containment the track's minimum is the table's min-content width, and the
+// host, then the page, scrolls sideways. With it, the host keeps its width and the region scrolls —
+// from the keyboard too, because the region is focusable.
+test('a wide table scrolls inside its region and never widens a narrow grid host', async ({ page }) => {
+  await page.goto('/#/components/table')
+  const body = page.locator('.pg-frame[data-theme="light"] .pg-frame-body')
+  await expect(body.getByRole('table', { name: 'Assets' })).toBeVisible()
+  await body.evaluate((el: HTMLElement) => {
+    el.style.display = 'grid'
+    el.style.gridTemplateColumns = '1fr'
+    el.style.width = '360px'
+    el.style.maxWidth = '360px'
+  })
+  const sizes = await body.evaluate((el: HTMLElement) => {
+    const region = el.querySelector('[role="region"]') as HTMLElement
+    return { host: el.scrollWidth, hostClient: el.clientWidth, region: region.scrollWidth, regionClient: region.clientWidth }
+  })
+  expect(sizes.host).toBeLessThanOrEqual(sizes.hostClient + 1)
+  expect(sizes.regionClient).toBeLessThanOrEqual(360)
+  expect(sizes.region).toBeGreaterThan(sizes.regionClient)
+  const region = body.getByRole('region', { name: 'Assets' })
+  await region.focus()
+  await expect(region).toBeFocused()
+  for (let i = 0; i < 6; i++) await page.keyboard.press('ArrowRight')
+  await expect.poll(() => region.evaluate((el) => el.scrollLeft)).toBeGreaterThan(0)
+})
+
+// [[rule: table-sticky-header-pins]]
+// The host bounds the height (the playground's .pg-table-bounded); the region fills it and scrolls,
+// and the header row stays at the region's top while the body passes under it.
+test('a sticky header stays at the top of the region while the body scrolls', async ({ page }) => {
+  await page.goto('/#/components/table')
+  await page.getByRole('complementary', { name: 'Props' }).getByRole('switch', { name: 'stickyHeader' }).click()
+  const body = page.locator('.pg-frame[data-theme="light"] .pg-frame-body')
+  const region = body.getByRole('region', { name: 'Assets' })
+  await expect(body.locator('.vela-table')).toHaveClass(/vela-table--sticky-header/)
+  const scrollable = await region.evaluate((el) => el.scrollHeight > el.clientHeight)
+  expect(scrollable).toBe(true)
+  const header = region.getByRole('columnheader', { name: /^Status/ })
+  await region.evaluate((el) => { el.scrollTop = 120 })
+  await expect.poll(() => region.evaluate((el) => el.scrollTop)).toBeGreaterThan(100)
+  const [r, h] = [(await region.boundingBox())!, (await header.boundingBox())!]
+  expect(Math.abs(h.y - r.y)).toBeLessThan(1.5)
+  // and a body row has scrolled up under it
+  const first = (await region.getByRole('row').nth(1).boundingBox())!
+  expect(first.y).toBeLessThan(h.y + h.height)
 })
 
 // The overlays are headless-born and portalled to <body>. On the stage each frame renders its own
@@ -515,4 +636,23 @@ test('an anchored press does not move the point it was pressed on', async ({ pag
   // Anchored at the left edge: that edge stays, and the far edge is the one that travels.
   expect(Math.abs(pressed.left - box.x)).toBeLessThan(0.75)
   expect(box.x + box.width - pressed.right).toBeGreaterThan(8)
+})
+
+// The Icon stylesheet is the only source of a glyph's box and stroke (icon.md, "Size and stroke
+// come from the tokens"); jsdom cannot resolve either, so the real layout is checked here once.
+test('the Icon page sizes every glyph from the tokens and draws the stroke on the 24 grid', async ({ page }) => {
+  await page.goto('/#/components/icon')
+  await expect(page.getByRole('heading', { level: 1, name: 'Icon' })).toBeVisible()
+  const frame = page.locator('.pg-frame[data-theme="light"] .pg-frame-body')
+  await expect(frame.locator('.pg-icon__grid svg.vela-icon')).toHaveCount(50)
+  const lead = frame.locator('.pg-icon__lead svg')
+  const box = async () => { const b = (await lead.boundingBox())!; return [Math.round(b.width), Math.round(b.height)] }
+  expect(await box()).toEqual([16, 16])
+  await expect(lead).toHaveCSS('stroke-width', '2px')
+  const props = page.getByRole('complementary', { name: 'Props' })
+  await props.getByLabel('size').selectOption('large')
+  expect(await box()).toEqual([20, 20])
+  await props.getByLabel('size').selectOption('small')
+  expect(await box()).toEqual([12, 12])
+  await expect(page.locator('.pg-code')).toContainText('<Icon name="shield-x" size="small" />')
 })

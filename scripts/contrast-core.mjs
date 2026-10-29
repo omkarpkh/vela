@@ -110,8 +110,8 @@ export const PAIRS = [
   // surface: text-tooltip on bg-tooltip. The tooltip's own edge against the page is deliberately NOT
   // a pair — it is not a control boundary (WCAG 1.4.11 asks that of things you operate), and in dark
   // grey-700 on grey-950 is 2.35:1; the text, at 7.69:1 on its surface, is what carries it.
+  // The body pair (text-default on bg-raised) is asserted once, below, as 'Body text on raised surface'.
   ['--vela-text-heading',       '--vela-bg-raised',    'Overlay title on raised surface',  'text'],
-  ['--vela-text-default',       '--vela-bg-raised',    'Overlay body on raised surface',   'text'],
   ['--vela-border-default',     '--vela-bg-container', 'Overlay edge on container',        'ui'],
   ['--vela-text-tooltip',       '--vela-bg-tooltip',   'Tooltip text',                     'text'],
   // The Dialog's close glyph is icon-strong, at rest on the raised surface and, hovered, on the
@@ -131,9 +131,44 @@ export const PAIRS = [
   ['--vela-btn-standard-border','--vela-btn-standard-bg', 'Standard button border', 'ui'],
   ['--vela-border-default',     '--vela-bg-global',       'Default border on page', 'ui'],
   ['--vela-border-active',  '--vela-bg-global',  'Focus ring',          'ui'],
+  // Icon tones (guidelines/components/icon.md): `default` binds --vela-icon-strong, asserted on the
+  // page and on a container; `muted` binds --vela-icon-default, asserted on the page only — on a
+  // container it is 3.07:1 in light mode, under the input border's 3.29:1, so the spec says use
+  // `default` there. A glyph is non-text.
+  ['--vela-icon-strong',  '--vela-bg-global',    'Icon, default tone, on page',      'ui'],
+  ['--vela-icon-strong',  '--vela-bg-container', 'Icon, default tone, on container', 'ui'],
+  ['--vela-icon-default', '--vela-bg-global',    'Icon, muted tone, on page',        'ui'],
+  // Requested by the agentic-component specs (Phase 2): a card body on a raised
+  // surface, a selected row's text, and the active border drawn on a container rather than the
+  // page. Each is measured in both themes before it is relied on.
+  ['--vela-text-default',  '--vela-bg-raised',    'Body text on raised surface',   'text'],
+  ['--vela-text-default',  '--vela-bg-selected',  'Body text on selected row',     'text'],
+  ['--vela-text-heading',  '--vela-bg-selected',  'Heading on selected row',       'text'],
+  ['--vela-border-active', '--vela-bg-container', 'Active border on container',    'ui'],
   ...['unknown', 'healthy', 'warning', 'medium', 'unhealthy'].map((s) => [
     `--vela-signal-status-${s}`, '--vela-bg-global', `Status dot: ${s}`, 'ui',
   ]),
+
+  // Table (Phase 1, core). A row is a surface other components sit on, so the pairs are what a
+  // console row actually carries: body text, secondary text, a link, a Status Indicator dot, and
+  // the border-active marker a selected or current row draws at its start edge. Two row surfaces
+  // were added because the existing ones fail here: bg-selected (blue-100) puts the unknown dot at
+  // 2.97:1 and de-emphasized text at 4.20:1; bg-hover (grey-850 dark) puts links at 4.35:1 and
+  // de-emphasized text at 3.99:1. The header sits on bg-global, already asserted above; the
+  // unsorted sort glyph is icon-default on it.
+  ...['--vela-bg-row-hover', '--vela-bg-row-selected'].flatMap((bg) => {
+    const row = bg.endsWith('hover') ? 'hovered row' : 'selected row'
+    return [
+      ['--vela-text-default',       bg, `Table text on a ${row}`,           'text'],
+      ['--vela-text-de-emphasized', bg, `Table secondary text on a ${row}`, 'text'],
+      ['--vela-text-link',          bg, `Table link on a ${row}`,           'text'],
+      ['--vela-border-active',      bg, `Table row marker on a ${row}`,     'ui'],
+      ...['unknown', 'healthy', 'warning', 'medium', 'unhealthy'].map((s) => [
+        `--vela-signal-status-${s}`, bg, `Status dot: ${s}, on a ${row}`, 'ui',
+      ]),
+    ]
+  }),
+  ['--vela-icon-default', '--vela-bg-global', 'Table sort glyph, unsorted column', 'ui'],
 ]
 
 export const THRESHOLD = { text: 4.5, ui: 3.0 }

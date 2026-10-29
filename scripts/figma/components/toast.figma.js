@@ -1,7 +1,10 @@
 // @page Toast
 // @set  Toast
-// Toast — 3 variants (Severity: success / info / warning, the only three a toast may carry) + a
-// "Title text" property and "Description" and "Action" booleans. One toast only: the region, the
+// Toast — 3 variants (Severity: success / info / warning, the only three a toast may carry) +
+// "Description" and "Action" booleans. Each variant keeps its own title in a text layer named
+// "Title", overridden on the instance — no TEXT component property: Figma holds one default per TEXT
+// property for the whole set, and the three variants are titled differently (the
+// text-property-collapse lint fails a builder that binds differing texts). One toast only: the region, the
 // placement, the stack, the timer, F6 and Escape are code (toast.md, Figma mapping). No shadow: no
 // elevation token exists, so the border/default stroke is the edge, as on the Popover.
 //
@@ -97,11 +100,9 @@ set.name = SET; set.x = 0; set.y = 0;
 grid(set, p => [0, SEV.indexOf(p.Severity)], 360, 150, 32);
 set.resize(32 * 2 + 360, 32 * 2 + 150 * SEV.length);
 
-const titleProp = set.addComponentProperty('Title text', 'TEXT', 'Policy saved');
 const descProp = set.addComponentProperty('Description', 'BOOLEAN', true);
 const actionProp = set.addComponentProperty('Action', 'BOOLEAN', false);
 for (const v of set.children) {
-  const t = v.findOne(n => n.name === 'Title'); if (t) t.componentPropertyReferences = { characters: titleProp };
   const d = v.findOne(n => n.name === 'Description'); if (d) d.componentPropertyReferences = { visible: descProp };
   const a = v.findOne(n => n.name === 'Action'); if (a) a.componentPropertyReferences = { visible: actionProp };
 }

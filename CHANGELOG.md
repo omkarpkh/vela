@@ -6,6 +6,34 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Unreleased]
 
 ### Added
+- **Table — Experimental, `@omkarux/vela` (core, zero dependencies).** The primitives a console's
+  data views are built on (`table.md`), presentational on purpose: no data fetching, no
+  virtualisation, no sort state. Compound parts on native elements — `Table` (required `caption`
+  string, `captionHidden`, `density` `comfortable | compact` (DESIGN.md's two steps), `layout` `auto | fixed`,
+  `stickyHeader`), `Table.Head`, `Table.Body`, `Table.Row` (`selected` → `aria-selected` plus a
+  `border-active` start marker, `aria-current`), `Table.HeaderCell` (`scope` `col | row`, `align`,
+  `sort={{ direction, onSort }}` rendering a real button named "Last seen, sort ascending" and
+  `aria-sort` on the sorted column only; `onSort` receives the direction the name promised),
+  `Table.Cell` (`align`, `numeric` → tabular numerals, end-aligned) and `Table.Empty` (required
+  message). The wrapper is an inline-size container, so a wide table never widens its host; it
+  scrolls inside a `role="region"` labelled by the caption and always focusable. No `striped`
+  prop: zebra competes with the hover and selected tints and reads as grouping. 19 rules —
+  nine compiler (twelve fixtures), five runtime, two browser (the scroll stays in the region, a
+  mutant without the container fails it; the sticky header pins), four convention. A Figma
+  builder declaring three sets (Header Cell 16 variants, Cell 4, Row 8; no waiver; each TEXT
+  property writes one word in every variant, so none collapses under `text-property-collapse`;
+  Figma state `none`, with the Cell and Row sets under `also` in the map, each described with the
+  same import and the part it is) — the builder
+  pipeline now accepts more than one `// @set` and `--set=<name>` on dump, read and diff — and a
+  playground page whose host owns the sort and the selection.
+- **Two row surfaces and a primitive.** `bg-row-hover` (grey-50; dark grey-900) and
+  `bg-row-selected` (new `blue-50` #f2f7fd; dark blue-950), because the existing ones fail a
+  console row: `bg-selected` puts the `unknown` status dot at 2.97:1 and de-emphasized text at
+  4.20:1, `bg-hover` in dark puts links at 4.35:1. 19 new `PAIRS` (text, secondary text, link,
+  marker and all five status dots on both rows, and the unsorted sort glyph) pass in both themes;
+  the tightest shipped pair is now the `unknown` dot on a selected row at 3.22:1 (was the input
+  border at 3.29:1), recorded in `DESIGN.md` and `foundations/color.md`. Rule count, with Icon and
+  Text Area merged: 43 of 93 rules are enforced by the compiler.
 - **Toast — Experimental, `@omkarux/vela/headless` only** (`toast.md`; Base UI 1.9 `Toast`). A
   floating, polite confirmation that something already happened — and, as the spec and the agentic
   specs that depend on it say, never the only record of it, never the only place an Undo lives, and
@@ -23,9 +51,9 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   anywhere, Escape dismisses the focused toast, a new toast never takes focus, and every toast is
   announced politely — assertive would need major or critical, which a toast never carries.
   Eighteen compiler fixtures (seven rules), ten runtime rules, one browser rule
-  (`toast-stays-in-viewport`), three conventions, a Figma builder (Severity, three variants, no
-  waiver) and a playground page whose Undo is the page's own. Rule count: 46 of 106 rules are now
-  enforced by the compiler.
+  (`toast-stays-in-viewport`), three conventions, a Figma builder (Severity, three variants;
+  each title is a `Title` layer per variant, not a TEXT property, so none collapses; no waiver) and a playground page whose Undo is the page's own. Rule count, with Table merged: 64 of
+  147 rules are now enforced by the compiler.
 - **Toast tokens.** `toast-width` (360, so a 400px viewport less its `--vela-space-20` gutters is
   exactly one toast wide) and `duration-toast` (6000ms — a dwell, not an animation; the
   reduced-motion collapse never touches it). Three new `PAIRS`, the success, info and warning marks
@@ -51,7 +79,9 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   never be the only name of an icon-only control. Hover waits `--vela-delay-tooltip`, read from the
   stylesheet; keyboard focus opens it at once; Escape dismisses it. Never on a disabled control
   (convention, with the wrapper documented). Five compiler fixtures (three rules), four runtime
-  rules, a Figma builder (Lines one / two, so the width cap is visible) and a playground page.
+  rules, a Figma builder (Lines one / two, so the width cap is visible; each variant's sentence
+  sits in its own `Content` layer, with no TEXT property, which the `text-property-collapse` lint
+  forbids for differing texts) and a playground page.
 - **Dialog, with `variant="alert"` — Experimental, `@omkarux/vela/headless` only** (`dialog.md`;
   Base UI 1.9 `Dialog` and `AlertDialog`). A modal for a decision that blocks the task: focus
   trapped and returned, the page `aria-hidden` and scroll-locked, Escape closes it, a press on the
@@ -62,14 +92,14 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   cancel, ignores the backdrop and treats Escape as the cancel. The header, the body and the footer
   are laid out so only the body scrolls, proved in a real browser (`dialog-body-scrolls`). Eleven
   compiler fixtures (six rules), six runtime rules, one browser rule, a Figma builder (Variant x
-  Size, four variants) and a playground page.
+  Size, four variants; the title is a `Title` layer per variant, not a TEXT property) and a playground page.
 - **Overlay tokens.** `bg-scrim` (black) drawn at `opacity-scrim` (0.5) — a number, because
   primitives are opaque and the Figma sync carries opaque colours only; `text-tooltip` (white) on the
   existing `bg-tooltip`; `popover-width` / `-wide` (280 / 400), `dialog-width` / `-wide`
   (480 / 720), `tooltip-width-max` (240); `layer-overlay` (z-index 1000); `delay-tooltip` (600ms,
-  Base UI's default). Six new `PAIRS`, all passing in both themes: overlay title and body on
-  `bg-raised` (16.98 / 13.10 and 7.69 / 8.84), the overlay edge on the container (3.07 / 3.29),
-  tooltip text (11.14 / 7.69) and the Dialog's close glyph at rest and hovered. Body copy on an
+  Base UI's default). Five new `PAIRS`, all passing in both themes: the overlay title on
+  `bg-raised` (16.98 / 13.10) — the body on it (7.69 / 8.84) is the agentic specs' pair, kept
+  once — the overlay edge on the container (3.07 / 3.29), tooltip text (11.14 / 7.69) and the Dialog's close glyph at rest and hovered. Body copy on an
   overlay is `text-default`: `text-de-emphasized` on the dark raised surface is 3.99:1. The Dart
   generator now emits a sizing-group number as a `double`; the Figma sync scopes the opacity to
   OPACITY and the layer to no picker.
@@ -78,11 +108,98 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   global focus ring and the reduced-motion collapse reach a popup on `<body>`, and a popover opened
   from a dark sidebar in a light app is dark. An open or close from the keyboard is marked
   `data-vela-instant` and does not animate. Modal and Tooltip leave the "not yet specced" lists in
-  `overview.md` and `DESIGN.md`. Rule count: 39 of 85 rules are now enforced by the compiler.
+  `overview.md` and `DESIGN.md`. Rule count, with Table merged: 57 of 126 rules are now enforced by the compiler.
 - **Test setup: no more nwsapi recursion on top-layer selectors.** jsdom's selector engine (nwsapi
   2.2.27) answers `:modal` / `:popover-open` / `:fullscreen` by recursing into itself until the
   stack overflows, which cost seconds per Floating UI position update; `src/test-setup.ts` answers
   them `false` (jsdom has no top layer). Browsers are unaffected.
+- **The Calibrated Confidence Gate is public, as a proposal** (21 rules, 17 with proofs). It owns the
+  Confidence band taxonomy and decides, through `gateBand(reading, now)`, which band the kit may act
+  on: a stated band counts only once at least 30 person-reviewed conclusions for the same agent
+  version, in a window no older than 30 days, confirm it. Calibration is shown as counts with dates,
+  never a percentage. **Breaking change to the Verdict Card proposal:** `confidence` is now a
+  `ConfidenceReading`, Accept follows the Gate's band, and the card drops to 28 rules (22 with
+  proofs). The Autonomy Ladder documents `RouteInput.confidence` as the Gate's band.
+- **Text Area** — multi-line entry, Input's sibling, in the core entry with no dependency.
+  Closed props mirroring Input (`label` required, `value` / `defaultValue` exclusive, `error`
+  a message, `size` Input's three), plus `rows` (the minimum height in lines), `resize`
+  (`vertical` or `none`; there is no horizontal and no both) and `maxLength` with a live
+  `n / max` count. The count and the limit are both measured in code points, so an emoji is one
+  character in each; the native `maxlength`, which counts UTF-16 units, is not used. The count
+  is spoken by a polite live region only once 10% or less of the limit remains. Nine rules: five
+  `compiler` with six fixtures (`text-area-label-required`, `text-area-controlled-exclusive`,
+  `text-area-error-is-a-message`, `text-area-resize-closed`, `text-area-size-closed`), three
+  `runtime` (`text-area-describedby-only-rendered`, `text-area-count-in-code-points`,
+  `text-area-count-announced-near-limit`) and one `browser`
+  (`text-area-never-resizes-horizontally`: a drag on the handle moves the bottom edge only and
+  stops at `rows`, even under a host `textarea { resize: both }`). Binds Input's tokens and adds
+  none, so no new colour pair. A Figma builder (12 variants, Size x State, clean under the
+  reviewer lint with no waiver) and a playground page; not on the Overview page, so no visual
+  baseline moves. Status: Experimental until its Figma set is published. Rule count 34 of 73
+  compiler-enforced, was 29 of 64.
+- **A monospace family and the `Mono/Meta` text style**, requested by the Action Impact Card
+  spec. `--vela-font-family-mono` is a system stack — `ui-monospace, "SF Mono", "Cascadia
+  Mono", "Roboto Mono", Menlo, Consolas, monospace` — so no web font is downloaded; it is
+  `raw` like the other two families, which the Figma variable sync skips by type. Figma gets
+  the text style `Mono/Meta`: Body/Meta's size, line height, weight and tracking variables in
+  Roboto Mono, the stack's Google-hosted member. Flutter carries `fontFamilyMono` ('SF Mono')
+  with its fallbacks; the MUI bridge is unchanged. 265 tokens, was 264 (the README's "242" had gone stale and
+  now says 265).
+- **Four contrast pairs the agentic-component specs rely on**, asserted in both themes:
+  `--vela-text-default` on `--vela-bg-raised` (7.69:1 light, 8.84:1 dark), on
+  `--vela-bg-selected` (6.59 / 11.12), `--vela-text-heading` on `--vela-bg-selected`
+  (14.54 / 16.48) and `--vela-border-active` on `--vela-bg-container` as UI (5.39 / 5.06). All
+  pass with no token change; `PAIRS` is 59, was 55.
+- **Icon — Experimental** (`decisions/003-icons-lucide-curated`). Fifty curated
+  [Lucide](https://lucide.dev) 1.63.0 glyphs (ISC; 25 of them Feather-derived, MIT) compiled at
+  build time into zero-dependency React in the core entry: `lucide` is a pinned devDependency,
+  nothing from it is imported at runtime, and `dependencies` stays `{}` — `verify-pack.mjs`
+  still walks the core module graph and finds only React. `<Icon name size tone label>`: `name`
+  is the closed `IconName` union (exported with `ICON_NAMES`), `size` regular | small | large on
+  the new `--vela-icon-size*` tokens (16, 12, 20), `tone` default | muted | inherit on
+  `--vela-icon-strong` / `--vela-icon-default` / `currentColor`, and the stroke on
+  `--vela-icon-stroke` (2 in the 24 grid: 1px at small, 1.33px at regular, 1.67px at large).
+  With `label` it is `role="img"`, without one `aria-hidden`; never focusable, never
+  interactive. Twelve rules, four of them compiler with ten fixtures (an invented name, a Lucide
+  glyph outside the set, an alias such as `trash-2`, a missing name, `size="medium"`,
+  `size={16}`, `tone="critical"`, `tone="high"`, `onClick`, `tabIndex`). Three new `PAIRS`.
+  Core JS grows from 3,675 B to 7,753 B gzip (10 → 63 modules); the glyphs are reached only
+  through `Icon`.
+- **The icon build.** `scripts/icons.list.json` is the set; `npm run icons:build` writes
+  `src/icons/generated/*.tsx`, `src/icons/names.ts` and the Figma builder
+  `scripts/figma/components/icon.figma.js` (one `Glyph` variant per name, box on `icon/size`,
+  stroke on `icon/strong`); `npm run icons:check` fails on any difference from what is committed
+  and runs in `verify`. It refuses a Lucide alias (`filter`, `trash-2`, `history` are `funnel`,
+  `trash`, `rotate-ccw-clock` in Lucide 1.x), an unknown name, or an installed Lucide other than
+  the reviewed version. A test holds `NOTICE`'s Feather list to Lucide's LICENSE. The mock
+  Plugin API models `createNodeFromSvg` and `flatten`; the builder has not been run in the
+  library yet. A playground page shows every glyph at the chosen size and tone.
+- **The first three agentic specs are public, as proposals.** `guidelines/proposals/` holds the
+  pressure-tested specs for the Verdict Card (29 rules, 23 with proofs), the Action Impact Card
+  (30, 22), the Autonomy Ladder (28, 22) and the Approval Queue (27, 21), with four new closed taxonomies: Verdict, Confidence
+  band, Reversibility tier and Autonomy rung. Nothing in them is built; the folder's README and
+  each file's first line say so, and it is left out of the npm package so a consumer's agent
+  cannot mistake a proposal for an export.
+- **`guidelines/figma-map.json`: what to write for each Figma set, on every plan.** Compiled from
+  the specs by `npm run figma:map` (the description sync with `--map`): each set's node id and
+  link, the import, the export to write (`Tabs.Trigger` for the Tab set), every Figma property's
+  prop, and the spec's example. It does the job Code Connect does on an Organization plan;
+  Vela's library is on Professional, where Code Connect is not available. `AGENTS.md` and
+  `llms.txt` tell an agent to use it instead of the markup Figma generates. A test fails when it
+  is stale. Measured against the Figma thread's "before" on Button node 7:7: without it, the
+  design context gives a `<div>` lookalike with no import and raw fallback values.
+- **The library's Changelog and Status pages are compiled from the repository.**
+  `npm run figma:build:pages` prints a Plugin API script per page (each under 50 KB):
+  `scripts/figma/pages/changelog.figma.js` draws one card per released version, newest first —
+  the date, whether it is on npm (read from the committed `scripts/figma/pages/published.json`,
+  or a `--published` list, or the registry with `--npm`), the bold lead-in of every bullet word
+  for word, and a link to the full entry; `status.figma.js` draws GOVERNANCE.md's four labels as
+  neutral outlined chips and one row per component — label from the spec's Status line, Figma
+  set, React export, Since, spec link. Unlike the component builders they are idempotent: each
+  finds its page frame by name and rebuilds it in place, so the frame keeps its id. Both end
+  with a stamp naming the commit they were read from. `scripts/figma/check-pages.mjs` runs them
+  in the mock Plugin API against the reviewer rules (plus no components on a doc page) in
+  `npm test`; `RELEASING.md` step 7 rebuilds them before the library is published.
 - **Checkbox (with Checkbox.Group) — Experimental, `@omkarux/vela/headless` only.** The first
   component born on Base UI rather than migrated to it (`checkbox.md`; Base UI 1.9 `Checkbox` +
   `CheckboxGroup`, by per-component subpath). A box that records intent until a Save — the spec
@@ -165,8 +282,8 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   `$deprecated` on tokens and `@deprecated` on exports with a dev-only warning), `RELEASING.md`
   (the checklist, tag-driven), `NOTICE` (Open Sans and Oswald under OFL 1.1, the Covenant under
   CC BY 4.0, and Base UI and Lucide listed as planned and not yet included) and
-  `LICENSE-DESIGN.md` (the Figma library on Figma Community under CC BY 4.0 and additionally
-  MIT; attribution "Vela by Omkar Khadamkar (omkarux.com)"). GitHub issue forms for a bug, a
+  `LICENSE-DESIGN.md` (the Figma library under CC BY 4.0 and additionally MIT; the Figma
+  Community listing is planned, not yet live; attribution "Vela by Omkar Khadamkar (omkarux.com)"). GitHub issue forms for a bug, a
   component request (it asks for the closest existing component and why it does not fit) and a
   token request, a PR template that mirrors `CONTRIBUTING.md`, and a contact config pointing
   questions at Discussions.
@@ -190,6 +307,15 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   written; this note is the correction. The related statement in 0.5.0, that writing variables
   through the REST API needs an Enterprise plan, still holds: Figma's variables endpoints say
   "available to full members of Enterprise orgs", so the generated-script route stays.
+  *Further correction, 29 October 2026:* Professional is listed, but Figma Community Support
+  states that on Professional, Code Connect mappings cannot be created through the MCP server
+  (forum thread 59258, 23–27 October 2026); the Figma thread's attempt was rejected with "only
+  Organization or Enterprise libraries". Mappings can still be made in Figma's Code Connect panel
+  by hand, or with the Code Connect CLI if the account's token carries the scope. *Decided,
+  29 October 2026:* the library sits on a Figma Professional plan, which does not offer Code
+  Connect in practice, and no plan upgrade will be bought for it. Code Connect is not wired. The
+  component → export → node mapping is kept as data in the repo, so a later plan or tool can
+  publish it without rework.
 - **The npm `description` and the README now say the same thing about enforcement.** The README
   and `llms.txt` have said "11 of the 27 rules by the TypeScript compiler, the rest at runtime, in
   a real browser, or by review" since the rule-coverage gate landed; the description said nothing
@@ -205,6 +331,39 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **`.claude/launch.json` carried a personal macOS path** in a second launch configuration that
   had nothing to do with Vela. It is removed; the file keeps the one generic entry, which starts
   the demo on port 5174.
+- **The Risk Pill builder labelled every variant "Low" — in the live file, "High".** A Figma text
+  property holds one default for the whole component set, so binding each variant's `Label` layer
+  to one `Label text` property and writing Low, Medium and High showed the last word written in
+  all six (seen live as High / High / High). `risk-pill.figma.js` no longer adds the property: each
+  variant keeps its own level word in its `Label` layer, overridden on the instance. The spec's
+  Figma mapping row now reads `Label` (text layer, override on the instance) → `label`. The mock
+  Plugin API models the one-default rule, and a new lint rule, `text-property-collapse`, fails any
+  builder that binds a text property in variants whose texts differ; Toggle, Checkbox and Radio,
+  which write the same word in every variant, still pass.
+- **The Figma descriptions did not say what to import.** The CODE block of every component set's
+  description now starts with the import line from `guidelines/figma-map.json`
+  (`import { Button } from '@omkarux/vela'`; Checkbox and Radio from `@omkarux/vela/headless`), Tab
+  and Radio add "This set is one Tabs.Trigger." / "This set is one RadioGroup.Radio.", and a line
+  before the block says "Use the library component; do not rebuild it from this frame."
+- **A re-run of the Changelog or Status page builder turned the page frame black.** Re-assigning
+  an identically bound paint to the reused frame left its colour at the `{0,0,0}` placeholder in
+  the real file. `pageFrame()` now clears the fills before setting `surface/global` again (the
+  frame is the only node a page builder reuses). The mock keeps the placeholder in that case, so
+  the twice-run page test fails without the clear.
+- **The Status and Changelog pages had three data errors.** Risk Pill's Figma set read "None yet —
+  the builder is ready" though its set exists in the file. Each entry of the set table now has a
+  `state` from a closed set — `published` (the six live sets, with their node ids), `built` (in the
+  file, not published: Risk Pill, node null until the rebuilt set's id is known) or `none` (no set
+  yet: Checkbox, Radio Group, Icon) — and the page shows "Built, not published" for Risk Pill;
+  `figma-map.json` carries `state` and `node`. "(branch)" was added to every spec first named in
+  the Unreleased entry; it now marks only a spec that is not on `main` (checked against `main`,
+  then `origin/main`). The Changelog page showed 0.1.0's lead-ins as bare labels ("Components:")
+  and dropped 0.3.0's "Companion Figma library" and 0.1.0's "Accessibility decisions worth
+  recording"; a lead-in ending in a colon now carries its line to the first sentence end, and a
+  section of bullets without bold lead-ins is kept, each bullet shown by its opening.
+- **The page stamp said "HEAD" on a detached checkout.** In CI, `git rev-parse --abbrev-ref HEAD`
+  prints `HEAD`, which the stamp and a branch link then used as a branch name; it now falls back
+  to `main`.
 
 ### Changed
 - README: shields.io badges for CI, the npm version and the licence (static badge URLs, no new

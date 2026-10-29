@@ -66,6 +66,23 @@ Status Indicator dot and the Toggle track only (`guidelines/foundations/spacing.
 `sizing.md`). Button and the input family do not share a height ramp — a `regular` Button is
 35px and a `regular` Input is 26px, deliberately.
 
+## Typography
+
+Three families, each a token, each with a fallback stack so the kit degrades rather than breaks
+(`guidelines/foundations/typography.md`):
+
+| Token | Stack | For |
+|---|---|---|
+| `--vela-font-family-primary` | `"Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif` | all UI text |
+| `--vela-font-family-display` | `"Oswald", "Open Sans", -apple-system, sans-serif` | large stat and number displays only |
+| `--vela-font-family-mono` | `ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", Menlo, Consolas, monospace` | identifiers, hashes, IPs, timestamps, counts that must align |
+
+The mono stack is **system fonts only** — no web font is downloaded; each platform's own
+monospace answers first. It is used at Meta's size, line height, weight and tracking
+(`--vela-text-meta-*`), which Figma carries as the text style **`Mono/Meta`** in Roboto Mono
+(Figma names one family per style, and Roboto Mono is the stack's Google-hosted member). Sizes
+are triples: never take a size without its line height.
+
 ## The three taxonomies
 
 Vela deliberately separates **severity** (events), **risk** (scoring) and **status** (the health
@@ -229,8 +246,10 @@ What CI asserts, and therefore what "accessible" means in a pull request:
 - **Contrast.** Every foreground/background pair the kit ships is listed in `PAIRS` in
   `scripts/contrast-core.mjs` and asserted against WCAG 2.1 AA in `src/styles/contrast.test.ts`,
   in both themes: 4.5:1 for text, 3:1 for UI boundaries and non-text signals. A new colour pair
-  goes into `PAIRS` or it is an unverified claim. The tightest shipped pair is the input border
-  at 3.29:1 against a 3:1 minimum; anything below it is a regression. The deliberate choices this
+  goes into `PAIRS` or it is an unverified claim. The tightest shipped pair is the `unknown`
+  status dot on a selected table row at 3.22:1 against a 3:1 minimum (Table, Phase 1: any tint
+  under a grey-500 dot costs contrast, and this is the lightest selection tint still visible);
+  before it, the input border at 3.29:1. Anything below 3.22:1 is a regression. The deliberate choices this
   produced — destructive buttons on `red-700` not `red-500`, status dots on the 600s and 700s —
   are recorded in `guidelines/foundations/color.md`; do not "fix" them back.
 - **Rule fixtures.** `scripts/check-rules.mjs`: every tagged rule has a proof at its level, and
@@ -305,10 +324,11 @@ Accessibility
 
 Do not invent one silently. State that the kit has no component for the need and pick the
 closest match while flagging the gap. Not yet specced: Dropdown List, Select List, Token Pill,
-Number Stepper, Text Area, Icon Button, Actions Dropdown, View Switcher. Flag rather than
-guess. Checkbox (with Checkbox.Group), Radio Group, Popover, Tooltip, Dialog (with its `alert`
-variant — the kit's modal) and Toast are specced and ship from `@omkarux/vela/headless` only
-(Experimental). The disambiguations agents most often get wrong
+Number Stepper, Icon Button, Actions Dropdown, View Switcher, Data Grid (arrow-key cell navigation,
+`role="grid"`), Card List. Flag rather than guess. Checkbox (with Checkbox.Group), Radio Group,
+Popover, Tooltip, Dialog (with its `alert` variant — the kit's modal) and Toast are specced and ship
+from `@omkarux/vela/headless` only (Experimental); Table ships from the core entry (Experimental)
+and is read, not navigated cell by cell. The disambiguations agents most often get wrong
 — Toggle vs Checkbox, Radio Group vs Select List, Tabs vs View Switcher, Popover vs Tooltip vs
 Dialog, Toast vs Alert vs Dialog, Alert vs Status
 Indicator vs Risk Pill — are in `guidelines/overview.md`.

@@ -10,20 +10,23 @@ below, then open the per-component file for props, tokens, and anti-patterns.
 | Button | Triggering an action (save, submit, delete, apply) | `components/button.md` |
 | Toggle | A binary setting that takes effect immediately | `components/toggle.md` |
 | Input | Single-line text entry | `components/input.md` |
+| Text Area | Multi-line text entry, with an optional live character count | `components/text-area.md` |
 | Contextual Alert | Inline severity banner (success/info/warning/minor/major/critical) | `components/contextual-alert.md` |
 | Status Indicator | A health dot for one of five states | `components/status-indicator.md` |
 | Risk Pill | A read-only risk score (low/medium/high) on an object | `components/risk-pill.md` |
 | Tabs | Navigate between different content panels | `components/tabs.md` |
+| Icon | One of fifty curated glyphs beside text or in another component's icon slot — never a control, never a taxonomy mark | `components/icon.md` |
 | Checkbox | Recording intent until a Save — alone, or any-of-several in a Checkbox.Group (headless entry only) | `components/checkbox.md` |
 | Radio Group | Exactly one of two to five visible options, committed by a Save (headless entry only) | `components/radio-group.md` |
+| Table | Records compared across named columns — sortable headers, two densities, a scroll region (Experimental) | `components/table.md` |
 | Popover | A non-modal panel opened from a button — filters, detail, a short edit — with the page still usable (headless entry only) | `components/popover.md` |
 | Tooltip | A short text-only label on hover and focus; supplementary, never the only copy (headless entry only) | `components/tooltip.md` |
 | Dialog | A modal decision that blocks the task; `variant="alert"` confirms a destructive action (headless entry only) | `components/dialog.md` |
 | Toast | A floating, polite confirmation that something already happened — never the only record, never the only Undo (headless entry only) | `components/toast.md` |
 
 Checkbox, Radio Group, Popover, Tooltip, Dialog and Toast ship from `@omkarux/vela/headless` (Base
-UI as an optional peer) and are Experimental; the other seven ship from `@omkarux/vela` with no
-dependencies.
+UI as an optional peer) and are Experimental; the other ten ship from `@omkarux/vela` with no
+dependencies (Risk Pill, Icon, Text Area and Table are Experimental there).
 
 ## Disambiguations (where AI usually picks wrong)
 
@@ -52,16 +55,30 @@ dependencies.
 - **Contextual Alert vs Status Indicator vs Risk Pill** — an event the user must read →
   **Alert**. An object's ongoing health, usually in a table cell → **Status Indicator**. A
   risk *score* on an object → **Risk Pill**. A removable filter chip → Token Pill, not in this kit.
+- **Table vs Data Grid vs a list** — records read and compared across columns → **Table**.
+  Cells edited or navigated with the arrow keys like a spreadsheet → Data Grid, not in this kit.
+  One record's fields → a description list. Cards below a width → a card list, not in this kit;
+  never restyle a table into cards. Status and risk go **in cells**, as Status Indicator and Risk
+  Pill — never as a colour on the row.
+- **Input vs Text Area** — one line (a name, a hostname, a CIDR) → **Input**. Free text that
+  runs past a line (a justification, an incident note) → **Text Area**. Neither is a code
+  editor; syntax-highlighted entry is not in this kit.
 - **Severity vs Risk vs Status** — three taxonomies, never interchangeable.
   Severity (6 levels) describes *events* and is Contextual Alert's. Risk (3 levels) describes
   *scoring* and is Risk Pill's. Status (5 states) is the Status Indicator dot only. There is no
   "high severity" and no "critical risk".
+- **Icon vs Contextual Alert vs Icon Button** — a glyph that reinforces text, or labels a cell
+  → **Icon**. The mark of an event the user must read → **Contextual Alert**, which owns the
+  severity marks (an Icon has no severity tone). A glyph you click (close, copy, more) → **Icon
+  Button**, which is not in this kit; flag the gap. A glyph that is not in `ICON_NAMES` does not
+  exist: name the closest curated one and flag it, never import another icon library.
 
 ## If no component fits
 
 Do not invent one silently. State that the kit has no component for the need and pick the
 closest match while flagging the gap. Not yet specced: Dropdown List, Select List, Token Pill,
-Number Stepper, Text Area, Icon Button, Actions Dropdown, View Switcher. Flag rather than guess.
+Number Stepper, Icon Button, Actions Dropdown, View Switcher, Data Grid, Card List.
+Flag rather than guess.
 
 ## How each component file is structured
 

@@ -54,8 +54,11 @@ Consequences you will notice, all deliberate:
   line. That is a judgement call, not a compliance requirement — recorded here as one.
 - Status dots use `yellow-700` (4.07:1) and `orange-600` (3.80:1), not the 500s, which sit at
   2.59:1 and 2.78:1 on white.
-- Tightest shipped pair: the input border at 3.29:1 against a 3:1 minimum. Anything you add
-  below that is a regression.
+- Tightest shipped pair: the `unknown` status dot on a selected table row
+  (`--vela-bg-row-selected`, blue-50) at 3.22:1 against a 3:1 minimum; before Table it was the
+  input border at 3.29:1. Any tint under a grey-500 dot costs contrast, so the row surfaces were
+  chosen as the lightest still visible — `--vela-bg-selected` (blue-100) would have put the dot
+  at 2.97:1. Anything you add below 3.22:1 is a regression.
 
 If you add a pair, add it to `PAIRS` in `scripts/contrast-core.mjs`. An unasserted pair is
 an unverified claim.

@@ -271,7 +271,9 @@ difference is recorded here:
 ## Figma mapping
 
 Library file: **Vela Design System** → page `Toast`. Three variants, `Severity` (success / info /
-warning), plus a `Title text` text property and `Description` and `Action` booleans. The set is
+warning), plus `Description` and `Action` booleans. There is no `Title text` property: a Figma text
+property holds one default for the whole set, and each severity's example is titled differently, so
+each variant keeps its title in a layer named `Title`, overridden on the instance. The set is
 created by `scripts/figma/components/toast.figma.js`; until that builder has been run in the file,
 the library has no Toast set. The region, the placement and the stack are not part of the set: place
 instances `space/10` apart, `space/20` from the frame's edge.
@@ -279,7 +281,7 @@ instances `space/10` apart, `space/20` from the frame's edge.
 | Figma property | Code prop |
 |---|---|
 | `Severity` | `severity` |
-| `Title text` | `title` |
+| `Title` (text layer, overridden on the instance) | `title` |
 | `Description` (boolean) | `description` |
 | `Action` (boolean) | `action` — presence of the object, not a flag |
 

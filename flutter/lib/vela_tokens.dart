@@ -28,6 +28,7 @@ abstract final class VelaPrimitives {
   static const Color primary450 = Color(0xFF187E91);
   static const Color primary500 = Color(0xFF0A6C7D);
   static const Color primary600 = Color(0xFF075462);
+  static const Color blue50 = Color(0xFFF2F7FD);
   static const Color blue100 = Color(0xFFE6EEFB);
   static const Color blue150 = Color(0xFFCFDFF7);
   static const Color blue300 = Color(0xFF85AAE8);
@@ -81,6 +82,8 @@ class VelaColors extends ThemeExtension<VelaColors> {
     required this.bgScrim,
     required this.bgInactive,
     required this.bgSelected,
+    required this.bgRowHover,
+    required this.bgRowSelected,
     required this.primaryTint,
     required this.primaryActiveBg,
     required this.borderDefault,
@@ -210,6 +213,12 @@ class VelaColors extends ThemeExtension<VelaColors> {
   final Color bgInactive;
   /// `--vela-bg-selected` · Figma `surface/selected`
   final Color bgSelected;
+  /// `--vela-bg-row-hover` · Figma `surface/row-hover`
+  /// A hovered table row (pointer only). Lighter than bg-hover in light mode and darker than it in dark, so every status dot, de-emphasized text and links still pass on it: grey-100 / grey-850 drop de-emphasized text under 4.5:1 and, in dark, links to 4.35:1.
+  final Color bgRowHover;
+  /// `--vela-bg-row-selected` · Figma `surface/row-selected`
+  /// A selected table row. Not bg-selected: on blue-100 the unknown status dot is 2.97:1 and de-emphasized text 4.20:1, both under AA. Never the only signal: the row also carries aria-selected and a border-active marker.
+  final Color bgRowSelected;
   /// `--vela-primary-tint` · Figma `surface/primary-tint`
   final Color primaryTint;
   /// `--vela-primary-active-bg` · Figma `surface/primary-active`
@@ -504,6 +513,8 @@ class VelaColors extends ThemeExtension<VelaColors> {
     bgScrim: VelaPrimitives.black,
     bgInactive: VelaPrimitives.grey100,
     bgSelected: VelaPrimitives.blue100,
+    bgRowHover: VelaPrimitives.grey50,
+    bgRowSelected: VelaPrimitives.blue50,
     primaryTint: VelaPrimitives.blue100,
     primaryActiveBg: VelaPrimitives.primary500,
     borderDefault: VelaPrimitives.grey500,
@@ -626,6 +637,8 @@ class VelaColors extends ThemeExtension<VelaColors> {
     bgScrim: VelaPrimitives.black,
     bgInactive: VelaPrimitives.grey900,
     bgSelected: VelaPrimitives.blue950,
+    bgRowHover: VelaPrimitives.grey900,
+    bgRowSelected: VelaPrimitives.blue950,
     primaryTint: VelaPrimitives.blue950,
     primaryActiveBg: VelaPrimitives.primary500,
     borderDefault: VelaPrimitives.grey600,
@@ -748,6 +761,8 @@ class VelaColors extends ThemeExtension<VelaColors> {
     Color? bgScrim,
     Color? bgInactive,
     Color? bgSelected,
+    Color? bgRowHover,
+    Color? bgRowSelected,
     Color? primaryTint,
     Color? primaryActiveBg,
     Color? borderDefault,
@@ -868,6 +883,8 @@ class VelaColors extends ThemeExtension<VelaColors> {
       bgScrim: bgScrim ?? this.bgScrim,
       bgInactive: bgInactive ?? this.bgInactive,
       bgSelected: bgSelected ?? this.bgSelected,
+      bgRowHover: bgRowHover ?? this.bgRowHover,
+      bgRowSelected: bgRowSelected ?? this.bgRowSelected,
       primaryTint: primaryTint ?? this.primaryTint,
       primaryActiveBg: primaryActiveBg ?? this.primaryActiveBg,
       borderDefault: borderDefault ?? this.borderDefault,
@@ -993,6 +1010,8 @@ class VelaColors extends ThemeExtension<VelaColors> {
       bgScrim: Color.lerp(bgScrim, other.bgScrim, t)!,
       bgInactive: Color.lerp(bgInactive, other.bgInactive, t)!,
       bgSelected: Color.lerp(bgSelected, other.bgSelected, t)!,
+      bgRowHover: Color.lerp(bgRowHover, other.bgRowHover, t)!,
+      bgRowSelected: Color.lerp(bgRowSelected, other.bgRowSelected, t)!,
       primaryTint: Color.lerp(primaryTint, other.primaryTint, t)!,
       primaryActiveBg: Color.lerp(primaryActiveBg, other.primaryActiveBg, t)!,
       borderDefault: Color.lerp(borderDefault, other.borderDefault, t)!,
@@ -1124,6 +1143,14 @@ abstract final class VelaSizing {
   static const double icon16 = 16;
   static const double icon20 = 20;
   static const double icon24 = 24;
+  /// Icon component, size regular: the glyph box beside 14px body text (Body/Default, Button regular). Same value as icon/16.
+  static const double iconSize = 16;
+  /// Icon component, size small: beside 12px meta text and in Button tiny. Same value as icon/12.
+  static const double iconSizeSmall = 12;
+  /// Icon component, size large: a standalone glyph (table cell, toolbar, card header) or beside 16px text. Same value as icon/20.
+  static const double iconSizeLarge = 20;
+  /// Icon glyph stroke, in the 24-unit grid the glyphs are drawn on (Lucide's default). It scales with the box: 1px at small, 1.33px at regular, 1.67px at large — the stem weight of Open Sans Regular at 12–16px. Not stroke/2, which is screen pixels.
+  static const double iconStroke = 2;
   /// Button and the input family do not share a height ramp.
   static const double controlHeight24 = 24;
   /// Button and the input family do not share a height ramp.
@@ -1217,6 +1244,9 @@ abstract final class VelaTypography {
   static const List<String> fontFamilyPrimaryFallback = <String>['Segoe UI', 'Roboto'];
   static const String fontFamilyDisplay = 'Oswald';
   static const List<String> fontFamilyDisplayFallback = <String>['Open Sans'];
+  /// System monospace stack, no web font: identifiers, hashes, IPs, timestamps and counts that must align. Figma text style Mono/Meta draws it in Roboto Mono.
+  static const String fontFamilyMono = 'SF Mono';
+  static const List<String> fontFamilyMonoFallback = <String>['Cascadia Mono', 'Roboto Mono', 'Menlo', 'Consolas'];
   static const FontWeight fontWeightLight = FontWeight.w300;
   /// Button labels are Regular 400 at every size.
   static const FontWeight fontWeightRegular = FontWeight.w400;

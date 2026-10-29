@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react'
-import { Button, Toggle, Input, ContextualAlert, StatusIndicator, RiskPill, Tabs } from '../../src'
-import type { Severity, Status, Risk } from '../../src'
+import { Button, Toggle, Input, TextArea, ContextualAlert, StatusIndicator, RiskPill, Tabs, Icon, ICON_NAMES, Table } from '../../src'
+import type { Severity, Status, Risk, IconName, IconSize, IconTone, TableSortDirection } from '../../src'
 import { Tabs as HeadlessTabs, Checkbox, RadioGroup, Popover, Tooltip, Dialog, ToastProvider, useToast } from '../../src/headless'
 import type { ToastLimit, ToastPlacement, ToastSeverity } from '../../src/headless'
 import { PlusIcon } from '../../src/lib/icons'
@@ -8,12 +8,15 @@ import { printJsx, type Control, type Spec } from './spec'
 import buttonMd from '../../guidelines/components/button.md?raw'
 import toggleMd from '../../guidelines/components/toggle.md?raw'
 import inputMd from '../../guidelines/components/input.md?raw'
+import textAreaMd from '../../guidelines/components/text-area.md?raw'
 import alertMd from '../../guidelines/components/contextual-alert.md?raw'
 import statusMd from '../../guidelines/components/status-indicator.md?raw'
 import riskMd from '../../guidelines/components/risk-pill.md?raw'
 import tabsMd from '../../guidelines/components/tabs.md?raw'
+import iconMd from '../../guidelines/components/icon.md?raw'
 import checkboxMd from '../../guidelines/components/checkbox.md?raw'
 import radioGroupMd from '../../guidelines/components/radio-group.md?raw'
+import tableMd from '../../guidelines/components/table.md?raw'
 import popoverMd from '../../guidelines/components/popover.md?raw'
 import tooltipMd from '../../guidelines/components/tooltip.md?raw'
 import dialogMd from '../../guidelines/components/dialog.md?raw'
@@ -75,6 +78,77 @@ export interface Entry {
   figma?: string
   /** Or a predicate for which of the spec's tokens the current values bind. */
   highlight?: (v: Values) => (token: string) => boolean
+}
+
+// The Table page's stage: a host that owns the rows, the sort and the selection, as the spec says
+// a host must. The table itself holds none of it.
+const ASSETS: { name: string; status: Status; statusLabel: string; risk: Risk; findings: number; seen: string }[] = [
+  { name: 'api-gateway-01', status: 'healthy', statusLabel: 'Healthy', risk: 'low', findings: 2, seen: '2026-10-29 08:12' },
+  { name: 'db-primary-eu-west-1', status: 'warning', statusLabel: 'Warning', risk: 'high', findings: 41, seen: '2026-10-29 07:58' },
+  { name: 'vpn-edge-02', status: 'unhealthy', statusLabel: 'Unreachable', risk: 'high', findings: 17, seen: '2026-10-28 23:40' },
+  { name: 'build-runner-14', status: 'medium', statusLabel: 'Degraded', risk: 'medium', findings: 9, seen: '2026-10-29 06:03' },
+  { name: 'laptop-omk-7f3a9c2e', status: 'unknown', statusLabel: 'No agent', risk: 'medium', findings: 0, seen: '2026-10-21 17:30' },
+  { name: 'k8s-node-pool-b-3', status: 'healthy', statusLabel: 'Healthy', risk: 'low', findings: 1204, seen: '2026-10-29 08:10' },
+  { name: 'mail-relay-01', status: 'healthy', statusLabel: 'Healthy', risk: 'low', findings: 3, seen: '2026-10-29 08:01' },
+]
+type AssetKey = 'name' | 'findings' | 'seen'
+
+function TableStage({ v }: { v: Values }) {
+  const [sort, setSort] = useState<{ key: AssetKey; direction: TableSortDirection }>({ key: 'name', direction: 'ascending' })
+  const [picked, setPicked] = useState<Set<string>>(() => new Set(['db-primary-eu-west-1']))
+  const rows = [...ASSETS].sort((a, b) => {
+    const d = sort.key === 'findings' ? a.findings - b.findings : String(a[sort.key]).localeCompare(String(b[sort.key]))
+    return sort.direction === 'descending' ? -d : d
+  })
+  const sortOf = (key: AssetKey) => ({
+    direction: sort.key === key ? sort.direction : ('none' as const),
+    onSort: (next: 'ascending' | 'descending') => setSort({ key, direction: next }),
+  })
+  const empty = bool(v.empty)
+  return (
+    <Table
+      caption={str(v.caption) || 'Assets'}
+      captionHidden={bool(v.captionHidden)}
+      density={(str(v.density) || 'comfortable') as 'comfortable' | 'compact'}
+      layout={(str(v.layout) || 'auto') as 'auto' | 'fixed'}
+      stickyHeader={bool(v.stickyHeader)}
+      className={bool(v.stickyHeader) ? 'pg-table-bounded' : undefined}
+    >
+      <Table.Head>
+        <Table.Row>
+          <Table.HeaderCell><span className="vela-sr-only">Selected</span></Table.HeaderCell>
+          <Table.HeaderCell sort={sortOf('name')}>Asset</Table.HeaderCell>
+          <Table.HeaderCell>Status</Table.HeaderCell>
+          <Table.HeaderCell>Risk</Table.HeaderCell>
+          <Table.HeaderCell align="end" sort={sortOf('findings')}>Open findings</Table.HeaderCell>
+          <Table.HeaderCell sort={sortOf('seen')}>Last seen</Table.HeaderCell>
+        </Table.Row>
+      </Table.Head>
+      <Table.Body>
+        {empty ? (
+          <Table.Empty colSpan={6}>No assets match these filters</Table.Empty>
+        ) : (
+          rows.map((r) => (
+            <Table.Row key={r.name} selected={picked.has(r.name)}>
+              <Table.Cell>
+                <Checkbox
+                  label={`Select ${r.name}`}
+                  size="tiny"
+                  checked={picked.has(r.name)}
+                  onCheckedChange={(on) => setPicked((p) => { const n = new Set(p); if (on) n.add(r.name); else n.delete(r.name); return n })}
+                />
+              </Table.Cell>
+              <Table.HeaderCell scope="row">{r.name}</Table.HeaderCell>
+              <Table.Cell><StatusIndicator status={r.status} label={r.statusLabel} /></Table.Cell>
+              <Table.Cell><RiskPill risk={r.risk} size="small" /></Table.Cell>
+              <Table.Cell numeric>{r.findings.toLocaleString('en-US')}</Table.Cell>
+              <Table.Cell>{r.seen}</Table.Cell>
+            </Table.Row>
+          ))
+        )}
+      </Table.Body>
+    </Table>
+  )
 }
 
 const defaultsOf = (spec: Spec) => Object.fromEntries(spec.controls.map((c) => [c.prop, c.default]))
@@ -199,6 +273,48 @@ export const REGISTRY: Entry[] = [
     code: (v, spec) => printJsx('Input', { label: v.label, hint: v.hint, error: v.error, size: v.size, required: v.required }, defaultsOf(spec)),
   },
   {
+    id: 'text-area',
+    file: 'text-area.md',
+    src: 'TextArea',
+    name: 'Text Area',
+    spec: textAreaMd,
+    seed: { label: 'Justification', hint: 'Shown to the approver', error: '', defaultValue: 'Blocking the transfer: the destination bucket is public.' },
+    // `value` is the controlled arm: on this stage it would freeze the field, so the page drives
+    // defaultValue instead. rows and maxLength are numbers, so they become selects of a few values.
+    hide: ['value'],
+    extra: [
+      { prop: 'rows', kind: 'select', type: 'number', options: ['2', '3', '5'], default: '3', notes: 'Minimum height, in lines.' },
+      { prop: 'maxLength', kind: 'select', type: 'number', options: ['none', '140', '280'], default: '140', notes: 'The limit, in characters; shows the live count.' },
+    ],
+    render: (v) => (
+      <TextArea
+        label={str(v.label) || 'Label'}
+        defaultValue={str(v.defaultValue)}
+        hint={str(v.hint) || undefined}
+        error={str(v.error) || undefined}
+        size={(str(v.size) || 'regular') as 'tiny' | 'regular' | 'large'}
+        rows={Number(str(v.rows) || 3)}
+        maxLength={str(v.maxLength) && v.maxLength !== 'none' ? Number(v.maxLength) : undefined}
+        resize={(str(v.resize) || 'vertical') as 'vertical' | 'none'}
+        disabled={bool(v.disabled)}
+        readOnly={bool(v.readOnly)}
+        required={bool(v.required)}
+        placeholder="Why is this action needed?"
+      />
+    ),
+    code: (v, spec) =>
+      printJsx(
+        'TextArea',
+        { label: v.label, hint: v.hint, error: v.error, size: v.size, resize: v.resize, disabled: v.disabled, readOnly: v.readOnly, required: v.required },
+        defaultsOf(spec),
+        undefined,
+        {
+          ...(str(v.rows) && v.rows !== '3' ? { rows: str(v.rows) } : {}),
+          ...(str(v.maxLength) && v.maxLength !== 'none' ? { maxLength: str(v.maxLength) } : {}),
+        },
+      ),
+  },
+  {
     id: 'contextual-alert',
     file: 'contextual-alert.md',
     src: 'ContextualAlert',
@@ -285,6 +401,44 @@ export const REGISTRY: Entry[] = [
 </Tabs>`,
   },
   {
+    id: 'icon',
+    file: 'icon.md',
+    src: 'Icon',
+    name: 'Icon',
+    spec: iconMd,
+    seed: { name: 'shield-x', label: '' },
+    // `name` is the IconName union — fifty literals the Props table names by type rather than
+    // spelling out — so its control is built here from ICON_NAMES, the same list the type is.
+    extra: [{ prop: 'name', kind: 'select', type: 'IconName', options: [...ICON_NAMES], default: 'shield-x', notes: 'One of the fifty curated glyphs.' }],
+    // className is layout for the host page; it changes nothing on this stage.
+    noControl: ['className'],
+    highlight: (v) => (t) =>
+      t === ({ small: '--vela-icon-size-small', regular: '--vela-icon-size', large: '--vela-icon-size-large' }[str(v.size) || 'regular']) ||
+      t === '--vela-icon-stroke' ||
+      t === ({ default: '--vela-icon-strong', muted: '--vela-icon-default', inherit: '' }[str(v.tone) || 'default']),
+    render: (v) => {
+      const size = (str(v.size) || 'regular') as IconSize
+      const tone = (str(v.tone) || 'default') as IconTone
+      return (
+        <div className="pg-icon">
+          <p className="vela-body pg-icon__lead">
+            <Icon name={(str(v.name) || 'shield-x') as IconName} size={size} tone={tone} label={str(v.label) || undefined} />
+            <span>{str(v.name) || 'shield-x'}</span>
+          </p>
+          <ul className="pg-icon__grid" aria-label="Every glyph at this size and tone">
+            {ICON_NAMES.map((n) => (
+              <li key={n} className="vela-meta pg-icon__cell" title={n}>
+                <Icon name={n} size={size} tone={tone} />
+                <span className="pg-icon__name">{n}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )
+    },
+    code: (v, spec) => printJsx('Icon', { name: str(v.name) || 'shield-x', size: v.size, tone: v.tone, label: v.label }, defaultsOf(spec)),
+  },
+  {
     id: 'checkbox',
     file: 'checkbox.md',
     src: 'Checkbox',
@@ -352,6 +506,39 @@ export const REGISTRY: Entry[] = [
   <RadioGroup.Radio value="quarantine" label="Quarantine" />
 </RadioGroup>`,
     bindingKey: (v) => (bool(v.disabled) ? 'disabled (any)' : str(v.error) ? 'error (any)' : str(v.defaultValue) ? 'selected' : 'unselected'),
+  },
+  {
+    id: 'table',
+    file: 'table.md',
+    src: 'Table',
+    name: 'Table',
+    spec: tableMd,
+    seed: { caption: 'Assets' },
+    // children is the composition below, not a value a control can hold.
+    hide: ['children'],
+    extra: [{ prop: 'empty', kind: 'boolean', type: 'boolean', default: false, notes: 'Stage only: render Table.Empty instead of the rows.' }],
+    render: (v) => <TableStage v={v} />,
+    highlight: () => (t) => /--vela-(bg-row-|bg-global|border-(default|subtle|active)|text-default|icon-default)/.test(t),
+    code: (v, spec) =>
+      `${printJsx('Table', { caption: v.caption, captionHidden: v.captionHidden, density: v.density, layout: v.layout, stickyHeader: v.stickyHeader }, defaultsOf(spec)).replace(' />', '>')}
+  <Table.Head>
+    <Table.Row>
+      <Table.HeaderCell sort={{ direction: sort.name, onSort: (next) => setSort({ name: next }) }}>Asset</Table.HeaderCell>
+      <Table.HeaderCell>Status</Table.HeaderCell>
+      <Table.HeaderCell align="end" sort={…}>Open findings</Table.HeaderCell>
+    </Table.Row>
+  </Table.Head>
+  <Table.Body>
+    ${bool(v.empty) ? '<Table.Empty colSpan={6}>No assets match these filters</Table.Empty>' : `{rows.map((r) => (
+      <Table.Row key={r.id} selected={picked.has(r.id)}>
+        <Table.Cell><Checkbox label={\`Select \${r.name}\`} size="tiny" … /></Table.Cell>
+        <Table.HeaderCell scope="row">{r.name}</Table.HeaderCell>
+        <Table.Cell><StatusIndicator status={r.status} label={r.statusLabel} /></Table.Cell>
+        <Table.Cell numeric>{r.findings}</Table.Cell>
+      </Table.Row>
+    ))}`}
+  </Table.Body>
+</Table>`,
   },
   // The overlays are headless-born too. Each frame of the stage renders its own trigger, and the
   // overlay it opens is portalled to <body> carrying that frame's data-theme, so the light frame's

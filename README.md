@@ -5,14 +5,15 @@
 [![Licence: MIT](https://img.shields.io/badge/licence-MIT-blue)](LICENSE)
 
 A token-first design system. The tokens and the component specs are framework-agnostic;
-this repository is a **React implementation** of them. Thirteen components, two themes, zero runtime
+this repository is a **React implementation** of them. Sixteen components, two themes, zero runtime
 dependencies in the core entry — and every design rule in the documentation is tagged with how it is
-enforced: 46 of the 106 by the TypeScript compiler, the rest at runtime, in a real browser, or by review
+enforced: 64 of the 147 by the TypeScript compiler, the rest at runtime, in a real browser, or by review
 (counted by `npm run rules:check`).
 
 **Status:** every component carries a lifecycle label — Approved, Known bugs, Experimental or
-Retired, defined in [`GOVERNANCE.md`](GOVERNANCE.md). Six are **Approved**; Risk Pill, Checkbox,
-Radio Group, Popover, Tooltip, Dialog and Toast are **Experimental**.
+Retired, defined in [`GOVERNANCE.md`](GOVERNANCE.md). Six are **Approved**; Risk Pill, Icon, Text Area,
+Checkbox, Radio Group, Popover, Tooltip, Dialog, Table and Toast are **Experimental** (Icon and Text Area
+until their Figma sets are published).
 
 ```bash
 npm install @omkarux/vela
@@ -51,13 +52,14 @@ link to each, and the number of automated checks, written by the test runners ra
 
 | | |
 |---|---|
-| **Components** | Button · Toggle · Input · ContextualAlert · StatusIndicator · RiskPill · Tabs, from `@omkarux/vela` (Tabs also from `/headless`) · Checkbox (with Checkbox.Group) · RadioGroup · Popover · Tooltip · Dialog (with `variant="alert"`) · ToastProvider + useToast, from `@omkarux/vela/headless` only |
-| **Tokens** | 272 CSS custom properties, two layers (primitives → semantics) |
+| **Components** | Button · Toggle · Input · TextArea · ContextualAlert · StatusIndicator · RiskPill · Tabs · Icon · Table, from `@omkarux/vela` (Tabs also from `/headless`) · Checkbox (with Checkbox.Group) · RadioGroup · Popover · Tooltip · Dialog (with `variant="alert"`) · ToastProvider + useToast, from `@omkarux/vela/headless` only |
+| **Tokens** | 280 CSS custom properties, two layers (primitives → semantics) |
 | **Themes** | Light + dark. OS preference by default, `data-theme` to override |
 | **Dependencies** | None in the core entry. `react` / `react-dom` are peers (18.3 or 19). The `/headless` entry needs one optional peer, `@base-ui/react` 1.9.x (MIT) |
+| **Icons** | 50 curated [Lucide](https://lucide.dev) 1.63.0 glyphs (ISC; a subset from Feather, MIT), compiled into the core entry at build time — no icon dependency, `lucide` is a devDependency only. The ISC notice ships in [`NOTICE`](NOTICE) |
 | **Format** | ESM, `preserveModules` for tree-shaking, full `.d.ts` |
-| **Tests** | 554 automated checks — 463 unit and contract (61 contrast pairs, each asserted in both themes), 88 browser (68 screenshots at four widths, 18 playground, 2 docs), 3 Flutter — counted by `npm run checks` |
-| **Packed size** | 134.3 kB, 90 files, as `npm run verify` measures it (README and CHANGELOG ship in the tarball, so this moves when they do) |
+| **Tests** | 780 automated checks — 684 unit and contract (86 contrast pairs, each asserted in both themes), 93 browser (68 screenshots at four widths, 23 playground, 2 docs), 3 Flutter — counted by `npm run checks` |
+| **Packed size** | 179.2 kB, 209 files (the fifty glyph modules and their .d.ts are most of the growth since 0.12.1), as `npm run verify` measures it (README and CHANGELOG ship in the tarball, so this moves when they do) |
 
 ## The three ideas worth stealing
 
@@ -152,10 +154,10 @@ document.documentElement.removeAttribute('data-theme')        // follow the OS
 
 ```bash
 npm run dev        # demo showcase at localhost:5174
-npm test           # 354 unit and contract tests, of 437 checks in all — the numbers are generated into demo/checks.json
+npm test           # 684 unit and contract tests, of 780 checks in all — the numbers are generated into demo/checks.json
 npm run checks     # counts every automated check into demo/checks.json (diffed in verify)
 npm run contrast   # WCAG report for both themes
-npm run verify     # tokens:check + rules:check + typecheck + tests + checks:check + build + pack-and-consume gate
+npm run verify     # tokens:check + icons:check + rules:check + typecheck + tests + checks:check + build + pack-and-consume gate
 ```
 
 The counts are copied from `demo/checks.json`, which `scripts/count-checks.mjs` writes from the
@@ -182,6 +184,7 @@ npm run tokens:figma    # → a Plugin API script that creates-or-updates every 
 npm run styles:figma    # → a script that creates-or-updates every Figma text style, bound to those variables
 npm run components:figma:lint   # builds every component builder in a mock Plugin API and applies the reviewer rules
 npm run components:figma:check <name> <live.json>   # diffs the live set against what a rebuild would create
+npm run figma:build:pages      # → the library's Changelog and Status pages, compiled from CHANGELOG.md and the specs
 npm run tokens:check    # fails if the CSS was hand-edited instead of the JSON (runs in CI)
 npm run guidelines:figma # → a script that writes each spec's summary into its Figma description
 ```
@@ -225,11 +228,12 @@ or a new rule arrives untagged.
 
 ## Scope
 
-Thirteen components, chosen to exercise every foundation and all three taxonomies (Severity, Risk,
-Status), the first form controls born on the headless entry (Checkbox, Radio Group), the three
-overlays (Popover, Tooltip, Dialog) and Toast. Not yet specced: Dropdown List, Select List, Token Pill, Number
-Stepper, Text Area, Icon Button, Actions Dropdown, View Switcher. The guidelines name these explicitly so an agent flags the
-gap instead of inventing one.
+Sixteen components, chosen to exercise every foundation and all three taxonomies (Severity, Risk,
+Status), the curated Icon set they draw from, the first form controls born on the headless entry
+(Checkbox, Radio Group), the three overlays (Popover, Tooltip, Dialog), Toast and the Table
+primitives a console's data views are built on. Not yet specced: Dropdown List, Select List, Token Pill, Number
+Stepper, Icon Button, Actions Dropdown, View Switcher, Data Grid, Card List. The guidelines name
+these explicitly so an agent flags the gap instead of inventing one.
 
 ## Project files
 
@@ -248,6 +252,6 @@ gap instead of inventing one.
 
 ## License
 
-MIT for the code, tokens and documentation ([`LICENSE`](LICENSE)). The Figma library is
-published on Figma Community under CC BY 4.0 and additionally under MIT; see
+MIT for the code, tokens and documentation ([`LICENSE`](LICENSE)). The Figma library is offered
+under CC BY 4.0 and additionally under MIT (a Figma Community listing is planned, not yet live); see
 [`LICENSE-DESIGN.md`](LICENSE-DESIGN.md).

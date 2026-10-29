@@ -36,7 +36,7 @@ indexed; a "Responsive behaviour" section in every spec; visual CI at four width
 Open: docs-site routes (this page among them); Figma library hygiene (changelog, status,
 deprecated, patterns and sandbox pages; no foreign libraries subscribed); the Risk Pill
 Figma set; density and breakpoint tokens, deferred until the first container-query component
-needs them.
+needs them. Table is the first container-query component; density and breakpoint tokens are due before its Approved label.
 
 ## Phase 1 — Headless behaviour layer
 
@@ -61,6 +61,10 @@ with trusted/untrusted labels, Agent Provenance badge, Override & Teach panel, A
 Ledger, Stop control with safe-state semantics, Awareness Clock (NIS2 24 h, DORA 4 h), Hand-off
 card. Each spec cites the standard or research it answers. One worked console page composes
 the set, synthetic data only, rendered to text without loss.
+
+The specs are published as they pass review, before any code: see
+[`guidelines/proposals/`](guidelines/proposals/README.md). Verdict Card, Action Impact Card and
+Autonomy Ladder and Approval Queue are pressure-tested and published.
 
 ## Phase 2b — Console data and policy patterns
 

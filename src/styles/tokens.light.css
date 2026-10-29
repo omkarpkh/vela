@@ -32,6 +32,7 @@
   --vela-primary-450: #187e91;
   --vela-primary-500: #0a6c7d;
   --vela-primary-600: #075462;
+  --vela-blue-50: #f2f7fd;
   --vela-blue-100: #e6eefb;
   --vela-blue-150: #cfdff7;
   --vela-blue-300: #85aae8;
@@ -82,6 +83,8 @@
   --vela-bg-scrim: var(--vela-black);
   --vela-bg-inactive: var(--vela-grey-100);
   --vela-bg-selected: var(--vela-blue-100);
+  --vela-bg-row-hover: var(--vela-grey-50);      /* table row, hovered — see table.md */
+  --vela-bg-row-selected: var(--vela-blue-50);   /* table row, selected — not bg-selected, which fails AA for the unknown dot */
   --vela-primary-tint: var(--vela-blue-100);
   --vela-primary-active-bg: var(--vela-primary-500);
 
@@ -246,6 +249,12 @@
   --vela-icon-20: 20px;
   --vela-icon-24: 24px;
 
+  /* ---- Icon component: its three sizes and the glyph stroke (24-grid units) ---- */
+  --vela-icon-size: 16px;
+  --vela-icon-size-small: 12px;
+  --vela-icon-size-large: 20px;
+  --vela-icon-stroke: 2px;
+
   /* ---- Control heights ---- */
   --vela-control-height-24: 24px;
   --vela-control-height-25: 25px;
@@ -265,6 +274,7 @@
   /* ---- Typography: family & weight ---- */
   --vela-font-family-primary: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --vela-font-family-display: "Oswald", "Open Sans", -apple-system, sans-serif;
+  --vela-font-family-mono: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", Menlo, Consolas, monospace;
   --vela-font-weight-light: 300;
   --vela-font-weight-regular: 400;
   --vela-font-weight-semibold: 600;
