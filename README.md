@@ -5,14 +5,14 @@
 [![Licence: MIT](https://img.shields.io/badge/licence-MIT-blue)](LICENSE)
 
 A token-first design system. The tokens and the component specs are framework-agnostic;
-this repository is a **React implementation** of them. Nine components, two themes, zero runtime
+this repository is a **React implementation** of them. Ten components, two themes, zero runtime
 dependencies in the core entry — and every design rule in the documentation is tagged with how it is
-enforced: 25 of the 52 by the TypeScript compiler, the rest at runtime, in a real browser, or by review
+enforced: 34 of the 72 by the TypeScript compiler, the rest at runtime, in a real browser, or by review
 (counted by `npm run rules:check`).
 
 **Status:** every component carries a lifecycle label — Approved, Known bugs, Experimental or
-Retired, defined in [`GOVERNANCE.md`](GOVERNANCE.md). Six are **Approved**; Risk Pill, Checkbox
-and Radio Group are **Experimental**.
+Retired, defined in [`GOVERNANCE.md`](GOVERNANCE.md). Six are **Approved**; Risk Pill, Checkbox,
+Radio Group and Table are **Experimental**.
 
 ```bash
 npm install @omkarux/vela
@@ -50,12 +50,12 @@ link to each, and the number of automated checks, written by the test runners ra
 
 | | |
 |---|---|
-| **Components** | Button · Toggle · Input · ContextualAlert · StatusIndicator · RiskPill · Tabs, from `@omkarux/vela` (Tabs also from `/headless`) · Checkbox (with Checkbox.Group) · RadioGroup, from `@omkarux/vela/headless` only |
-| **Tokens** | 242 CSS custom properties, two layers (primitives → semantics) |
+| **Components** | Button · Toggle · Input · ContextualAlert · StatusIndicator · RiskPill · Tabs · Table, from `@omkarux/vela` (Tabs also from `/headless`) · Checkbox (with Checkbox.Group) · RadioGroup, from `@omkarux/vela/headless` only |
+| **Tokens** | 245 CSS custom properties, two layers (primitives → semantics) |
 | **Themes** | Light + dark. OS preference by default, `data-theme` to override |
 | **Dependencies** | None in the core entry. `react` / `react-dom` are peers (18.3 or 19). The `/headless` entry needs one optional peer, `@base-ui/react` 1.9.x (MIT) |
 | **Format** | ESM, `preserveModules` for tree-shaking, full `.d.ts` |
-| **Tests** | 459 automated checks — 376 unit and contract (52 contrast pairs, each asserted in both themes), 80 browser (68 screenshots at four widths, 10 playground, 2 docs), 3 Flutter — counted by `npm run checks` |
+| **Tests** | 525 automated checks — 439 unit and contract (71 contrast pairs, each asserted in both themes), 83 browser (68 screenshots at four widths, 13 playground, 2 docs), 3 Flutter — counted by `npm run checks` |
 | **Packed size** | 101.1 kB, 72 files, as `npm run verify` measures it (README and CHANGELOG ship in the tarball, so this moves when they do) |
 
 ## The three ideas worth stealing
@@ -151,7 +151,7 @@ document.documentElement.removeAttribute('data-theme')        // follow the OS
 
 ```bash
 npm run dev        # demo showcase at localhost:5174
-npm test           # 376 unit and contract tests, of 459 checks in all — the numbers are generated into demo/checks.json
+npm test           # 439 unit and contract tests, of 525 checks in all — the numbers are generated into demo/checks.json
 npm run checks     # counts every automated check into demo/checks.json (diffed in verify)
 npm run contrast   # WCAG report for both themes
 npm run verify     # tokens:check + rules:check + typecheck + tests + checks:check + build + pack-and-consume gate
@@ -225,10 +225,11 @@ or a new rule arrives untagged.
 
 ## Scope
 
-Nine components, chosen to exercise every foundation and all three taxonomies (Severity, Risk,
-Status), and the first form controls born on the headless entry (Checkbox, Radio Group). Not yet
-specced: Dropdown List, Select List, Token Pill, Number Stepper, Text Area, Modal, Tooltip, Icon
-Button, Actions Dropdown, View Switcher. The guidelines name these explicitly so an agent flags the
+Ten components, chosen to exercise every foundation and all three taxonomies (Severity, Risk,
+Status), the first form controls born on the headless entry (Checkbox, Radio Group), and the Table
+primitives a console's data views are built on. Not yet specced: Dropdown List, Select List, Token
+Pill, Number Stepper, Text Area, Modal, Tooltip, Icon Button, Actions Dropdown, View Switcher,
+Data Grid, Card List. The guidelines name these explicitly so an agent flags the
 gap instead of inventing one.
 
 ## Project files

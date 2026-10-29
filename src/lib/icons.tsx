@@ -38,3 +38,16 @@ export const CloseIcon = (p: React.SVGProps<SVGSVGElement>) => (
 export const PlusIcon = (p: React.SVGProps<SVGSVGElement>) => (
   <svg {...base} {...p}><path d="M8 3.2v9.6M3.2 8h9.6" /></svg>
 )
+
+/** A sortable column that is not sorted: both directions, neither chosen. */
+export const SortNoneIcon = (p: React.SVGProps<SVGSVGElement>) => (
+  <svg {...base} {...p}><path d="M5 6.2 8 3.2l3 3M5 9.8l3 3 3-3" /></svg>
+)
+
+export const SortAscendingIcon = (p: React.SVGProps<SVGSVGElement>) => (
+  <svg {...base} {...p}><path d="M8 12.8V3.2M4.6 6.6 8 3.2l3.4 3.4" /></svg>
+)
+
+export const SortDescendingIcon = (p: React.SVGProps<SVGSVGElement>) => (
+  <svg {...base} {...p}><path d="M8 3.2v9.6M4.6 9.4 8 12.8l3.4-3.4" /></svg>
+)

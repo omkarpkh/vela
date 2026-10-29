@@ -10,5 +10,6 @@
 @import '../components/StatusIndicator/StatusIndicator.css';
 @import '../components/RiskPill/RiskPill.css';
 @import '../components/Tabs/Tabs.css';
+@import '../components/Table/Table.css';
 @import '../headless/Checkbox/Checkbox.css';
 @import '../headless/RadioGroup/RadioGroup.css';

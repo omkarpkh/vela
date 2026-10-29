@@ -65,3 +65,10 @@
 .pg-list { margin: 0 0 var(--vela-space-10); padding-left: var(--vela-space-20); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); }
 .pg-list li { margin: 0 0 var(--vela-space-5); }
 .pg-rules > div + div { margin-top: var(--vela-space-30); }
+
+/* Table (Phase 1). The frame body hugs its content, and a Table's width never comes from its
+   content — it is an inline-size container, so a wide table cannot widen its host. Here the host
+   gives it the frame's width, as a page column would. The bounded height is the host's half of
+   stickyHeader: the region fills it and scrolls, and the header pins to its top. */
+.pg-frame-body:has(> .vela-table) { width: 100%; }
+.pg-table-bounded { max-block-size: 220px; }

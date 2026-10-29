@@ -118,8 +118,8 @@ try {
   // -- valid usage must compile --
   mkdirSync(join(app, 'src'), { recursive: true })
   writeFileSync(join(app, 'valid.tsx'), `
-import { Button, Toggle, Input, ContextualAlert, StatusIndicator, RiskPill, Tabs } from '@omkarux/vela'
-import type { Severity, Status, Risk, ButtonProps } from '@omkarux/vela'
+import { Button, Toggle, Input, ContextualAlert, StatusIndicator, RiskPill, Tabs, Table } from '@omkarux/vela'
+import type { Severity, Status, Risk, ButtonProps, TableProps, TableRowProps, TableHeaderCellProps, TableCellProps, TableEmptyProps, TableSort, TableSortDirection } from '@omkarux/vela'
 
 export const A = () => <Button variant="primary" appearance="filled" size="huge">Save Changes</Button>
 export const B = () => <Button variant="primary" appearance="text-link" size="tiny">Learn More</Button>
@@ -145,6 +145,32 @@ export const I = () => (
 )
 export const J = () => <Toggle label="Email alerts" checked onChange={(v: boolean) => v} />
 export const props: ButtonProps = { variant: 'standard', children: 'OK' }
+// Table: every documented shape compiles, so the table fixtures are rejected for the right reason.
+export const K = (direction: TableSortDirection, isNumeric: boolean) => (
+  <Table caption="Assets" captionHidden density="compact" layout="fixed" stickyHeader className="t">
+    <Table.Head>
+      <Table.Row>
+        <Table.HeaderCell sort={{ direction, onSort: (next: 'ascending' | 'descending') => next }}>Asset</Table.HeaderCell>
+        <Table.HeaderCell sort={{ direction: 'none', onSort: () => {} }} align="end">Findings</Table.HeaderCell>
+        <Table.HeaderCell scope="col">Status</Table.HeaderCell>
+      </Table.Row>
+    </Table.Head>
+    <Table.Body>
+      <Table.Empty colSpan={3}>No assets match these filters</Table.Empty>
+      <Table.Row selected aria-current="true">
+        <Table.HeaderCell scope="row">api-01</Table.HeaderCell>
+        <Table.Cell numeric>42</Table.Cell>
+        <Table.Cell numeric={isNumeric}>7</Table.Cell>
+        <Table.Cell align="end">x</Table.Cell>
+        <Table.Cell><StatusIndicator status="healthy" label="Healthy" /></Table.Cell>
+      </Table.Row>
+    </Table.Body>
+  </Table>
+)
+export const tableProps: [TableProps, TableRowProps, TableHeaderCellProps, TableCellProps, TableEmptyProps, TableSort] = [
+  { caption: 'A', children: null }, { children: null }, { children: 'A' }, {}, { colSpan: 1, children: 'None' },
+  { direction: 'none', onSort: () => {} },
+]
 `)
   const tsc = join(root, 'node_modules', '.bin', 'tsc')
   let validOk = true
@@ -265,10 +291,22 @@ export const props: [CheckboxProps, CheckboxGroupProps, RadioGroupProps, RadioPr
     ['radio-value-required', 'radio with no value', `<RadioGroup label="Mode"><RadioGroup.Radio label="A" /></RadioGroup>`],
     ['radio-label-required', 'radio with no label', `<RadioGroup label="Mode"><RadioGroup.Radio value="a" /></RadioGroup>`],
     ['radio-label-required', 'radio label as a node', `<RadioGroup label="Mode"><RadioGroup.Radio value="a" label={<b>A</b>} /></RadioGroup>`],
+    ['table-caption-required', 'table with no caption', `<Table><Table.Body><Table.Empty colSpan={1}>None</Table.Empty></Table.Body></Table>`],
+    ['table-caption-required', 'table caption as a node', `<Table caption={<b>Assets</b>}><Table.Body><Table.Empty colSpan={1}>None</Table.Empty></Table.Body></Table>`],
+    ['table-density-closed', 'invented table density', `<Table caption="Assets" density="comfortable"><Table.Body><Table.Empty colSpan={1}>None</Table.Empty></Table.Body></Table>`],
+    ['table-layout-closed', 'invented table layout', `<Table caption="Assets" layout="grid"><Table.Body><Table.Empty colSpan={1}>None</Table.Empty></Table.Body></Table>`],
+    ['table-header-scope-closed', 'invented header scope', `<Table.HeaderCell scope="colgroup">Asset</Table.HeaderCell>`],
+    ['table-sort-direction-closed', 'invented sort direction', `<Table.HeaderCell sort={{ direction: 'asc', onSort: () => {} }}>Asset</Table.HeaderCell>`],
+    ['table-sort-column-headers-only', 'sort on a row header', `<Table.HeaderCell scope="row" sort={{ direction: 'none', onSort: () => {} }}>api-01</Table.HeaderCell>`],
+    ['table-sort-label-is-a-string', 'sortable header labelled with a node', `<Table.HeaderCell sort={{ direction: 'none', onSort: () => {} }}><b>Asset</b></Table.HeaderCell>`],
+    ['table-align-closed', 'invented cell alignment', `<Table.Cell align="center">42</Table.Cell>`],
+    ['table-align-closed', 'numeric cell aligned to the start', `<Table.Cell numeric align="start">42</Table.Cell>`],
+    ['table-empty-requires-text', 'empty state with no message', `<Table.Empty colSpan={3} />`],
+    ['table-empty-requires-text', 'empty state message as a node', `<Table.Empty colSpan={3}><b>None</b></Table.Empty>`],
   ]
   for (const [id, name, snippet] of violations) {
     writeFileSync(join(app, 'invalid.tsx'),
-      `import { Button, ContextualAlert, Input, RiskPill, StatusIndicator, Tabs, Toggle } from '@omkarux/vela'\n` +
+      `import { Button, ContextualAlert, Input, RiskPill, StatusIndicator, Table, Tabs, Toggle } from '@omkarux/vela'\n` +
       `import { Checkbox, RadioGroup } from '@omkarux/vela/headless'\nexport const X = () => (${snippet})\n`)
     let rejected = false
     try { run(tsc, ['--noEmit', '-p', 'tsconfig.json'], app) } catch { rejected = true }
@@ -292,6 +330,8 @@ export const props: [CheckboxProps, CheckboxGroupProps, RadioGroupProps, RadioPr
   check(css.includes('prefers-color-scheme: dark'), 'shipped CSS respects the OS preference')
   check(css.includes('.vela-checkbox__box') && css.includes('.vela-radio__circle'),
     'shipped CSS carries the headless-born Checkbox and Radio Group styles')
+  check(css.includes('.vela-table__region') && css.includes('--vela-bg-row-selected:'),
+    'shipped CSS carries the Table styles and the row tokens they bind')
 } finally {
   rmSync(app, { recursive: true, force: true })
   rmSync(tarball, { force: true })

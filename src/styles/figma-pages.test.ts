@@ -149,9 +149,9 @@ describe('the Status page', () => {
   })
 
   it('has one row per registered component, in registry order, each with its spec\'s label', () => {
-    expect(rows.map((r) => r.n)).toEqual(['Button', 'Toggle', 'Input', 'Contextual Alert', 'Status Indicator', 'Risk Pill', 'Tabs', 'Checkbox', 'Radio Group'])
+    expect(rows.map((r) => r.n)).toEqual(['Button', 'Toggle', 'Input', 'Contextual Alert', 'Status Indicator', 'Risk Pill', 'Tabs', 'Checkbox', 'Radio Group', 'Table'])
     expect(rows.filter((r) => label(r) === 'Approved').map((r) => r.n)).toEqual(['Button', 'Toggle', 'Input', 'Contextual Alert', 'Status Indicator', 'Tabs'])
-    for (const n of ['Risk Pill', 'Checkbox', 'Radio Group']) expect(label(rows.find((r) => r.n === n)!), n).toBe('Experimental')
+    for (const n of ['Risk Pill', 'Checkbox', 'Radio Group', 'Table']) expect(label(rows.find((r) => r.n === n)!), n).toBe('Experimental')
   })
 
   it('names the headless entry point for a component born there', () => {

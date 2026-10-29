@@ -37,4 +37,19 @@ export type { RiskPillProps, Risk } from './components/RiskPill'
 export { Tabs } from './components/Tabs'
 export type { TabsProps, TabListProps, TabTriggerProps, TabPanelProps } from './components/Tabs'
 
+export { Table } from './components/Table'
+export type {
+  TableProps,
+  TableSectionProps,
+  TableRowProps,
+  TableHeaderCellProps,
+  TableCellProps,
+  TableEmptyProps,
+  TableSort,
+  TableSortDirection,
+  TableDensity,
+  TableLayout,
+  TableAlign,
+} from './components/Table'
+
 export { cn } from './lib/cn'
