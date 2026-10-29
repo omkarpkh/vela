@@ -6,6 +6,13 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Unreleased]
 
 ### Added
+- **The Calibrated Confidence Gate is public, as a proposal** (21 rules, 17 with proofs). It owns the
+  Confidence band taxonomy and decides, through `gateBand(reading, now)`, which band the kit may act
+  on: a stated band counts only once at least 30 person-reviewed conclusions for the same agent
+  version, in a window no older than 30 days, confirm it. Calibration is shown as counts with dates,
+  never a percentage. **Breaking change to the Verdict Card proposal:** `confidence` is now a
+  `ConfidenceReading`, Accept follows the Gate's band, and the card drops to 28 rules (22 with
+  proofs). The Autonomy Ladder documents `RouteInput.confidence` as the Gate's band.
 - **Text Area** — multi-line entry, Input's sibling, in the core entry with no dependency.
   Closed props mirroring Input (`label` required, `value` / `defaultValue` exclusive, `error`
   a message, `size` Input's three), plus `rows` (the minimum height in lines), `resize`
