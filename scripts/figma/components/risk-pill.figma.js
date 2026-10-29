@@ -1,6 +1,9 @@
 // @page Risk Pill
 // @set  Risk Pill
-// Risk Pill — 6 variants (3 risks × 2 sizes) + a "Label text" property.
+// Risk Pill — 6 variants (3 risks × 2 sizes). Each variant keeps its own level word in a text
+// layer named "Label", overridden on the instance — no TEXT component property: Figma holds one
+// default per TEXT property for the whole set, so binding Low/Medium/High to one property shows
+// the last word written in every variant (observed live, 29 Oct 2026). The lint fails that.
 // Fill, stroke and text bind the RISK taxonomy only — never severity, never status.
 // Nothing here is literal: the regular height binds control-height/24, the small size hugs
 // its text, padding binds space/10 and space/5, the radius binds radius/3 (an inline chip —
@@ -34,8 +37,5 @@ const set = figma.combineAsVariants(variants, page);
 set.name = SET; set.x = 0; set.y = 0;
 grid(set, p => [RISK.indexOf(p.Risk), p.Size === 'regular' ? 0 : 1], 120, 48, 32);
 set.resize(32 * 2 + 120 * 3, 32 * 2 + 48 * 2);
-
-const labelProp = set.addComponentProperty('Label text', 'TEXT', 'Low');
-for (const v of set.children) { const l = v.findOne(n => n.name === 'Label'); if (l) l.componentPropertyReferences = { characters: labelProp }; }
 
 return { created: SET, variants: variants.length, setId: set.id };

@@ -22,7 +22,7 @@ import { available, meta, generate } from './build-pages.mjs'
 import { loadVariables, mockStyles, lint, dumpSource } from './check-components.mjs'
 
 const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor
-const DUMP = dumpSource({ fullText: true, links: true })
+const DUMP = dumpSource({ fullText: true, links: true, colours: true })
 
 /** Run a page builder `runs` times in one mock file, as running it again in the library would. */
 export async function buildPage(which, runs = 1) {

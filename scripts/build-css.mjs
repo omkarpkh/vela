@@ -42,6 +42,7 @@ const COMPONENTS = [
   'src/components/Button/Button.css',
   'src/components/Toggle/Toggle.css',
   'src/components/Input/Input.css',
+  'src/components/TextArea/TextArea.css',
   'src/components/ContextualAlert/ContextualAlert.css',
   'src/components/StatusIndicator/StatusIndicator.css',
   'src/components/RiskPill/RiskPill.css',

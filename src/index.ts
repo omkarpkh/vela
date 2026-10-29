@@ -25,6 +25,9 @@ export type { ToggleProps } from './components/Toggle'
 export { Input } from './components/Input'
 export type { InputProps } from './components/Input'
 
+export { TextArea } from './components/TextArea'
+export type { TextAreaProps } from './components/TextArea'
+
 export { ContextualAlert } from './components/ContextualAlert'
 export type { ContextualAlertProps, Severity } from './components/ContextualAlert'
 

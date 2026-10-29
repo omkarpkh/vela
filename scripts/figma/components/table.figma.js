@@ -5,6 +5,9 @@
 // Table — three sets, composed by the designer the way the code composes its parts:
 //   Table Header Cell  16 variants, Density (2) × Sort (4) × Align (2), plus "Label text".
 //   Table Cell          4 variants, Density (2) × Align (2), plus "Value text".
+// Every variant of a set writes the same words in the layer its TEXT property binds: Figma holds
+// one default per TEXT property for the whole set, so differing words collapse to the last one
+// written (the text-property-collapse lint). The designer overrides the text on the instance.
 //   Table Row           8 variants, Density (2) × State (4): default, hover, selected, current.
 // Density changes the vertical padding only (space/10 → space/5); type never changes. The header
 // sits on surface/global with a border/default rule; cells carry a border/subtle rule. A selected
@@ -62,7 +65,7 @@ for (const density of DENSITIES) for (const sort of SORTS) for (const align of A
   c.fills = [paint('surface/global')];
   rule(c, 'border/default');
 
-  const label = figma.createText(); label.name = 'Label'; label.characters = align === 'end' ? 'Open findings' : 'Last seen';
+  const label = figma.createText(); label.name = 'Label'; label.characters = 'Last seen';
   await label.setTextStyleIdAsync(style('Heading/H6').id); label.fills = [paint('text/default')];
 
   let icon = null;
@@ -100,7 +103,7 @@ for (const density of DENSITIES) for (const align of ALIGNS) {
   pad(c, density);
   c.fills = [];
   rule(c, 'border/subtle');
-  const value = figma.createText(); value.name = 'Value'; value.characters = align === 'end' ? '1,204' : 'api-gateway-01';
+  const value = figma.createText(); value.name = 'Value'; value.characters = 'api-gateway-01';
   await value.setTextStyleIdAsync(style('Body/Default').id); value.fills = [paint('text/default')];
   if (align === 'end') value.textAlignHorizontal = 'RIGHT';
   c.appendChild(value); value.layoutSizingHorizontal = 'HUG';

@@ -6,7 +6,8 @@
  * they create and never update, and the live file is edited by hand. This script keeps the two
  * honest in both directions:
  *
- *   --lint [name]              build every builder (or one) in the mock Plugin API and apply the
+ *   --lint [name|path]         build every builder (or one, or a builder file at a path ending in
+ *                              .figma.js — a test fixture) in the mock Plugin API and apply the
  *                              rules below; exit 1 on an unwaived violation. Runs in `npm test`.
  *   --dump <name>              the tree a rebuild would create, as JSON (what the test asserts on)
  *   --read <name> [a:b]        print a read-only Plugin API script that dumps the LIVE set in the
@@ -25,6 +26,9 @@
  *   raw-size           a fixed-size box whose width or height is not bound to a variable
  *   raw-colour         a fill or stroke that is not bound to a colour variable
  *   raw-radius         a corner radius that is not 0 and not bound
+ *   text-property-collapse  a TEXT component property bound in variants whose texts differ: the
+ *                      property holds one default for the whole set, so Figma shows the last word
+ *                      written in every variant (Risk Pill, 29 Oct 2026: Low/Medium/High → High)
  *   component-on-doc-page  (doc pages, check-pages.mjs) a component, set or instance on a doc page
  * A builder may waive a rule with `// @allow <rule> <why>`; the waiver is printed, never silent.
  * Glyph geometry inside a BOOLEAN_OPERATION and a main component's own canvas width are exempt.
@@ -34,7 +38,7 @@ import { join, dirname } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { execFileSync } from 'node:child_process'
 import { createMockFigma } from './mock-figma.mjs'
-import { available, meta, generate } from './build-components.mjs'
+import { available, meta, generate, metaFromFile, generateFrom } from './build-components.mjs'
 import { textStyles } from './text-styles.mjs'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
@@ -44,8 +48,9 @@ const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor
 // ---------- the dump: one definition, run inside Figma and against the mock ----------
 // `fullText` keeps every character instead of the first 40 (the doc pages carry sentences; the
 // component read script stays short because the MCP caps a return at 20 KB); `links` records a
-// text node's hyperlink and list type. check-pages.mjs asks for both; the component paths use the defaults.
-export const dumpSource = ({ fullText = false, links = false } = {}) => `
+// text node's hyperlink and list type; `colours` records each fill's resolved colour as hex (`rgb`),
+// which is how a black reused frame shows. check-pages.mjs asks for all three; the component paths use the defaults.
+export const dumpSource = ({ fullText = false, links = false, colours = false } = {}) => `
 const LS = String.fromCharCode(8232), PS = String.fromCharCode(8233);
 const clean = (s) => typeof s === 'string' ? s.split(LS).join(' ').split(PS).join(' ') : s;
 const vcache = {}, scache = {};
@@ -67,7 +72,8 @@ async function dump(n, depth) {
   }
   if ('layoutSizingHorizontal' in n && n.parent && 'layoutMode' in n.parent && n.parent.layoutMode !== 'NONE') o.ls = [n.layoutSizingHorizontal, n.layoutSizingVertical].join('/');
   if ('width' in n) { const w = await bv(n, 'width'), h = await bv(n, 'height'); o.wh = [Math.round(n.width * 10) / 10, Math.round(n.height * 10) / 10, w, h]; }
-  if ('fills' in n && n.fills !== figma.mixed) o.fill = await paintName(n.fills);
+  if ('fills' in n && n.fills !== figma.mixed) o.fill = await paintName(n.fills);${colours ? `
+  if ('fills' in n && Array.isArray(n.fills) && n.fills.length) o.rgb = n.fills.map(p => p.type === 'SOLID' && p.color ? '#' + ['r', 'g', 'b'].map(k => Math.round(p.color[k] * 255).toString(16).padStart(2, '0')).join('') : null);` : ''}
   if ('strokes' in n) { o.stroke = await paintName(n.strokes); if (n.strokes.length) { o.sw = n.strokeWeight === figma.mixed ? 'mixed' : Math.round(n.strokeWeight * 100) / 100; o.swx = [n.strokeTopWeight, n.strokeRightWeight, n.strokeBottomWeight, n.strokeLeftWeight]; o.sa = n.strokeAlign; } }
   if ('topLeftRadius' in n) o.rad = [n.topLeftRadius, await bv(n, 'topLeftRadius')];
   if (n.type === 'TEXT') {
@@ -114,11 +120,13 @@ export function mockStyles() {
   }))
 }
 let VARS
+/** Build a builder in the mock: by name (components/<name>.figma.js), or by a path ending in .figma.js (a fixture). */
 export async function build(which) {
   VARS ??= loadVariables()
-  const m = meta(which)
+  const isFile = /\.figma\.js$/.test(which)
+  const m = isFile ? metaFromFile(which) : meta(which)
   const figma = createMockFigma({ variables: VARS, styles: mockStyles(), pages: [m.page] })
-  const result = await new AsyncFunction('figma', generate(which))(figma)
+  const result = await new AsyncFunction('figma', isFile ? generateFrom(m, which) : generate(which))(figma)
   const sets = m.sets.map((name) => {
     const set = figma.root.children[0].findOne((n) => n.type === 'COMPONENT_SET' && n.name === name)
     if (!set) throw new Error(`${which}: the builder did not create the set "${name}" (${JSON.stringify(result)})`)
@@ -174,6 +182,17 @@ export function lint(set, allow = [], { docPage = false } = {}) {
     for (const c of n.children || []) walk(c, inBool || n.type === 'BOOLEAN_OPERATION', n.type === 'COMPONENT_SET')
   }
   walk(set, false, docPage)
+  // A TEXT property is one set-wide default. Layers bound to it that the builder wrote differently
+  // would all show the last word written — per-variant text belongs in an unbound layer.
+  const byProp = {}
+  for (const t of set.findAll ? set.findAll((n) => n.type === 'TEXT' && n.componentPropertyReferences && n.componentPropertyReferences.characters) : []) {
+    const key = t.componentPropertyReferences.characters
+    ;(byProp[key] ??= []).push(t._authored ?? t.characters)
+  }
+  for (const [key, texts] of Object.entries(byProp)) {
+    const distinct = [...new Set(texts)]
+    if (distinct.length > 1) hit('text-property-collapse', { name: key.replace(/#.*$/, '') }, `bound in ${texts.length} layers written ${distinct.map((t) => `"${t}"`).join(', ')}; Figma keeps one default, so every variant shows "${texts[texts.length - 1]}"`)
+  }
   return problems
 }
 

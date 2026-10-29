@@ -33,7 +33,7 @@ What this means in practice:
 
 ## What is not covered
 
-- **The fonts.** Open Sans and Oswald are licensed separately under the SIL Open Font License 1.1
+- **The fonts.** Open Sans, Oswald and Roboto Mono (Figma only) are licensed separately under the SIL Open Font License 1.1
   by their authors; see `NOTICE`. The library names them and does not contain them.
 - **The icon glyphs.** The `Icon` page contains Lucide glyphs, Copyright (c) 2026 Lucide Icons and
   Contributors, under the ISC licence (a subset derives from Feather Icons, MIT, Cole Bemis); the

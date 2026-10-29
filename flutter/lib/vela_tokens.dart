@@ -1206,6 +1206,9 @@ abstract final class VelaTypography {
   static const List<String> fontFamilyPrimaryFallback = <String>['Segoe UI', 'Roboto'];
   static const String fontFamilyDisplay = 'Oswald';
   static const List<String> fontFamilyDisplayFallback = <String>['Open Sans'];
+  /// System monospace stack, no web font: identifiers, hashes, IPs, timestamps and counts that must align. Figma text style Mono/Meta draws it in Roboto Mono.
+  static const String fontFamilyMono = 'SF Mono';
+  static const List<String> fontFamilyMonoFallback = <String>['Cascadia Mono', 'Roboto Mono', 'Menlo', 'Consolas'];
   static const FontWeight fontWeightLight = FontWeight.w300;
   /// Button labels are Regular 400 at every size.
   static const FontWeight fontWeightRegular = FontWeight.w400;

@@ -272,6 +272,7 @@
   /* ---- Typography: family & weight ---- */
   --vela-font-family-primary: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --vela-font-family-display: "Oswald", "Open Sans", -apple-system, sans-serif;
+  --vela-font-family-mono: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", Menlo, Consolas, monospace;
   --vela-font-weight-light: 300;
   --vela-font-weight-regular: 400;
   --vela-font-weight-semibold: 600;

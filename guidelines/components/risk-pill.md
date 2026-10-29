@@ -3,9 +3,9 @@
 A small read-only pill carrying one of exactly three risk levels, usually in a table cell or
 next to the thing that was scored — a user, an asset, a finding.
 
-**Status:** Experimental — specced, built and tested, but its Figma set is not in the library
-yet (the builder is `scripts/figma/components/risk-pill.figma.js`). Approved once the set is
-published; see `GOVERNANCE.md`.
+**Status:** Experimental — specced, built and tested; its Figma set is built in the library
+file (from `scripts/figma/components/risk-pill.figma.js`) but not published yet. Approved once
+the set is published; see `GOVERNANCE.md`.
 
 ## When to use Risk Pill
 
@@ -96,15 +96,16 @@ between densities.
 ## Figma mapping
 
 Library file: **Vela Design System** → page `Risk Pill`. Six variants: `Risk` (3) x `Size` (2),
-plus a `Label text` text property. The set is created by
-`scripts/figma/components/risk-pill.figma.js`; until that builder has been run in the file,
-the library has no Risk Pill set.
+each with its own level word in a text layer named `Label`. There is no `Label text` property:
+a Figma text property holds one default for the whole set, so it cannot carry a different word
+per variant. The set is created by `scripts/figma/components/risk-pill.figma.js`; it is built
+in the file, not yet published.
 
 | Figma property | Code prop |
 |---|---|
 | `Risk` | `risk` |
 | `Size` | `size` |
-| `Label text` | `label` — the Figma default is the level word, as in code |
+| `Label` (text layer, override on the instance) | `label` — default is the level word, as in code |
 
 **Every fill, stroke and text binds that level's own `risk/<level>/*` variable; the height of the
 regular size binds `control-height/24` and the small size hugs its text.** Nothing in this

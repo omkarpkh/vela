@@ -10,6 +10,7 @@ below, then open the per-component file for props, tokens, and anti-patterns.
 | Button | Triggering an action (save, submit, delete, apply) | `components/button.md` |
 | Toggle | A binary setting that takes effect immediately | `components/toggle.md` |
 | Input | Single-line text entry | `components/input.md` |
+| Text Area | Multi-line text entry, with an optional live character count | `components/text-area.md` |
 | Contextual Alert | Inline severity banner (success/info/warning/minor/major/critical) | `components/contextual-alert.md` |
 | Status Indicator | A health dot for one of five states | `components/status-indicator.md` |
 | Risk Pill | A read-only risk score (low/medium/high) on an object | `components/risk-pill.md` |
@@ -20,8 +21,8 @@ below, then open the per-component file for props, tokens, and anti-patterns.
 | Table | Records compared across named columns — sortable headers, two densities, a scroll region (Experimental) | `components/table.md` |
 
 Checkbox and Radio Group ship from `@omkarux/vela/headless` (Base UI as an optional peer) and are
-Experimental; the other nine ship from `@omkarux/vela` with no dependencies (Risk Pill, Icon and
-Table are Experimental there).
+Experimental; the other ten ship from `@omkarux/vela` with no dependencies (Risk Pill, Icon, Text
+Area and Table are Experimental there).
 
 ## Disambiguations (where AI usually picks wrong)
 
@@ -43,6 +44,9 @@ Table are Experimental there).
   One record's fields → a description list. Cards below a width → a card list, not in this kit;
   never restyle a table into cards. Status and risk go **in cells**, as Status Indicator and Risk
   Pill — never as a colour on the row.
+- **Input vs Text Area** — one line (a name, a hostname, a CIDR) → **Input**. Free text that
+  runs past a line (a justification, an incident note) → **Text Area**. Neither is a code
+  editor; syntax-highlighted entry is not in this kit.
 - **Severity vs Risk vs Status** — three taxonomies, never interchangeable.
   Severity (6 levels) describes *events* and is Contextual Alert's. Risk (3 levels) describes
   *scoring* and is Risk Pill's. Status (5 states) is the Status Indicator dot only. There is no
@@ -57,8 +61,8 @@ Table are Experimental there).
 
 Do not invent one silently. State that the kit has no component for the need and pick the
 closest match while flagging the gap. Not yet specced: Dropdown List, Select List, Token Pill,
-Number Stepper, Text Area, Modal, Tooltip, Icon Button, Actions Dropdown, View Switcher, Data
-Grid, Card List. Flag rather than guess.
+Number Stepper, Modal, Tooltip, Icon Button, Actions Dropdown, View Switcher, Data Grid, Card
+List. Flag rather than guess.
 
 ## How each component file is structured
 
