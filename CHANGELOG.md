@@ -6,6 +6,16 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Unreleased]
 
 ### Added
+- **Every Figma set is in the library file.** The Figma thread built the nine new sets from
+  their builders at `main` 60d80ef (Text Area, Icon, Checkbox, Radio, Table's three, Popover,
+  Tooltip, Dialog, Toast) and rebuilt Risk Pill, whose variants now read Low / Medium / High. The
+  map (`guidelines/figma-map.json`) records each set's node and `state: 'built'`; six remain
+  `published` from 0.12.1, and all eighteen become published at the next library publish. The
+  component Status lines say so, and the Status page will show "Built, not published" for them.
+- **Toast's Figma description imports what its example uses.** A SETS entry may list `imports`;
+  Toast's import line is now `import { ToastProvider, useToast } from '@omkarux/vela/headless'`,
+  because its example opens with `<ToastProvider>` and an agent copying the old line got
+  "ToastProvider is not defined".
 - **Table — Experimental, `@omkarux/vela` (core, zero dependencies).** The primitives a console's
   data views are built on (`table.md`), presentational on purpose: no data fetching, no
   virtualisation, no sort state. Compound parts on native elements — `Table` (required `caption`

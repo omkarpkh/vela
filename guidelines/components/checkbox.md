@@ -5,8 +5,8 @@ A box that **records intent** — on its own ("accept the terms") or as one of s
 commits the form.
 
 **Status:** Experimental — the first component born in `@omkarux/vela/headless` (Base UI 1.9);
-there is no core implementation and no Figma set yet (the builder is
-`scripts/figma/components/checkbox.figma.js`). Approved once the API has settled and the set is
+there is no core implementation, and its Figma set is built in the library file (from
+`scripts/figma/components/checkbox.figma.js`) but not published yet. Approved once the API has settled and the set is
 published; see `GOVERNANCE.md`.
 **Dependencies:** @base-ui/react (optional peer, via /headless)
 

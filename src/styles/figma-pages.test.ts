@@ -197,25 +197,22 @@ describe('the Status page', () => {
     const [, rset, , rsince, rspec] = cells('Risk Pill')
     expect([rset.chars, rsince.chars, rspec.chars]).toEqual(['Built, not published', 'Unreleased', 'risk-pill.md'])
     expect(rspec.link).toBe('https://github.com/omkarpkh/vela/blob/main/guidelines/components/risk-pill.md')
-    expect(cells('Checkbox')[1].chars).toBe('None yet — the builder is ready (checkbox.figma.js)')
+    expect(cells('Checkbox')[1].chars).toBe('Built, not published')
     expect(cells('Tabs')[1].chars).toBe('Tab · page Tabs')
     // Icon is core and unreleased; 0.12.1's `Icon` box (a Figma layer inside Button) does not date it.
-    // It has no Figma set yet; its spec is on main, so no "(branch)".
+    // Its set is built in the file, not published (R13); its spec is on main, so no "(branch)".
     const [, iset, iexp, isince, ispec] = cells('Icon')
-    expect([iset.chars, iexp.chars, isince.chars, ispec.chars]).toEqual(['None yet — the builder is ready (icon.figma.js)', 'Icon · @omkarux/vela', 'Unreleased', 'icon.md'])
+    expect([iset.chars, iexp.chars, isince.chars, ispec.chars]).toEqual(['Built, not published', 'Icon · @omkarux/vela', 'Unreleased', 'icon.md'])
     // Text Area is core and unreleased; its spec is on main, so no "(branch)".
     const [, tset, texp, tsince, tspec] = cells('Text Area')
-    expect([tset.chars, texp.chars, tsince.chars, tspec.chars]).toEqual(['None yet — the builder is ready (text-area.figma.js)', 'TextArea · @omkarux/vela', 'Unreleased', 'text-area.md'])
-    // Table is core and unreleased, with three sets and none yet.
+    expect([tset.chars, texp.chars, tsince.chars, tspec.chars]).toEqual(['Built, not published', 'TextArea · @omkarux/vela', 'Unreleased', 'text-area.md'])
+    // Table is core and unreleased; its three sets are built, not published.
     const [, bset, bexp, bsince, bspec] = cells('Table')
-    expect([bset.chars, bexp.chars, bsince.chars, bspec.chars]).toEqual(['None yet — the builder is ready (table.figma.js)', 'Table · @omkarux/vela', 'Unreleased', 'table.md'])
-    // Popover, Tooltip, Dialog and Toast have no Figma set yet; the builders are ready.
-    for (const [n, f] of [['Popover', 'popover'], ['Tooltip', 'tooltip'], ['Dialog', 'dialog'], ['Toast', 'toast']]) {
-      expect(cells(n)[1].chars, n).toBe(`None yet — the builder is ready (${f}.figma.js)`)
-    }
-    // Toast's spec is on this branch only until it merges, so its row alone may show "(branch)".
-    const notOnMainYet = ['Toast']
-    for (const r of rows) if (!notOnMainYet.includes(r.n)) expect(cells(r.n)[4].chars, r.n).not.toContain('(branch)')
+    expect([bset.chars, bexp.chars, bsince.chars, bspec.chars]).toEqual(['Built, not published', 'Table · @omkarux/vela', 'Unreleased', 'table.md'])
+    // Popover, Tooltip, Dialog and Toast: built in the file from main 60d80ef, not published (R13).
+    for (const n of ['Popover', 'Tooltip', 'Dialog', 'Toast']) expect(cells(n)[1].chars, n).toBe('Built, not published')
+    // Every spec is on main now, so no row shows "(branch)".
+    for (const r of rows) expect(cells(r.n)[4].chars, r.n).not.toContain('(branch)')
   })
 })
 

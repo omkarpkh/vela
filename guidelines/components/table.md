@@ -6,8 +6,8 @@ and a scroll region that keeps a wide table inside its host.
 
 **Status:** Experimental — specced, built and tested in the core entry, but the API may still
 change while Phase 2 (Approval Queue, Autonomy Ladder policy grid) and Phase 2b (Filter Bar,
-Review Queue) build on it, and its Figma sets are not in the library yet (the builder is
-`scripts/figma/components/table.figma.js`). See `GOVERNANCE.md`.
+Review Queue) build on it, and its three Figma sets are built in the library file (from
+`scripts/figma/components/table.figma.js`) but not published yet. See `GOVERNANCE.md`.
 **Dependencies:** none
 
 ## When to use Table (vs. something else)
