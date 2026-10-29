@@ -101,8 +101,8 @@ cannot see a related alert that landed in a different case.
 />
 ```
 
-The verdict and its confidence are one discriminated union. A conclusion carries a band; an
-inconclusive result carries none:
+The verdict and its confidence are one discriminated union. A conclusion carries a confidence
+reading; an inconclusive result carries none:
 
 ```ts
 type VerdictAndConfidence =
@@ -278,7 +278,7 @@ Rule ids are listed with their proof level; they become `[[rule: … ]]` tags wh
 | Verdict word | `--vela-text-verdict-<verdict>`, H5; icon `--vela-icon-verdict-<verdict>` at the regular icon size |
 | "No recommendation" headline | `--vela-text-heading`, H5, no icon |
 | Agent's lean (low / unrated) | `--vela-text-de-emphasized`, Body, no icon |
-| Confidence word | `--vela-text-default`; weight `--vela-font-weight-semibold` at `low`/`unrated`, `--vela-font-weight-regular` otherwise |
+| Confidence | The inline Calibrated Confidence Gate, in the rationale block; its own bindings apply |
 | Rationale, coverage, examined, not seen | `--vela-text-default`, Body |
 | Counts, times, owners | `--vela-text-de-emphasized`, Meta |
 | Check-at links | `--vela-text-link` |
