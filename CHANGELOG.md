@@ -120,6 +120,22 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   never a percentage. **Breaking change to the Verdict Card proposal:** `confidence` is now a
   `ConfidenceReading`, Accept follows the Gate's band, and the card drops to 28 rules (22 with
   proofs). The Autonomy Ladder documents `RouteInput.confidence` as the Gate's band.
+- **The Evidence Locker and the Agent Provenance Badge are public, as proposals**, with the four
+  amendments they make, published together so each amended proposal breaks once. The Locker (19
+  rules, 16 with proofs) shows everything an agent used for one conclusion, as it was then: how each
+  item reached the agent (Evidence channel: `tool-call`, `given`, `memory`) and who could have
+  written it (Content trust: `system-record`, `agent-output`, `untrusted`), with untrusted text
+  inert, its hidden characters and look-alike domains made visible, and a claim about the world
+  that cites no system record flagged by `weakWorldClaims`. The badge (15 rules, 12 with proofs)
+  says which agent and version produced an output, which model answered, what started the chain,
+  on whose authority the run acted, and whether the platform verified the agent's identity;
+  `provenanceAttributes(p)` lets a host mark the output itself. **Breaking changes to four
+  proposals:** the Verdict Card takes one `evidence` object in place of `examined` and `notSeen`,
+  withholds Accept on a weak claim about the world, and takes `source: Provenance`; the Action
+  Impact Card's `proposedBy` is an agent with a `Provenance` or a person by name; the Autonomy
+  Ladder's `agent` gains a required `id`; the Calibrated Confidence Gate's `producer` gains `id` and
+  the answering `model`, and its record is keyed by agent version and model. Rule counts of the
+  amended four do not change. Seven proposals now carry 168 rules, 132 with proofs.
 - **Text Area** — multi-line entry, Input's sibling, in the core entry with no dependency.
   Closed props mirroring Input (`label` required, `value` / `defaultValue` exclusive, `error`
   a message, `size` Input's three), plus `rows` (the minimum height in lines), `resize`

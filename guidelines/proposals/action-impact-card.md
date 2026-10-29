@@ -13,6 +13,10 @@ a rule belongs to the Rule Builder.
 **Status:** Experimental — specced, not yet built or tested; no Figma set.
 **Dependencies:** @base-ui/react (optional peer, via /headless)
 
+> **Changed 29 Oct 2026 — breaking.** With the [Agent Provenance Badge](agent-provenance-badge.md),
+> `proposedBy` is either an agent with a full `Provenance`, shown as the badge, or a person named in
+> plain text. The card spreads `provenanceAttributes(provenance)` on its own `<article>`.
+
 ## Intent
 
 A person approving a change should be able to answer five questions from this card alone. What
@@ -96,7 +100,7 @@ the host queried.
   computedAt="2026-10-28T08:20:00Z"
   staleAfterMinutes={60}
   timeZone="UTC"
-  proposedBy={{ kind: "agent", name: "Policy agent", version: "1.3" }}
+  proposedBy={{ kind: "agent", provenance: policyAgentProvenance }}   // a Provenance
   proposerReason="Ports beyond 443 and 80 saw no traffic in the last 3 days."
   onRecompute={recompute}
   footer={queueDecisionBar}
@@ -125,7 +129,7 @@ the host queried.
 | `staleAfterMinutes` | `number` | `60` | After this the estimate is stale. |
 | `inputsChangedAt` | ISO 8601 with offset | — | When anything the estimate depends on last changed. If later than `computedAt`, the estimate is stale. |
 | `timeZone` | IANA zone name | the viewer's zone | The abbreviation is always printed. |
-| `proposedBy` | `{ kind: "agent" \| "person"; name; version? }` | — | **Required.** Replaced by an **Agent Provenance badge** slot when that spec lands. |
+| `proposedBy` | `{ kind: "agent"; provenance: Provenance } \| { kind: "person"; name: string }` | — | **Required.** An agent is shown with the **Agent Provenance Badge**, and the card spreads `provenanceAttributes(provenance)` on its `<article>`; a person is named in plain text. *(Breaking change, 29 Oct 2026: was `{ kind; name; version? }`.)* |
 | `proposerReason` | `string` | — | The proposer's own words for why. Rendered last, labelled. |
 | `result` | `Result` | — | **Required at `applied`, `failed` and `rolled-back`; forbidden at `preview` and `pending`.** |
 | `rolledBack` | `{ by; at; reason }` | — | **Required at `rolled-back`; forbidden otherwise.** |
@@ -460,8 +464,8 @@ the 24px minimum target do not change. On a SOC wall display, show the text summ
 - **Dialog** only to confirm a rollback that is itself irreversible.
 - **Toast**, optional, to announce a completed rollback. Never the only record.
 - **Icon** (Lucide export): the two glyphs above.
-- Inside it later: **Agent Provenance badge** replaces `proposedBy`. **Compact Inline Diff**
-  replaces the built-in diff lines when it lands.
+- **Agent Provenance Badge** (Phase 2) for an agent `proposedBy`.
+- Inside it later: **Compact Inline Diff** replaces the built-in diff lines when it lands.
 - Around it: **Approval Queue** (fills `footer` and binds to `version`), **Rule Builder** (stage
   `preview`, recompute on edit), **Agent Action Ledger** (opens the card from an entry).
 

@@ -14,15 +14,21 @@ did: name the closest component that does exist, and flag the gap (`AGENTS.md`, 
 | [Autonomy Ladder](autonomy-ladder.md) | How far an agent may act alone on one action, and why a change landed where it did | 28 (22) | pressure-tested |
 | [Approval Queue](approval-queue.md) | The one place a person decides on what agents propose; undecided means not run | 27 (21) | pressure-tested |
 | [Calibrated Confidence Gate](calibrated-confidence-gate.md) | How sure an agent says it is, beside how often people confirmed it; decides which band the kit acts on | 21 (17) | pressure-tested |
+| [Evidence Locker](evidence-locker.md) | Everything an agent used for one conclusion, as it was then; who could have written each item, and which claims rest on what | 19 (16) | pressure-tested |
+| [Agent Provenance Badge](agent-provenance-badge.md) | Which agent, version and model produced an output, what started it, on whose authority, and whether its identity was verified | 15 (12) | pressure-tested |
+
+Seven proposals: 168 rules, 132 with proofs.
 
 **How a proposal becomes a component.** Each was drafted, then pressure-tested in a written
 review that it answered point by point. When one is built, it moves to `guidelines/components/`,
 its rule ids become `[[rule: id | level]]` tags that `npm run rules:check` holds to a proof, and its
 Status line stays Experimental until its Figma set is published (`GOVERNANCE.md`).
 
-**What they share.** Four new closed taxonomies, each kept apart from Severity, Risk and Status:
-Verdict (4), Confidence band (4), Reversibility tier (4) and Autonomy rung (4). None of them carries
-colour except Verdict, which has a text and icon row and no background. The order they will be
+**What they share.** Six new closed taxonomies, each kept apart from Severity, Risk and Status:
+Verdict (4), Confidence band (4), Reversibility tier (4), Autonomy rung (4), Content trust (3) and
+Evidence channel (3). None of them carries colour except Verdict, which has a text and icon row and
+no background. The Agent Provenance Badge adds two closed prop sets that carry no tokens: Run type
+(5) and Identity assurance (2). The order they will be
 built in, and what each needs from Phase 1, is in [`ROADMAP.md`](../../ROADMAP.md).
 
 **Evidence.** Each spec says what it answers and where that comes from: the EU AI Act (Article

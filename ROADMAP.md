@@ -63,8 +63,9 @@ card. Each spec cites the standard or research it answers. One worked console pa
 the set, synthetic data only, rendered to text without loss.
 
 The specs are published as they pass review, before any code: see
-[`guidelines/proposals/`](guidelines/proposals/README.md). Verdict Card, Action Impact Card and
-Autonomy Ladder and Approval Queue are pressure-tested and published.
+[`guidelines/proposals/`](guidelines/proposals/README.md). Verdict Card, Action Impact Card,
+Autonomy Ladder, Approval Queue, Calibrated Confidence Gate, Evidence Locker and Agent Provenance
+Badge are pressure-tested and published.
 
 ## Phase 2b — Console data and policy patterns
 

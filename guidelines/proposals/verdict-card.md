@@ -17,6 +17,12 @@ It changes nothing on its own.
 > moves to the Gate, and Accept follows the band the Gate allows (`gateBand`), not the band the
 > agent states.
 
+> **Changed 29 Oct 2026 — breaking, twice.** With the [Evidence Locker](evidence-locker.md),
+> `examined` and `notSeen` are replaced by one `evidence` prop, the same object the Locker shows,
+> and a claim about the world that cites no system record withholds Accept. With the
+> [Agent Provenance Badge](agent-provenance-badge.md), `source` is a full `Provenance`, shown as the
+> badge, and the card spreads `provenanceAttributes(source)` on its own `<article>`.
+
 ## Intent
 
 An analyst should be able to answer six questions from the card without opening anything else:
@@ -82,14 +88,10 @@ cannot see a related alert that landed in a different case.
   analysedAt="2026-10-28T08:32:00Z"
   dataCutoff="2026-10-28T08:25:00Z"
   timeZone="UTC"
-  examined={[
-    { label: "Sign-in events, 7 days", count: 412, checkAt: { label: "Case CS-4133 · Events", leavesCase: false } },
-    { label: "Mailbox rules", count: 3, checkAt: { label: "Mail admin console", href: "…", leavesCase: true } },
-  ]}
-  notSeen={[{ label: "Endpoint telemetry for LT-0912", reason: "Connector offline since 06:10 UTC" }]}
+  evidence={{ items, claims, notSeen }}   // the same object the Evidence Locker shows
   newerEvidence={{ state: "arrived", items: [{ label: "Alert: impossible travel", at: "2026-10-28T08:40:00Z" }] }}
   severities={[{ owner: "Detection rule", label: "High" }, { owner: "Case", label: "Medium" }]}
-  source={{ name: "Triage agent", version: "2.4" }}
+  source={triageProvenance}   // a Provenance — see the Agent Provenance Badge
   decision={{ state: "none" }}
   history={[]}
   onAccept={accept}
@@ -120,11 +122,10 @@ type VerdictAndConfidence =
 | `analysedAt` | ISO 8601 string with offset | — | **Required.** When the producer made this version. |
 | `dataCutoff` | ISO 8601 string with offset | — | **Required.** Time of the newest data the producer used. Not the same as `analysedAt`. |
 | `timeZone` | IANA zone name | the viewer's zone | Zone the card prints times in. The abbreviation is always printed. A console with a shared clock passes `"UTC"`. |
-| `examined` | `[Examined, ...Examined[]]` | — | **Required, at least one.** What the producer read. `{ label, count?, checkAt }`. |
-| `notSeen` | `NotSeen[]` | — | **Required; pass `[]` when nothing was missing.** `{ label, reason }`. Absence is an explicit claim, never a default. |
+| `evidence` | `Pick<EvidenceLockerProps, "items" \| "claims" \| "notSeen">` | — | **Required.** What the producer read (`items`, at least one), what it claims and cites (`claims`), and what it could not see (`notSeen`; `[]` claims nothing was missing). The same object the **Evidence Locker** shows. *(Breaking change, 29 Oct 2026: replaces `examined` and `notSeen`.)* |
 | `newerEvidence` | `{ state: "none" } \| { state: "unchecked" } \| { state: "arrived"; items: { label, at }[] }` | — | **Required.** Whether the case has moved on. `unchecked` means the host cannot tell. |
 | `severities` | `{ owner: string; label: string }[]` (0–3) | `[]` | The host's severity ratings, each in its owner's own words. Never mapped onto Vela's Severity taxonomy. |
-| `source` | `{ name: string; version: string }` | — | **Required.** Who produced the verdict. Replaced by an **Agent Provenance badge** slot once that spec lands. |
+| `source` | `Provenance` | — | **Required.** Who produced the verdict, shown as the **Agent Provenance Badge** at `line` size under the verdict. The card spreads `provenanceAttributes(source)` on its own `<article>`, so the verdict itself is marked as AI-generated. *(Breaking change, 29 Oct 2026: was `{ name; version }`.)* |
 | `decision` | `{ state: "none" } \| { state: "accepted"; by; at; undoUntil? } \| { state: "overridden"; by; at; verdict; reason; sameAsLean: boolean; undoUntil? }` | — | **Required.** The human decision on *this version*. |
 | `history` | `Revision[]` | `[]` | Earlier versions and decisions, newest first. `{ version, verdict, confidence?, at, by: "agent" \| "person", name, reason? }`. |
 | `onAccept` | `(e: DecisionEvent) => Promise<void>` | — | Omit when the viewer cannot decide. **Requires `acceptEffect`.** |
@@ -142,8 +143,7 @@ type ActionEffect = {
   undo: { kind: "available"; until?: string } | { kind: "none"; reason: string }
 }
 type DecisionEvent = { verdictId: string; version: number; at: string }
-type Examined = { label: string; count?: number; checkAt: { label: string; href?: string; leavesCase: boolean } }
-type NotSeen = { label: string; reason: string }
+// EvidenceItem, Claim and NotSeen are defined by the Evidence Locker.
 ```
 
 ### New taxonomies
@@ -189,10 +189,10 @@ Rule ids are listed with their proof level; they become `[[rule: … ]]` tags wh
 - **The host's severity is the host's text.** `severities` are rendered as the owner's words with
   the owner's name and never bind `--vela-*-severity-*`. They are strings, so the compiler cannot
   prove this. `verdict-severity-is-hosts-text` · convention
-- **Declare what was not seen.** `notSeen` is required. Passing nothing is a compile error.
+- **Declare what was not seen.** `evidence.notSeen` is required. Passing nothing is a compile error.
   Passing `[]` is the claim "nothing was missing", and the card prints it: "Nothing reported
   missing." `verdict-not-seen-required` · compiler
-- **Something was examined.** `examined` is a non-empty tuple; `[]` does not compile. `verdict-examined-nonempty` · compiler
+- **Something was examined.** `evidence.items` is a non-empty tuple; `[]` does not compile. `verdict-examined-nonempty` · compiler
 - **No action without its effect.** `onAccept` without `acceptEffect`, or `onOverride` without
   `overrideEffect`, does not compile. `verdict-handler-requires-effect` · compiler
 - **The effect comes from the operation.** The host writes `acceptEffect` and `overrideEffect`
@@ -207,15 +207,25 @@ Rule ids are listed with their proof level; they become `[[rule: … ]]` tags wh
 - **`unchecked` is said aloud.** When the host cannot tell whether the case moved on, the card
   prints "Newer alerts not checked". It never stays silent and never prints "Up to date".
   `verdict-unchecked-not-silent` · runtime
-- **Coverage is its own line.** The card prints "Sources read: 2 of 3", derived from `examined`
-  and `notSeen`, as a separate fact. Coverage is never folded into the confidence word and never
-  shares its line. `verdict-coverage-separate` · runtime
+- **Coverage is its own line.** The card prints "Sources read: 2 of 3", derived from
+  `evidence.items` and `evidence.notSeen`, as a separate fact. When `weakWorldClaims` returns any,
+  the line adds "· 1 claim about the world is weak", and under it the claim with what it cites,
+  worded from `cited` by the Evidence Locker's table ("cites only untrusted content (1 item)",
+  "cites only agent-written content", and so on). Coverage is never folded into the confidence
+  word and never shares its line. The card's "What the agent read" list is derived from
+  `evidence.items`, and marks untrusted items with the Locker's words ("Untrusted — could have
+  been written by the email's sender"). `verdict-coverage-separate` · runtime
 - **Accept is withheld, not disabled,** while the verdict is outdated, for `inconclusive`, and
   when the band the Gate allows — `gateBand(confidence, now).band` — is `low` or `unrated`. That
   includes a stated High that is not yet calibrated: "Not yet calibrated: 6 of 30 High verdicts
   reviewed. To agree, use Override with a reason — each one adds to the record." A new agent
   version or a stale record is named the same way. Accept feeds the record's `confirmedByAccept`;
-  Override agreeing with the lean feeds `confirmedOnReview`. The button is not rendered. In its place one sentence gives
+  Override agreeing with the lean feeds `confirmedOnReview`. Accept is also withheld when
+  `weakWorldClaims(evidence.claims, evidence.items)` returns any claim, including a claim that
+  cites only items not in `evidence.items`. The sentence is worded by what was cited: "A claim
+  about the world cites only untrusted content (1 item): 'The mailbox rule forwards invoices to an
+  outside address'. Check it against a system record, or agree through Override with a reason." A
+  claim about an item never withholds Accept. The button is not rendered. In its place one sentence gives
   the reason and the routes left (Re-analyse, Override). A disabled button would leave the tab
   order and hide the reason. `verdict-accept-withheld` · runtime
 - **No recommendation when the producer is unsure.** At a *stated* `low` or `unrated` the headline is "No
@@ -361,10 +371,11 @@ Verdict: Malicious · Confidence: Low — no recommendation
 Analysed 28 Oct 2026 08:32 UTC · data up to 08:25 UTC · sources read 2 of 3
 Outdated: "Alert: impossible travel" joined 08:40 UTC, after the data cut-off
 Not seen: Endpoint telemetry for LT-0912 (connector offline since 06:10 UTC)
+Weak claim about the world: "The mailbox rule forwards invoices to an outside address" — cites only untrusted content (1 item)
 Severity — Detection rule: High · Case: Medium
 ```
 
-For `inconclusive` the first line reads `Verdict: Inconclusive`. Lines three to five appear only
+For `inconclusive` the first line reads `Verdict: Inconclusive`. Lines three to six appear only
 when they have content; line three reads "Newer alerts not checked" for `unchecked`. The
 rationale is never truncated in the card; in the summary it is omitted, not cut.
 
@@ -401,9 +412,12 @@ show the text summary.
 - **Dialog** only to confirm an effect whose `undo.kind` is `none`.
 - **Toast**, optional, to announce a saved decision. Never the only Undo.
 - **Icon** (Lucide export): the five glyphs above.
-- Later slots: an **Agent Provenance badge** replaces `source`. The **Calibrated Confidence Gate**
-  (inline size) is the confidence word, with its record; `gateBand` decides Accept. The **Evidence
-  Locker** opens from "What the agent read". The **Override & Teach panel** opens from an override.
+- **Calibrated Confidence Gate** (Phase 2, inline size) is the confidence word, with its record;
+  `gateBand` decides Accept.
+- **Agent Provenance Badge** (Phase 2) for `source`, with `provenanceAttributes` on the `<article>`.
+- **Evidence Locker** (Phase 2) opens from "What the agent read", and shares the card's `evidence`
+  object, so the two cannot disagree; `weakWorldClaims` decides the weak-claim line and Accept.
+- Later slot: the **Override & Teach panel** opens from an override.
 
 ## Figma mapping
 
@@ -420,7 +434,8 @@ set as an instance swap.
 | `Verdict` | `verdict` |
 | `Confidence` | `confidence` (`None` only for `inconclusive`) |
 | `Freshness` | derived from `newerEvidence` and `dataCutoff` — `Outdated` only when an item is later than the cut-off |
-| `Has not-seen` (boolean) | `notSeen.length > 0` |
+| `Has not-seen` (boolean) | `evidence.notSeen.length > 0` |
+| `Has weak claim` (boolean) | `weakWorldClaims(...)` returns any; locks `Decision` to `Withheld` |
 | `Has history` (boolean) | `history.length > 0` |
 | `Calibrated` (boolean) | `gateBand(confidence, now).band` equals the stated band; `No` drives the withheld bar on a stated High or Moderate |
 | `Decision` (instance swap) | `decision.state` (plus `sameAsLean`), and the absence of handlers for `No permission` |
