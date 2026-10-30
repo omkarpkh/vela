@@ -297,8 +297,12 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
             <div className={cn('pg', stage === 'full' && 'pg--full')}>
               <div className="pg-main">
                 <div className="pg-toolbar">
+                  <span className="pg-toolbar__group"><span className="pg-toolbar__label" aria-hidden="true">Stage</span>
                   <Segments label="Stage" value={stage} options={STAGE_OPTIONS} onChange={(st) => { setStage(st); setAnnounce(`Stage updated: ${st === 'full' ? 'full width' : 'beside the controls'}`) }} />
+                  </span>
+                  <span className="pg-toolbar__group"><span className="pg-toolbar__label" aria-hidden="true">Compare</span>
                   <Segments label="Compare" value={compare} options={COMPARE_OPTIONS} onChange={(cmp) => { setCompare(cmp); setAnnounce(`Stage updated: ${cmp === 'themes' ? 'light and dark side by side' : 'one theme, the page\'s'}`) }} />
+                  </span>
                   <div className="pg-toolbar__spacer" />
                   <Toggle label="Reduced motion" size="tiny" checked={reduced} onChange={setReduced} />
                   <span className="pg-reset">

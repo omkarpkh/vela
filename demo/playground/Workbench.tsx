@@ -115,7 +115,7 @@ export function LockPanel({ open, component, levelOf, onMove, onClose }: {
         {open.lock.moves.map((m) => (
           <Button key={m.label} size="tiny" appearance="hollow" onClick={() => onMove(m.patch)}>{m.label}</Button>
         ))}
-        <Button size="tiny" appearance="text-link" variant="primary" onClick={onClose}>Keep it as it is</Button>
+        <Button size="tiny" appearance="hollow" onClick={onClose}>Keep it as it is</Button>
       </div>
     </section>
   )
