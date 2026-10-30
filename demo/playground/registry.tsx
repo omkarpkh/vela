@@ -472,7 +472,9 @@ export const REGISTRY: Entry[] = [
     group: 'Data',
     aliases: ['tab', 'tab bar', 'tab list'],
     spec: tabsMd,
-    seed: { implementation: 'core' },
+    // The spec's Props table gives size no default; the code's is regular. Seeded so a current value
+    // shows (a segment row with nothing current is not a legal state); the gap goes to the spec thread.
+    seed: { implementation: 'core', size: 'regular' },
     hide: ['defaultValue'],
     // The Phase 1 proving case: the same props through either implementation, against the same
     // spec and the same stylesheet. The entries are the ones tabs.md states under "Implementations".

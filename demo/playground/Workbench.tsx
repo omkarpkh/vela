@@ -10,7 +10,7 @@
  *   (A24), until Select List exists.
  * - A control and its code line carry a change mark while they differ from the page's defaults.
  */
-import { useEffect, useId, useRef, type ReactNode } from 'react'
+import { Fragment, useEffect, useId, useRef, type ReactNode } from 'react'
 import { Button, Input, Toggle, cn } from '../../src'
 import type { Control, PropRow } from './spec'
 import type { Lock, Values } from './registry'
@@ -160,7 +160,10 @@ export function CodeBar({ id, snippet, changedProps, settle, children }: { id: s
         {lines.map((l, i) => {
           const m = i > 0 && marked(l)
           return (
-            <span key={m ? `${i}-${settle}` : i} className={cn('pg-code__line', m && 'is-changed')}>{l}{i < lines.length - 1 ? '\n' : ''}</span>
+            <Fragment key={m ? `${i}-${settle}` : i}>
+              <span className={cn('pg-code__line', m && 'is-changed')}>{l}</span>
+              {i < lines.length - 1 ? '\n' : ''}
+            </Fragment>
           )
         })}
       </ScrollRegion>

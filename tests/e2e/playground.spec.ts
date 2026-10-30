@@ -1,16 +1,58 @@
-import { test, expect } from '@playwright/test'
+import { test, expect, type Locator } from '@playwright/test'
+
+/** Chooses a control's value: a segment (up to six values, D4) or, above six, the native select (A24). */
+async function choose(scope: Locator, prop: string, value: string) {
+  const group = scope.getByRole('group', { name: prop, exact: true })
+  // From the keyboard, as D4 intends: Tab reaches the value, Enter chooses it. (At a phone width the
+  // site's navigation can overlay the controls; a key press doesn't care.)
+  if (await group.count()) { await group.getByRole('button', { name: value, exact: true }).focus(); await scope.page().keyboard.press('Enter') }
+  else await scope.getByLabel(prop, { exact: true }).selectOption(value)
+}
+
+/** Compare: Themes, so the stage shows the light and the dark frame side by side. */
+async function compareThemes(page: import('@playwright/test').Page) {
+  await page.getByRole('group', { name: 'Compare' }).getByRole('button', { name: 'Themes' }).click()
+}
 
 // Behavioural checks on the playground — no screenshots, so no baselines to maintain.
-test('the Button page constrains text-link the way the type does, and the code follows', async ({ page }) => {
+test('the Button page locks what the types forbid, says why, and offers the legal move', async ({ page }) => {
   await page.goto('/#/components/button')
   await expect(page.getByRole('heading', { level: 1, name: 'Button' })).toBeVisible()
-  const props = page.getByRole('complementary', { name: 'Props' })
-  await props.getByLabel('appearance').selectOption('text-link')
-  // <option disabled> is not a "disableable" element in Playwright's model; assert the attribute.
-  await expect(props.getByLabel('variant').locator('option[value=destructive]')).toHaveAttribute('disabled', '')
-  await expect(props.getByLabel('size').locator('option[value=huge]')).toHaveAttribute('disabled', '')
+  const props = page.getByRole('complementary', { name: 'Controls' })
+  // The seed has an icon, and text-link never carries one: text-link is locked, reachable, and says why.
+  const textLink = props.getByRole('group', { name: 'appearance' }).getByRole('button', { name: 'text-link' })
+  await expect(textLink).toHaveAttribute('aria-disabled', 'true')
+  await expect(textLink).toHaveAccessibleDescription('text-link never carries an icon.')
+  // From the keyboard: it is a tab stop, and Enter opens the panel. (Playwright's click() treats
+  // aria-disabled as not clickable, so the pointer path is the one below, with force.)
+  await textLink.focus()
+  await page.keyboard.press('Enter')
+  const panel = props.getByRole('region', { name: 'text-link needs no icon' })
+  await expect(panel).toBeFocused()
+  await expect(panel).toContainText('button-text-link-size-and-icon')
+  await expect(panel.getByRole('link', { name: 'Open proof' })).toHaveAttribute('href', '#/components/button/rules')
+  // Nothing was chosen by the press.
+  await expect(props.getByRole('group', { name: 'appearance' }).getByRole('button', { name: 'filled' })).toHaveAttribute('aria-current', 'true')
+  await panel.getByRole('button', { name: 'Switch to no icon, text-link' }).click()
+  await expect(textLink).toHaveAttribute('aria-current', 'true')
+  await expect(textLink).toBeFocused()
   await expect(page.locator('.pg-code')).toContainText('appearance="text-link"')
   await expect(page.locator('.pg-code')).not.toContainText('icon=')
+  // Now the other variants are the locked ones, by the other rule.
+  const destructive = props.getByRole('group', { name: 'variant' }).getByRole('button', { name: 'destructive' })
+  await expect(destructive).toHaveAttribute('aria-disabled', 'true')
+  await expect(destructive).toHaveAccessibleDescription('text-link is primary only.')
+  await destructive.click({ force: true })
+  const second = props.getByRole('region', { name: 'destructive needs filled or hollow' })
+  await expect(second).toBeFocused()
+  await second.getByRole('button', { name: 'Keep it as it is' }).click()
+  await expect(second).toHaveCount(0)
+  await expect(destructive).toBeFocused()
+  await expect(props.getByRole('group', { name: 'variant' }).getByRole('button', { name: 'primary' })).toHaveAttribute('aria-current', 'true')
+  await expect(props.getByRole('switch', { name: 'icon' })).toBeDisabled()
+  await expect(props).toContainText('text-link never carries an icon.')
+  // "Locked" is Vela's word only: never on screen.
+  await expect(page.getByRole('main')).not.toContainText(/locked/i)
 })
 
 test('navigation reaches every component and each page lists its tokens', async ({ page }) => {
@@ -55,7 +97,7 @@ test('the Text Area page counts as you type and the field only ever resizes vert
   const shrunk = (await field.boundingBox())!
   expect(shrunk.height).toBeCloseTo(before.height, 0)
 
-  await page.getByRole('complementary', { name: 'Props' }).getByLabel('resize').selectOption('none')
+  await choose(page.getByRole('complementary', { name: 'Controls' }), 'resize', 'none')
   await expect(page.locator('.pg-code')).toContainText('resize="none"')
   expect(await page.locator('.pg-frame-body textarea').first().evaluate((el) => getComputedStyle(el).resize)).toBe('none')
 })
@@ -121,7 +163,7 @@ test('the Checkbox page renders the headless Checkbox: Space toggles, the fill f
   await expect(box).toHaveAttribute('aria-checked', 'true')
   await expect(box).toHaveCSS('background-color', checkedFill)
 
-  const props = page.getByRole('complementary', { name: 'Props' })
+  const props = page.getByRole('complementary', { name: 'Controls' })
   await props.getByRole('switch', { name: 'indeterminate' }).click()
   await expect(frame.getByRole('checkbox')).toHaveAttribute('aria-checked', 'mixed')
   await props.getByRole('switch', { name: 'disabled' }).click()
@@ -542,7 +584,7 @@ test('a wide table scrolls inside its region and never widens a narrow grid host
 // and the header row stays at the region's top while the body passes under it.
 test('a sticky header stays at the top of the region while the body scrolls', async ({ page }) => {
   await page.goto('/#/components/table')
-  await page.getByRole('complementary', { name: 'Props' }).getByRole('switch', { name: 'stickyHeader' }).click()
+  await page.getByRole('complementary', { name: 'Controls' }).getByRole('switch', { name: 'stickyHeader' }).click()
   const body = page.locator('.pg-frame[data-theme="light"] .pg-frame-body')
   const region = body.getByRole('region', { name: 'Assets' })
   await expect(body.locator('.vela-table')).toHaveClass(/vela-table--sticky-header/)
@@ -562,6 +604,7 @@ test('a sticky header stays at the top of the region while the body scrolls', as
 // trigger; what opens must carry that frame's theme, sit above the page, take focus and give it back.
 test('the Popover page opens a themed, non-modal popover: focus moves in, Escape returns it, a press outside closes it', async ({ page }) => {
   await page.goto('/#/components/popover')
+  await compareThemes(page)
   await expect(page.getByRole('heading', { level: 1, name: 'Popover' })).toBeVisible()
   await expect(page.getByRole('group', { name: 'Implementation' })).toHaveCount(0)
   const contract = page.getByRole('region', { name: /^Use / })
@@ -626,6 +669,7 @@ test('the Tooltip page describes its trigger on hover and on keyboard focus, and
 
 test('the Dialog page opens a modal: focus moves in and is trapped, the page is inert, Escape closes it and focus returns', async ({ page }) => {
   await page.goto('/#/components/dialog')
+  await compareThemes(page)
   await expect(page.getByRole('heading', { level: 1, name: 'Dialog' })).toBeVisible()
   const contract = page.getByRole('region', { name: /^Use / })
   await expect(contract.locator('.pg-import')).toContainText("import { Dialog } from '@omkarux/vela/headless'")
@@ -660,7 +704,7 @@ test('the Dialog page opens a modal: focus moves in and is trapped, the page is 
   expect(await locked()).toBe(false)
 
   // variant="alert": role alertdialog, the cancel takes focus, the confirm is the destructive Button.
-  await page.getByRole('complementary', { name: 'Props' }).getByLabel('variant').selectOption('alert')
+  await choose(page.getByRole('complementary', { name: 'Controls' }), 'variant', 'alert')
   const del = page.locator('.pg-frame[data-theme="light"] .pg-frame-body').getByRole('button', { name: 'Delete Policy' })
   await del.click()
   const alert = page.getByRole('alertdialog')
@@ -718,6 +762,7 @@ const shortDwell = (page: import('@playwright/test').Page, ms: number) =>
 
 test('the Toast page raises a polite, themed toast without moving focus, and its close button dismisses it', async ({ page }) => {
   await page.goto('/#/components/toast')
+  await compareThemes(page)
   await expect(page.getByRole('heading', { level: 1, name: 'Toast' })).toBeVisible()
   await expect(page.getByRole('group', { name: 'Implementation' })).toHaveCount(0)
   const contract = page.getByRole('region', { name: /^Use / })
@@ -774,7 +819,7 @@ test('a toast pauses while hovered and while focus is in its region (F6), then l
 test('a toast with an action never times out; the action runs the page\'s own Undo and dismisses it; Escape dismisses the focused toast', async ({ page }) => {
   await page.goto('/#/components/toast')
   await shortDwell(page, 800)
-  await page.getByRole('complementary', { name: 'Props' }).getByRole('switch', { name: 'action' }).click()
+  await page.getByRole('complementary', { name: 'Controls' }).getByRole('switch', { name: 'action' }).click()
   const frame = page.locator('.pg-frame[data-theme="light"] .pg-frame-body')
   const save = frame.getByRole('button', { name: 'Save Changes' })
   await save.click()
@@ -818,7 +863,7 @@ test('the toast region sits at its placement, a gutter from the edges, and narro
     await page.locator('.pg-frame[data-theme="light"] .pg-frame-body').getByRole('button', { name: 'Save Changes' }).focus()
     await page.keyboard.press('Enter')
   }
-  const props = () => page.getByRole('complementary', { name: 'Props' })
+  const props = () => page.getByRole('complementary', { name: 'Controls' })
 
   await page.goto('/#/components/toast')
   let vp = page.viewportSize()!
@@ -828,13 +873,13 @@ test('the toast region sits at its placement, a gutter from the edges, and narro
   expect(vp.width - (b.x + b.width)).toBeCloseTo(20, 0)    // bottom-end: the end edge
   expect(vp.height - (b.y + b.height)).toBeCloseTo(20, 0)  // and the bottom edge
 
-  await props().getByLabel('placement').selectOption('top-end')
+  await choose(props(), 'placement', 'top-end')
   await raise()
   b = await box()
   expect(b.y).toBeCloseTo(20, 0)
   expect(vp.width - (b.x + b.width)).toBeCloseTo(20, 0)
 
-  await props().getByLabel('placement').selectOption('bottom-center')
+  await choose(props(), 'placement', 'bottom-center')
   await raise()
   b = await box()
   expect(b.x + b.width / 2).toBeCloseTo(vp.width / 2, 0)
@@ -843,7 +888,7 @@ test('the toast region sits at its placement, a gutter from the edges, and narro
   // A phone-width viewport: the toast is the viewport less 20 a side, and nothing leaves the screen.
   await page.setViewportSize({ width: 360, height: 800 })
   vp = page.viewportSize()!
-  await props().getByLabel('placement').selectOption('bottom-end')
+  await choose(props(), 'placement', 'bottom-end')
   await raise()
   b = await box()
   expect(b.width).toBeCloseTo(320, 0)
@@ -856,6 +901,7 @@ test('the toast region sits at its placement, a gutter from the edges, and narro
 // item, and a choice updates the page that owns the value.
 test('the Dropdown List page opens a themed menu on the current item, and a choice closes it and updates the page', async ({ page }) => {
   await page.goto('/#/components/dropdown-list')
+  await compareThemes(page)
   await expect(page.getByRole('heading', { level: 1, name: 'Dropdown List' })).toBeVisible()
   const contract = page.getByRole('region', { name: /^Use / })
   await expect(contract.locator('.pg-import')).toContainText("import { DropdownList } from '@omkarux/vela/headless'")
@@ -1236,10 +1282,10 @@ test('the Icon page sizes every glyph from the tokens and draws the stroke on th
   const box = async () => { const b = (await lead.boundingBox())!; return [Math.round(b.width), Math.round(b.height)] }
   expect(await box()).toEqual([16, 16])
   await expect(lead).toHaveCSS('stroke-width', '2px')
-  const props = page.getByRole('complementary', { name: 'Props' })
-  await props.getByLabel('size').selectOption('large')
+  const props = page.getByRole('complementary', { name: 'Controls' })
+  await choose(props, 'size', 'large')
   expect(await box()).toEqual([20, 20])
-  await props.getByLabel('size').selectOption('small')
+  await choose(props, 'size', 'small')
   expect(await box()).toEqual([12, 12])
   await expect(page.locator('.pg-code')).toContainText('<Icon name="shield-x" size="small" />')
 })

@@ -1,4 +1,18 @@
-import { test, expect, type Page } from '@playwright/test'
+import { test, expect, type Locator, type Page } from '@playwright/test'
+
+/** Chooses a control's value: a segment (up to six values, D4) or, above six, the native select (A24). */
+async function choose(scope: Locator, prop: string, value: string) {
+  const group = scope.getByRole('group', { name: prop, exact: true })
+  // From the keyboard, as D4 intends: Tab reaches the value, Enter chooses it. (At a phone width the
+  // site's navigation can overlay the controls; a key press doesn't care.)
+  if (await group.count()) { await group.getByRole('button', { name: value, exact: true }).focus(); await scope.page().keyboard.press('Enter') }
+  else await scope.getByLabel(prop, { exact: true }).selectOption(value)
+}
+
+/** Compare: Themes, so the stage shows the light and the dark frame side by side. */
+async function compareThemes(page: import('@playwright/test').Page) {
+  await page.getByRole('group', { name: 'Compare' }).getByRole('button', { name: 'Themes' }).click()
+}
 
 // Slice 0 of the playground redesign: fixes to the live site, no new layout. Behavioural checks,
 // no screenshots, so no baselines. The error boundaries are driven in jsdom
@@ -34,7 +48,7 @@ test.describe('Proposal pages', () => {
     // What a built component's page has, and a proposal's must not.
     await expect(page.locator('.pg-stage')).toHaveCount(0)
     await expect(page.getByRole('button', { name: 'Copy' })).toHaveCount(0)
-    await expect(page.getByRole('complementary', { name: 'Props' })).toHaveCount(0)
+    await expect(page.getByRole('complementary', { name: 'Controls' })).toHaveCount(0)
     await expect(page.getByRole('combobox')).toHaveCount(0)
     await expect(page.locator('.pg-install-command')).toHaveCount(0)
     await expect(main).not.toContainText('npm i')
@@ -116,7 +130,7 @@ test.describe('forced colours', () => {
       })
       expect(seg).toEqual({ adjust: 'none', bg: system.highlight, fg: system.highlightText, width: '2px', style: 'solid' })
       // Only that element opts out of the forced palette.
-      const other = page.getByRole('group', { name: 'Stage' }).getByRole('button', { name: 'Light', exact: true })
+      const other = page.getByRole('group', { name: 'Stage' }).getByRole('button', { name: 'Full width', exact: true })
       expect(await other.evaluate((el) => getComputedStyle(el).forcedColorAdjust)).toBe('auto')
 
       // Focus rings: a keyboard focus still draws the 2px outline.
@@ -158,7 +172,7 @@ test.describe('the stage never moves on a prop change', () => {
         return [...at(host.firstElementChild!), ...at(host)]
       })
       const start = await corner()
-      const props = page.getByRole('complementary', { name: 'Props' })
+      const props = page.getByRole('complementary', { name: 'Controls' })
       const selects = props.locator('select')
       for (let i = 0; i < (await selects.count()); i++) {
         const select = selects.nth(i)
@@ -166,8 +180,21 @@ test.describe('the stage never moves on a prop change', () => {
         const original = await select.inputValue()
         for (const value of [...options.slice(0, 6), original]) {
           await select.selectOption(value)
-          expect(await corner(), `${await select.getAttribute('class')} #${i} = ${value}`).toEqual(start)
+          expect(await corner(), `select #${i} = ${value}`).toEqual(start)
         }
+      }
+      // Segments (up to six values): every value that isn't locked, then back to where it was.
+      const groups = props.getByRole('group')
+      for (let i = 0; i < (await groups.count()); i++) {
+        const group = groups.nth(i)
+        const original = group.locator('[aria-current="true"]')
+        const name = (await original.count()) ? await original.textContent() : null
+        const buttons = group.locator('button:not([aria-disabled="true"])')
+        for (let j = 0; j < (await buttons.count()); j++) {
+          await buttons.nth(j).click()
+          expect(await corner(), `${await group.getAttribute('aria-label')} = ${await buttons.nth(j).textContent()}`).toEqual(start)
+        }
+        if (name) await group.getByRole('button', { name, exact: true }).click()
       }
       const switches = props.getByRole('switch')
       for (let i = 0; i < (await switches.count()); i++) {
@@ -177,11 +204,11 @@ test.describe('the stage never moves on a prop change', () => {
         expect(await corner(), `switch #${i}`).toEqual(start)
         await sw.click()
       }
-      // Changing the stage view anchors the same way.
-      await page.getByRole('group', { name: 'Stage' }).getByRole('button', { name: 'Light', exact: true }).click()
-      const single = await corner()
-      expect(single[0]).toBe(start[0])
-      expect(single[1]).toBe(start[1])
+      // Comparing themes adds the dark frame beside it; the light one stays anchored where it was.
+      await compareThemes(page)
+      const split = await corner()
+      expect(split[0]).toBe(start[0])
+      expect(split[1]).toBe(start[1])
     })
   }
 })
@@ -193,11 +220,11 @@ test.describe('scroll regions', () => {
     await expect(code).toBeVisible()
     await expect(code).not.toHaveAttribute('tabindex')
     await expect(code).not.toHaveAttribute('role')
-    await page.getByRole('complementary', { name: 'Props' }).getByLabel('children').fill('Save the changes to every tenant in every region and every account, then notify the owners of each one by email and keep a record of who was told and when they were told')
+    await page.getByRole('complementary', { name: 'Controls' }).getByLabel('children').fill('Save the changes to every tenant in every region and every account, then notify the owners of each one by email and keep a record of who was told and when they were told')
     await expect(page.getByRole('region', { name: 'Code, scrollable' })).toHaveAttribute('tabindex', '0')
     await page.getByRole('region', { name: 'Code, scrollable' }).focus()
     await page.keyboard.press('End')
-    await page.getByRole('complementary', { name: 'Props' }).getByLabel('children').fill('Save')
+    await page.getByRole('complementary', { name: 'Controls' }).getByLabel('children').fill('Save')
     await expect(code).not.toHaveAttribute('tabindex')
   })
 
@@ -326,7 +353,7 @@ test.describe('the page header', () => {
     // Back to the page's own address: the Playground tab, and the props are where they were.
     await page.getByRole('tablist', { name: 'Button page' }).getByRole('tab', { name: 'Playground' }).click()
     await expect(page).toHaveURL(/#\/components\/button$/)
-    await expect(page.getByRole('complementary', { name: 'Props' })).toBeVisible()
+    await expect(page.getByRole('complementary', { name: 'Controls' })).toBeVisible()
     // A link to a tab that has no data, or no such tab, opens the Playground tab.
     await page.goto('/#/components/dropdown-list/figma')
     await expect(page.getByRole('tablist', { name: 'Dropdown List page' }).getByRole('tab', { name: 'Playground' })).toHaveAttribute('aria-selected', 'true')
@@ -422,7 +449,7 @@ test.describe('find', () => {
     await expect(dialog).toBeVisible()
     await page.keyboard.press('Escape')
     // `/` in a text field types a slash.
-    const field = page.getByRole('complementary', { name: 'Props' }).getByRole('textbox').first()
+    const field = page.getByRole('complementary', { name: 'Controls' }).getByRole('textbox').first()
     await field.click()
     await page.keyboard.press('/')
     await expect(dialog).toBeHidden()
@@ -503,5 +530,119 @@ test.describe('find', () => {
     await expect(button).toBeVisible()
     await expect(button).not.toContainText('type a name')
     expect(await noSidewaysScroll(page)).toBe(true)
+  })
+})
+
+// Slice 2 of the playground redesign: the workbench (playground spec, section 5 and 11).
+test.describe('the workbench', () => {
+  test('Stage: Beside by default; Full width puts the controls below the stage, kept for the component and in the link', async ({ page }) => {
+    await page.goto('/#/components/button')
+    const stage = page.getByRole('group', { name: 'Stage' })
+    await expect(stage.getByRole('button', { name: 'Beside' })).toHaveAttribute('aria-current', 'true')
+    const controls = page.getByRole('complementary', { name: 'Controls' })
+    const frame = page.locator('.pg-frame').first()
+    expect((await controls.boundingBox())!.x).toBeGreaterThan((await frame.boundingBox())!.x + (await frame.boundingBox())!.width - 1)
+    await stage.getByRole('button', { name: 'Full width' }).click()
+    await expect(page).toHaveURL(/#\/components\/button\?v=1&stage=full$/)
+    expect((await controls.boundingBox())!.y).toBeGreaterThan((await frame.boundingBox())!.y + (await frame.boundingBox())!.height - 1)
+    await expect(page.locator('.pg-frame-label').first()).toContainText('Full width')
+    // Kept for this component: a fresh visit without the link still opens Full width.
+    await page.goto('/#/components/toggle')
+    await page.goto('/#/components/button')
+    await expect(page.getByRole('group', { name: 'Stage' }).getByRole('button', { name: 'Full width' })).toHaveAttribute('aria-current', 'true')
+    // And only for that one.
+    await page.goto('/#/components/toggle')
+    await expect(page.getByRole('group', { name: 'Stage' }).getByRole('button', { name: 'Beside' })).toHaveAttribute('aria-current', 'true')
+  })
+
+  test('Compare: Off shows the page theme alone; Themes shows light and dark', async ({ page }) => {
+    await page.goto('/#/components/toggle')
+    await expect(page.locator('.pg-frame')).toHaveCount(1)
+    await expect(page.locator('.pg-frame-label')).toHaveText('light · follows the page theme')
+    await page.getByRole('group', { name: 'Theme' }).getByRole('button', { name: 'Dark', exact: true }).click()
+    await expect(page.locator('.pg-frame')).toHaveAttribute('data-theme', 'dark')
+    await compareThemes(page)
+    await expect(page.locator('.pg-frame-label')).toHaveText(['light', 'dark'])
+    await expect(page).toHaveURL(/compare=themes/)
+  })
+
+  test('a shared link sets closed props, never free text, and says what it could not show', async ({ page }) => {
+    await page.goto('/#/components/button?v=1&variant=destructive&appearance=hollow&size=xl&children=Your%20account%20is%20suspended')
+    const controls = page.getByRole('complementary', { name: 'Controls' })
+    await expect(controls.getByRole('group', { name: 'variant' }).getByRole('button', { name: 'destructive' })).toHaveAttribute('aria-current', 'true')
+    await expect(controls.getByRole('group', { name: 'appearance' }).getByRole('button', { name: 'hollow' })).toHaveAttribute('aria-current', 'true')
+    await expect(page.locator('.pg-frame-body')).toContainText('Save Changes')
+    await expect(page.getByRole('main')).not.toContainText('Your account is suspended')
+    await expect(controls.locator('.pg-notice')).toHaveText("This link asked for size `xl`, which Button doesn't have. Showing `regular`.")
+    // The notice is read in order with the controls, not announced as an alert.
+    await expect(page.getByRole('alert')).toHaveCount(0)
+    // A combination the types forbid: the stage keeps to the defaults, and says so.
+    await page.goto('/#/components/toggle')
+    await page.goto('/#/components/button?v=1&variant=destructive&appearance=text-link')
+    await expect(page.getByRole('complementary', { name: 'Controls' }).locator('.pg-notice')).toContainText("doesn't allow, so the stage shows the defaults")
+    await expect(page.getByRole('complementary', { name: 'Controls' }).getByRole('group', { name: 'appearance' }).getByRole('button', { name: 'filled' })).toHaveAttribute('aria-current', 'true')
+  })
+
+  test('a change goes into the address without a history entry, is marked on its control and its code line, and Reset clears it', async ({ page }) => {
+    await page.goto('/#/components/button')
+    const controls = page.getByRole('complementary', { name: 'Controls' })
+    const reset = page.getByRole('button', { name: 'Reset', exact: true })
+    await expect(reset).toBeDisabled()
+    await expect(page.getByText('Nothing to reset')).toBeVisible()
+    const length = await page.evaluate(() => history.length)
+    await choose(controls, 'variant', 'destructive')
+    await expect(page).toHaveURL(/#\/components\/button\?v=1&variant=destructive$/)
+    expect(await page.evaluate(() => history.length)).toBe(length)
+    await expect(controls.locator('.pg-field[data-prop="variant"]')).toHaveClass(/is-changed/)
+    await expect(page.locator('.pg-code__line.is-changed')).toHaveText(['<Button variant="destructive" icon={<PlusIcon />}>'])
+    // Said once, politely (section 13).
+    await expect(page.getByRole('status').filter({ hasText: 'Stage updated' })).toHaveText('Stage updated: variant destructive')
+    await reset.click()
+    await expect(page).toHaveURL(/#\/components\/button$/)
+    await expect(page.locator('.pg-code__line.is-changed')).toHaveCount(0)
+    await expect(controls.locator('.pg-field.is-changed')).toHaveCount(0)
+  })
+
+  test('"Skip to code" is the controls\' first stop and moves focus to the code', async ({ page }) => {
+    await page.goto('/#/components/button')
+    const controls = page.getByRole('complementary', { name: 'Controls' })
+    const first = await controls.evaluate((el) => (el.querySelector('a, button, input, select, [tabindex]:not([tabindex="-1"])') as HTMLElement).textContent)
+    expect(first).toBe('Skip to code')
+    const skip = controls.getByRole('link', { name: 'Skip to code' })
+    await skip.focus()
+    await expect(skip).toBeVisible()
+    await page.keyboard.press('Enter')
+    await expect(page.getByRole('region', { name: 'Import and usage' })).toBeFocused()
+    await expect(page).toHaveURL(/#\/components\/button$/)
+  })
+
+  test('above six values the control is a select of the legal values, with the count', async ({ page }) => {
+    await page.goto('/#/components/icon')
+    const controls = page.getByRole('complementary', { name: 'Controls' })
+    await expect(controls.getByRole('combobox', { name: 'name' })).toBeVisible()
+    await expect(controls.locator('.pg-field[data-prop="name"] .pg-field__note')).toHaveText(/^\d+ values$/)
+    // Up to six values: segments.
+    await expect(controls.getByRole('group', { name: 'size' })).toBeVisible()
+  })
+
+  test('"Also in the API" explains a prop with no control in plain words', async ({ page }) => {
+    await page.goto('/#/components/button')
+    const api = page.getByRole('complementary', { name: 'Controls' }).locator('.pg-uncontrolled')
+    await expect(api).toContainText('type')
+    await expect(api).toContainText('With "submit", clicking it sends the form.')
+  })
+
+  test('in forced colours a locked value keeps a dashed GrayText edge', async ({ page }) => {
+    await page.emulateMedia({ forcedColors: 'active' })
+    await page.goto('/#/components/button')
+    const textLink = page.getByRole('complementary', { name: 'Controls' }).getByRole('group', { name: 'appearance' }).getByRole('button', { name: 'text-link' })
+    const s = await textLink.evaluate((el) => {
+      const p = document.createElement('i'); p.style.cssText = 'forced-color-adjust: none; color: GrayText'; document.body.appendChild(p)
+      const gray = getComputedStyle(p).color; p.remove()
+      const cs = getComputedStyle(el)
+      return { style: cs.borderTopStyle, color: cs.borderTopColor, gray }
+    })
+    expect(s.style).toBe('dashed')
+    expect(s.color).toBe(s.gray)
   })
 })

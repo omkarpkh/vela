@@ -185,7 +185,7 @@
 .pg-lock__rule code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; overflow-wrap: anywhere; }
 .pg-lock__moves { display: flex; flex-wrap: wrap; align-items: center; gap: var(--vela-space-10); }
 /* A changed code line: the same start edge, and a tint that settles once (not under reduced motion). */
-.pg-code__line { display: inline-block; min-width: 100%; box-sizing: border-box; margin-inline-start: calc(-1 * var(--vela-space-10)); padding-inline-start: calc(var(--vela-space-10) - var(--vela-stroke-2)); border-inline-start: var(--vela-stroke-2) solid transparent; }
+.pg-code__line { display: inline-block; min-width: 100%; box-sizing: border-box; padding-inline-start: var(--vela-space-10); border-inline-start: var(--vela-stroke-2) solid transparent; }
 .pg-code__line.is-changed { border-inline-start-color: var(--vela-border-active); position: relative; z-index: 0; }
 /* The settle is a tint under the text that fades once: opacity only, as Vela's motion rule asks. */
 .pg-code__line.is-changed::before { content: ''; position: absolute; inset: 0; z-index: -1; background: var(--vela-bg-selected); opacity: 0; pointer-events: none; animation: pg-settle var(--vela-duration-slow) var(--vela-ease-standard); }

@@ -19,7 +19,7 @@
  *   description, default text with a dashed edge, never faded, and no glyph. Pressing it selects
  *   nothing and calls onLockedPress. The word "locked" is never on screen or in a name.
  */
-import { useId } from 'react'
+import { Fragment, useId } from 'react'
 import { cn } from '../../src'
 import './shell.css'
 
@@ -46,8 +46,8 @@ export function Segments<T extends string>({ label, value, options, onChange, on
   return (
     <div className={cn('shell-segments', className)} role="group" aria-label={label}>
       {options.map((o, i) => (
+        <Fragment key={o.value}>
         <button
-          key={o.value}
           type="button"
           className={cn('shell-segment', o.locked && 'is-locked')}
           data-value={o.value}
@@ -60,8 +60,10 @@ export function Segments<T extends string>({ label, value, options, onChange, on
           }}
         >
           {o.label}
-          {o.locked && <span id={`${id}-r${i}`} className="vela-sr-only">{o.locked.reason}</span>}
         </button>
+        {/* The reason sits beside the button, not in it, so it is the description and never the name. */}
+        {o.locked && <span id={`${id}-r${i}`} className="vela-sr-only">{o.locked.reason}</span>}
+        </Fragment>
       ))}
     </div>
   )
