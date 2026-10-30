@@ -11,9 +11,9 @@ enforced: 64 of the 152 by the TypeScript compiler, the rest at runtime, in a re
 (counted by `npm run rules:check`).
 
 **Status:** every component carries a lifecycle label — Approved, Known bugs, Experimental or
-Retired, defined in [`GOVERNANCE.md`](GOVERNANCE.md). Six are **Approved**; Risk Pill, Icon, Text Area,
-Checkbox, Radio Group, Popover, Tooltip, Dialog, Table and Toast are **Experimental** (Icon and Text Area
-until their Figma sets are published).
+Retired, defined in [`GOVERNANCE.md`](GOVERNANCE.md). Seven are **Approved**; Icon, Text Area, Checkbox,
+Radio Group, Popover, Tooltip, Dialog, Table and Toast are **Experimental**. Every component's Figma
+set is published in the library.
 
 ```bash
 npm install @omkarux/vela

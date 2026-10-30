@@ -5,9 +5,8 @@ the page behind it dimmed, inert and scroll-locked until it closes. Its `alert` 
 confirms a destructive or irreversible action, with an explicit way out.
 
 **Status:** Experimental — born in `@omkarux/vela/headless` (Base UI 1.9) with Popover and Tooltip;
-there is no core implementation, and its Figma set is built in the library file (from
-`scripts/figma/components/dialog.figma.js`) but not published yet. Approved once the API has settled and the set is
-published; see `GOVERNANCE.md`.
+there is no core implementation, and its Figma set is published in the library (built from
+`scripts/figma/components/dialog.figma.js`). Approved once the API has settled; see `GOVERNANCE.md`.
 **Dependencies:** @base-ui/react (optional peer, via /headless)
 
 ## When to use Dialog (vs. Popover, vs. a page)
@@ -217,8 +216,8 @@ Library file: **Vela Design System** → page `Dialog`. Four variants, `Variant`
 `Size` (regular / wide), each with its own title in a text layer named `Title`, plus a
 `Description` boolean. There is no `Title text` property: a Figma text property holds one default
 for the whole set, and a standard dialog and an alert are titled differently. The set is
-created by `scripts/figma/components/dialog.figma.js`; until that builder has been run in the file,
-the library has no Dialog set. The backdrop is not part of the set: a dialog frame is placed over a
+created by `scripts/figma/components/dialog.figma.js`; it is published in the
+library. The backdrop is not part of the set: a dialog frame is placed over a
 `surface/scrim` rectangle at the `opacity/scrim` layer opacity.
 
 | Figma property | Code prop |

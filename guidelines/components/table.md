@@ -6,8 +6,8 @@ and a scroll region that keeps a wide table inside its host.
 
 **Status:** Experimental — specced, built and tested in the core entry, but the API may still
 change while Phase 2 (Approval Queue, Autonomy Ladder policy grid) and Phase 2b (Filter Bar,
-Review Queue) build on it, and its three Figma sets are built in the library file (from
-`scripts/figma/components/table.figma.js`) but not published yet. See `GOVERNANCE.md`.
+Review Queue) build on it. Its three Figma sets are published in the library (built from
+`scripts/figma/components/table.figma.js`). See `GOVERNANCE.md`.
 **Dependencies:** none
 
 ## When to use Table (vs. something else)
@@ -242,8 +242,8 @@ Library file: **Vela Design System** → page `Table`. Three sets, built by
 `scripts/figma/components/table.figma.js`: **Table Header Cell** (16 variants, `Density` (2) x
 `Sort` (4) x `Align` (2), plus a `Label text` property), **Table Cell** (4 variants, `Density` x
 `Align`, plus `Value text`) and **Table Row** (8 variants, `Density` x `State` (4)). Compose a
-table by stacking a header row of Header Cells over Rows; until the builder has been run in the
-file, the library has no Table sets.
+table by stacking a header row of Header Cells over Rows; all three
+are published in the library.
 
 | Figma property | Code prop |
 |---|---|
