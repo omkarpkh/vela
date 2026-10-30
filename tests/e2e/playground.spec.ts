@@ -1481,3 +1481,50 @@ test.describe('the Tabs press', () => {
     await expect(page.getByText('review aid', { exact: false })).toBeVisible()
   })
 })
+
+// Windows contrast themes replace every background: before its own rules the Toggle's track and
+// knob drew nothing, and the Tooltip's inverted fill went with them, leaving its text edgeless.
+// [[rule: toggle-forced-colours]]
+test('in forced colours the Toggle keeps its track edge and knob; on is the Highlight pair, disabled is GrayText', async ({ page }) => {
+  await page.emulateMedia({ forcedColors: 'active' })
+  await page.goto('/#/components/toggle')
+  const sw = page.locator('.pg-frame[data-theme="light"] .pg-frame-body').getByRole('switch')
+  await expect(sw).toBeVisible()
+  const read = () => sw.evaluate((t: HTMLElement) => {
+    const sys = (c: string) => { const p = document.createElement('i'); p.style.cssText = `forced-color-adjust: none; color: ${c}`; t.parentElement!.appendChild(p); const v = getComputedStyle(p).color; p.remove(); return v }
+    const cs = getComputedStyle(t), knob = getComputedStyle(t.querySelector('.vela-toggle__knob')!)
+    return {
+      sys: { canvasText: sys('CanvasText'), highlight: sys('Highlight'), highlightText: sys('HighlightText'), grayText: sys('GrayText') },
+      checked: t.getAttribute('aria-checked') === 'true', edge: `${cs.borderTopWidth} ${cs.borderTopStyle}`, border: cs.borderTopColor, track: cs.backgroundColor, knob: knob.backgroundColor,
+    }
+  })
+  let s = await read()
+  if (s.checked) { await sw.click(); s = await read() }
+  expect(s.edge).toBe('1px solid')
+  expect([s.border, s.knob]).toEqual([s.sys.canvasText, s.sys.canvasText])
+  await sw.click()
+  // The track's fill transitions, so wait for it to settle rather than read the first frame.
+  await expect.poll(async () => { const r = await read(); return [r.checked, r.border, r.track, r.knob] })
+    .toEqual([true, s.sys.highlight, s.sys.highlight, s.sys.highlightText])
+  // Disabled, through the page's own control for the prop.
+  await page.getByRole('switch', { name: 'disabled' }).click()
+  await expect(sw).toBeDisabled()
+  await expect.poll(async () => { const r = await read(); return [r.border, r.knob] }).toEqual([s.sys.grayText, s.sys.grayText])
+})
+
+// [[rule: tooltip-forced-colours]]
+test('in forced colours the Tooltip keeps a 1px CanvasText edge', async ({ page }) => {
+  await page.emulateMedia({ forcedColors: 'active' })
+  await page.goto('/#/components/tooltip')
+  await page.locator('.pg-frame[data-theme="light"] .pg-frame-body').getByRole('button', { name: 'Export' }).hover()
+  const tip = page.getByRole('tooltip')
+  await expect(tip).toBeVisible()
+  const s = await tip.evaluate((el: HTMLElement) => {
+    const p = document.createElement('i'); p.style.cssText = 'forced-color-adjust: none; color: CanvasText'; document.body.appendChild(p)
+    const canvasText = getComputedStyle(p).color; p.remove()
+    const cs = getComputedStyle(el)
+    return { edge: `${cs.borderTopWidth} ${cs.borderTopStyle}`, color: cs.borderTopColor, canvasText }
+  })
+  expect(s.edge).toBe('1px solid')
+  expect(s.color).toBe(s.canvasText)
+})
