@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.14.0] — 2026-10-31
+
 ### Added
 - **Tabs: a hover preview, the Seed.** When a pointer rests `--vela-delay-preview` (80ms) on an
   unselected, enabled tab, a short soft-ended bar fades in under it in the underline's 2px slot,
