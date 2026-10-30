@@ -5,15 +5,15 @@
 [![Licence: MIT](https://img.shields.io/badge/licence-MIT-blue)](LICENSE)
 
 A token-first design system. The tokens and the component specs are framework-agnostic;
-this repository is a **React implementation** of them. Sixteen components, two themes, zero runtime
+this repository is a **React implementation** of them. Seventeen components, two themes, zero runtime
 dependencies in the core entry — and every design rule in the documentation is tagged with how it is
-enforced: 64 of the 152 by the TypeScript compiler, the rest at runtime, in a real browser, or by review
+enforced: 69 of the 170 by the TypeScript compiler, the rest at runtime, in a real browser, or by review
 (counted by `npm run rules:check`).
 
 **Status:** every component carries a lifecycle label — Approved, Known bugs, Experimental or
 Retired, defined in [`GOVERNANCE.md`](GOVERNANCE.md). Seven are **Approved**; Icon, Text Area, Checkbox,
-Radio Group, Popover, Tooltip, Dialog, Table and Toast are **Experimental**. Every component's Figma
-set is published in the library.
+Radio Group, Popover, Tooltip, Dialog, Table, Toast and Dropdown List are **Experimental**. Every
+component's Figma set is published in the library except Dropdown List's, which has a builder and no set yet.
 
 ```bash
 npm install @omkarux/vela
@@ -24,8 +24,8 @@ entry point, `@omkarux/vela/headless`, builds the same specs on [Base UI](https:
 and needs one optional peer: `npm install @base-ui/react@1.9` — only if you import from it. Its
 first component is Tabs, which ships from both entries (the spec's "Implementations" section says
 how the two compare); Checkbox (with Checkbox.Group), Radio Group, the three overlays — Popover,
-Tooltip and Dialog (with its `alert` variant) — and Toast (`ToastProvider` + `useToast()`) were born
-there and ship from `@omkarux/vela/headless` only.
+Tooltip and Dialog (with its `alert` variant) — Toast (`ToastProvider` + `useToast()`) and Dropdown
+List were born there and ship from `@omkarux/vela/headless` only.
 
 ```tsx
 import '@omkarux/vela/styles.css'
@@ -52,14 +52,14 @@ link to each, and the number of automated checks, written by the test runners ra
 
 | | |
 |---|---|
-| **Components** | Button · Toggle · Input · TextArea · ContextualAlert · StatusIndicator · RiskPill · Tabs · Icon · Table, from `@omkarux/vela` (Tabs also from `/headless`) · Checkbox (with Checkbox.Group) · RadioGroup · Popover · Tooltip · Dialog (with `variant="alert"`) · ToastProvider + useToast, from `@omkarux/vela/headless` only |
-| **Tokens** | 283 CSS custom properties, two layers (primitives → semantics) |
+| **Components** | Button · Toggle · Input · TextArea · ContextualAlert · StatusIndicator · RiskPill · Tabs · Icon · Table, from `@omkarux/vela` (Tabs also from `/headless`) · Checkbox (with Checkbox.Group) · RadioGroup · Popover · Tooltip · Dialog (with `variant="alert"`) · ToastProvider + useToast · DropdownList, from `@omkarux/vela/headless` only |
+| **Tokens** | 285 CSS custom properties, two layers (primitives → semantics) |
 | **Themes** | Light + dark. OS preference by default, `data-theme` to override |
 | **Dependencies** | None in the core entry. `react` / `react-dom` are peers (18.3 or 19). The `/headless` entry needs one optional peer, `@base-ui/react` 1.9.x (MIT) |
 | **Icons** | 50 curated [Lucide](https://lucide.dev) 1.63.0 glyphs (ISC; a subset from Feather, MIT), compiled into the core entry at build time — no icon dependency, `lucide` is a devDependency only. The ISC notice ships in [`NOTICE`](NOTICE) |
 | **Format** | ESM, `preserveModules` for tree-shaking, full `.d.ts` |
-| **Tests** | 808 automated checks — 700 unit and contract (86 contrast pairs, each asserted in both themes), 105 browser (68 screenshots at four widths, 35 playground, 2 docs), 3 Flutter — counted by `npm run checks` |
-| **Packed size** | 189.7 kB, 211 files (the fifty glyph modules and their .d.ts are most of the growth since 0.12.1), as `npm run verify` measures it (README and CHANGELOG ship in the tarball, so this moves when they do) |
+| **Tests** | 955 automated checks — 808 unit and contract (93 contrast pairs, each asserted in both themes), 144 browser (68 screenshots at four widths, 74 playground, 2 docs), 3 Flutter — counted by `npm run checks` |
+| **Packed size** | 203.9 kB, 217 files (the fifty glyph modules and their .d.ts are most of the growth since 0.12.1), as `npm run verify` measures it (README and CHANGELOG ship in the tarball, so this moves when they do) |
 
 ## The three ideas worth stealing
 
@@ -228,10 +228,10 @@ or a new rule arrives untagged.
 
 ## Scope
 
-Sixteen components, chosen to exercise every foundation and all three taxonomies (Severity, Risk,
+Seventeen components, chosen to exercise every foundation and all three taxonomies (Severity, Risk,
 Status), the curated Icon set they draw from, the first form controls born on the headless entry
-(Checkbox, Radio Group), the three overlays (Popover, Tooltip, Dialog), Toast and the Table
-primitives a console's data views are built on. Not yet specced: Dropdown List, Select List, Token Pill, Number
+(Checkbox, Radio Group), the three overlays (Popover, Tooltip, Dialog), Toast, the Dropdown List
+and the Table primitives a console's data views are built on. Not yet specced: Select List, Token Pill, Number
 Stepper, Icon Button, Actions Dropdown, View Switcher, Data Grid, Card List. The guidelines name
 these explicitly so an agent flags the gap instead of inventing one.
 

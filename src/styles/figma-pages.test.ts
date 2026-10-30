@@ -173,9 +173,9 @@ describe('the Status page', () => {
   })
 
   it('has one row per registered component, in registry order, each with its spec\'s label', () => {
-    expect(rows.map((r) => r.n)).toEqual(['Button', 'Toggle', 'Input', 'Text Area', 'Contextual Alert', 'Status Indicator', 'Risk Pill', 'Tabs', 'Icon', 'Checkbox', 'Radio Group', 'Table', 'Popover', 'Tooltip', 'Dialog', 'Toast'])
+    expect(rows.map((r) => r.n)).toEqual(['Button', 'Toggle', 'Input', 'Text Area', 'Contextual Alert', 'Status Indicator', 'Risk Pill', 'Tabs', 'Icon', 'Checkbox', 'Radio Group', 'Table', 'Popover', 'Tooltip', 'Dialog', 'Toast', 'Dropdown List'])
     expect(rows.filter((r) => label(r) === 'Approved').map((r) => r.n)).toEqual(['Button', 'Toggle', 'Input', 'Contextual Alert', 'Status Indicator', 'Risk Pill', 'Tabs'])
-    for (const n of ['Text Area', 'Icon', 'Checkbox', 'Radio Group', 'Table', 'Popover', 'Tooltip', 'Dialog', 'Toast']) expect(label(rows.find((r) => r.n === n)!), n).toBe('Experimental')
+    for (const n of ['Text Area', 'Icon', 'Checkbox', 'Radio Group', 'Table', 'Popover', 'Tooltip', 'Dialog', 'Toast', 'Dropdown List']) expect(label(rows.find((r) => r.n === n)!), n).toBe('Experimental')
   })
 
   it('names the headless entry point for a component born there', () => {
@@ -185,6 +185,7 @@ describe('the Status page', () => {
     expect(exp('Popover')).toBe('Popover · @omkarux/vela/headless')
     expect(exp('Tooltip')).toBe('Tooltip · @omkarux/vela/headless')
     expect(exp('Dialog')).toBe('Dialog · @omkarux/vela/headless')
+    expect(exp('Dropdown List')).toBe('DropdownList · @omkarux/vela/headless')
   })
 
   it('fills Figma set, React export, Since and Spec from the repository', () => {
@@ -212,10 +213,15 @@ describe('the Status page', () => {
     const [, bset, bexp, bsince, bspec] = cells('Table')
     expect([bset.chars, bexp.chars, bsince.chars, bspec.chars]).toEqual(['Table Header Cell · page Table', 'Table · @omkarux/vela', '0.13.0', 'table.md'])
     for (const n of ['Popover', 'Tooltip', 'Dialog', 'Toast']) expect(cells(n)[1].chars, n).toBe(`${n} · page ${n}`)
-    // No set is left built-but-unpublished.
-    for (const r of rows) expect(cells(r.n)[1].chars, r.n).not.toBe('Built, not published')
-    // Every spec is on main now, so no row shows "(branch)".
-    for (const r of rows) expect(cells(r.n)[4].chars, r.n).not.toContain('(branch)')
+    // Dropdown List has a builder and no set yet; it is new since 0.13.0. Its spec reads "(branch)"
+    // until it is on main.
+    const [, dset, dexp, dsince, dspec] = cells('Dropdown List')
+    expect([dset.chars, dexp.chars, dsince.chars]).toEqual(['None yet — the builder is ready (dropdown-list.figma.js)', 'DropdownList · @omkarux/vela/headless', 'Unreleased'])
+    expect(dspec.chars).toBe(onMain('guidelines/components/dropdown-list.md') ? 'dropdown-list.md' : 'dropdown-list.md (branch)')
+    // No other set is left built-but-unpublished.
+    for (const r of rows.filter((x) => x.n !== 'Dropdown List')) expect(cells(r.n)[1].chars, r.n).not.toBe('Built, not published')
+    // Every other spec is on main, so no other row shows "(branch)".
+    for (const r of rows.filter((x) => x.n !== 'Dropdown List')) expect(cells(r.n)[4].chars, r.n).not.toContain('(branch)')
   })
 })
 
@@ -255,5 +261,26 @@ describe('the mock models how a reused node re-resolves a bound paint', () => {
     expect(f.fills[0].color).toEqual({ r: 0, g: 0, b: 0 })
     f.fills = []; f.fills = [paint()]
     expect(f.fills[0].color).toEqual({ r: 1, g: 1, b: 1 })
+  })
+})
+
+describe('the mock models instances as Figma does', () => {
+  it('copies the main component\'s box and bindings, swaps the variant setProperties names, and refuses an unknown key or value', async () => {
+    const figma: any = createMockFigma({ variables: [{ name: 'surface/global', resolvedType: 'COLOR', collection: 'Color', value: '#ffffff' }], styles: [], pages: ['P'] })
+    const page = figma.root.children[0]
+    const a = figma.createComponent(); a.name = 'On=false'; a.layoutMode = 'HORIZONTAL'; a.paddingTop = 5
+    const b = figma.createComponent(); b.name = 'On=true'; b.layoutMode = 'HORIZONTAL'; b.paddingTop = 10
+    const set = figma.combineAsVariants([a, b], page)
+    const text = set.addComponentProperty('Label', 'TEXT', 'Hi')
+    const flag = set.addComponentProperty('Extra', 'BOOLEAN', false)
+    const i = a.createInstance()
+    expect([i.type, i.paddingTop, (await i.getMainComponentAsync()).name]).toEqual(['INSTANCE', 5, 'On=false'])
+    i.setProperties({ On: 'true', [text]: 'Bye', [flag]: true })
+    expect([i.paddingTop, i.mainComponent.name]).toEqual([10, 'On=true'])
+    expect(Object.fromEntries(Object.entries(i.componentProperties).map(([k, v]: any) => [k.replace(/#.*$/, ''), v.value]))).toEqual({ On: 'true', Label: 'Bye', Extra: true })
+    expect(() => i.setProperties({ On: 'maybe' })).toThrow(/On=maybe is not a variant/)
+    expect(() => i.setProperties({ Size: 'big' })).toThrow(/no property "Size"/)
+    expect(() => i.setProperties({ [flag]: 'yes' })).toThrow(/is BOOLEAN/)
+    expect(() => figma.createFrame().createInstance()).toThrow(/only a component has instances/)
   })
 })

@@ -18,8 +18,8 @@ The React package has two entry points (`decisions/002-agent-ready-direction`): 
 is hand-rolled and has zero runtime dependencies; `@omkarux/vela/headless` builds the same
 specs on Base UI (`@base-ui/react`, an optional peer) and is Experimental. The first headless
 component is Tabs, so the two can be compared against one spec, one stylesheet and one test
-file; Checkbox, Radio Group, the three overlays — Popover, Tooltip, Dialog — and Toast were born
-there and ship from `/headless` only. Choose the core entry unless you already carry Base UI or need a behaviour the core does
+file; Checkbox, Radio Group, the three overlays — Popover, Tooltip, Dialog — Toast and Dropdown
+List were born there and ship from `/headless` only. Choose the core entry unless you already carry Base UI or need a behaviour the core does
 not yet implement; a spec's "Implementations" section lists what each entry ships and where they
 differ.
 
@@ -190,7 +190,7 @@ owner has reviewed their feel on the playground's Motion review page (`#/motion`
 still enter on `--vela-ease-standard`; moving them to `--vela-ease-out` is a later part of the
 motion pass, not this rule silently unmet.
 
-Overlays (Popover, Tooltip, Dialog, Toast) appear at `base` on opacity plus a `--vela-space-5` step
+Overlays (Popover, Tooltip, Dialog, Toast) and the Dropdown List appear at `base` on opacity plus a `--vela-space-5` step
 of travel, and leave on opacity alone; one opened or closed from the keyboard does not animate
 (`data-vela-instant`). A Tooltip waits `--vela-delay-tooltip` on hover and opens at once on focus.
 A Toast stays `--vela-duration-toast` (6000ms) — a dwell, not an animation, paused on hover and
@@ -330,6 +330,7 @@ Semantics and labels
 - A Toast as the only record of what happened, or the only place an Undo lives → the page carries both; a Toast that asks a question or offers two buttons → a Dialog; a `critical` or `major` toast, or a failure in a toast (will not compile for the severities) → a Contextual Alert where the work is.
 - A click handler, a hover state or a dismiss "×" on a Risk Pill → that is a Token Pill, not in this kit.
 - A Popover holding the only copy of something the task needs; a list of commands in a Popover → an Actions Dropdown, not in this kit.
+- A list of commands in a Dropdown List → an Actions Dropdown, not in this kit; a Dropdown List as a form field → a Select List, not in this kit; `meta="Critical"` or a dot in an item's meta → meta is words, never a taxonomy; an ellipsis on a long name → names wrap in full.
 - A link or a button in a Tooltip (will not compile) → a Popover; a Tooltip as the only name of an icon-only control → `aria-label` on the control; a Tooltip on a disabled control → adjacent text.
 - A destructive confirmation in a standard Dialog → `variant="alert"`, whose confirm is always destructive; a Dialog that only says "OK" → a Contextual Alert.
 - A shadow on an overlay → no elevation token exists; the border (Popover) or the scrim (Dialog) separates it.
@@ -344,14 +345,14 @@ Accessibility
 ## Not in the kit
 
 Do not invent one silently. State that the kit has no component for the need and pick the
-closest match while flagging the gap. Not yet specced: Dropdown List, Select List, Token Pill,
+closest match while flagging the gap. Not yet specced: Select List, Token Pill,
 Number Stepper, Icon Button, Actions Dropdown, View Switcher, Data Grid (arrow-key cell navigation,
 `role="grid"`), Card List. Flag rather than guess. Checkbox (with Checkbox.Group), Radio Group,
-Popover, Tooltip, Dialog (with its `alert` variant — the kit's modal) and Toast are specced and ship
-from `@omkarux/vela/headless` only (Experimental); Table ships from the core entry (Experimental)
+Popover, Tooltip, Dialog (with its `alert` variant — the kit's modal), Toast and Dropdown List are
+specced and ship from `@omkarux/vela/headless` only (Experimental); Table ships from the core entry (Experimental)
 and is read, not navigated cell by cell. The disambiguations agents most often get wrong
 — Toggle vs Checkbox, Radio Group vs Select List, Tabs vs View Switcher, Popover vs Tooltip vs
-Dialog, Toast vs Alert vs Dialog, Alert vs Status
+Dialog, Toast vs Alert vs Dialog, Dropdown List vs Select List vs Actions Dropdown, Alert vs Status
 Indicator vs Risk Pill — are in `guidelines/overview.md`.
 
 ## How to add a component

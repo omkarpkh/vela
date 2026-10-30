@@ -66,7 +66,7 @@ Tune by feel, then look again the next day.
 
 No component defines its own duration or curve. A new one is a token change, reviewed like a colour.
 
-Overlays (Popover, Tooltip, Dialog, Toast) still enter on `--vela-ease-standard`; moving them to
+Overlays (Popover, Tooltip, Dialog, Toast) and the Dropdown List still enter on `--vela-ease-standard`; moving them to
 `--vela-ease-out` is a later part of the motion pass. They appear at `--vela-duration-base` on opacity plus a
 `--vela-space-5` step of travel, and leave on opacity alone — softer than they arrived. One opened or
 closed from the keyboard does not animate at all; a toast travels in from the edge it sits on, and a

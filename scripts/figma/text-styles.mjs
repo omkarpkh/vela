@@ -8,7 +8,7 @@
  * One style per size in the ramp, derived the way flutter/lib/vela_tokens.dart derives its
  * TextStyles: text-<s>-size + text-<s>-line-height + text-<s>-weight, with button and tab labels
  * falling back to font-weight-regular as Button.css and Tabs.css do. Then the styles that are a
- * ramp size at another weight (Body/Link, the two tab counts) or in another family (Mono/Meta),
+ * ramp size at another weight (Body/Link, Body/Strong, the two tab counts) or in another family (Mono/Meta),
  * declared in EXTRA.
  *
  *   npm run styles:figma > /tmp/styles.js    # a Plugin API script: creates-or-updates every style
@@ -41,6 +41,8 @@ const NAME = {
 const EXTRA = [
   { name: 'Body/Link', base: 'body', weight: 'font-weight-semibold',
     description: 'Inline link text: semibold body, no underline. Colour comes from text/link.' },
+  { name: 'Body/Strong', base: 'body', weight: 'font-weight-semibold',
+    description: 'Semibold body for words that carry weight inside a row, e.g. a Dropdown List item\'s meta ("1 new"). Same size and line height as Body/Default. Colour comes from the text role.' },
   { name: 'Tab/Count', base: 'tab', weight: 'font-weight-semibold',
     description: 'The count beside a tab label, e.g. "Proposals 9". Same size and line height as Tab/Default, semibold.' },
   { name: 'Tab/Count Large', base: 'tab-large', weight: 'font-weight-semibold',

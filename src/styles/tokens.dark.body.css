@@ -12,6 +12,7 @@
   --vela-bg-global: var(--vela-grey-950);
   --vela-bg-container: var(--vela-grey-900);
   --vela-bg-raised: var(--vela-grey-850);
+  --vela-bg-raised-hover: var(--vela-grey-800);
   --vela-bg-hover: var(--vela-grey-850);
   --vela-bg-tooltip: var(--vela-grey-700);
   --vela-bg-inactive: var(--vela-grey-900);

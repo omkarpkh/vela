@@ -194,6 +194,14 @@ export const PAIRS = [
   // navigation and props panel used it; they now use text-default. Asserted below the minimum in
   // light so nobody reaches for it again; in dark it is 4.65:1.
   ['--vela-text-de-emphasized', '--vela-bg-container', 'De-emphasized text on container (negative case: must not ship)', 'text', { failsIn: ['light'] }],
+  // Dropdown List (Phase 1, headless). The popup is Popover's surface, so its body text and edge are
+  // asserted above. What is new is the highlighted item, on --vela-bg-raised-hover: not bg-hover,
+  // which in dark IS the raised surface (grey-850) and would show nothing. The current item's check
+  // is text-link as a 3:1 mark; the name stays text-default, because text-link on the dark raised
+  // surface is 4.35:1 and fails as text.
+  ['--vela-text-default', '--vela-bg-raised-hover', 'Dropdown List item text, highlighted',          'text'],
+  ['--vela-text-link',    '--vela-bg-raised',       'Dropdown List current-item check',              'ui'],
+  ['--vela-text-link',    '--vela-bg-raised-hover', 'Dropdown List current-item check, highlighted', 'ui'],
 ]
 
 export const THRESHOLD = { text: 4.5, ui: 3.0 }

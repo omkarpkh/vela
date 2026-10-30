@@ -12,6 +12,7 @@
   @bg-global
   @bg-container
   @bg-raised
+  @bg-raised-hover
   @bg-hover
   @bg-tooltip
   @bg-inactive

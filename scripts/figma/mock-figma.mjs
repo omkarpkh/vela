@@ -18,6 +18,12 @@
  *     paint bound to the same variable as the node's current paint at that index keeps the paint's
  *     own placeholder colour ({0,0,0}, the black the builders pass) — observed on a reused page
  *     frame. Clearing the fills first (`fills = []`) makes the binding new again.
+ *
+ * Instances (30 Oct 2026, for the Dropdown List popup): `component.createInstance()` returns an
+ * INSTANCE that copies its main component's box, auto layout, bindings and paints — not its
+ * children, which the lint has already walked on the main component. `setProperties` checks every
+ * key against the containing set's definitions, as Figma does: a VARIANT value swaps the main
+ * component for the variant it names, and an unknown key or value throws.
  */
 const MIXED = Symbol('figma.mixed')
 let seq = 0
@@ -111,6 +117,63 @@ class FrameNode extends ContainerNode {
   get bottomRightRadius() { return this._r.br } set bottomRightRadius(v) { this._r.br = v }
   get cornerRadius() { const r = this._r; return r.tl === r.tr && r.tl === r.bl && r.tl === r.br ? r.tl : MIXED }
   set cornerRadius(v) { this._r = { tl: v, tr: v, bl: v, br: v } }
+  createInstance() {
+    if (this.type !== 'COMPONENT') throw new Error(`createInstance on "${this.name}": only a component has instances`)
+    const n = new InstanceNode(this._figma, this)
+    this._figma.currentPage.appendChild(n)
+    return n
+  }
+}
+
+class InstanceNode extends FrameNode {
+  constructor(figma, main) {
+    super('INSTANCE', figma)
+    this.name = main.parent && main.parent.type === 'COMPONENT_SET' ? main.parent.name : main.name
+    this._props = {}
+    this._adopt(main)
+  }
+  _adopt(main) {
+    this._main = main
+    for (const k of ['primaryAxisAlignItems', 'counterAxisAlignItems', 'itemSpacing', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft', 'width', 'height', 'clipsContent']) this[k] = main[k]
+    this._lm = main._lm; this._r = { ...main._r }; this._sw = { ...main._sw }
+    this.boundVariables = { ...main.boundVariables }
+    this._fills = main.fills; this._strokes = main.strokes
+    if (this._ls.h == null) this._ls = { ...main._ls }
+    this._applySizing()
+  }
+  get mainComponent() { return this._main }
+  async getMainComponentAsync() { return this._main }
+  _set() { return this._main.parent && this._main.parent.type === 'COMPONENT_SET' ? this._main.parent : null }
+  _defs() { const set = this._set(); return set ? set.componentPropertyDefinitions : (this._main.componentPropertyDefinitions || {}) }
+  get componentProperties() {
+    const out = {}
+    const variant = Object.fromEntries(this._main.name.split(', ').map((p) => p.split('=')))
+    for (const [k, d] of Object.entries(this._defs())) out[k] = { type: d.type, value: d.type === 'VARIANT' ? variant[k] : (k in this._props ? this._props[k] : d.defaultValue) }
+    return out
+  }
+  setProperties(props) {
+    const defs = this._defs()
+    const set = this._set()
+    const variant = Object.fromEntries(this._main.name.split(', ').map((p) => p.split('=')))
+    let swap = false
+    for (const [k, v] of Object.entries(props)) {
+      const d = defs[k]
+      if (!d) throw new Error(`setProperties on "${this.name}": no property "${k}" (has ${Object.keys(defs).join(', ')})`)
+      if (d.type === 'VARIANT') {
+        if (!d.variantOptions.includes(v)) throw new Error(`setProperties on "${this.name}": ${k}=${v} is not a variant (${d.variantOptions.join(' / ')})`)
+        variant[k] = v; swap = true
+      } else if (d.type === 'BOOLEAN') {
+        if (typeof v !== 'boolean') throw new Error(`setProperties on "${this.name}": ${k} is BOOLEAN, given ${JSON.stringify(v)}`)
+        this._props[k] = v
+      } else this._props[k] = v
+    }
+    if (swap) {
+      const name = Object.entries(variant).map(([k, v]) => `${k}=${v}`).join(', ')
+      const next = set.children.find((c) => c.name === name)
+      if (!next) throw new Error(`setProperties on "${this.name}": no variant "${name}"`)
+      this._adopt(next)
+    }
+  }
 }
 
 class ComponentSetNode extends FrameNode {
