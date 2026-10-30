@@ -162,7 +162,7 @@ npm run verify     # tokens:check + icons:check + rules:check + typecheck + test
 
 The counts are copied from `demo/checks.json`, which `scripts/count-checks.mjs` writes from the
 test runners' own output and `verify` diffs, so that file cannot go stale. This README copy is
-checked at each release; the numbers here are for 0.13.0.
+checked at each release; the numbers here are for 0.14.0.
 
 ## Editing tokens — one source, five targets
 
