@@ -21,7 +21,7 @@
  *                   fail. Inside @keyframes only the moving properties are allowed.
  *
  * Allowed without a waiver: `0` in any unit; `1px` (and `-1px`) where it is a hairline or the
- * compensation for one — border*, outline*, inset*, margin*, top/right/bottom/left; `100%` and
+ * compensation for one — border*, outline*, inset*, margin*, top/right/bottom/left, box-shadow; `100%` and
  * every other percentage (translate percentages included); unitless numbers (line-height,
  * `scale(0.97)`, opacity); durations and angles.
  *
@@ -68,8 +68,10 @@ const HEX = /#(?:[0-9a-f]{8}|[0-9a-f]{6}|[0-9a-f]{3,4})\b/i
 // Primitive families, as tokens.light.css declares them: a colour scale step or black/white.
 const PRIMITIVE = /var\(\s*(--vela-(?:grey|primary|blue|green|red|critical|yellow|orange)-\d+|--vela-(?:black|white))\s*[,)]/g
 const LENGTH = /(?<![\w.-])(-?\d*\.?\d+)(px|rem|em)\b/g
-// Where ±1px is a hairline, or the compensation for one.
-const HAIRLINE_PROPS = /^(border|outline|inset|margin|top|right|bottom|left)/
+// Where ±1px is a hairline, or the compensation for one. box-shadow: a rule drawn as an inset
+// shadow (Tabs' list rule, inside a scroll container's padding box); any other shadow length
+// (a blur, a spread, an offset past 1px) is still a raw length.
+const HAIRLINE_PROPS = /^(border|outline|inset|margin|top|right|bottom|left|box-shadow)/
 const WAIVER = /\/\*\s*vela-allow:\s*([^*]*?)\s*\*\//
 // What may move (foundations/motion.md, rule 1), and the colour properties that may settle.
 const MOVES = new Set(['transform', 'translate', 'scale', 'rotate', 'opacity', 'filter'])

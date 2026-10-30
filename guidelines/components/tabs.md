@@ -56,13 +56,20 @@ Navigate between **different** content panels.
   bar under the selected tab and hands the underline straight back to the tab. [[rule: tabs-indicator-reduced-motion-end-state | browser]]
 - **At rest the underline is the selected tab's own border.** The bar is shown only while a pointer
   switch is in flight, so a still tab list renders exactly as it did before the bar existed. [[rule: tabs-indicator-rest-is-the-border | browser]]
+- **The underline is never clipped.** The list scrolls, so it clips at its padding box; the 2px
+  underline and the bar lie wholly inside it, over the list rule's pixel, and render 2px. [[rule: tabs-underline-not-clipped | browser]]
+- **In forced colours the selected tab is the only one marked.** The selected tab's label and
+  underline are `Highlight`; no other tab has an underline; a disabled tab is `GrayText`. [[rule: tabs-forced-colours-selected | browser]]
 
 ## Token bindings
 
 Trigger rest `--vela-text-de-emphasized`; hover `--vela-text-default` (an unselected trigger only:
 the selected one keeps `--vela-text-link` under the pointer); selected `--vela-text-link` with a
-2px `--vela-border-active` underline. List rule `--vela-border-subtle`. The list scrolls
-sideways only (`overflow-x: auto; overflow-y: hidden`). The sliding indicator is the same 2px `--vela-border-active` bar, moved
+2px `--vela-border-active` underline. List rule `--vela-border-subtle`, 1px, drawn inside the
+list (an inset shadow) so the underline lies over it without being clipped. The list scrolls
+sideways only (`overflow-x: auto; overflow-y: hidden`). In forced colours: the selected label and
+underline `Highlight`, other labels `CanvasText`, disabled `GrayText`, the list rule a
+`CanvasText` border, the focus ring `Highlight`. The sliding indicator is the same 2px `--vela-border-active` bar, moved
 over `--vela-duration-travel` on `--vela-ease-spring`.
 
 ## Motion
