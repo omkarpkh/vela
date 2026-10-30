@@ -260,3 +260,24 @@ describe('the mock models how a reused node re-resolves a bound paint', () => {
     expect(f.fills[0].color).toEqual({ r: 1, g: 1, b: 1 })
   })
 })
+
+describe('the mock models instances as Figma does', () => {
+  it('copies the main component\'s box and bindings, swaps the variant setProperties names, and refuses an unknown key or value', async () => {
+    const figma: any = createMockFigma({ variables: [{ name: 'surface/global', resolvedType: 'COLOR', collection: 'Color', value: '#ffffff' }], styles: [], pages: ['P'] })
+    const page = figma.root.children[0]
+    const a = figma.createComponent(); a.name = 'On=false'; a.layoutMode = 'HORIZONTAL'; a.paddingTop = 5
+    const b = figma.createComponent(); b.name = 'On=true'; b.layoutMode = 'HORIZONTAL'; b.paddingTop = 10
+    const set = figma.combineAsVariants([a, b], page)
+    const text = set.addComponentProperty('Label', 'TEXT', 'Hi')
+    const flag = set.addComponentProperty('Extra', 'BOOLEAN', false)
+    const i = a.createInstance()
+    expect([i.type, i.paddingTop, (await i.getMainComponentAsync()).name]).toEqual(['INSTANCE', 5, 'On=false'])
+    i.setProperties({ On: 'true', [text]: 'Bye', [flag]: true })
+    expect([i.paddingTop, i.mainComponent.name]).toEqual([10, 'On=true'])
+    expect(Object.fromEntries(Object.entries(i.componentProperties).map(([k, v]: any) => [k.replace(/#.*$/, ''), v.value]))).toEqual({ On: 'true', Label: 'Bye', Extra: true })
+    expect(() => i.setProperties({ On: 'maybe' })).toThrow(/On=maybe is not a variant/)
+    expect(() => i.setProperties({ Size: 'big' })).toThrow(/no property "Size"/)
+    expect(() => i.setProperties({ [flag]: 'yes' })).toThrow(/is BOOLEAN/)
+    expect(() => figma.createFrame().createInstance()).toThrow(/only a component has instances/)
+  })
+})

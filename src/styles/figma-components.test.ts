@@ -358,8 +358,15 @@ describe('text styles have a source', () => {
     expect(styles.map((s) => s.name)).toEqual([
       'Heading/H1', 'Heading/H2', 'Heading/H3', 'Heading/H4', 'Heading/H5', 'Heading/H6',
       'Body/Default', 'Body/Meta', 'Button/Tiny', 'Button/Regular', 'Button/Large', 'Button/Huge',
-      'Tab/Default', 'Tab/Large', 'Body/Link', 'Tab/Count', 'Tab/Count Large', 'Mono/Meta',
+      'Tab/Default', 'Tab/Large', 'Body/Link', 'Body/Strong', 'Tab/Count', 'Tab/Count Large', 'Mono/Meta',
     ])
+  })
+
+  it('binds Body/Strong to the body size and line height and the semibold weight: SemiBold 14/21', () => {
+    const b = styles.find((s) => s.name === 'Body/Strong')
+    expect([b.size.figma, b.lineHeight.figma, b.weight.figma]).toEqual(['size/body', 'line-height/body', 'weight/semibold'])
+    expect(b.fontName).toEqual({ family: 'Open Sans', style: 'SemiBold' })
+    expect([b.size.value, b.lineHeight.value]).toEqual([14, 21])
   })
 
   it('draws Mono/Meta as Body/Meta in Roboto Mono: same size, line height, weight and tracking variables', () => {
@@ -446,15 +453,20 @@ describe('Popover, Tooltip and Dialog, as the builders draw them', () => {
   })
 })
 
-// Dropdown List (headless, Experimental): one row — the popup is composed from instances, and the
-// placement, focus, typeahead and the highlight following the keys are code.
+// Dropdown List (headless, Experimental): one row as a set whose axes mirror the markup, and the
+// popup as a one-size component of item instances. Placement, focus, typeahead and the highlight
+// following the keys are code.
 describe('Dropdown List, as the builder draws it', () => {
   const d = dump('dropdown-list')
+  const p = dump('dropdown-list', 'Dropdown List')
+  const by = (h: string, c: string, x: string) => d.variants.find((v: any) => v.n === `Highlighted=${h}, Current=${c}, Disabled=${x}`)
+  const B = ['false', 'true']
 
-  it('four states, a Meta boolean and two TEXT properties, each written the same in every variant', () => {
+  it('Highlighted × Current × Disabled, a Meta boolean and two TEXT properties, each written the same in every variant', () => {
     expect(d.set).toBe('Dropdown List item')
-    expect(d.variants.map((v: any) => v.n)).toEqual(['State=default', 'State=highlighted', 'State=current', 'State=disabled'])
-    expect(Object.keys(d.defs).map((k) => k.replace(/#.*$/, '')).sort()).toEqual(['Label', 'Meta', 'Meta text', 'State'])
+    expect(d.variants).toHaveLength(8)
+    for (const h of B) for (const c of B) for (const x of B) expect(by(h, c, x), `${h} ${c} ${x}`).toBeTruthy()
+    expect(Object.keys(d.defs).map((k) => k.replace(/#.*$/, '')).sort()).toEqual(['Current', 'Disabled', 'Highlighted', 'Label', 'Meta', 'Meta text'])
     for (const v of d.variants) {
       expect(v.ch.map((c: any) => c.n), v.n).toEqual(['Check', 'Label', 'Meta'])
       expect([v.ch[1].chars, v.ch[2].chars], v.n).toEqual(['Firewall', '1 new'])
@@ -462,23 +474,45 @@ describe('Dropdown List, as the builder draws it', () => {
     }
   })
 
-  it('popover/width wide, padded space/5 · space/15 · space/5 · space/10, the check slot kept by every state', () => {
+  it('popover/width wide, padded space/5 · space/15 · space/5 · space/10, the check slot kept by every variant, the meta in Body/Strong', () => {
     for (const v of d.variants) {
       expect(v.wh[2], v.n).toBe('popover/width')
       expect(v.pad.map((x: any) => x[1]), v.n).toEqual(['space/5', 'space/15', 'space/5', 'space/10'])
       expect(v.gap[1], v.n).toBe('space/10')
       expect(v.ch[0].wh.slice(2), v.n).toEqual(['icon/size', 'line-height/body'])
-      expect([v.ch[1].style, v.ch[2].style], v.n).toEqual(['Body/Default', 'Body/Link'])
+      expect([v.ch[1].style, v.ch[2].style], v.n).toEqual(['Body/Default', 'Body/Strong'])
     }
   })
 
-  it('highlighted is surface/raised-hover; only current draws the check, in text/link; disabled is text/inactive', () => {
-    const by = (n: string) => d.variants.find((v: any) => v.n === `State=${n}`)
-    expect(['default', 'highlighted', 'current', 'disabled'].map((n) => by(n).fill[0])).toEqual(['surface/raised', 'surface/raised-hover', 'surface/raised', 'surface/raised'])
-    expect(by('current').ch[0].ch.map((g: any) => [g.n, g.fill[0]])).toEqual([['Glyph / check', 'text/link']])
-    for (const n of ['default', 'highlighted', 'disabled']) expect(by(n).ch[0].ch, n).toEqual([])
-    expect([by('disabled').ch[1].fill[0], by('disabled').ch[2].fill[0]]).toEqual(['text/inactive', 'text/inactive'])
-    for (const n of ['default', 'highlighted', 'current']) expect(by(n).ch[1].fill[0], n).toBe('text/default')
+  it('Highlighted is surface/raised-hover, disabled or not; only Current draws the check, in text/link; Disabled greys the name, never the meta', () => {
+    for (const h of B) for (const c of B) for (const x of B) {
+      const v = by(h, c, x), n = v.n
+      expect(v.fill[0], n).toBe(h === 'true' ? 'surface/raised-hover' : 'surface/raised')
+      expect(v.ch[0].ch.map((g: any) => [g.n, g.fill[0]]), n).toEqual(c === 'true' ? [['Glyph / check', 'text/link']] : [])
+      expect(v.ch[1].fill[0], n).toBe(x === 'true' ? 'text/inactive' : 'text/default')
+      expect(v.ch[2].fill[0], n).toBe('text/default')
+    }
+  })
+
+  it('draws the popup as one component on Popover\'s surface, holding four item instances', () => {
+    expect(p.set).toBe('Dropdown List')
+    expect(p.count).toBe(1)
+    const c = p.variants[0]
+    expect(c.t).toBe('COMPONENT')
+    expect([c.lm, c.wh[2], c.fill[0], c.stroke[0], c.sw, c.rad[1]]).toEqual(['VERTICAL', 'popover/width', 'surface/raised', 'border/default', 1, 'radius/4'])
+    expect(c.pad.map((x: any) => x[1])).toEqual(['space/5', 'space/5', 'space/5', 'space/5'])
+    expect(c.ch.map((i: any) => [i.t, i.n, i.ls])).toEqual([
+      ['INSTANCE', 'Item / Alerts', 'FILL/HUG'],
+      ['INSTANCE', 'Item / Firewall', 'FILL/HUG'],
+      ['INSTANCE', 'Item / Archive', 'FILL/HUG'],
+      ['INSTANCE', 'Item / Reports', 'FILL/HUG'],
+    ])
+    expect(c.ch.map((i: any) => [i.main, i.props.Label, i.props.Meta, i.props.Meta ? i.props['Meta text'] : null])).toEqual([
+      ['Highlighted=false, Current=false, Disabled=false', 'Alerts', false, null],
+      ['Highlighted=false, Current=true, Disabled=false', 'Firewall', true, '1 new'],
+      ['Highlighted=false, Current=false, Disabled=true', 'Archive', true, 'No access'],
+      ['Highlighted=true, Current=false, Disabled=false', 'Reports', true, '3 open'],
+    ])
   })
 })
 
