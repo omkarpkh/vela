@@ -23,10 +23,11 @@ is not a designer, and the Seed is introduced only after the ideas it came from.
 | File | Step |
 |---|---|
 | `01-the-moment-before-a-click.png` | The problem: pointing at a tab only darkens its name |
-| `02-ideas-from-other-fields.png` | Six of the sixteen ideas, each sketched on the same three tabs, with the field it came from |
+| `02-ideas-from-other-fields.png` | Six ideas from two rounds, each sketched on the same three tabs, with its source, its score and the checklist line it lost on |
 | `03-meet-the-seed.png` | The Seed: how it differs from the underline, and in the real component |
-| `04-how-the-seed-was-chosen.png` | The checklist and its weights, and the round-2 scores |
-| `05-testing-every-situation.png` | Every situation tested, first result and after the fixes |
+| `04-how-the-seed-was-chosen.png` | The final checklist and its weights; first-round and final-round scores |
+| `05-testing-every-situation.png` | Every situation tested, first result and now; a new group for too many tabs, which the first test missed |
+| `05b-too-many-tabs.png` | What the first test missed: hidden tabs with no sign, the Seed on a tab cut off at the edge, the open tab scrolled away |
 | `06-a-bug-in-plain-sight.png` | The 2px underline that drew 1px, 8 times larger (fixed in #29) |
 | `07-high-contrast-mode.png` | Windows high-contrast mode, before and after (fixed in #29) |
 | `08-short-tab-names.png` | Tab "IP": the 24px minimum |
