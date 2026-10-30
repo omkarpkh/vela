@@ -101,9 +101,11 @@ describe('token source', () => {
       // `control/` carries the Checkbox and Radio geometry (control/checkbox/size, control/radio/dot) since Phase 1.
       // `popover/`, `dialog/`, `tooltip/`, `opacity/` and `layer/` carry the overlay geometry since Phase 1.
       // `toast/` carries the Toast width since Phase 1.
-      sizing: /^(space|icon|control-height|control|radius|focus|stroke|field|toggle|status|popover|dialog|tooltip|opacity|layer|toast)\//,
+      // `tab/` carries the Tabs hover preview's floor (tab/preview-width-min) since Phase 1.
+      sizing: /^(space|icon|control-height|control|radius|focus|stroke|field|toggle|status|popover|dialog|tooltip|opacity|layer|toast|tab)\//,
       typography: /^(size|line-height|weight|tracking)\//,
-      // `delay/tooltip` is a wait before an overlay opens, not an animation, so it is not a duration/.
+      // `delay/tooltip` is a wait before an overlay opens, not an animation, so it is not a duration/;
+      // `delay/preview` (the Tabs hover preview's rest) follows it.
       motion: /^(duration|easing|blur|delay)\//,
     }
     const bad: string[] = []

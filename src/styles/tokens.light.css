@@ -332,12 +332,17 @@
   /* ---- Toast (headless) ---- */
   --vela-toast-width: 360px;
 
+  /* ---- Tabs: the hover preview (the Seed) ---- */
+  --vela-tab-preview-width-min: 24px;
+  --vela-opacity-preview: 0.55;
+
   /* ---- Motion (respects reduced-motion in components.css) ---- */
   --vela-duration-instant: 70ms;
   --vela-duration-fast: 120ms;
   --vela-duration-base: 180ms;
   --vela-duration-travel: 240ms;
   --vela-delay-tooltip: 600ms;
+  --vela-delay-preview: 80ms;
   --vela-duration-toast: 6000ms;
   --vela-ease-standard: cubic-bezier(0.2, 0, 0.2, 1);
   --vela-ease-out: cubic-bezier(0.25, 1, 0.5, 1);

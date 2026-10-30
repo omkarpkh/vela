@@ -332,12 +332,17 @@
   /* ---- Toast (headless) ---- */
   @toast-width
 
+  /* ---- Tabs: the hover preview (the Seed) ---- */
+  @tab-preview-width-min
+  @opacity-preview
+
   /* ---- Motion (respects reduced-motion in components.css) ---- */
   @duration-instant
   @duration-fast
   @duration-base
   @duration-travel
   @delay-tooltip
+  @delay-preview
   @duration-toast
   @ease-standard
   @ease-out
