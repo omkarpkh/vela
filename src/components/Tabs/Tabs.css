@@ -4,19 +4,20 @@
 .vela-tabs__list {
   position: relative; /* the indicator's containing block; it scrolls with the tabs */
   display: flex; align-items: stretch; gap: var(--vela-space-20);
-  border-bottom: 1px solid var(--vela-border-subtle);
-  /* Scroll sideways only. The selected underline (the trigger's border, and the indicator) sits
-     1px past the padding box, over the list's own border, and is clipped there either way; with
-     overflow-y left to follow overflow-x (auto), that 1px became a vertical scroll range, and a
-     touch browser drew a stray vertical scrollbar at the list's end. Hidden clips the same pixels
-     and scrolls nothing. */
+  /* The list rule is drawn inside the padding box, as an inset shadow, so the 2px selected
+     underline can lie over its bottom pixel without leaving the box. A scroll container clips at
+     its padding box: while the rule was a border outside it, the underline's lower pixel (which
+     overlapped that border) was clipped and the underline rendered 1px. The shadow is fixed to the
+     list's box, so the rule stays put while the tabs scroll over it. */
+  box-shadow: inset 0 -1px 0 var(--vela-border-subtle);
+  /* Scroll sideways only: with overflow-y left to follow overflow-x (auto), a touch browser drew a
+     stray vertical scrollbar at the list's end. */
   overflow-x: auto; overflow-y: hidden;
 }
 
 .vela-tabs__trigger {
   position: relative;
   background: none; border: none; padding: var(--vela-space-10) 0;
-  margin-bottom: -1px;
   font-family: var(--vela-font-family-primary);
   font-size: var(--vela-text-tab-size);
   line-height: var(--vela-text-tab-line-height);
@@ -46,9 +47,9 @@
    flight (data-vela-moving, set in the same commit as the new selection) it is shown, the
    selected trigger's border is hidden, and the bar's transform travels to the new tab — the full
    list width scaled down from its left edge, so only transform ever moves. Same geometry as the
-   border: a stroke-2 bar whose bottom edge is the trigger's (1px below the list's padding box). */
+   border: a stroke-2 bar whose bottom edge is the trigger's, the list's padding box. */
 .vela-tabs__indicator {
-  position: absolute; left: 0; bottom: -1px;
+  position: absolute; left: 0; bottom: 0;
   width: 100%; height: var(--vela-stroke-2);
   background: var(--vela-border-active);
   transform-origin: 0 0;
@@ -66,3 +67,22 @@
 
 .vela-tabs__panel { padding-top: var(--vela-space-15); }
 .vela-tabs__panel:focus-visible { outline: var(--vela-focus-ring-width) solid var(--vela-focus-ring-color); outline-offset: var(--vela-focus-ring-offset); }
+
+/* Forced colours (Windows contrast themes). The browser replaces every author colour with a system
+   colour, removes box-shadows and turns transparent borders visible, so without these rules every
+   tab drew an underline in the text colour and the selected tab could not be told apart. Here the
+   triggers keep their own colours (forced-color-adjust: none) and use system colours only:
+   the selected tab is the one in Highlight, with a Highlight underline; the others carry no
+   underline; a disabled tab is GrayText; focus stays a Highlight ring. The list rule becomes a
+   CanvasText border below the padding box (the shadow is gone), which the underline no longer
+   overlaps, so nothing is clipped. */
+@media (forced-colors: active) {
+  .vela-tabs__list { border-bottom: 1px solid CanvasText; }
+  .vela-tabs__trigger { forced-color-adjust: none; color: CanvasText; border-bottom-color: transparent; }
+  .vela-tabs__trigger[aria-selected='true'] { color: Highlight; border-bottom-color: Highlight; }
+  .vela-tabs__list[data-vela-moving] .vela-tabs__trigger[aria-selected='true'] { border-bottom-color: transparent; }
+  .vela-tabs__trigger:hover:not(:disabled):not([aria-selected='true']) { color: CanvasText; }
+  .vela-tabs__trigger:disabled { color: GrayText; }
+  .vela-root .vela-tabs__trigger:focus-visible { outline-color: Highlight; }
+  .vela-tabs__indicator { forced-color-adjust: none; background: Highlight; }
+}
