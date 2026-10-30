@@ -173,9 +173,9 @@ describe('the Status page', () => {
   })
 
   it('has one row per registered component, in registry order, each with its spec\'s label', () => {
-    expect(rows.map((r) => r.n)).toEqual(['Button', 'Toggle', 'Input', 'Text Area', 'Contextual Alert', 'Status Indicator', 'Risk Pill', 'Tabs', 'Icon', 'Checkbox', 'Radio Group', 'Table', 'Popover', 'Tooltip', 'Dialog', 'Toast'])
+    expect(rows.map((r) => r.n)).toEqual(['Button', 'Toggle', 'Input', 'Text Area', 'Contextual Alert', 'Status Indicator', 'Risk Pill', 'Tabs', 'Icon', 'Checkbox', 'Radio Group', 'Table', 'Popover', 'Tooltip', 'Dialog', 'Toast', 'Dropdown List'])
     expect(rows.filter((r) => label(r) === 'Approved').map((r) => r.n)).toEqual(['Button', 'Toggle', 'Input', 'Contextual Alert', 'Status Indicator', 'Tabs'])
-    for (const n of ['Text Area', 'Risk Pill', 'Icon', 'Checkbox', 'Radio Group', 'Table', 'Popover', 'Tooltip', 'Dialog', 'Toast']) expect(label(rows.find((r) => r.n === n)!), n).toBe('Experimental')
+    for (const n of ['Text Area', 'Risk Pill', 'Icon', 'Checkbox', 'Radio Group', 'Table', 'Popover', 'Tooltip', 'Dialog', 'Toast', 'Dropdown List']) expect(label(rows.find((r) => r.n === n)!), n).toBe('Experimental')
   })
 
   it('names the headless entry point for a component born there', () => {
@@ -185,6 +185,7 @@ describe('the Status page', () => {
     expect(exp('Popover')).toBe('Popover · @omkarux/vela/headless')
     expect(exp('Tooltip')).toBe('Tooltip · @omkarux/vela/headless')
     expect(exp('Dialog')).toBe('Dialog · @omkarux/vela/headless')
+    expect(exp('Dropdown List')).toBe('DropdownList · @omkarux/vela/headless')
   })
 
   it('fills Figma set, React export, Since and Spec from the repository', () => {
@@ -211,8 +212,13 @@ describe('the Status page', () => {
     expect([bset.chars, bexp.chars, bsince.chars, bspec.chars]).toEqual(['Built, not published', 'Table · @omkarux/vela', '0.13.0', 'table.md'])
     // Popover, Tooltip, Dialog and Toast: built in the file from main 60d80ef, not published (R13).
     for (const n of ['Popover', 'Tooltip', 'Dialog', 'Toast']) expect(cells(n)[1].chars, n).toBe('Built, not published')
-    // Every spec is on main now, so no row shows "(branch)".
-    for (const r of rows) expect(cells(r.n)[4].chars, r.n).not.toContain('(branch)')
+    // Dropdown List has a builder and no set yet; it is new since 0.13.0. Its spec reads "(branch)"
+    // until it is on main.
+    const [, dset, dexp, dsince, dspec] = cells('Dropdown List')
+    expect([dset.chars, dexp.chars, dsince.chars]).toEqual(['None yet — the builder is ready (dropdown-list.figma.js)', 'DropdownList · @omkarux/vela/headless', 'Unreleased'])
+    expect(dspec.chars).toBe(onMain('guidelines/components/dropdown-list.md') ? 'dropdown-list.md' : 'dropdown-list.md (branch)')
+    // Every other spec is on main, so no other row shows "(branch)".
+    for (const r of rows.filter((x) => x.n !== 'Dropdown List')) expect(cells(r.n)[4].chars, r.n).not.toContain('(branch)')
   })
 })
 

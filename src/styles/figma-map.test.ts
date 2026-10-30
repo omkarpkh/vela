@@ -92,7 +92,8 @@ describe('Figma → code map', () => {
     // Every other set is in the file, built from main 60d80ef and not yet published (requests R13).
     expect(map.sets.find((s: any) => s.set === 'Risk Pill')).toMatchObject({ state: 'built', node: '127:14' })
     expect(map.sets.filter((s: any) => s.state === 'built').map((s: any) => s.set).sort()).toEqual(['Checkbox', 'Dialog', 'Icon', 'Popover', 'Radio', 'Risk Pill', 'Table Header Cell', 'Text Area', 'Toast', 'Tooltip'])
-    expect(map.sets.filter((s: any) => s.state === 'none')).toEqual([])
+    // Dropdown List has a builder and no set yet: building it is the Figma thread's job.
+    expect(map.sets.filter((s: any) => s.state === 'none').map((s: any) => [s.set, s.node, s.url])).toEqual([['Dropdown List item', null, null]])
     for (const s of map.sets.filter((s: any) => s.state === 'built')) expect(s.node, s.set).toMatch(/^\d+:\d+$/)
   })
 

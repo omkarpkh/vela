@@ -18,7 +18,7 @@ const cli = (...args: string[]) => {
 const lintReport: Record<string, { problems: { rule: string; node: string; what: string; waived: boolean }[]; allow: { rule: string; reason: string }[] }> = JSON.parse(cli('--lint'))
 const dump = (name: string, set?: string) => JSON.parse(set ? cli('--dump', name, `--set=${set}`) : cli('--dump', name))
 const styles: any[] = JSON.parse(execFileSync('node', ['scripts/figma/text-styles.mjs', '--json'], { cwd: root, encoding: 'utf8' }))
-const BUILDERS = ['button', 'checkbox', 'contextual-alert', 'dialog', 'icon', 'input', 'popover', 'radio-group', 'risk-pill', 'status-indicator', 'table', 'tabs', 'text-area', 'toast', 'toggle', 'tooltip']
+const BUILDERS = ['button', 'checkbox', 'contextual-alert', 'dialog', 'dropdown-list', 'icon', 'input', 'popover', 'radio-group', 'risk-pill', 'status-indicator', 'table', 'tabs', 'text-area', 'toast', 'toggle', 'tooltip']
 
 describe('Figma builders, built in the mock Plugin API', () => {
   it('runs every builder', () => {
@@ -443,6 +443,42 @@ describe('Popover, Tooltip and Dialog, as the builders draw them', () => {
       expect(footer.ch.map((b: any) => b.fill[0])).toEqual(alert ? ['button/standard-bg', 'button/destructive-bg'] : ['button/standard-bg', 'button/primary-bg'])
       for (const b of footer.ch) expect(b.wh[3]).toBe('control-height/35')
     }
+  })
+})
+
+// Dropdown List (headless, Experimental): one row — the popup is composed from instances, and the
+// placement, focus, typeahead and the highlight following the keys are code.
+describe('Dropdown List, as the builder draws it', () => {
+  const d = dump('dropdown-list')
+
+  it('four states, a Meta boolean and two TEXT properties, each written the same in every variant', () => {
+    expect(d.set).toBe('Dropdown List item')
+    expect(d.variants.map((v: any) => v.n)).toEqual(['State=default', 'State=highlighted', 'State=current', 'State=disabled'])
+    expect(Object.keys(d.defs).map((k) => k.replace(/#.*$/, '')).sort()).toEqual(['Label', 'Meta', 'Meta text', 'State'])
+    for (const v of d.variants) {
+      expect(v.ch.map((c: any) => c.n), v.n).toEqual(['Check', 'Label', 'Meta'])
+      expect([v.ch[1].chars, v.ch[2].chars], v.n).toEqual(['Firewall', '1 new'])
+      expect(v.ch[2].hidden, v.n).toBe(true)
+    }
+  })
+
+  it('popover/width wide, padded space/5 · space/15 · space/5 · space/10, the check slot kept by every state', () => {
+    for (const v of d.variants) {
+      expect(v.wh[2], v.n).toBe('popover/width')
+      expect(v.pad.map((x: any) => x[1]), v.n).toEqual(['space/5', 'space/15', 'space/5', 'space/10'])
+      expect(v.gap[1], v.n).toBe('space/10')
+      expect(v.ch[0].wh.slice(2), v.n).toEqual(['icon/size', 'line-height/body'])
+      expect([v.ch[1].style, v.ch[2].style], v.n).toEqual(['Body/Default', 'Body/Link'])
+    }
+  })
+
+  it('highlighted is surface/raised-hover; only current draws the check, in text/link; disabled is text/inactive', () => {
+    const by = (n: string) => d.variants.find((v: any) => v.n === `State=${n}`)
+    expect(['default', 'highlighted', 'current', 'disabled'].map((n) => by(n).fill[0])).toEqual(['surface/raised', 'surface/raised-hover', 'surface/raised', 'surface/raised'])
+    expect(by('current').ch[0].ch.map((g: any) => [g.n, g.fill[0]])).toEqual([['Glyph / check', 'text/link']])
+    for (const n of ['default', 'highlighted', 'disabled']) expect(by(n).ch[0].ch, n).toEqual([])
+    expect([by('disabled').ch[1].fill[0], by('disabled').ch[2].fill[0]]).toEqual(['text/inactive', 'text/inactive'])
+    for (const n of ['default', 'highlighted', 'current']) expect(by(n).ch[1].fill[0], n).toBe('text/default')
   })
 })
 

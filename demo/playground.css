@@ -27,6 +27,9 @@
 /* The Toast stage: the Save button, and the page's own record of what was saved. */
 .pg-toast-stage { display: flex; flex-direction: column; align-items: flex-start; gap: var(--vela-space-10); }
 .pg-toast-stage .pg-overlay-copy { margin: 0; }
+/* The Dropdown List stage: the trigger, and the page's own line saying which view is current. */
+.pg-dropdown-stage { display: flex; flex-direction: column; align-items: flex-start; gap: var(--vela-space-10); }
+.pg-dropdown-stage .pg-overlay-copy { margin: 0; }
 .pg-reduced *, .pg-reduced *::before, .pg-reduced *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
 
 .pg-panel { border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4); background: var(--vela-bg-container); min-width: 0; }

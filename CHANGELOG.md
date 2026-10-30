@@ -5,6 +5,40 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+### Added (Experimental)
+- **Dropdown List — Experimental, `@omkarux/vela/headless` only** (`dropdown-list.md`; Base UI 1.9
+  `Menu`). A short list from a button where one option is current and choosing another acts at
+  once — a hidden tab, another saved view — and the list closes. Its first use is the Tabs overflow
+  control, which a later change adds to `tabs.md`. Closed props: `label` (a required string, the
+  menu's name), `trigger` (one element, rendered through Base UI's `render` as on Popover), `items`
+  (a non-empty tuple of `{ value, label, meta?, disabled? }`, those four fields only), `value` or
+  `defaultValue`, `open` or `defaultOpen` (each pair exclusive), `onValueChange`, `onOpenChange`
+  and `align` `start | end`. The popup is `role="menu"` named by `label`, of `menuitemradio` items
+  with exactly the current one checked; an item's name includes its `meta` ("Firewall, 1 new").
+  Opening lands on the **current** item, by pointer or keyboard: Base UI lands on the first item
+  (the last on Arrow Up) or on the popup itself, so the implementation redirects that first focus.
+  A choice closes the list and returns focus to the trigger, and choosing the current item does
+  not call `onValueChange`. A disabled item stays in the arrow-key order with `aria-disabled` and
+  cannot be chosen. Escape, Tab and a press outside close it, and it is not modal: the page keeps
+  its scroll. A value that matches no item, or no current value at all, throws a named error. Names
+  wrap in full, never truncated. The surface is Popover's (raised, a border-default edge, radius 4,
+  no shadow, `--vela-popover-width` capped at the room it has), and it moves as the overlays do:
+  opacity and a `--vela-space-5` step in at `--vela-duration-base`, opacity out, nothing from the
+  keyboard, and the highlight changes at once. 14 rules — 5 compiler (13 fixtures), 7 runtime
+  (18 unit tests), 1 browser (`dropdown-list-names-wrap`, a Playwright spec at desktop width and
+  in a 260px viewport), 1 convention (`meta` is words, never a taxonomy). The Figma builder
+  (`dropdown-list.figma.js`, set "Dropdown List item": `State` default / highlighted / current /
+  disabled, a `Meta` boolean, `Label` and `Meta text`) passes `components:figma:lint`; the set is
+  not built yet, so its `figma-map.json` entry is `state: "none"`. A playground page. DESIGN.md,
+  `overview.md` and the README take Dropdown List off "Not yet specced", and `overview.md` gains a
+  Dropdown List vs Select List vs Actions Dropdown disambiguation.
+- **`--vela-bg-raised-hover`** (grey-100; dark grey-800), the highlighted Dropdown List item.
+  `--vela-bg-hover` could not be used: in dark it is the raised surface itself (grey-850), so a
+  highlight on it would show nothing (1.00:1). Three new `PAIRS`, light / dark: item text on the
+  highlight 6.82 / 7.11 (text 4.5); the current item's check, `--vela-text-link`, on the raised
+  surface 6.08 / 4.35 and on the highlight 5.39 / 3.50 (ui 3.0). The current item's name stays
+  `--vela-text-default`: the link colour on the dark raised surface is 4.35:1, under 4.5:1 for text.
+
 ## [0.13.0] — 2026-10-29
 
 ### Changed — breaking

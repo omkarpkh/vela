@@ -16,7 +16,7 @@ test('the Button page constrains text-link the way the type does, and the code f
 test('navigation reaches every component and each page lists its tokens', async ({ page }) => {
   await page.goto('/')
   const nav = page.getByRole('navigation', { name: 'Site' })
-  for (const name of ['Button', 'Toggle', 'Input', 'Text Area', 'Contextual Alert', 'Status Indicator', 'Risk Pill', 'Tabs', 'Icon', 'Checkbox', 'Radio Group', 'Table', 'Popover', 'Tooltip', 'Dialog', 'Toast']) {
+  for (const name of ['Button', 'Toggle', 'Input', 'Text Area', 'Contextual Alert', 'Status Indicator', 'Risk Pill', 'Tabs', 'Icon', 'Checkbox', 'Radio Group', 'Table', 'Popover', 'Tooltip', 'Dialog', 'Toast', 'Dropdown List']) {
     await nav.getByRole('link', { name, exact: true }).click()
     await expect(page.getByRole('heading', { level: 1, name })).toBeVisible()
     await expect(page.getByRole('tab', { name: /^Tokens/ })).not.toHaveText(/Tokens\s*0$/)
@@ -553,6 +553,111 @@ test('the toast region sits at its placement, a gutter from the edges, and narro
   expect(b.width).toBeCloseTo(320, 0)
   expect(b.x).toBeCloseTo(20, 0)
   expect(b.x + b.width).toBeLessThanOrEqual(vp.width - 20 + 0.5)
+})
+
+// Dropdown List is headless-born on Base UI's Menu and portalled like the overlays. On the stage
+// each frame renders its own trigger; the list carries that frame's theme, lands on the current
+// item, and a choice updates the page that owns the value.
+test('the Dropdown List page opens a themed menu on the current item, and a choice closes it and updates the page', async ({ page }) => {
+  await page.goto('/#/components/dropdown-list')
+  await expect(page.getByRole('heading', { level: 1, name: 'Dropdown List' })).toBeVisible()
+  const contract = page.getByRole('region', { name: 'Contract' })
+  await expect(contract.locator('.pg-install')).toContainText("import { DropdownList } from '@omkarux/vela/headless'")
+  await expect(contract.locator('.pg-dependencies')).toHaveText('Dependencies: @base-ui/react (optional peer, via /headless)')
+
+  for (const theme of ['light', 'dark'] as const) {
+    const frame = page.locator(`.pg-frame[data-theme="${theme}"] .pg-frame-body`)
+    const trigger = frame.getByRole('button', { name: 'Switch View' })
+    await trigger.click()
+    const menu = page.getByRole('menu', { name: 'Views' })
+    await expect(menu).toBeVisible()
+    await expect(menu.locator('xpath=ancestor::*[contains(@class,"vela-overlay-portal")]')).toHaveAttribute('data-theme', theme)
+    // Lands on the current item, which carries the check; the page's scroll is not locked.
+    await expect(page.getByRole('menuitemradio', { name: 'Firewall, 1 new' })).toBeFocused()
+    await expect(page.getByRole('menuitemradio', { name: 'Firewall, 1 new' })).toHaveAttribute('aria-checked', 'true')
+    expect(await page.evaluate(() => getComputedStyle(document.documentElement).overflow + getComputedStyle(document.body).overflow)).not.toContain('hidden')
+    // Anchored below its trigger, a step away, lined up with its start edge; Popover's surface, no shadow.
+    const t = (await trigger.boundingBox())!, m = (await menu.boundingBox())!
+    expect(m.y).toBeGreaterThanOrEqual(t.y + t.height)
+    expect(m.y - (t.y + t.height)).toBeLessThan(12)
+    expect(Math.abs(m.x - t.x)).toBeLessThan(2)
+    await expect(menu).toHaveCSS('box-shadow', 'none')
+    // The highlight follows the keys.
+    await page.keyboard.press('ArrowDown')
+    const dlp = page.getByRole('menuitemradio', { name: /^Data loss prevention/ })
+    await expect(dlp).toBeFocused()
+    await expect(dlp).toHaveAttribute('data-highlighted', '')
+    await page.keyboard.press('Escape')
+    await expect(menu).toHaveCount(0)
+    await expect(trigger).toBeFocused()
+  }
+
+  const frame = page.locator('.pg-frame[data-theme="light"] .pg-frame-body')
+  await frame.getByRole('button', { name: 'Switch View' }).click()
+  await page.getByRole('menuitemradio', { name: 'Reports, 3 open' }).click()
+  await expect(page.getByRole('menu')).toHaveCount(0)
+  await expect(frame.getByText('Showing Reports')).toBeVisible()
+  await expect(frame.getByRole('button', { name: 'Switch View' })).toBeFocused()
+  // A disabled item is not chosen. (Playwright waits for an aria-disabled element to become
+  // enabled; a person can still press it, so the press is forced.)
+  await frame.getByRole('button', { name: 'Switch View' }).click()
+  await page.getByRole('menuitemradio', { name: 'Archive, No access' }).click({ force: true })
+  await expect(page.getByRole('menu')).toBeVisible()
+  await expect(frame.getByText('Showing Reports')).toBeVisible()
+  // A press outside closes it.
+  await page.getByRole('heading', { level: 1, name: 'Dropdown List' }).click()
+  await expect(page.getByRole('menu')).toHaveCount(0)
+})
+
+// [[rule: dropdown-list-names-wrap]]
+// The list is where a long name is read in full: it wraps inside the popup's width, never clips,
+// never ends in an ellipsis — at the console width and in a host narrower than the popup, where it
+// is capped at the room it has and the name wraps further.
+test('a Dropdown List name wraps in full inside the list, at desktop width and in a narrow host', async ({ page }) => {
+  await page.goto('/#/components/dropdown-list')
+  const frame = page.locator('.pg-frame[data-theme="light"] .pg-frame-body')
+  const check = async () => {
+    await frame.getByRole('button', { name: 'Switch View' }).click()
+    const menu = page.getByRole('menu', { name: 'Views' })
+    await expect(menu).toBeVisible()
+    const name = 'Data loss prevention — policy violations across every connected SaaS tenant'
+    const item = page.getByRole('menuitemradio', { name })
+    const label = item.locator('.vela-dropdown-list__label')
+    await expect(label).toHaveText(name)
+    const box = await label.evaluate((el) => {
+      const s = getComputedStyle(el)
+      const r = el.getBoundingClientRect(), p = el.closest('[role="menu"]')!.getBoundingClientRect()
+      return {
+        lines: Math.round(r.height / parseFloat(s.lineHeight)),
+        clipped: el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > el.clientHeight + 1,
+        overflow: s.textOverflow, whiteSpace: s.whiteSpace,
+        inside: r.left >= p.left && r.right <= p.right,
+        menuWidth: p.width, viewport: window.innerWidth,
+      }
+    })
+    expect(box.lines).toBeGreaterThan(1)
+    expect(box.clipped).toBe(false)
+    expect(box.overflow).not.toBe('ellipsis')
+    expect(box.whiteSpace).not.toBe('nowrap')
+    expect(box.inside).toBe(true)
+    // --vela-popover-width (280), never wider than the room it has.
+    expect(box.menuWidth).toBeLessThanOrEqual(280)
+    expect(box.menuWidth).toBeLessThanOrEqual(box.viewport)
+    // Every item is at least 31px tall: a 21px line and 10px of padding, over WCAG 2.5.8's 24px.
+    for (const h of await page.getByRole('menuitemradio').evaluateAll((els) => els.map((e) => e.getBoundingClientRect().height))) expect(h).toBeGreaterThanOrEqual(31)
+    await page.keyboard.press('Escape')
+    await expect(menu).toHaveCount(0)
+    return box
+  }
+  const wide = await check()
+  expect(wide.menuWidth).toBe(280)
+  // A host narrower than the popup: the navigation is put away so the stage has the viewport.
+  await page.setViewportSize({ width: 260, height: 860 })
+  const hide = page.getByRole('button', { name: 'Hide navigation' })
+  if (await hide.isVisible()) await hide.click()
+  const narrow = await check()
+  expect(narrow.menuWidth).toBeLessThan(280)
+  expect(narrow.lines).toBeGreaterThanOrEqual(wide.lines)
 })
 
 test('the nav filter narrows the list and the menu button collapses it', async ({ page }) => {
