@@ -5,7 +5,7 @@ import darkJson from '../tokens/vela.dark.tokens.json'
 import { REGISTRY, type Values } from './playground/registry'
 import { parseSpec, sectionOf, type Control } from './playground/spec'
 import { Markdown } from './playground/Markdown'
-import { dependenciesOf } from './pages/Status'
+import { installFor } from './playground/install'
 import { LINKS, figmaUrl } from './links'
 import { Segments } from './shell/Segments'
 import { ScrollRegion } from './shell/ScrollRegion'
@@ -117,12 +117,11 @@ function PlaygroundFor({ entry }: { entry: (typeof REGISTRY)[number] }) {
   const v = entry.constrain ? entry.constrain(values) : values
   const unavailable = entry.unavailable?.(v) ?? {}
   const code = entry.code(v, spec)
-  // Two entry points, one playground: the import line and the "Dependencies" line follow the chosen
-  // implementation; a component with one implementation (core-only, or headless-born) reads its
-  // dependencies from the spec.
+  // Two entry points, one playground: the import line and the install command follow the chosen
+  // implementation. The install command is generated from package.json's peerDependenciesMeta.
   const impl = entry.implementations?.find((i) => i.id === v.implementation) ?? entry.implementations?.[0]
   const importPath = impl?.entry ?? '@omkarux/vela'
-  const dependencies = impl?.dependencies ?? dependenciesOf(entry.spec)
+  const install = installFor(importPath)
   const sourcePath = impl && impl.id !== 'core' ? `src/${impl.id}/${entry.src}/${entry.src}.tsx` : `src/components/${entry.src}/${entry.src}.tsx`
   const bound = entry.bindingKey ? spec.bindings[entry.bindingKey(v)] : undefined
   const boundTokens = new Set(Object.values(bound ?? {}))
@@ -205,7 +204,8 @@ function PlaygroundFor({ entry }: { entry: (typeof REGISTRY)[number] }) {
                 <p className="pg-p pg-install">
                   <code>{`import { ${entry.imports ?? entry.src} } from '${importPath}'`}</code>
                   {' · '}
-                  <span className="pg-dependencies">Dependencies: {dependencies}</span>
+                  <code className="pg-install-command">{install.command}</code>
+                  {install.note && <span className="pg-install-note"> {install.note}</span>}
                 </p>
                 <p className="pg-p">Defaults from the Props table are omitted, exactly as the spec's own example writes them.</p>
               </Tabs.Panel>

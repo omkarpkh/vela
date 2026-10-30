@@ -60,18 +60,19 @@ test('the Text Area page counts as you type and the field only ever resizes vert
 })
 
 // Two entry points, one playground (decisions/002): the Tabs page renders the same props through
-// the core or the headless (Base UI) implementation, and the Code tab's import line and
-// "Dependencies" line follow the choice. Both implementations must behave the same on the stage.
-test('the Tabs page switches implementation, and the import and Dependencies lines follow', async ({ page }) => {
+// the core or the headless (Base UI) implementation, and the Code tab's import line and install
+// command follow the choice. Both implementations must behave the same on the stage.
+test('the Tabs page switches implementation, and the import line and install command follow', async ({ page }) => {
   await page.goto('/#/components/tabs')
   await expect(page.getByRole('heading', { level: 1, name: 'Tabs' })).toBeVisible()
   const contract = page.getByRole('region', { name: 'Contract' })
   await expect(contract.locator('.pg-install')).toContainText("import { Tabs } from '@omkarux/vela'")
-  await expect(contract.locator('.pg-dependencies')).toHaveText('Dependencies: none')
+  await expect(contract.locator('.pg-install-command')).toHaveText('npm i @omkarux/vela')
+  await expect(contract.locator('.pg-install-note')).toHaveCount(0)
 
   await page.getByRole('group', { name: 'Implementation' }).getByRole('button', { name: 'headless' }).click()
   await expect(contract.locator('.pg-install')).toContainText("import { Tabs } from '@omkarux/vela/headless'")
-  await expect(contract.locator('.pg-dependencies')).toHaveText('Dependencies: @base-ui/react (optional peer, via /headless)')
+  await expect(contract.locator('.pg-install-command')).toHaveText('npm i @omkarux/vela @base-ui/react')
 
   // The light frame's tabs, now rendered by Base UI, still honour the spec: arrow keys select,
   // the disabled tab is skipped, only the active panel is mounted, the stylesheet applies.
@@ -94,7 +95,7 @@ test('the Tabs page switches implementation, and the import and Dependencies lin
 })
 
 // Checkbox and Radio Group are headless-born: one implementation, so no Implementation control,
-// the import line names `/headless` and the Dependencies line is the spec's. On the stage the
+// the import line names `/headless` and the install command names Base UI. On the stage the
 // Base UI markup must hit the stylesheet: the fill keys on aria-checked, disabled on :disabled.
 test('the Checkbox page renders the headless Checkbox: Space toggles, the fill follows aria-checked', async ({ page }) => {
   await page.goto('/#/components/checkbox')
@@ -102,7 +103,7 @@ test('the Checkbox page renders the headless Checkbox: Space toggles, the fill f
   await expect(page.getByRole('group', { name: 'Implementation' })).toHaveCount(0)
   const contract = page.getByRole('region', { name: 'Contract' })
   await expect(contract.locator('.pg-install')).toContainText("import { Checkbox } from '@omkarux/vela/headless'")
-  await expect(contract.locator('.pg-dependencies')).toHaveText('Dependencies: @base-ui/react (optional peer, via /headless)')
+  await expect(contract.locator('.pg-install-command')).toHaveText('npm i @omkarux/vela @base-ui/react')
 
   const frame = page.locator('.pg-frame[data-theme="light"] .pg-frame-body')
   const box = frame.getByRole('checkbox', { name: 'Accept the data-processing terms' })
@@ -133,7 +134,7 @@ test('the Radio Group page renders the headless group: arrows move the selection
   await expect(page.getByRole('group', { name: 'Implementation' })).toHaveCount(0)
   const contract = page.getByRole('region', { name: 'Contract' })
   await expect(contract.locator('.pg-install')).toContainText("import { RadioGroup } from '@omkarux/vela/headless'")
-  await expect(contract.locator('.pg-dependencies')).toHaveText('Dependencies: @base-ui/react (optional peer, via /headless)')
+  await expect(contract.locator('.pg-install-command')).toHaveText('npm i @omkarux/vela @base-ui/react')
 
   const frame = page.locator('.pg-frame[data-theme="light"] .pg-frame-body')
   await expect(frame.getByRole('radiogroup', { name: 'Enforcement' })).toBeVisible()
@@ -270,7 +271,7 @@ test('the Popover page opens a themed, non-modal popover: focus moves in, Escape
   await expect(page.getByRole('group', { name: 'Implementation' })).toHaveCount(0)
   const contract = page.getByRole('region', { name: 'Contract' })
   await expect(contract.locator('.pg-install')).toContainText("import { Popover } from '@omkarux/vela/headless'")
-  await expect(contract.locator('.pg-dependencies')).toHaveText('Dependencies: @base-ui/react (optional peer, via /headless)')
+  await expect(contract.locator('.pg-install-command')).toHaveText('npm i @omkarux/vela @base-ui/react')
 
   for (const theme of ['light', 'dark'] as const) {
     const trigger = page.locator(`.pg-frame[data-theme="${theme}"] .pg-frame-body`).getByRole('button', { name: 'Filters' })
@@ -426,7 +427,7 @@ test('the Toast page raises a polite, themed toast without moving focus, and its
   await expect(page.getByRole('group', { name: 'Implementation' })).toHaveCount(0)
   const contract = page.getByRole('region', { name: 'Contract' })
   await expect(contract.locator('.pg-install')).toContainText("import { ToastProvider, useToast } from '@omkarux/vela/headless'")
-  await expect(contract.locator('.pg-dependencies')).toHaveText('Dependencies: @base-ui/react (optional peer, via /headless)')
+  await expect(contract.locator('.pg-install-command')).toHaveText('npm i @omkarux/vela @base-ui/react')
 
   for (const theme of ['light', 'dark'] as const) {
     const frame = page.locator(`.pg-frame[data-theme="${theme}"] .pg-frame-body`)

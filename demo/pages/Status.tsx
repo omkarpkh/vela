@@ -19,14 +19,6 @@ function statusOf(spec: string): { label: Label; note: string } {
   return { label: word ?? 'Approved', note: note.replace(/`/g, '').replace(/\s+/g, ' ').trim() }
 }
 
-// What a consumer installs besides React to render this component, read from the spec the same
-// way the status is: one `**Dependencies:**` line directly under `**Status:**` (or under the intent
-// paragraph when there is no Status line). Absent means "none", which is every core component.
-export function dependenciesOf(spec: string): string {
-  const m = spec.match(/^\*\*Dependencies:\*\*\s*([^\n]+)/m)
-  return m ? m[1].replace(/`/g, '').trim() : 'none'
-}
-
 const PROMISE: Record<Label, string> = {
   Approved: 'Semver applies in full; breaking changes follow VERSIONING.md.',
   'Known bugs': 'Safe to use; the defects are linked from the spec and fixed in a patch.',
