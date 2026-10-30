@@ -140,7 +140,7 @@ describe('the Changelog page', () => {
       expect([link.chars, link.style]).toEqual(['Full entry: CHANGELOG.md', 'Body/Link'])
       expect(link.link).toMatch(/^https:\/\/github\.com\/omkarpkh\/vela\/blob\/main\/CHANGELOG\.md#\d+--\d{4}-\d{2}-\d{2}$/)
     }
-    expect(cards[0].ch!.at(-1)!.link).toBe('https://github.com/omkarpkh/vela/blob/main/CHANGELOG.md#0130--2026-10-29')
+    expect(cards[0].ch!.at(-1)!.link).toBe('https://github.com/omkarpkh/vela/blob/main/CHANGELOG.md#0140--2026-10-31')
   })
 
   it('says where "on npm" came from: the committed published.json, which lists every release but 0.1.0', () => {
@@ -213,10 +213,10 @@ describe('the Status page', () => {
     const [, bset, bexp, bsince, bspec] = cells('Table')
     expect([bset.chars, bexp.chars, bsince.chars, bspec.chars]).toEqual(['Table Header Cell · page Table', 'Table · @omkarux/vela', '0.13.0', 'table.md'])
     for (const n of ['Popover', 'Tooltip', 'Dialog', 'Toast']) expect(cells(n)[1].chars, n).toBe(`${n} · page ${n}`)
-    // Dropdown List has a builder and no set yet; it is new since 0.13.0. Its spec reads "(branch)"
-    // until it is on main.
+    // Dropdown List has a builder and no set yet; it was first released in 0.14.0. Its spec reads
+    // "(branch)" until it is on main.
     const [, dset, dexp, dsince, dspec] = cells('Dropdown List')
-    expect([dset.chars, dexp.chars, dsince.chars]).toEqual(['None yet — the builder is ready (dropdown-list.figma.js)', 'DropdownList · @omkarux/vela/headless', 'Unreleased'])
+    expect([dset.chars, dexp.chars, dsince.chars]).toEqual(['None yet — the builder is ready (dropdown-list.figma.js)', 'DropdownList · @omkarux/vela/headless', '0.14.0'])
     expect(dspec.chars).toBe(onMain('guidelines/components/dropdown-list.md') ? 'dropdown-list.md' : 'dropdown-list.md (branch)')
     // No other set is left built-but-unpublished.
     for (const r of rows.filter((x) => x.n !== 'Dropdown List')) expect(cells(r.n)[1].chars, r.n).not.toBe('Built, not published')
