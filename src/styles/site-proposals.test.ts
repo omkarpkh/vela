@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { readFileSync, readdirSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { PROPOSALS, readProposal, waitingOnText } from '../../demo/playground/proposals'
+import { PROPOSALS } from '../../demo/playground/proposals'
+import { readProposal, waitingOnText } from '../../demo/playground/proposal-read'
 import { REGISTRY } from '../../demo/playground/registry'
 
 // The Proposal pages (playground spec, section 7): one per spec in guidelines/proposals/, read from

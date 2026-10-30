@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Markdown } from '../playground/Markdown'
 import { REGISTRY } from '../playground/registry'
-import { PROPOSALS, loadProposal, readProposal, waitingOnText, type ProposalPage } from '../playground/proposals'
+import { PROPOSALS, loadProposal } from '../playground/proposals'
+import type { ProposalPage } from '../playground/proposal-read'
 import { LINKS, figmaUrl } from '../links'
 
 // A Proposal page (playground spec, section 7; P1 request, item 3, following GOV.UK): a written
@@ -13,11 +14,19 @@ const BUILT = REGISTRY.map((e) => e.name)
 
 export function Proposal({ id }: { id: string }) {
   const p = PROPOSALS.find((x) => x.id === id)
-  const [page, setPage] = useState<ProposalPage | null>(null)
+  const [page, setPage] = useState<(ProposalPage & { waitingOnText: string }) | null>(null)
   useEffect(() => {
     let live = true
     setPage(null)
-    loadProposal(id)?.then((md) => { if (live && p) setPage(readProposal(md, p.name, BUILT)) })
+    // The spec and its parser load together, when the page opens; neither is in the main bundle.
+    const md = loadProposal(id)
+    if (md && p) {
+      Promise.all([md, import('../playground/proposal-read')]).then(([source, { readProposal, waitingOnText }]) => {
+        if (!live) return
+        const read = readProposal(source, p.name, BUILT)
+        setPage({ ...read, waitingOnText: waitingOnText(read.waitingOn) })
+      })
+    }
     return () => { live = false }
   }, [id, p])
 
@@ -54,7 +63,7 @@ export function Proposal({ id }: { id: string }) {
             )}
             <p className="pg-p proposal__waits">
               {page.waitingOn.length > 0
-                ? `Waiting on: ${waitingOnText(page.waitingOn)}.`
+                ? `Waiting on: ${page.waitingOnText}.`
                 : 'Waiting on: nothing. Every part it is built from is in the kit.'}
             </p>
           </>
