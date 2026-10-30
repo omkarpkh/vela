@@ -28,6 +28,9 @@
    per-component :has() exceptions (Table, and Tabs from #25): a Table gets its host's width, and a
    Tabs list holds still, because every component now sits where a page column would put it. */
 .pg-frame-body { inline-size: 100%; }
+/* An inline-level component (a Button, a pill) sits on a line box, and a baseline-aligned box moves
+   up or down as its own size changes. Aligned to the top, its top-left corner is the body's. */
+.pg-frame-body > * { vertical-align: top; }
 /* Copy inside a playground overlay (Popover, Dialog): the overlay is portalled out of the frame. */
 .pg-overlay-copy { margin: 0 0 var(--vela-space-10); }
 /* The Toast stage: the Save button, and the page's own record of what was saved. */
