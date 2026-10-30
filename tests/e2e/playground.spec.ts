@@ -17,7 +17,8 @@ test('navigation reaches every component and each page lists its tokens', async 
   await page.goto('/')
   const nav = page.getByRole('navigation', { name: 'Site' })
   for (const name of ['Button', 'Toggle', 'Input', 'Text Area', 'Contextual Alert', 'Status Indicator', 'Risk Pill', 'Tabs', 'Icon', 'Checkbox', 'Radio Group', 'Table', 'Popover', 'Tooltip', 'Dialog', 'Toast', 'Dropdown List']) {
-    await nav.getByRole('link', { name, exact: true }).click()
+    // A lifecycle tag is part of the link's name ("Popover Experimental"); Approved has none.
+    await nav.getByRole('link', { name: new RegExp(`^${name}( (Experimental|Known bugs|Retired))?$`) }).click()
     await expect(page.getByRole('heading', { level: 1, name })).toBeVisible()
     await expect(page.getByRole('tab', { name: /^Tokens/ })).not.toHaveText(/Tokens\s*0$/)
   }
