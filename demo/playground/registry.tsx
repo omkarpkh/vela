@@ -1,8 +1,8 @@
 import { useState, type ReactNode } from 'react'
 import { Button, Toggle, Input, TextArea, ContextualAlert, StatusIndicator, RiskPill, Tabs, Icon, ICON_NAMES, Table } from '../../src'
 import type { Severity, Status, Risk, IconName, IconSize, IconTone, TableSortDirection } from '../../src'
-import { Tabs as HeadlessTabs, Checkbox, RadioGroup, Popover, Tooltip, Dialog, ToastProvider, useToast } from '../../src/headless'
-import type { ToastLimit, ToastPlacement, ToastSeverity } from '../../src/headless'
+import { Tabs as HeadlessTabs, Checkbox, RadioGroup, Popover, Tooltip, Dialog, ToastProvider, useToast, DropdownList } from '../../src/headless'
+import type { ToastLimit, ToastPlacement, ToastSeverity, DropdownListAlign, DropdownListItem } from '../../src/headless'
 import { PlusIcon } from '../../src/lib/icons'
 import { printJsx, type Control, type Spec } from './spec'
 import buttonMd from '../../guidelines/components/button.md?raw'
@@ -21,6 +21,7 @@ import popoverMd from '../../guidelines/components/popover.md?raw'
 import tooltipMd from '../../guidelines/components/tooltip.md?raw'
 import dialogMd from '../../guidelines/components/dialog.md?raw'
 import toastMd from '../../guidelines/components/toast.md?raw'
+import dropdownListMd from '../../guidelines/components/dropdown-list.md?raw'
 
 export type Values = Record<string, string | boolean | undefined>
 
@@ -31,13 +32,8 @@ export type Values = Record<string, string | boolean | undefined>
  */
 export interface Implementation {
   id: string
-  /** Where a consumer imports it from. */
+  /** Where a consumer imports it from; the install command follows (demo/playground/install.ts). */
   entry: '@omkarux/vela' | '@omkarux/vela/headless'
-  /**
-   * Shown as "Dependencies: …". Omitted, it is read from the spec's `**Dependencies:**` line — what a
-   * component with a single implementation (Checkbox, Radio Group: headless only) does.
-   */
-  dependencies?: string
 }
 
 export interface Entry {
@@ -188,6 +184,38 @@ function ToastStage({ v }: { v: Values }) {
           Undo Last Save
         </Button>
       )}
+    </div>
+  )
+}
+
+/**
+ * The Dropdown List stage: a host that owns the current view, as the spec's controlled example
+ * does, and shows it on the page. One name is long enough to wrap, one is a single unbroken string
+ * whose meta drops under it, three items have meta, and one is disabled with its reason in meta.
+ */
+const VIEWS: [DropdownListItem, ...DropdownListItem[]] = [
+  { value: 'alerts', label: 'All alerts' },
+  { value: 'firewall', label: 'Firewall', meta: '1 new' },
+  { value: 'dlp', label: 'Data loss prevention — policy violations across every connected SaaS tenant' },
+  { value: 'pipeline', label: 'customer-ingest-pipeline-eu-west-2', meta: '2 new' },
+  { value: 'archive', label: 'Archive', disabled: true, meta: 'No access' },
+  { value: 'reports', label: 'Reports', meta: '3 open' },
+]
+
+function DropdownListStage({ v }: { v: Values }) {
+  const [view, setView] = useState('firewall')
+  const current = VIEWS.find((i) => i.value === view)!
+  return (
+    <div className="pg-dropdown-stage">
+      <DropdownList
+        label={str(v.label) || 'Views'}
+        trigger={<Button>Switch View</Button>}
+        items={VIEWS}
+        value={view}
+        onValueChange={setView}
+        align={(str(v.align) || 'start') as DropdownListAlign}
+      />
+      <p className="vela-body pg-overlay-copy">Showing {current.label}</p>
     </div>
   )
 }
@@ -369,11 +397,10 @@ export const REGISTRY: Entry[] = [
     seed: { implementation: 'core' },
     hide: ['defaultValue'],
     // The Phase 1 proving case: the same props through either implementation, against the same
-    // spec and the same stylesheet. The values here are the ones tabs.md states under
-    // "Implementations"; the spec's own `**Dependencies:**` line is the core's.
+    // spec and the same stylesheet. The entries are the ones tabs.md states under "Implementations".
     implementations: [
-      { id: 'core', entry: '@omkarux/vela', dependencies: 'none' },
-      { id: 'headless', entry: '@omkarux/vela/headless', dependencies: '@base-ui/react (optional peer, via /headless)' },
+      { id: 'core', entry: '@omkarux/vela' },
+      { id: 'headless', entry: '@omkarux/vela/headless' },
     ],
     render: (v) => {
       const T = v.implementation === 'headless' ? HeadlessTabs : Tabs
@@ -449,7 +476,7 @@ export const REGISTRY: Entry[] = [
     // defaultChecked instead. name and value only mean anything inside a <form> or a Group.
     hide: ['checked'],
     noControl: ['name', 'value'],
-    // Headless-born: one implementation, so no Implementation control; the Dependencies line is the spec's.
+    // Headless-born: one implementation, so no Implementation control; the install names Base UI.
     implementations: [{ id: 'headless', entry: '@omkarux/vela/headless' }],
     render: (v) => (
       <Checkbox
@@ -709,5 +736,28 @@ export const REGISTRY: Entry[] = [
 const toast = useToast()
 toast.add({ ${opts} })`
     },
+  },
+  // Dropdown List is headless-born, on Base UI's Menu. The stage is a host that owns the current
+  // view, so `value` is the controlled arm the stage uses; `defaultValue` and `defaultOpen` would
+  // seed one list per frame and `open` would pin it — documented, not demonstrated.
+  {
+    id: 'dropdown-list',
+    file: 'dropdown-list.md',
+    src: 'DropdownList',
+    name: 'Dropdown List',
+    spec: dropdownListMd,
+    seed: { label: 'Views' },
+    hide: ['value', 'open'],
+    noControl: ['defaultValue', 'defaultOpen'],
+    implementations: [{ id: 'headless', entry: '@omkarux/vela/headless' }],
+    highlight: () => (t) => /--vela-(bg-raised|border-default|text-(default|link|inactive)|popover-width|dropdown-list-width-min)/.test(t),
+    render: (v) => <DropdownListStage v={v} />,
+    code: (v, spec) =>
+      printJsx('DropdownList', { label: v.label, align: v.align }, defaultsOf(spec), undefined, {
+        trigger: '<Button>Switch View</Button>',
+        items: 'views',
+        value: 'view',
+        onValueChange: 'setView',
+      }),
   },
 ]

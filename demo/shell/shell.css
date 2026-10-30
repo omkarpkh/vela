@@ -1,0 +1,66 @@
+/* ----------------------------------------------------------- shell parts -- */
+/* The site's stand-ins for parts the kit does not have yet (demo/shell/). They follow DESIGN.md like
+   the kit: semantic tokens, units on the token, hover only where hover exists, reduced motion through
+   base.css, and no colour-only signal. scripts/check-css.mjs lints this file with the site. */
+
+/* Segments: stands in for Segmented Control (playground spec, section 5, D4). */
+.shell-segments { display: inline-flex; flex-wrap: wrap; gap: var(--vela-space-5); }
+.shell-segment {
+  display: inline-flex; align-items: center; justify-content: center;
+  height: var(--vela-control-height-24); padding: 0 var(--vela-space-10);
+  border: 1px solid var(--vela-border-default); border-radius: var(--vela-radius-4);
+  background: transparent; color: var(--vela-text-default);
+  font: inherit; font-size: var(--vela-text-button-tiny-size); line-height: var(--vela-text-button-tiny-line-height);
+  white-space: nowrap; cursor: pointer;
+  transition: background-color var(--vela-duration-base) var(--vela-ease-standard), border-color var(--vela-duration-base) var(--vela-ease-standard);
+}
+@media (hover: hover) {
+  .shell-segment:not([aria-current="true"]):hover { background: var(--vela-bg-hover); transition-duration: var(--vela-duration-fast); }
+}
+/* Selected: a neutral surface and a 2px active edge (1px border plus a 1px inset), not a primary
+   filled button. Text-default on bg-selected, and the active border on it, are in PAIRS. */
+.shell-segment[aria-current="true"] {
+  background: var(--vela-bg-selected);
+  border-color: var(--vela-border-active);
+  box-shadow: inset 0 0 0 1px var(--vela-border-active);   /* vela-allow: the second pixel of the 2px selected edge, a hairline drawn inside so selecting never changes a segment's width */
+}
+
+/* ------------------------------------------------------- forced colours -- */
+/* Windows High Contrast and the like (playground spec, section 13). The UA repaints every colour and
+   drops box-shadow, so the selected segment would be told apart by nothing. It takes Highlight and
+   HighlightText with a 2px border, and forced-color-adjust: none on that element only: without it
+   Chromium paints a backplate behind the text and the label vanished into it. */
+@media (forced-colors: active) {
+  .shell-segment { border-color: ButtonText; }
+  .shell-segment[aria-current="true"] {
+    forced-color-adjust: none;
+    background: Highlight;
+    color: HighlightText;
+    border: var(--vela-stroke-2) solid CanvasText;
+    box-shadow: none;
+  }
+}
+
+/* ------------------------------------------------------ error boundaries -- */
+/* Stage error (playground spec, section 7): it takes the stage's place, the same frame and height,
+   so nothing around it moves. Site error: the whole page. Body text on the page surface. */
+.shell-error {
+  min-height: var(--site-stage-min);
+  border: 1px solid var(--vela-border-default); border-radius: var(--vela-radius-4);
+  background: var(--vela-bg-global); color: var(--vela-text-default);
+  padding: var(--vela-space-20);
+  display: flex; flex-direction: column; align-items: flex-start; gap: var(--vela-space-15);
+}
+.shell-error__lead { margin: 0; max-width: 64ch; }
+.shell-error__details summary { cursor: pointer; color: var(--vela-text-link); }
+.shell-error__text {
+  margin: var(--vela-space-10) 0 0; padding: var(--vela-space-10) var(--vela-space-15);
+  border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4);
+  font-family: var(--vela-font-family-mono); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height);
+  white-space: pre-wrap; overflow-wrap: anywhere;
+}
+.shell-error__actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--vela-space-15); }
+.shell-error__link { color: var(--vela-text-link); }
+.shell-site-error { min-height: 100vh; }
+.shell-site-error__body { max-width: 64ch; padding: var(--vela-space-60) var(--vela-space-20); margin: 0 auto; display: flex; flex-direction: column; gap: var(--vela-space-15); }
+.shell-site-error__body h1, .shell-site-error__body p { margin: 0; }

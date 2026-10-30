@@ -336,6 +336,36 @@ export const shapes: [ToastProviderProps, ToastOptions, ToastAction, ToastPlacem
   check(toastOk, 'headless ToastProvider and useToast() typecheck in every documented shape, and ToastSeverity is a Severity')
   rmSync(join(app, 'valid-toast.tsx'))
 
+  // -- the headless Dropdown List: every documented shape compiles --
+  // The rejection fixtures below prove nothing unless a valid list compiles: controlled and
+  // uncontrolled value and open, both alignments, the four item fields, and a Button trigger.
+  writeFileSync(join(app, 'valid-dropdown-list.tsx'), `
+import { Button } from '@omkarux/vela'
+import { DropdownList } from '@omkarux/vela/headless'
+import type { DropdownListProps, DropdownListItem, DropdownListAlign } from '@omkarux/vela/headless'
+
+const items: [DropdownListItem, ...DropdownListItem[]] = [
+  { value: 'alerts', label: 'Alerts' },
+  { value: 'firewall', label: 'Firewall', meta: '1 new' },
+  { value: 'archive', label: 'Archive', disabled: true, meta: 'No access' },
+]
+export const A = () => (
+  <DropdownList label="All tabs" trigger={<button type="button">6 more · 1 new</button>} items={items}
+    value="firewall" onValueChange={(v: string) => v} align="end" />
+)
+export const B = () => <DropdownList label="All tabs" trigger={<Button>6 more</Button>} items={[{ value: 'a', label: 'A' }]} defaultValue="a" defaultOpen />
+export const C = () => <DropdownList label="Views" trigger={<Button>Views</Button>} items={items} defaultValue="alerts" open={false} onOpenChange={(o: boolean) => o} align="start" />
+export const D = () => <DropdownList label="Views" trigger={<Button>Views</Button>} items={[{ value: 'a', label: 'A' }, { value: 'b', label: 'B' }] as const} value="b" />
+export const shapes: [DropdownListProps, DropdownListAlign] = [{ label: 'L', trigger: <Button>T</Button>, items, value: 'alerts' }, 'end']
+`)
+  let dropdownOk = true
+  try { run(tsc, ['--noEmit', '-p', 'tsconfig.json'], app) } catch (e) {
+    dropdownOk = false
+    console.log((e.stdout || '').toString().split('\n').slice(0, 8).join('\n'))
+  }
+  check(dropdownOk, 'headless DropdownList typechecks in every documented shape')
+  rmSync(join(app, 'valid-dropdown-list.tsx'))
+
   // -- invalid usage must NOT compile --
   // Each of these is a rule from the guidelines. If any compiles, the design
   // constraint is documentation only, which is how systems drift.
@@ -430,6 +460,20 @@ export const shapes: [ToastProviderProps, ToastOptions, ToastAction, ToastPlacem
     ['alert-dialog-requires-cancel-and-confirm', 'alert with no onConfirm', `<Dialog variant="alert" title="Delete policy?" cancelLabel="Keep Policy" confirmLabel="Delete Policy" />`],
     ['alert-dialog-actions-are-fixed', 'alert with its own footer', `<Dialog variant="alert" title="Delete policy?" cancelLabel="Keep" confirmLabel="Delete Policy" onConfirm={() => {}} footer={<Button>Delete</Button>} />`],
     ['alert-dialog-actions-are-fixed', 'alert with a close button label', `<Dialog variant="alert" title="Delete policy?" cancelLabel="Keep" confirmLabel="Delete Policy" onConfirm={() => {}} closeLabel="Close" />`],
+    // Dropdown List ships from `@omkarux/vela/headless` only. Every fixture is valid apart from the rule it names.
+    ['dropdown-list-label-required', 'dropdown list with no label', `<DropdownList trigger={<Button>6 more</Button>} items={[{ value: 'alerts', label: 'Alerts' }]} defaultValue="alerts" />`],
+    ['dropdown-list-label-required', 'dropdown list label as a node', `<DropdownList label={<b>All tabs</b>} trigger={<Button>6 more</Button>} items={[{ value: 'alerts', label: 'Alerts' }]} defaultValue="alerts" />`],
+    ['dropdown-list-items-required', 'dropdown list with no trigger', `<DropdownList label="All tabs" items={[{ value: 'alerts', label: 'Alerts' }]} defaultValue="alerts" />`],
+    ['dropdown-list-items-required', 'dropdown list with no items', `<DropdownList label="All tabs" trigger={<Button>6 more</Button>} defaultValue="alerts" />`],
+    ['dropdown-list-items-required', 'dropdown list with an empty items list', `<DropdownList label="All tabs" trigger={<Button>6 more</Button>} items={[]} defaultValue="alerts" />`],
+    ['dropdown-list-controlled-exclusive', 'dropdown list value both controlled and uncontrolled', `<DropdownList label="All tabs" trigger={<Button>6 more</Button>} items={[{ value: 'alerts', label: 'Alerts' }]} value="alerts" defaultValue="alerts" />`],
+    ['dropdown-list-controlled-exclusive', 'dropdown list open both controlled and uncontrolled', `<DropdownList label="All tabs" trigger={<Button>6 more</Button>} items={[{ value: 'alerts', label: 'Alerts' }]} defaultValue="alerts" open defaultOpen />`],
+    ['dropdown-list-align-closed', 'centred dropdown list', `<DropdownList label="All tabs" trigger={<Button>6 more</Button>} items={[{ value: 'alerts', label: 'Alerts' }]} defaultValue="alerts" align="center" />`],
+    ['dropdown-list-align-closed', 'physical dropdown list alignment', `<DropdownList label="All tabs" trigger={<Button>6 more</Button>} items={[{ value: 'alerts', label: 'Alerts' }]} defaultValue="alerts" align="left" />`],
+    ['dropdown-list-item-closed', 'dropdown list item with an icon', `<DropdownList label="All tabs" trigger={<Button>6 more</Button>} items={[{ value: 'alerts', label: 'Alerts', icon: <svg /> }]} defaultValue="alerts" />`],
+    ['dropdown-list-item-closed', 'dropdown list item with a description', `<DropdownList label="All tabs" trigger={<Button>6 more</Button>} items={[{ value: 'alerts', label: 'Alerts', description: 'Every alert' }]} defaultValue="alerts" />`],
+    ['dropdown-list-item-closed', 'dropdown list item with its own click handler', `<DropdownList label="All tabs" trigger={<Button>6 more</Button>} items={[{ value: 'alerts', label: 'Alerts', onClick: () => {} }]} defaultValue="alerts" />`],
+    ['dropdown-list-item-closed', 'dropdown list item label as a node', `<DropdownList label="All tabs" trigger={<Button>6 more</Button>} items={[{ value: 'alerts', label: <b>Alerts</b> }]} defaultValue="alerts" />`],
     // Toast ships from `@omkarux/vela/headless` only. `add` is called on the hook's result, so each
     // fixture is an expression; every one carries a valid title unless the title is the point.
     ['toast-title-required', 'toast with no title', `useToast().add({ severity: "success" })`],
@@ -454,7 +498,7 @@ export const shapes: [ToastProviderProps, ToastOptions, ToastAction, ToastPlacem
   for (const [id, name, snippet] of violations) {
     writeFileSync(join(app, 'invalid.tsx'),
       `import { Button, ContextualAlert, Icon, Input, RiskPill, StatusIndicator, Table, Tabs, TextArea, Toggle } from '@omkarux/vela'\n` +
-      `import { Checkbox, RadioGroup, Popover, Tooltip, Dialog, ToastProvider, useToast } from '@omkarux/vela/headless'\nexport const X = () => (${snippet})\n`)
+      `import { Checkbox, RadioGroup, Popover, Tooltip, Dialog, ToastProvider, useToast, DropdownList } from '@omkarux/vela/headless'\nexport const X = () => (${snippet})\n`)
     let rejected = false
     try { run(tsc, ['--noEmit', '-p', 'tsconfig.json'], app) } catch { rejected = true }
     check(rejected, `compiler rejects: ${name}  [${id}]`)
@@ -483,6 +527,8 @@ export const shapes: [ToastProviderProps, ToastOptions, ToastAction, ToastPlacem
     'shipped CSS carries the overlay styles and the tokens they bind')
   check(css.includes('.vela-toast-region') && css.includes('--vela-toast-width:') && css.includes('--vela-duration-toast:'),
     'shipped CSS carries the Toast styles, its width and its dwell')
+  check(css.includes('.vela-dropdown-list__item') && css.includes('--vela-bg-raised-hover:') && css.includes('--vela-dropdown-list-width-min:'),
+    'shipped CSS carries the Dropdown List styles, the highlight token and the minimum width they bind')
 } finally {
   rmSync(app, { recursive: true, force: true })
   rmSync(tarball, { force: true })

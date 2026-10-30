@@ -16,7 +16,7 @@ test('the Button page constrains text-link the way the type does, and the code f
 test('navigation reaches every component and each page lists its tokens', async ({ page }) => {
   await page.goto('/')
   const nav = page.getByRole('navigation', { name: 'Site' })
-  for (const name of ['Button', 'Toggle', 'Input', 'Text Area', 'Contextual Alert', 'Status Indicator', 'Risk Pill', 'Tabs', 'Icon', 'Checkbox', 'Radio Group', 'Table', 'Popover', 'Tooltip', 'Dialog', 'Toast']) {
+  for (const name of ['Button', 'Toggle', 'Input', 'Text Area', 'Contextual Alert', 'Status Indicator', 'Risk Pill', 'Tabs', 'Icon', 'Checkbox', 'Radio Group', 'Table', 'Popover', 'Tooltip', 'Dialog', 'Toast', 'Dropdown List']) {
     await nav.getByRole('link', { name, exact: true }).click()
     await expect(page.getByRole('heading', { level: 1, name })).toBeVisible()
     await expect(page.getByRole('tab', { name: /^Tokens/ })).not.toHaveText(/Tokens\s*0$/)
@@ -60,18 +60,19 @@ test('the Text Area page counts as you type and the field only ever resizes vert
 })
 
 // Two entry points, one playground (decisions/002): the Tabs page renders the same props through
-// the core or the headless (Base UI) implementation, and the Code tab's import line and
-// "Dependencies" line follow the choice. Both implementations must behave the same on the stage.
-test('the Tabs page switches implementation, and the import and Dependencies lines follow', async ({ page }) => {
+// the core or the headless (Base UI) implementation, and the Code tab's import line and install
+// command follow the choice. Both implementations must behave the same on the stage.
+test('the Tabs page switches implementation, and the import line and install command follow', async ({ page }) => {
   await page.goto('/#/components/tabs')
   await expect(page.getByRole('heading', { level: 1, name: 'Tabs' })).toBeVisible()
   const contract = page.getByRole('region', { name: 'Contract' })
   await expect(contract.locator('.pg-install')).toContainText("import { Tabs } from '@omkarux/vela'")
-  await expect(contract.locator('.pg-dependencies')).toHaveText('Dependencies: none')
+  await expect(contract.locator('.pg-install-command')).toHaveText('npm i @omkarux/vela')
+  await expect(contract.locator('.pg-install-note')).toHaveCount(0)
 
   await page.getByRole('group', { name: 'Implementation' }).getByRole('button', { name: 'headless' }).click()
   await expect(contract.locator('.pg-install')).toContainText("import { Tabs } from '@omkarux/vela/headless'")
-  await expect(contract.locator('.pg-dependencies')).toHaveText('Dependencies: @base-ui/react (optional peer, via /headless)')
+  await expect(contract.locator('.pg-install-command')).toHaveText('npm i @omkarux/vela @base-ui/react')
 
   // The light frame's tabs, now rendered by Base UI, still honour the spec: arrow keys select,
   // the disabled tab is skipped, only the active panel is mounted, the stylesheet applies.
@@ -94,7 +95,7 @@ test('the Tabs page switches implementation, and the import and Dependencies lin
 })
 
 // Checkbox and Radio Group are headless-born: one implementation, so no Implementation control,
-// the import line names `/headless` and the Dependencies line is the spec's. On the stage the
+// the import line names `/headless` and the install command names Base UI. On the stage the
 // Base UI markup must hit the stylesheet: the fill keys on aria-checked, disabled on :disabled.
 test('the Checkbox page renders the headless Checkbox: Space toggles, the fill follows aria-checked', async ({ page }) => {
   await page.goto('/#/components/checkbox')
@@ -102,7 +103,7 @@ test('the Checkbox page renders the headless Checkbox: Space toggles, the fill f
   await expect(page.getByRole('group', { name: 'Implementation' })).toHaveCount(0)
   const contract = page.getByRole('region', { name: 'Contract' })
   await expect(contract.locator('.pg-install')).toContainText("import { Checkbox } from '@omkarux/vela/headless'")
-  await expect(contract.locator('.pg-dependencies')).toHaveText('Dependencies: @base-ui/react (optional peer, via /headless)')
+  await expect(contract.locator('.pg-install-command')).toHaveText('npm i @omkarux/vela @base-ui/react')
 
   const frame = page.locator('.pg-frame[data-theme="light"] .pg-frame-body')
   const box = frame.getByRole('checkbox', { name: 'Accept the data-processing terms' })
@@ -133,7 +134,7 @@ test('the Radio Group page renders the headless group: arrows move the selection
   await expect(page.getByRole('group', { name: 'Implementation' })).toHaveCount(0)
   const contract = page.getByRole('region', { name: 'Contract' })
   await expect(contract.locator('.pg-install')).toContainText("import { RadioGroup } from '@omkarux/vela/headless'")
-  await expect(contract.locator('.pg-dependencies')).toHaveText('Dependencies: @base-ui/react (optional peer, via /headless)')
+  await expect(contract.locator('.pg-install-command')).toHaveText('npm i @omkarux/vela @base-ui/react')
 
   const frame = page.locator('.pg-frame[data-theme="light"] .pg-frame-body')
   await expect(frame.getByRole('radiogroup', { name: 'Enforcement' })).toBeVisible()
@@ -330,7 +331,7 @@ test('the Popover page opens a themed, non-modal popover: focus moves in, Escape
   await expect(page.getByRole('group', { name: 'Implementation' })).toHaveCount(0)
   const contract = page.getByRole('region', { name: 'Contract' })
   await expect(contract.locator('.pg-install')).toContainText("import { Popover } from '@omkarux/vela/headless'")
-  await expect(contract.locator('.pg-dependencies')).toHaveText('Dependencies: @base-ui/react (optional peer, via /headless)')
+  await expect(contract.locator('.pg-install-command')).toHaveText('npm i @omkarux/vela @base-ui/react')
 
   for (const theme of ['light', 'dark'] as const) {
     const trigger = page.locator(`.pg-frame[data-theme="${theme}"] .pg-frame-body`).getByRole('button', { name: 'Filters' })
@@ -486,7 +487,7 @@ test('the Toast page raises a polite, themed toast without moving focus, and its
   await expect(page.getByRole('group', { name: 'Implementation' })).toHaveCount(0)
   const contract = page.getByRole('region', { name: 'Contract' })
   await expect(contract.locator('.pg-install')).toContainText("import { ToastProvider, useToast } from '@omkarux/vela/headless'")
-  await expect(contract.locator('.pg-dependencies')).toHaveText('Dependencies: @base-ui/react (optional peer, via /headless)')
+  await expect(contract.locator('.pg-install-command')).toHaveText('npm i @omkarux/vela @base-ui/react')
 
   for (const theme of ['light', 'dark'] as const) {
     const frame = page.locator(`.pg-frame[data-theme="${theme}"] .pg-frame-body`)
@@ -613,6 +614,270 @@ test('the toast region sits at its placement, a gutter from the edges, and narro
   expect(b.width).toBeCloseTo(320, 0)
   expect(b.x).toBeCloseTo(20, 0)
   expect(b.x + b.width).toBeLessThanOrEqual(vp.width - 20 + 0.5)
+})
+
+// Dropdown List is headless-born on Base UI's Menu and portalled like the overlays. On the stage
+// each frame renders its own trigger; the list carries that frame's theme, lands on the current
+// item, and a choice updates the page that owns the value.
+test('the Dropdown List page opens a themed menu on the current item, and a choice closes it and updates the page', async ({ page }) => {
+  await page.goto('/#/components/dropdown-list')
+  await expect(page.getByRole('heading', { level: 1, name: 'Dropdown List' })).toBeVisible()
+  const contract = page.getByRole('region', { name: 'Contract' })
+  await expect(contract.locator('.pg-install')).toContainText("import { DropdownList } from '@omkarux/vela/headless'")
+  await expect(contract.locator('.pg-install-command')).toHaveText('npm i @omkarux/vela @base-ui/react')
+
+  for (const theme of ['light', 'dark'] as const) {
+    const frame = page.locator(`.pg-frame[data-theme="${theme}"] .pg-frame-body`)
+    const trigger = frame.getByRole('button', { name: 'Switch View' })
+    await trigger.click()
+    const menu = page.getByRole('menu', { name: 'Views' })
+    await expect(menu).toBeVisible()
+    await expect(menu.locator('xpath=ancestor::*[contains(@class,"vela-overlay-portal")]')).toHaveAttribute('data-theme', theme)
+    // Lands on the current item, which carries the check; the page's scroll is not locked.
+    await expect(page.getByRole('menuitemradio', { name: 'Firewall, 1 new' })).toBeFocused()
+    await expect(page.getByRole('menuitemradio', { name: 'Firewall, 1 new' })).toHaveAttribute('aria-checked', 'true')
+    expect(await page.evaluate(() => getComputedStyle(document.documentElement).overflow + getComputedStyle(document.body).overflow)).not.toContain('hidden')
+    // Anchored below its trigger, a step away, lined up with its start edge; Popover's surface, no shadow.
+    const t = (await trigger.boundingBox())!, m = (await menu.boundingBox())!
+    expect(m.y).toBeGreaterThanOrEqual(t.y + t.height)
+    expect(m.y - (t.y + t.height)).toBeLessThan(12)
+    expect(Math.abs(m.x - t.x)).toBeLessThan(2)
+    await expect(menu).toHaveCSS('box-shadow', 'none')
+    // The highlight follows the keys.
+    await page.keyboard.press('ArrowDown')
+    const dlp = page.getByRole('menuitemradio', { name: /^Data loss prevention/ })
+    await expect(dlp).toBeFocused()
+    await expect(dlp).toHaveAttribute('data-highlighted', '')
+    await page.keyboard.press('Escape')
+    await expect(menu).toHaveCount(0)
+    await expect(trigger).toBeFocused()
+  }
+
+  const frame = page.locator('.pg-frame[data-theme="light"] .pg-frame-body')
+  await frame.getByRole('button', { name: 'Switch View' }).click()
+  await page.getByRole('menuitemradio', { name: 'Reports, 3 open' }).click()
+  await expect(page.getByRole('menu')).toHaveCount(0)
+  await expect(frame.getByText('Showing Reports')).toBeVisible()
+  await expect(frame.getByRole('button', { name: 'Switch View' })).toBeFocused()
+  // A disabled item is not chosen. (Playwright waits for an aria-disabled element to become
+  // enabled; a person can still press it, so the press is forced.)
+  await frame.getByRole('button', { name: 'Switch View' }).click()
+  await page.getByRole('menuitemradio', { name: 'Archive, No access' }).click({ force: true })
+  await expect(page.getByRole('menu')).toBeVisible()
+  await expect(frame.getByText('Showing Reports')).toBeVisible()
+  // A press outside closes it.
+  await page.getByRole('heading', { level: 1, name: 'Dropdown List' }).click()
+  await expect(page.getByRole('menu')).toHaveCount(0)
+})
+
+// [[rule: dropdown-list-names-wrap]]
+// The list is where a long name is read in full: it wraps inside the popup's width, never clips,
+// never ends in an ellipsis — a sentence and a single unbroken string alike — at the console width
+// and in a host narrower than the popup, where it is capped at the room it has and the name wraps
+// further. When a name and its meta don't fit side by side, the meta drops under the name.
+test('a Dropdown List name wraps in full inside the list, at desktop width and in a narrow host', async ({ page }) => {
+  await page.goto('/#/components/dropdown-list')
+  const frame = page.locator('.pg-frame[data-theme="light"] .pg-frame-body')
+  const names = ['Data loss prevention — policy violations across every connected SaaS tenant', 'customer-ingest-pipeline-eu-west-2']
+  const check = async () => {
+    const trigger = frame.getByRole('button', { name: 'Switch View' })
+    await trigger.click()
+    const menu = page.getByRole('menu', { name: 'Views' })
+    await expect(menu).toBeVisible()
+    const boxes = []
+    for (const name of names) {
+      const label = page.getByRole('menuitemradio', { name: new RegExp(`^${name}`) }).locator('.vela-dropdown-list__label')
+      await expect(label).toHaveText(name)
+      const box = await label.evaluate((el) => {
+        const s = getComputedStyle(el)
+        const r = el.getBoundingClientRect(), p = el.closest('[role="menu"]')!.getBoundingClientRect()
+        const meta = el.parentElement!.querySelector('.vela-dropdown-list__meta')?.getBoundingClientRect()
+        return {
+          lines: Math.round(r.height / parseFloat(s.lineHeight)),
+          clipped: el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > el.clientHeight + 1,
+          overflow: s.textOverflow, whiteSpace: s.whiteSpace,
+          inside: r.left >= p.left && r.right <= p.right,
+          metaUnder: meta ? meta.top >= r.bottom - 0.5 && meta.left <= r.left + 0.5 && meta.right <= p.right : null,
+          menuWidth: p.width, viewport: window.innerWidth,
+        }
+      })
+      expect(box.lines, name).toBeGreaterThan(1)
+      expect(box.clipped, name).toBe(false)
+      expect(box.overflow, name).not.toBe('ellipsis')
+      expect(box.whiteSpace, name).not.toBe('nowrap')
+      expect(box.inside, name).toBe(true)
+      boxes.push(box)
+    }
+    // The unbroken name fills its line, so its meta drops under it, at the start, inside the list.
+    expect(boxes[1].metaUnder).toBe(true)
+    // A short name and its meta share the line, the meta at the end.
+    const fw = await page.getByRole('menuitemradio', { name: 'Firewall, 1 new' }).evaluate((el) => {
+      const l = el.querySelector('.vela-dropdown-list__label')!.getBoundingClientRect(), m = el.querySelector('.vela-dropdown-list__meta')!.getBoundingClientRect()
+      return { sameLine: Math.abs(l.top - m.top) < 1, atEnd: m.left > l.right }
+    })
+    expect(fw).toEqual({ sameLine: true, atEnd: true })
+    // At most --vela-popover-width (280), at least 200px and the trigger; never wider than the room it has.
+    const t = (await trigger.boundingBox())!
+    const width = boxes[0].menuWidth
+    expect(width).toBeLessThanOrEqual(280)
+    expect(width).toBeLessThanOrEqual(boxes[0].viewport)
+    if (boxes[0].viewport >= 280) expect(width).toBeGreaterThanOrEqual(Math.max(200, t.width))
+    // Every item is at least 31px tall: a 21px line and 10px of padding, over WCAG 2.5.8's 24px.
+    for (const h of await page.getByRole('menuitemradio').evaluateAll((els) => els.map((e) => e.getBoundingClientRect().height))) expect(h).toBeGreaterThanOrEqual(31)
+    await page.keyboard.press('Escape')
+    await expect(menu).toHaveCount(0)
+    return boxes[0]
+  }
+  const wide = await check()
+  expect(wide.menuWidth).toBe(280)
+  // The minimum is 200px while the trigger is narrower; it is a bound, not the width.
+  await frame.getByRole('button', { name: 'Switch View' }).click()
+  expect(await page.getByRole('menu').evaluate((el) => getComputedStyle(el).minWidth)).toBe('200px')
+  await page.keyboard.press('Escape')
+  // A host narrower than the popup: the navigation is put away so the stage has the viewport.
+  await page.setViewportSize({ width: 260, height: 860 })
+  const hide = page.getByRole('button', { name: 'Hide navigation' })
+  if (await hide.isVisible()) await hide.click()
+  const narrow = await check()
+  expect(narrow.menuWidth).toBeLessThan(280)
+  expect(narrow.lines).toBeGreaterThanOrEqual(wide.lines)
+})
+
+// dropdown-list-focus-current is proved in the unit tests; this is the same promise in a real
+// browser, where Base UI's first highlight is deferred by a frame: every way of opening lands on
+// the current item, and the next arrow key moves on from it.
+test('the Dropdown List lands on the current item however it opens, in a real browser', async ({ page }) => {
+  await page.goto('/#/components/dropdown-list')
+  const frame = page.locator('.pg-frame[data-theme="light"] .pg-frame-body')
+  const trigger = frame.getByRole('button', { name: 'Switch View' })
+  const current = page.getByRole('menuitemradio', { name: 'Firewall, 1 new' })
+  const next = page.getByRole('menuitemradio', { name: /^Data loss prevention/ })
+  const opens: [string, () => Promise<void>][] = [
+    ['click', () => trigger.click()],
+    ['Enter', async () => { await trigger.focus(); await page.keyboard.press('Enter') }],
+    ['Space', async () => { await trigger.focus(); await page.keyboard.press(' ') }],
+    ['ArrowDown', async () => { await trigger.focus(); await page.keyboard.press('ArrowDown') }],
+    ['ArrowUp', async () => { await trigger.focus(); await page.keyboard.press('ArrowUp') }],
+  ]
+  for (const [how, open] of opens) {
+    await open()
+    await expect(current, how).toBeFocused()
+    await page.waitForTimeout(100)
+    await expect(current, how).toBeFocused()
+    await expect(page.locator('[role="menuitemradio"][data-highlighted]'), how).toHaveCount(1)
+    await page.keyboard.press('ArrowDown')
+    await expect(next, how).toBeFocused()
+    await page.keyboard.press('Escape')
+    await expect(page.getByRole('menu')).toHaveCount(0)
+  }
+})
+
+// The global focus ring is an outline outside the item; the popup scrolls, so its padding is what
+// keeps the ring from being clipped — at the sides, and at the bottom with the last item focused
+// in a list that has scrolled. A disabled item shows the highlight under keyboard focus only.
+test('the Dropdown List never clips the focus ring, and a disabled item highlights from the keyboard only', async ({ page }) => {
+  // Short enough that the list can't fit above or below its trigger, so it scrolls. At 420 the
+  // playground's stage (anchored top-left since slice 0) leaves room for the whole list above.
+  await page.setViewportSize({ width: 1440, height: 320 })
+  await page.goto('/#/components/dropdown-list')
+  const frame = page.locator('.pg-frame[data-theme="light"] .pg-frame-body')
+  const trigger = frame.getByRole('button', { name: 'Switch View' })
+  await trigger.scrollIntoViewIfNeeded()
+  await trigger.focus()
+  await page.keyboard.press('Enter')
+  const menu = page.getByRole('menu', { name: 'Views' })
+  await expect(menu).toBeVisible()
+  const ringInside = () => page.evaluate(() => {
+    const el = document.activeElement as HTMLElement, popup = el.closest('[role="menu"]') as HTMLElement
+    const s = getComputedStyle(el), reach = parseFloat(s.outlineWidth) + parseFloat(s.outlineOffset)
+    const r = el.getBoundingClientRect(), p = popup.getBoundingClientRect()
+    const port = { left: p.left + popup.clientLeft, top: p.top + popup.clientTop, right: p.left + popup.clientLeft + popup.clientWidth, bottom: p.top + popup.clientTop + popup.clientHeight }
+    return {
+      ring: s.outlineStyle !== 'none' && reach > 0,
+      inside: r.left - reach >= port.left - 0.5 && r.right + reach <= port.right + 0.5 && r.top - reach >= port.top - 0.5 && r.bottom + reach <= port.bottom + 0.5,
+      scrolls: popup.scrollHeight > popup.clientHeight,
+    }
+  })
+  for (const key of ['Home', 'End']) {
+    await page.keyboard.press(key)
+    await page.waitForTimeout(50)
+    expect(await ringInside(), key).toMatchObject({ ring: true, inside: true })
+  }
+  // The list is capped by the short viewport, so the End case above was a scrolled list.
+  expect((await ringInside()).scrolls).toBe(true)
+
+  // Keyboard focus on the disabled item shows the highlight surface; its name stays inactive and
+  // its meta stays readable.
+  const archive = page.getByRole('menuitemradio', { name: 'Archive, No access' })
+  await page.keyboard.press('ArrowUp')
+  await expect(archive).toBeFocused()
+  const look = () => archive.evaluate((el) => ({
+    bg: getComputedStyle(el).backgroundColor,
+    name: getComputedStyle(el.querySelector('.vela-dropdown-list__label')!).color,
+    meta: getComputedStyle(el.querySelector('.vela-dropdown-list__meta')!).color,
+  }))
+  const tokens = await archive.evaluate((el) => {
+    const read = (v: string) => {
+      const probe = document.createElement('span'); probe.style.color = `var(${v})`
+      el.closest('.vela-dropdown-list')!.appendChild(probe)
+      const c = getComputedStyle(probe).color; probe.remove(); return c
+    }
+    return { hover: read('--vela-bg-raised-hover'), inactive: read('--vela-text-inactive'), text: read('--vela-text-default') }
+  })
+  await expect(menu).not.toHaveAttribute('data-vela-pointer')
+  await expect(archive).toHaveAttribute('data-highlighted', '')
+  await expect(archive).toHaveCSS('background-color', tokens.hover)
+  expect(await look()).toEqual({ bg: tokens.hover, name: tokens.inactive, meta: tokens.text })
+  // Under the pointer it changes nothing.
+  await archive.hover()
+  await page.mouse.move((await archive.boundingBox())!.x + 40, (await archive.boundingBox())!.y + 10)
+  const hovered = await look()
+  expect(hovered.bg).not.toBe(tokens.hover)
+  expect(hovered.name).toBe(tokens.inactive)
+  await page.keyboard.press('Escape')
+})
+
+// [[rule: dropdown-list-forced-colours]]
+// In forced colours the page's backgrounds are replaced, so the highlighted item is the system's
+// own Highlight / HighlightText pair, opted out of the forcing on that row alone, and the check is
+// drawn in currentColor so it follows the row's text.
+test('the Dropdown List highlights with the system pair in forced colours, and the check follows the text', async ({ page }) => {
+  await page.emulateMedia({ forcedColors: 'active' })
+  await page.goto('/#/components/dropdown-list')
+  const frame = page.locator('.pg-frame[data-theme="light"] .pg-frame-body')
+  await frame.getByRole('button', { name: 'Switch View' }).focus()
+  await page.keyboard.press('Enter')
+  const current = page.getByRole('menuitemradio', { name: 'Firewall, 1 new' })
+  await expect(current).toBeFocused()
+  await expect(current).toHaveAttribute('data-highlighted', '')
+  const read = await current.evaluate((el) => {
+    const probe = document.createElement('span'); probe.style.cssText = 'background: Highlight; color: HighlightText; forced-color-adjust: none'
+    document.body.appendChild(probe)
+    const sys = { bg: getComputedStyle(probe).backgroundColor, fg: getComputedStyle(probe).color }
+    probe.remove()
+    const other = el.parentElement!.querySelector('[role="menuitemradio"]:not([data-highlighted])') as HTMLElement
+    const check = el.querySelector('.vela-dropdown-list__check svg')!
+    return {
+      sys,
+      bg: getComputedStyle(el).backgroundColor, fg: getComputedStyle(el).color,
+      adjust: getComputedStyle(el).forcedColorAdjust,
+      otherAdjust: getComputedStyle(other).forcedColorAdjust,
+      popupAdjust: getComputedStyle(el.closest('[role="menu"]')!).forcedColorAdjust,
+      checkColour: getComputedStyle(el.querySelector('.vela-dropdown-list__check')!).color,
+      checkStroke: getComputedStyle(check).stroke,
+    }
+  })
+  expect(read.bg).toBe(read.sys.bg)
+  expect(read.fg).toBe(read.sys.fg)
+  expect(read.adjust).toBe('none')
+  expect(read.otherAdjust).toBe('auto')
+  expect(read.popupAdjust).toBe('auto')
+  expect(read.checkColour).toBe(read.fg)
+  expect(read.checkStroke).toBe(read.fg)
+  // The highlight moves with the keys, and the row it leaves goes back to the forced colours.
+  await page.keyboard.press('ArrowDown')
+  expect(await current.evaluate((el) => getComputedStyle(el).forcedColorAdjust)).toBe('auto')
+  await page.keyboard.press('Escape')
 })
 
 test('the nav filter narrows the list and the menu button collapses it', async ({ page }) => {

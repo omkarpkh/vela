@@ -28,7 +28,7 @@ const version = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).ver
 
 // spec file → Figma component set name and source directory. `entry` is the source tree the
 // component lives in: `components` (the core, `@omkarux/vela`) unless it says `headless`
-// (`@omkarux/vela/headless` only — Checkbox, Radio Group, Popover, Tooltip, Dialog and Toast have no core
+// (`@omkarux/vela/headless` only — Checkbox, Radio Group, Popover, Tooltip, Dialog, Toast and Dropdown List have no core
 // implementation).
 // `state` is a closed set: 'published' (the set is in the published library, `node` is its id),
 // 'built' (the set exists in the file but is not published; `node` is its id once the Figma
@@ -64,6 +64,9 @@ export const SETS = {
   'dialog.md': { set: 'Dialog', src: 'Dialog', entry: 'headless', state: 'published', node: '129:54', export: 'Dialog' },
   // A toast is raised with `toast.add(...)` from `useToast()`, inside the app's one ToastProvider.
   'toast.md': { set: 'Toast', src: 'Toast', entry: 'headless', state: 'published', node: '129:94', export: 'useToast', imports: ['ToastProvider', 'useToast'] },
+  // No set yet: the builder (scripts/figma/components/dropdown-list.figma.js) is ready; building it is
+  // the Figma thread's job, with the maintainer's approval.
+  'dropdown-list.md': { set: 'Dropdown List item', src: 'DropdownList', entry: 'headless', state: 'none', node: null, export: 'DropdownList' },
 }
 export const FILE_KEY = 'XO2rmeCcgOjyKe4oipgF4j'
 

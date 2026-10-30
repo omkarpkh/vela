@@ -51,8 +51,8 @@ through the pipeline.
   0.x, a minor announced as breaking) at least two minors later.
 
 Seven components are Approved: Button, Toggle, Input, Contextual Alert, Status Indicator, Risk
-Pill and Tabs. The other nine are Experimental: Text Area, Icon and Table in the core entry, and
-Checkbox, Radio Group, Popover, Tooltip, Dialog and Toast in `/headless`. The docs site lists every
+Pill and Tabs. The other ten are Experimental: Text Area, Icon and Table in the core entry, and
+Checkbox, Radio Group, Popover, Tooltip, Dialog, Toast and Dropdown List in `/headless`. The docs site lists every
 component's label on its Status page, read from the spec.
 
 ## Breaking changes
