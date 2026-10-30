@@ -58,7 +58,7 @@ link to each, and the number of automated checks, written by the test runners ra
 | **Dependencies** | None in the core entry. `react` / `react-dom` are peers (18.3 or 19). The `/headless` entry needs one optional peer, `@base-ui/react` 1.9.x (MIT) |
 | **Icons** | 50 curated [Lucide](https://lucide.dev) 1.63.0 glyphs (ISC; a subset from Feather, MIT), compiled into the core entry at build time — no icon dependency, `lucide` is a devDependency only. The ISC notice ships in [`NOTICE`](NOTICE) |
 | **Format** | ESM, `preserveModules` for tree-shaking, full `.d.ts` |
-| **Tests** | 955 automated checks — 808 unit and contract (93 contrast pairs, each asserted in both themes), 144 browser (68 screenshots at four widths, 74 playground, 2 docs), 3 Flutter — counted by `npm run checks` |
+| **Tests** | 976 automated checks — 817 unit and contract (93 contrast pairs, each asserted in both themes), 156 browser (68 screenshots at four widths, 86 playground, 2 docs), 3 Flutter — counted by `npm run checks` |
 | **Packed size** | 203.9 kB, 217 files (the fifty glyph modules and their .d.ts are most of the growth since 0.12.1), as `npm run verify` measures it (README and CHANGELOG ship in the tarball, so this moves when they do) |
 
 ## The three ideas worth stealing
