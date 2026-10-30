@@ -1210,6 +1210,8 @@ abstract final class VelaSizing {
   static const double statusDotSmall = 8;
   /// Popover, size regular: the popup width. Never wider than the space beside its trigger (--available-width).
   static const double popoverWidth = 280;
+  /// Dropdown List: the narrowest the list gets, unless its trigger is wider. Never wider than the space beside its trigger (--available-width), which wins.
+  static const double dropdownListWidthMin = 200;
   /// Popover, size wide.
   static const double popoverWidthWide = 400;
   /// Dialog, size regular: the popup width. Never wider than the viewport less its gutters.

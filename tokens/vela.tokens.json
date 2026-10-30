@@ -2760,6 +2760,19 @@
         }
       }
     },
+    "dropdown-list-width-min": {
+      "$type": "dimension",
+      "$value": {
+        "value": 200,
+        "unit": "px"
+      },
+      "$description": "Dropdown List: the narrowest the list gets, unless its trigger is wider. Never wider than the space beside its trigger (--available-width), which wins.",
+      "$extensions": {
+        "com.omkarux.vela": {
+          "figma": "dropdown-list/width-min"
+        }
+      }
+    },
     "popover-width-wide": {
       "$type": "dimension",
       "$value": {

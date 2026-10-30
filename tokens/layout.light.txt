@@ -324,6 +324,7 @@
   /* ---- Overlays: Popover, Tooltip, Dialog (headless) ---- */
   @popover-width
   @popover-width-wide
+  @dropdown-list-width-min   /* the Dropdown List's minimum width — see dropdown-list.md, Sizes */
   @dialog-width
   @dialog-width-wide
   @tooltip-width-max

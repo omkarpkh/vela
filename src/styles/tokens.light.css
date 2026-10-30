@@ -324,6 +324,7 @@
   /* ---- Overlays: Popover, Tooltip, Dialog (headless) ---- */
   --vela-popover-width: 280px;
   --vela-popover-width-wide: 400px;
+  --vela-dropdown-list-width-min: 200px;   /* the Dropdown List's minimum width — see dropdown-list.md, Sizes */
   --vela-dialog-width: 480px;
   --vela-dialog-width-wide: 720px;
   --vela-tooltip-width-max: 240px;
