@@ -145,7 +145,7 @@ export function App() {
 
         <main id="main" className="content">
           {route.kind === 'overview' && <Overview />}
-          {route.kind === 'component' && <Playground key={route.id} id={route.id} />}
+          {route.kind === 'component' && <Playground key={route.id} id={route.id} tab={route.tab} />}
           {route.kind === 'proposal' && <Proposal key={route.id} id={route.id} />}
           {route.kind === 'foundation' && <Foundation id={route.id} />}
           {route.kind === 'adopt' && <Adopt mode={theme} />}

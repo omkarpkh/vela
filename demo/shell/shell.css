@@ -64,3 +64,9 @@
 .shell-site-error { min-height: 100vh; }
 .shell-site-error__body { max-width: 64ch; padding: var(--vela-space-60) var(--vela-space-20); margin: 0 auto; display: flex; flex-direction: column; gap: var(--vela-space-15); }
 .shell-site-error__body h1, .shell-site-error__body p { margin: 0; }
+
+/* ------------------------------------------------------------------ copy -- */
+/* Copy (playground spec, section 7; B3). The status line is always in the tree so a change is
+   announced; empty, it takes no height. A failure is told by its words, not by a colour. */
+.shell-copy-status { margin: 0; font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
+.shell-copy-status.is-failed { font-weight: var(--vela-font-weight-semibold); }

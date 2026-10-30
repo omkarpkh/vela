@@ -1,12 +1,55 @@
 /* ---------------------------------------------------------------- playground -- */
-.pg-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--vela-space-15) var(--vela-space-30); padding-bottom: var(--vela-space-20); border-bottom: 1px solid var(--vela-border-subtle); }
-.pg-head__text { min-width: 0; max-width: 64ch; }
+.pg-head { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: var(--vela-space-20) var(--vela-space-30); padding-bottom: var(--vela-space-20); border-bottom: 1px solid var(--vela-border-subtle); }
+.pg-head__text { flex: 1 1 var(--site-head-col-min); min-width: 0; max-width: 64ch; }
 .pg-head__eyebrow { margin: 0 0 var(--vela-space-5); color: var(--vela-text-de-emphasized); }
 .pg-head h1 { margin: 0 0 var(--vela-space-10); }
 .pg-intro .pg-p { margin: 0; font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height); color: var(--vela-text-de-emphasized); }
-.pg-head__links { display: flex; gap: var(--vela-space-15); white-space: nowrap; }
 
-.pg { display: grid; grid-template-columns: minmax(0, 1fr) var(--site-props-width); gap: var(--vela-space-20); align-items: start; margin-top: var(--vela-space-20); }
+/* The Use panel (playground spec, section 4): beside the title while both fit, below it otherwise,
+   where its two steps sit side by side. On the page surface, so its hints keep 4.90:1 in light. */
+.pg-use { flex: 1 1 var(--site-head-col-min); min-width: 0; container-type: inline-size; display: flex; flex-direction: column; gap: var(--vela-space-15); padding: var(--vela-space-15) var(--vela-space-20); border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4); background: var(--vela-bg-global); }
+.pg-use__heading { margin: 0; font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height); font-weight: var(--vela-font-weight-semibold); color: var(--vela-text-default); }
+.pg-use__steps { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--vela-space-15); }
+@container (min-width: 600px) { .pg-use__steps { grid-template-columns: 1fr 1fr; } }
+.pg-use__step { display: flex; flex-direction: column; gap: var(--vela-space-5); min-width: 0; }
+.pg-use__label { margin: 0; font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); }
+.pg-use__title { font-weight: var(--vela-font-weight-semibold); color: var(--vela-text-default); }
+.pg-use__hint { color: var(--vela-text-de-emphasized); }
+.pg-use__line { display: flex; align-items: center; gap: var(--vela-space-10); min-width: 0; }
+.pg-use__line code { flex: 1; min-width: 0; padding: var(--vela-space-5) var(--vela-space-10); border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); overflow-wrap: anywhere; }
+.pg-use__line .shell-copy { flex: none; }
+.pg-install-note { margin: 0; font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
+.pg-use__links { display: flex; flex-wrap: wrap; gap: var(--vela-space-15); margin: 0; }
+
+/* Contract facts (section 4): five cells, then Rules across the bottom. Hairlines are the grid's own
+   cells' own 1px shadows, right and below; the frame's border and overflow clip those at the edge. Below 860px of container, three columns with the fifth cell
+   spanning two; on a phone, two; at the narrowest, one. */
+.pg-facts-wrap { container-type: inline-size; margin-top: var(--vela-space-20); }
+.pg-facts { margin: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4); overflow: hidden; }
+.pg-fact { box-shadow: 1px 0 0 var(--vela-border-subtle), 0 1px 0 var(--vela-border-subtle); padding: var(--vela-space-10) var(--vela-space-15); min-width: 0; }
+.pg-fact dt { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-de-emphasized); }
+.pg-fact dd { margin: var(--vela-space-5) 0 0; font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); overflow-wrap: anywhere; }
+.pg-fact dd code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: var(--site-code-size); }
+.pg-fact--rules { grid-column: 1 / -1; }
+.pg-fact--rules dd { display: flex; flex-wrap: wrap; align-items: center; gap: var(--vela-space-5) var(--vela-space-10); }
+.pg-fact__total { font-weight: var(--vela-font-weight-semibold); }
+@container (max-width: 860px) {
+  .pg-facts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .pg-fact:nth-child(5) { grid-column: span 2; }
+}
+@container (max-width: 480px) {
+  .pg-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pg-fact:nth-child(5) { grid-column: 1 / -1; }
+}
+@container (max-width: 300px) {
+  .pg-facts { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Page tabs (section 4): the selected tab's panel follows. */
+.pg-tabs { margin-top: var(--vela-space-20); }
+.pg-tabs > .vela-tabs > .vela-tabs__panel { padding-top: var(--vela-space-20); }
+
+.pg { display: grid; grid-template-columns: minmax(0, 1fr) var(--site-props-width); gap: var(--vela-space-20); align-items: start; }
 @media (max-width: 960px) { .pg { grid-template-columns: 1fr; } }
 
 .pg-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: var(--vela-space-15); margin: 0 0 var(--vela-space-15); min-height: var(--vela-control-height-35); }
@@ -65,12 +108,12 @@
 .pg-uncontrolled code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 .pg-hint { margin: 0; color: var(--vela-text-default); }
 
-/* The contract panel holds a Tabs, whose inactive triggers are de-emphasized text: on the page
-   surface, not the container, so they keep 4.90:1 rather than 4.35:1 in light. */
-.pg-contract { background: var(--vela-bg-global); margin-top: var(--vela-space-20); padding: var(--vela-space-15) var(--vela-space-20) var(--vela-space-20); }
-.pg-contract .vela-tabs__panel { padding-top: var(--vela-space-20); }
-.pg-code-wrap { position: relative; }
-.pg-code-copy { position: absolute; top: var(--vela-space-10); right: var(--vela-space-10); }
+/* The code bar (section 5): its label, then Copy above the code, never on top of it. On the page
+   surface. It copies the import line and the JSX; install is only in the Use panel. */
+.pg-codebar { background: var(--vela-bg-global); margin-top: var(--vela-space-20); padding: var(--vela-space-15) var(--vela-space-20) var(--vela-space-20); }
+.pg-codebar__head { display: flex; align-items: center; justify-content: space-between; gap: var(--vela-space-10); margin: 0 0 var(--vela-space-10); }
+.pg-codebar__title { margin: 0; font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height); font-weight: var(--vela-font-weight-semibold); color: var(--vela-text-default); }
+.pg-codebar__status:not(:empty) { margin: 0 0 var(--vela-space-10); }
 .pg-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: var(--vela-text-meta-size); line-height: 1.6; white-space: pre; overflow-x: auto; background: var(--vela-bg-global); border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4); padding: var(--vela-space-15) var(--vela-space-20); margin: 0 0 var(--vela-space-10); color: var(--vela-text-default); }
 .pg-tablewrap { overflow-x: auto; margin: 0 0 var(--vela-space-15); }
 .pg-table { border-collapse: collapse; width: 100%; font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); }

@@ -15,6 +15,11 @@ export default defineConfig({
   root: 'demo',
   base: process.env.VITE_BASE ?? '/',
   plugins: [react()],
-  define: { 'import.meta.env.VITE_VELA_COMMIT': JSON.stringify(commit()) },
+  // The build date goes beside the commit in each component page's facts grid ("Built"), so a reader
+  // knows which build the proofs come from (playground spec, A25). UTC, as a date only.
+  define: {
+    'import.meta.env.VITE_VELA_COMMIT': JSON.stringify(commit()),
+    'import.meta.env.VITE_VELA_BUILT': JSON.stringify(new Date().toISOString().slice(0, 10)),
+  },
   build: { outDir: '../demo-dist', emptyOutDir: true },
 })

@@ -65,13 +65,13 @@ test('the Text Area page counts as you type and the field only ever resizes vert
 test('the Tabs page switches implementation, and the import line and install command follow', async ({ page }) => {
   await page.goto('/#/components/tabs')
   await expect(page.getByRole('heading', { level: 1, name: 'Tabs' })).toBeVisible()
-  const contract = page.getByRole('region', { name: 'Contract' })
-  await expect(contract.locator('.pg-install')).toContainText("import { Tabs } from '@omkarux/vela'")
+  const contract = page.getByRole('region', { name: /^Use / })
+  await expect(contract.locator('.pg-import')).toContainText("import { Tabs } from '@omkarux/vela'")
   await expect(contract.locator('.pg-install-command')).toHaveText('npm i @omkarux/vela')
   await expect(contract.locator('.pg-install-note')).toHaveCount(0)
 
   await page.getByRole('group', { name: 'Implementation' }).getByRole('button', { name: 'headless' }).click()
-  await expect(contract.locator('.pg-install')).toContainText("import { Tabs } from '@omkarux/vela/headless'")
+  await expect(contract.locator('.pg-import')).toContainText("import { Tabs } from '@omkarux/vela/headless'")
   await expect(contract.locator('.pg-install-command')).toHaveText('npm i @omkarux/vela @base-ui/react')
 
   // The light frame's tabs, now rendered by Base UI, still honour the spec: arrow keys select,
@@ -101,8 +101,8 @@ test('the Checkbox page renders the headless Checkbox: Space toggles, the fill f
   await page.goto('/#/components/checkbox')
   await expect(page.getByRole('heading', { level: 1, name: 'Checkbox' })).toBeVisible()
   await expect(page.getByRole('group', { name: 'Implementation' })).toHaveCount(0)
-  const contract = page.getByRole('region', { name: 'Contract' })
-  await expect(contract.locator('.pg-install')).toContainText("import { Checkbox } from '@omkarux/vela/headless'")
+  const contract = page.getByRole('region', { name: /^Use / })
+  await expect(contract.locator('.pg-import')).toContainText("import { Checkbox } from '@omkarux/vela/headless'")
   await expect(contract.locator('.pg-install-command')).toHaveText('npm i @omkarux/vela @base-ui/react')
 
   const frame = page.locator('.pg-frame[data-theme="light"] .pg-frame-body')
@@ -132,8 +132,8 @@ test('the Radio Group page renders the headless group: arrows move the selection
   await page.goto('/#/components/radio-group')
   await expect(page.getByRole('heading', { level: 1, name: 'Radio Group' })).toBeVisible()
   await expect(page.getByRole('group', { name: 'Implementation' })).toHaveCount(0)
-  const contract = page.getByRole('region', { name: 'Contract' })
-  await expect(contract.locator('.pg-install')).toContainText("import { RadioGroup } from '@omkarux/vela/headless'")
+  const contract = page.getByRole('region', { name: /^Use / })
+  await expect(contract.locator('.pg-import')).toContainText("import { RadioGroup } from '@omkarux/vela/headless'")
   await expect(contract.locator('.pg-install-command')).toHaveText('npm i @omkarux/vela @base-ui/react')
 
   const frame = page.locator('.pg-frame[data-theme="light"] .pg-frame-body')
@@ -169,6 +169,8 @@ test('on the Tabs page the tab list stays put when the panel changes, and never 
     const frame = page.locator('.pg-frame[data-theme="light"]')
     const list = frame.getByRole('tablist')
     await expect(list).toBeVisible()
+    // In view first: the click would scroll it there, and a scroll is not the list moving.
+    await list.scrollIntoViewIfNeeded()
     const before = (await list.boundingBox())!
     await frame.getByRole('tab', { name: /Assets/ }).click()
     await expect(frame.getByRole('tab', { name: /Assets/ })).toHaveAttribute('aria-selected', 'true')
@@ -561,8 +563,8 @@ test('the Popover page opens a themed, non-modal popover: focus moves in, Escape
   await page.goto('/#/components/popover')
   await expect(page.getByRole('heading', { level: 1, name: 'Popover' })).toBeVisible()
   await expect(page.getByRole('group', { name: 'Implementation' })).toHaveCount(0)
-  const contract = page.getByRole('region', { name: 'Contract' })
-  await expect(contract.locator('.pg-install')).toContainText("import { Popover } from '@omkarux/vela/headless'")
+  const contract = page.getByRole('region', { name: /^Use / })
+  await expect(contract.locator('.pg-import')).toContainText("import { Popover } from '@omkarux/vela/headless'")
   await expect(contract.locator('.pg-install-command')).toHaveText('npm i @omkarux/vela @base-ui/react')
 
   for (const theme of ['light', 'dark'] as const) {
@@ -596,8 +598,8 @@ test('the Popover page opens a themed, non-modal popover: focus moves in, Escape
 test('the Tooltip page describes its trigger on hover and on keyboard focus, and Escape dismisses it', async ({ page }) => {
   await page.goto('/#/components/tooltip')
   await expect(page.getByRole('heading', { level: 1, name: 'Tooltip' })).toBeVisible()
-  const contract = page.getByRole('region', { name: 'Contract' })
-  await expect(contract.locator('.pg-install')).toContainText("import { Tooltip } from '@omkarux/vela/headless'")
+  const contract = page.getByRole('region', { name: /^Use / })
+  await expect(contract.locator('.pg-import')).toContainText("import { Tooltip } from '@omkarux/vela/headless'")
 
   const frame = page.locator('.pg-frame[data-theme="light"] .pg-frame-body')
   const trigger = frame.getByRole('button', { name: 'Export' })
@@ -624,8 +626,8 @@ test('the Tooltip page describes its trigger on hover and on keyboard focus, and
 test('the Dialog page opens a modal: focus moves in and is trapped, the page is inert, Escape closes it and focus returns', async ({ page }) => {
   await page.goto('/#/components/dialog')
   await expect(page.getByRole('heading', { level: 1, name: 'Dialog' })).toBeVisible()
-  const contract = page.getByRole('region', { name: 'Contract' })
-  await expect(contract.locator('.pg-install')).toContainText("import { Dialog } from '@omkarux/vela/headless'")
+  const contract = page.getByRole('region', { name: /^Use / })
+  await expect(contract.locator('.pg-import')).toContainText("import { Dialog } from '@omkarux/vela/headless'")
 
   const trigger = page.locator('.pg-frame[data-theme="dark"] .pg-frame-body').getByRole('button', { name: 'Edit Policy' })
   await trigger.click()
@@ -717,8 +719,8 @@ test('the Toast page raises a polite, themed toast without moving focus, and its
   await page.goto('/#/components/toast')
   await expect(page.getByRole('heading', { level: 1, name: 'Toast' })).toBeVisible()
   await expect(page.getByRole('group', { name: 'Implementation' })).toHaveCount(0)
-  const contract = page.getByRole('region', { name: 'Contract' })
-  await expect(contract.locator('.pg-install')).toContainText("import { ToastProvider, useToast } from '@omkarux/vela/headless'")
+  const contract = page.getByRole('region', { name: /^Use / })
+  await expect(contract.locator('.pg-import')).toContainText("import { ToastProvider, useToast } from '@omkarux/vela/headless'")
   await expect(contract.locator('.pg-install-command')).toHaveText('npm i @omkarux/vela @base-ui/react')
 
   for (const theme of ['light', 'dark'] as const) {
@@ -854,13 +856,15 @@ test('the toast region sits at its placement, a gutter from the edges, and narro
 test('the Dropdown List page opens a themed menu on the current item, and a choice closes it and updates the page', async ({ page }) => {
   await page.goto('/#/components/dropdown-list')
   await expect(page.getByRole('heading', { level: 1, name: 'Dropdown List' })).toBeVisible()
-  const contract = page.getByRole('region', { name: 'Contract' })
-  await expect(contract.locator('.pg-install')).toContainText("import { DropdownList } from '@omkarux/vela/headless'")
+  const contract = page.getByRole('region', { name: /^Use / })
+  await expect(contract.locator('.pg-import')).toContainText("import { DropdownList } from '@omkarux/vela/headless'")
   await expect(contract.locator('.pg-install-command')).toHaveText('npm i @omkarux/vela @base-ui/react')
 
   for (const theme of ['light', 'dark'] as const) {
     const frame = page.locator(`.pg-frame[data-theme="${theme}"] .pg-frame-body`)
     const trigger = frame.getByRole('button', { name: 'Switch View' })
+    // Mid-viewport, so there is room for the menu below it: with less, it flips above, as it should.
+    await trigger.evaluate((el) => el.scrollIntoView({ block: 'center' }))
     await trigger.click()
     const menu = page.getByRole('menu', { name: 'Views' })
     await expect(menu).toBeVisible()
@@ -913,6 +917,8 @@ test('a Dropdown List name wraps in full inside the list, at desktop width and i
   const names = ['Data loss prevention — policy violations across every connected SaaS tenant', 'customer-ingest-pipeline-eu-west-2']
   const check = async () => {
     const trigger = frame.getByRole('button', { name: 'Switch View' })
+    // Mid-viewport, so there is room for the menu below it: with less, it flips above, as it should.
+    await trigger.evaluate((el) => el.scrollIntoView({ block: 'center' }))
     await trigger.click()
     const menu = page.getByRole('menu', { name: 'Views' })
     await expect(menu).toBeVisible()
