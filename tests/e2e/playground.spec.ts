@@ -624,7 +624,7 @@ test('the Dropdown List page opens a themed menu on the current item, and a choi
   await expect(page.getByRole('heading', { level: 1, name: 'Dropdown List' })).toBeVisible()
   const contract = page.getByRole('region', { name: 'Contract' })
   await expect(contract.locator('.pg-install')).toContainText("import { DropdownList } from '@omkarux/vela/headless'")
-  await expect(contract.locator('.pg-dependencies')).toHaveText('Dependencies: @base-ui/react (optional peer, via /headless)')
+  await expect(contract.locator('.pg-install-command')).toHaveText('npm i @omkarux/vela @base-ui/react')
 
   for (const theme of ['light', 'dark'] as const) {
     const frame = page.locator(`.pg-frame[data-theme="${theme}"] .pg-frame-body`)
@@ -776,7 +776,9 @@ test('the Dropdown List lands on the current item however it opens, in a real br
 // keeps the ring from being clipped — at the sides, and at the bottom with the last item focused
 // in a list that has scrolled. A disabled item shows the highlight under keyboard focus only.
 test('the Dropdown List never clips the focus ring, and a disabled item highlights from the keyboard only', async ({ page }) => {
-  await page.setViewportSize({ width: 1440, height: 420 })
+  // Short enough that the list can't fit above or below its trigger, so it scrolls. At 420 the
+  // playground's stage (anchored top-left since slice 0) leaves room for the whole list above.
+  await page.setViewportSize({ width: 1440, height: 320 })
   await page.goto('/#/components/dropdown-list')
   const frame = page.locator('.pg-frame[data-theme="light"] .pg-frame-body')
   const trigger = frame.getByRole('button', { name: 'Switch View' })
