@@ -155,6 +155,15 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   the library as it was corrected by hand on 9 October". Those corrections (Contextual Alert's
   status mark, Button's icon shape and Tab's count styles) were made by an AI session, not by hand.
   The 0.12.1 entry is left as released; this note is the correction (Figma thread, R19).
+- **Toggle and Tooltip keep their edges in forced colours (Windows contrast themes).** Every
+  background is replaced there, so the Toggle's track and knob drew nothing and the switch
+  vanished, and the Tooltip's inverted fill went with it, leaving its text edgeless over the page.
+  The Toggle's track now has a 1px `CanvasText` border and the knob a solid `CanvasText` fill; on
+  is the `Highlight` pair, disabled is `GrayText`, and the focus ring is `Highlight`. The Tooltip
+  takes a 1px `CanvasText` border. Both only inside `@media (forced-colors: active)`, so nothing
+  changes elsewhere. New browser rules `toggle-forced-colours` and `tooltip-forced-colours`, each
+  with a test that fails on the old CSS. Checked in Chromium's emulation only, not in a real
+  Windows contrast theme.
 - **Tabs: the selected underline renders 2px, as specified; it rendered 1px.** The tab list scrolls,
   so it clips at its padding box, and the underline overlapped the list's rule, a border outside
   that box: its lower pixel was cut. The rule is now an inset shadow inside the box, the triggers

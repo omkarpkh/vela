@@ -31,6 +31,8 @@ A binary setting that takes effect **immediately**. No Save step.
   makes an unlabelled switch impossible. [[rule: toggle-label-required | compiler]]
 - Controlled and uncontrolled are exclusive: pass `checked` **or** `defaultChecked`. [[rule: toggle-controlled-exclusive | compiler]]
 - The change is immediate. Never pair a Toggle with a Save button that gates it. [[rule: toggle-change-is-immediate | convention]]
+- **In forced colours the switch keeps its shape.** The track has a `CanvasText` edge and the knob
+  a solid fill; on is `Highlight` with a `HighlightText` knob; disabled is `GrayText`. [[rule: toggle-forced-colours | browser]]
 
 ## Token bindings
 

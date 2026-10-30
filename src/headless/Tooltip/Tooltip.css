@@ -25,3 +25,9 @@
    component marks an Escape or keyboard close data-vela-instant. */
 .vela-tooltip[data-instant],
 .vela-tooltip[data-vela-instant] { transition: none; }
+
+/* Forced colours replace the inverted fill with Canvas, so the tooltip lost its edge and its text
+   floated over the page. A CanvasText border gives it one; the system keeps the text colour. */
+@media (forced-colors: active) {
+  .vela-tooltip { border: 1px solid CanvasText; }
+}

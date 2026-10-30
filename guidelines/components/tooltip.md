@@ -64,6 +64,8 @@ there is no core implementation, and its Figma set is published in the library (
   `<span tabIndex={0}>` with its own name and put the tooltip on that, and say so in review. [[rule: tooltip-not-on-disabled | convention]]
 - **Supplementary only.** Touch users never see a tooltip (Base UI disables them on touch), so it
   never carries the only copy of anything. [[rule: tooltip-supplementary-only | convention]]
+- **In forced colours it keeps an edge.** The fill is replaced by `Canvas`, so the popup takes a
+  1px `CanvasText` border. [[rule: tooltip-forced-colours | browser]]
 
 ## Token bindings
 
