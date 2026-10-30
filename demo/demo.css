@@ -14,6 +14,9 @@
 }
 
 /* ---------------------------------------------------------------- shell -- */
+/* The top bar is sticky, so anything scrolled into view (a link's target, a focused field, a
+   screenshot's section) stops below it, never under it (WCAG 2.4.11, Focus Not Obscured). */
+html { scroll-padding-top: var(--site-topbar-height); }
 body { margin: 0; background: var(--vela-bg-global); }
 /* index.html's first paint and its <noscript> line: body text, before React renders. */
 .boot { margin: 0; padding: var(--vela-space-30) var(--vela-space-20); font-family: var(--vela-font-family-primary); font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height); color: var(--vela-text-default); }
