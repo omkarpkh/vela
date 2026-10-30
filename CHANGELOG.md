@@ -10,7 +10,8 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   so it clips at its padding box, and the underline overlapped the list's rule, a border outside
   that box: its lower pixel was cut. The rule is now an inset shadow inside the box, the triggers
   no longer pull 1px below it, and the sliding bar sits at `bottom: 0`. The list keeps its height.
-  The screenshot baselines change by that pixel.
+  The pixel is inside the screenshots' 1% tolerance, so no baseline needed rewriting; the new
+  browser rule below is what catches it.
 - **Tabs in forced colours (Windows contrast themes): the selected tab can be found again.** The
   browser turned every tab's transparent border into a visible underline in the text colour, so
   every tab looked selected. Tabs now has forced-colours rules: the selected label and underline
