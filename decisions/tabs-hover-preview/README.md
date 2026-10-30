@@ -29,6 +29,7 @@ is not a designer, and the Seed is introduced only after the ideas it came from.
 | `05-testing-every-situation.png` | Every situation tested, first result and now; a new group for too many tabs, which the first test missed |
 | `05b-too-many-tabs.png` | What the first test missed: hidden tabs with no sign, the Seed on a tab cut off at the edge, the open tab scrolled away |
 | `05c-how-others-handle-too-many-tabs.png` | Fourteen design systems: five strategies for too many tabs, the shared rule (the open tab is never hidden), and eight questions for how the Seed behaves in overflow |
+| `05d-ideas-for-too-many-tabs.png` | The ideas round for too many tabs: three strategies (whole tabs with a More that becomes the tab; honest scrolling; a form ladder), each sketched, and six answers that hold in all of them |
 | `06-a-bug-in-plain-sight.png` | The 2px underline that drew 1px, 8 times larger (fixed in #29) |
 | `07-high-contrast-mode.png` | Windows high-contrast mode, before and after (fixed in #29) |
 | `08-short-tab-names.png` | Tab "IP": the 24px minimum |
