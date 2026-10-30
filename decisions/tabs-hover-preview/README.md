@@ -14,22 +14,32 @@ The working notes are in the claude.ai Project, under `motion/`:
 
 The prototype is `demo/pages/motion/TabsPreviewProto.tsx` (the Motion page, "Tabs hover preview").
 
-## Media (30 Oct 2026)
+## Media (30 Oct 2026): the case-study boards, in story order
 
-| File | What it shows |
+Each board is one step: a title, a plain-language lead, titled columns where there is a before and
+after, numbered notes that name tabs as tab "Name", and a legend. They are written for a reader who
+is not a designer, and the Seed is introduced only after the ideas it came from.
+
+| File | Step |
 |---|---|
-| `01-origin.png` | Where it started: hovering a tab only darkened its label |
-| `02-underline-1px-2px.png` | The shipped 2px underline rendered 1px (clipped by the scrolling list), and the fix (#29) |
-| `03-high-contrast.png` | Forced colours: every tab looked selected; after #29 only the selected tab is marked |
-| `04-seed-visibility.png` | The Seed before and after the clip fix: two pixel rows instead of one |
-| `05-short-label.png` | The 24px floor: a 13px "IP" tab gets a real mark |
-| `06-glide-linger.png` | Glide's out-delay: the Seed no longer stays under a tab the pointer has left |
-| `07-scores.png` | Round 2 and round 3 scores (the same rubric, mean of two passes) |
-| `08-hybrid-explain.png` | The Hybrid's near zone and caption (the prototype's Explain layer) |
-| `09-first-seed-prototype.mp4` | The first Seed prototype (29 Oct) |
-| `10-compare-slow.mp4` | A, B and Hybrid running the same pointer moves, stacked, ×5 slow: near press, far press, moving along the row, pausing between tabs |
-| `11-compare-real.mp4` | The same at real speed, each played twice |
-| `12-compare-narrow.mp4` | Phone width, the selected tab scrolled out of view, slow then real speed |
+| `01-the-moment-before-a-click.png` | The problem: pointing at a tab only darkens its name |
+| `02-ideas-from-other-fields.png` | Six of the sixteen ideas, each sketched on the same three tabs, with the field it came from |
+| `03-meet-the-seed.png` | The Seed: how it differs from the underline, and in the real component |
+| `04-how-the-seed-was-chosen.png` | The checklist and its weights, and the round-2 scores |
+| `05-testing-every-situation.png` | Every situation tested, first result and after the fixes |
+| `06-a-bug-in-plain-sight.png` | The 2px underline that drew 1px, 8 times larger (fixed in #29) |
+| `07-high-contrast-mode.png` | Windows high-contrast mode, before and after (fixed in #29) |
+| `08-short-tab-names.png` | Tab "IP": the 24px minimum |
+| `09-easier-to-see.png` | The Seed after the clip fix: twice the visible pixels |
+| `10-clicking-a-far-tab.png` | A against B, clicking tab "Sessions" eight tabs away, paused at the same moments |
+| `11-clicking-a-near-tab.png` | The same, clicking tab "Assets" two tabs away |
+| `12-tried-and-set-aside.png` | Glide and the Hybrid: what they were, and why they were set aside |
+| `13-the-decision.png` | Round 3 scores and the decision: A, grow in place |
+| `14-first-seed-prototype.mp4` | The first Seed prototype (29 Oct) |
+| `15-compare-slow.mp4` | A, B and Hybrid running the same pointer moves, stacked, at ×5 slow motion |
+| `16-compare-real.mp4` | The same at real speed |
+| `17-compare-narrow.mp4` | At phone width, with the open tab scrolled out of view |
 
-The before images come from the prototype at `7aff3b0` (on the Tabs before #29). The after images
-come from the prototype head.
+The "before" frames come from the prototype at `7aff3b0`, on the Tabs as they were before #29. The
+"after" frames come from the prototype head. The click frames are paused with the Web Animations API
+at the same moments (25ms and 70ms) for both A and B.
