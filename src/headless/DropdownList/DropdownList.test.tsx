@@ -55,6 +55,51 @@ describe('Dropdown List (headless)', () => {
     expect(item('Alerts').querySelector('.vela-dropdown-list__check svg')).toBeNull()
   })
 
+  // [[rule: dropdown-list-menu-radio]]
+  it('throws a named error when the trigger does not render a <button>', () => {
+    const quiet = vi.spyOn(console, 'error').mockImplementation(() => {})
+    try {
+      expect(() => render(<AllTabs trigger={<span>6 more</span>} />)).toThrow(/<DropdownList label="All tabs">: the trigger renders a <span>, not a <button>/)
+      expect(() => render(<AllTabs trigger={<div role="button">6 more</div>} />)).toThrow(/renders a <div>/)
+    } finally {
+      quiet.mockRestore()
+    }
+  })
+
+  // [[rule: dropdown-list-meta-not-a-taxonomy-label]]
+  it('warns in development when meta is a Severity, Risk, Status or Verdict word, ignoring case', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      render(
+        <DropdownList
+          label="Views"
+          trigger={<button type="button">Views</button>}
+          defaultValue="a"
+          items={[
+            { value: 'a', label: 'Alerts', meta: 'Critical' },
+            { value: 'b', label: 'Hosts', meta: 'high' },
+            { value: 'c', label: 'Agents', meta: 'Degraded' },
+            { value: 'd', label: 'Cases', meta: 'MALICIOUS' },
+            { value: 'e', label: 'Firewall', meta: '1 new' },
+            { value: 'f', label: 'Archive', meta: 'No access' },
+          ]}
+        />,
+      )
+      const said = warn.mock.calls.map((c) => String(c[0]))
+      expect(said).toHaveLength(4)
+      expect(said[0]).toMatch(/<DropdownList label="Views">: item "Alerts" has meta "Critical", a Severity word/)
+      expect(said[1]).toMatch(/item "Hosts" has meta "high", a Risk word/)
+      expect(said[2]).toMatch(/item "Agents" has meta "Degraded", a Status word/)
+      expect(said[3]).toMatch(/item "Cases" has meta "MALICIOUS", a Verdict word/)
+      warn.mockClear()
+      // A word in two taxonomies names both.
+      render(<AllTabs items={[{ value: 'firewall', label: 'Firewall', meta: 'Warning' }]} />)
+      expect(String(warn.mock.calls[0][0])).toMatch(/a Severity and Status word/)
+    } finally {
+      warn.mockRestore()
+    }
+  })
+
   // [[rule: dropdown-list-meta-in-name]]
   it('names each item by its whole text, meta included', async () => {
     render(<AllTabs />)
@@ -121,6 +166,16 @@ describe('Dropdown List (headless)', () => {
     await settle()
     expect(onValueChange).not.toHaveBeenCalled()
     expect(screen.queryByRole('menu')).toBeNull()
+    expect(trigger()).toHaveFocus()
+    // From the keyboard too.
+    trigger().focus()
+    await userEvent.keyboard('{Enter}')
+    await settle()
+    await userEvent.keyboard('{Enter}')
+    await settle()
+    expect(onValueChange).not.toHaveBeenCalled()
+    expect(screen.queryByRole('menu')).toBeNull()
+    expect(trigger()).toHaveFocus()
   })
 
   it('is controlled by value: it reports the choice and shows what it is given', async () => {
@@ -137,27 +192,62 @@ describe('Dropdown List (headless)', () => {
   })
 
   // [[rule: dropdown-list-focus-current]]
-  it('lands on the current item on open — by pointer, Enter, Space, Arrow Down and Arrow Up — not the first or last', async () => {
-    const opens: [string, () => Promise<void>][] = [
-      ['click', () => userEvent.click(trigger())],
-      ['Enter', async () => { trigger().focus(); await userEvent.keyboard('{Enter}') }],
-      ['Space', async () => { trigger().focus(); await userEvent.keyboard(' ') }],
-      ['ArrowDown', async () => { trigger().focus(); await userEvent.keyboard('{ArrowDown}') }],
-      ['ArrowUp', async () => { trigger().focus(); await userEvent.keyboard('{ArrowUp}') }],
-    ]
-    for (const [how, open] of opens) {
-      const { unmount } = render(<AllTabs defaultValue="firewall" />)
+  // One test per way of opening, each followed by one arrow key: Base UI's own active item must
+  // have moved to the current one too, or the arrow key would start from where Base UI landed.
+  const OPENS: [string, () => Promise<void>][] = [
+    ['a pointer press', () => userEvent.click(trigger())],
+    ['Enter', async () => { trigger().focus(); await userEvent.keyboard('{Enter}') }],
+    ['Space', async () => { trigger().focus(); await userEvent.keyboard(' ') }],
+    ['Arrow Down', async () => { trigger().focus(); await userEvent.keyboard('{ArrowDown}') }],
+    ['Arrow Up', async () => { trigger().focus(); await userEvent.keyboard('{ArrowUp}') }],
+  ]
+  const landsOn = async (name: string | RegExp) => {
+    await settle()
+    await settle()
+    expect(item(name)).toHaveFocus()
+    expect(item(name)).toHaveAttribute('data-highlighted')
+    expect(screen.getAllByRole('menuitemradio').filter((r) => r.hasAttribute('data-highlighted'))).toHaveLength(1)
+  }
+  for (const [how, open] of OPENS) {
+    it(`lands on the current item after opening by ${how}, and the next arrow key moves on from it`, async () => {
+      render(<AllTabs defaultValue="firewall" />)
       await open()
-      await settle()
-      await settle()
-      expect(item(/^Firewall/), how).toHaveFocus()
-      expect(item(/^Firewall/), how).toHaveAttribute('data-highlighted')
-      expect(screen.getAllByRole('menuitemradio').filter((r) => r.hasAttribute('data-highlighted')), how).toHaveLength(1)
-      // The arrow keys move on from where it landed.
+      await landsOn(/^Firewall/)
       await userEvent.keyboard('{ArrowDown}')
-      expect(item(/^Archive/), how).toHaveFocus()
+      expect(item(/^Archive/)).toHaveFocus()
+      await userEvent.keyboard('{ArrowUp}')
+      await userEvent.keyboard('{ArrowUp}')
+      expect(item('Alerts')).toHaveFocus()
+    })
+  }
+
+  // [[rule: dropdown-list-focus-current]]
+  it('lands on the current item when it is the last, and the loop wraps from there', async () => {
+    for (const [how, open] of OPENS) {
+      const { unmount } = render(<AllTabs defaultValue="reports" />)
+      await open()
+      await landsOn('Reports')
+      await userEvent.keyboard('{ArrowDown}')
+      // Base UI defers the focus by a frame when the loop wraps.
+      await settle()
+      expect(item('Alerts'), how).toHaveFocus()
       unmount()
     }
+  })
+
+  // [[rule: dropdown-list-focus-current]]
+  it('lands on a disabled current item too, which still cannot be chosen', async () => {
+    const onValueChange = vi.fn()
+    for (const [how, open] of OPENS) {
+      const { unmount } = render(<AllTabs defaultValue="archive" onValueChange={onValueChange} />)
+      await open()
+      await landsOn('Archive, No access')
+      expect(item('Archive, No access'), how).toHaveAttribute('aria-checked', 'true')
+      await userEvent.keyboard('{ArrowDown}')
+      expect(item('Reports'), how).toHaveFocus()
+      unmount()
+    }
+    expect(onValueChange).not.toHaveBeenCalled()
   })
 
   // [[rule: dropdown-list-focus-current]]
@@ -200,18 +290,51 @@ describe('Dropdown List (headless)', () => {
   })
 
   // [[rule: dropdown-list-dismiss]]
-  it('a press outside closes it, and the page behind is neither hidden nor scroll-locked', async () => {
+  it('a press outside closes it', async () => {
     const onOpenChange = vi.fn()
     render(<AllTabs onOpenChange={onOpenChange} />)
     await openWithClick()
-    const after = screen.getByRole('button', { name: 'After' })
-    expect(after.closest('[aria-hidden="true"]')).toBeNull()
-    expect(after.closest('[inert]')).toBeNull()
-    for (const el of [document.documentElement, document.body]) expect(el.style.overflow).not.toBe('hidden')
-    await userEvent.click(after)
+    await userEvent.click(screen.getByRole('button', { name: 'After' }))
     await settle()
     expect(onOpenChange).toHaveBeenLastCalledWith(false)
     expect(screen.queryByRole('menu')).toBeNull()
+  })
+
+  // [[rule: dropdown-list-non-modal]]
+  it('is non-modal: the page keeps its accessibility tree and its scroll, and Tab leaves the list', async () => {
+    render(<AllTabs />)
+    trigger().focus()
+    await userEvent.keyboard('{Enter}')
+    await settle()
+    const after = screen.getByRole('button', { name: 'After' })
+    expect(after.closest('[aria-hidden="true"]')).toBeNull()
+    expect(after.closest('[inert]')).toBeNull()
+    for (const el of [document.documentElement, document.body]) {
+      expect(el.style.overflow).not.toBe('hidden')
+      expect(el.style.overflowY).not.toBe('hidden')
+    }
+    // Not trapped: Tab from inside the list moves on through the page.
+    expect(item(/^Firewall/)).toHaveFocus()
+    await userEvent.tab()
+    await settle()
+    expect(document.activeElement?.closest('.vela-dropdown-list')).toBeNull()
+    expect(after).toHaveFocus()
+  })
+
+  // [[rule: dropdown-list-non-modal]]
+  it('is non-modal: a press outside closes the list and still reaches what it landed on', async () => {
+    const pressed = vi.fn()
+    render(
+      <div>
+        <AllTabs />
+        <button type="button" onClick={pressed}>Elsewhere</button>
+      </div>,
+    )
+    await openWithClick()
+    await userEvent.click(screen.getByRole('button', { name: 'Elsewhere' }))
+    await settle()
+    expect(screen.queryByRole('menu')).toBeNull()
+    expect(pressed).toHaveBeenCalledTimes(1)
   })
 
   // [[rule: dropdown-list-disabled-not-chosen]]
@@ -281,10 +404,48 @@ describe('Dropdown List (headless)', () => {
     expect(portal).toHaveAttribute('data-theme', 'dark')
   })
 
-  it('marks an open from the keyboard instant, so nothing animates', async () => {
+  // [[rule: dropdown-list-trigger-instant-from-keyboard]]
+  it('marks a keyboard open and close instant, on the list and on the trigger, until the next pointer interaction', async () => {
     render(<AllTabs />)
     trigger().focus()
     await userEvent.keyboard('{ArrowDown}')
     expect(screen.getByRole('menu')).toHaveAttribute('data-vela-instant')
+    expect(trigger()).toHaveAttribute('data-vela-instant')
+    await userEvent.keyboard('{Escape}')
+    await settle()
+    expect(trigger()).toHaveAttribute('data-vela-instant')
+    // The next pointer interaction clears it.
+    await userEvent.hover(trigger())
+    expect(trigger()).not.toHaveAttribute('data-vela-instant')
+    // A pointer open is not instant, and neither is its close by a choice.
+    await openWithClick()
+    expect(trigger()).not.toHaveAttribute('data-vela-instant')
+    expect(screen.getByRole('menu')).not.toHaveAttribute('data-vela-instant')
+    await userEvent.click(item('Reports'))
+    await settle()
+    expect(trigger()).not.toHaveAttribute('data-vela-instant')
+    // A keyboard choice closes it instantly; a pointer in the list clears it as well.
+    await userEvent.keyboard('{Enter}')
+    await settle()
+    expect(trigger()).toHaveAttribute('data-vela-instant')
+    await userEvent.hover(item('Alerts'))
+    expect(trigger()).not.toHaveAttribute('data-vela-instant')
+    await userEvent.keyboard('{Enter}')
+    await settle()
+    expect(screen.queryByRole('menu')).toBeNull()
+    expect(trigger()).toHaveAttribute('data-vela-instant')
+  })
+
+  it('marks the popup while the pointer is the last input in it, so a disabled item it rests on shows no highlight', async () => {
+    render(<AllTabs />)
+    trigger().focus()
+    await userEvent.keyboard('{Enter}')
+    await settle()
+    const menu = screen.getByRole('menu')
+    expect(menu).not.toHaveAttribute('data-vela-pointer')
+    await userEvent.hover(item('Archive, No access'))
+    expect(menu).toHaveAttribute('data-vela-pointer')
+    await userEvent.keyboard('{ArrowDown}')
+    expect(menu).not.toHaveAttribute('data-vela-pointer')
   })
 })

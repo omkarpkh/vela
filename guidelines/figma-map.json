@@ -120,11 +120,11 @@
       "write": "DropdownList",
       "figmaToProp": [
         {
-          "figma": "State",
+          "figma": "Current",
           "prop": "value equals the item's value"
         },
         {
-          "figma": "State",
+          "figma": "Disabled",
           "prop": "item disabled"
         },
         {

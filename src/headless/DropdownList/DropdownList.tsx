@@ -2,6 +2,7 @@ import * as React from 'react'
 import { Menu } from '@base-ui/react/menu'
 import { Icon } from '../../components/Icon'
 import { cn } from '../../lib/cn'
+import { isDev } from '../../lib/dev'
 import { fromKeyboard, useOverlayPortal } from '../overlay'
 
 /**
@@ -11,18 +12,24 @@ import { fromKeyboard, useOverlayPortal } from '../overlay'
  * Where Base UI's defaults differ from the spec, the mapping is made here and recorded in the
  * spec's "Implementations" section:
  *
- * - **Focus on open.** Base UI highlights the FIRST item on a keyboard open (the last on Arrow Up)
- *   and focuses the popup itself on a pointer open. The spec lands on the CURRENT item
- *   (`dropdown-list-focus-current`): the first focus that arrives inside the popup after it opens
- *   is redirected to the current item, whichever element Base UI chose.
+ * - **Focus on open.** Base UI 1.9's MenuRoot passes no `selectedIndex` to its list navigation, so
+ *   it highlights the FIRST item on a keyboard open (the last on Arrow Up), and on a pointer open
+ *   the popup itself takes focus. The spec lands on the CURRENT item (`dropdown-list-focus-current`).
+ *   Until the person first presses a key or moves the pointer in the list, every focus Base UI
+ *   sends to anything other than the current item is stopped and sent to the current item
+ *   instead. Focusing the item runs Base UI's own item focus handler, which moves the list's
+ *   `activeIndex` there too, so the next arrow key continues from the current item — not from
+ *   wherever Base UI would have started — and a late, deferred focus to the first item is caught
+ *   the same way.
  * - **The current one.** Base UI's radio group reports a choice of the item that is already
  *   checked; the spec does not (`onValueChange` is "not called for the current one"). Choosing it
  *   still closes the list.
  * - **Closing.** Base UI's radio items stay open when chosen; here `closeOnClick` is set, so a
  *   choice closes the list and Base UI returns focus to the trigger.
  * - **Modality.** Base UI's menu is modal by default (the page's scroll is locked and outside
- *   presses are swallowed). A Dropdown List is not: the page keeps its scroll, and a press outside
- *   closes the list and still reaches what it landed on.
+ *   presses are swallowed). A Dropdown List is not (`dropdown-list-non-modal`): the page keeps its
+ *   scroll and its accessibility tree, Tab leaves the list, and a press outside closes the list
+ *   and still reaches what it landed on.
  * - **Trigger, offset and portal** are mapped as on Popover (`../overlay`).
  */
 
@@ -30,7 +37,7 @@ import { fromKeyboard, useOverlayPortal } from '../overlay'
 export interface DropdownListItem {
   /** What `onValueChange` reports. Unique within the list. */
   value: string
-  /** The name, shown and announced in full; it wraps, never truncates. */
+  /** The name, shown and announced in full; it wraps, never truncates. Typeahead matches it. */
   label: string
   /** Words at the end of the row — "1 new", "No access". Never a colour, never a taxonomy. */
   meta?: string
@@ -44,7 +51,7 @@ export type DropdownListAlign = 'start' | 'end'
 interface DropdownListBaseProps {
   /** Required. Names the list for assistive technology ("All tabs"). Not shown. */
   label: string
-  /** Required. One button element; it gets `aria-haspopup="menu"`, `aria-expanded` and `aria-controls`. */
+  /** Required. One `<button>` element; it gets `aria-haspopup="menu"`, `aria-expanded` and `aria-controls`. */
   trigger: React.ReactElement
   /** Required, at least one, in display order. */
   items: readonly [DropdownListItem, ...DropdownListItem[]]
@@ -67,6 +74,23 @@ type OpenProps =
 
 export type DropdownListProps = DropdownListBaseProps & ValueProps & OpenProps
 
+/**
+ * The words `meta` must never be (`dropdown-list-meta-not-a-taxonomy-label`): every value and
+ * every shown label of the Severity, Risk and Status taxonomies (DESIGN.md, "Three taxonomies";
+ * the labels are Risk Pill's and Status Indicator's), and the Verdict values
+ * (guidelines/proposals/verdict-card.md). Compared ignoring case.
+ */
+const TAXONOMY_WORDS: Record<string, readonly string[]> = {
+  Severity: ['success', 'info', 'warning', 'minor', 'major', 'critical'],
+  Risk: ['low', 'medium', 'high'],
+  Status: ['unknown', 'healthy', 'warning', 'medium', 'unhealthy', 'status unknown', 'degraded'],
+  Verdict: ['malicious', 'suspicious', 'benign', 'inconclusive'],
+}
+const taxonomiesOf = (meta: string) => {
+  const word = meta.trim().toLowerCase()
+  return Object.keys(TAXONOMY_WORDS).filter((t) => TAXONOMY_WORDS[t].includes(word))
+}
+
 /** A short list from a button: one option is current, choosing another acts at once and closes it. */
 export function DropdownList({
   label,
@@ -83,7 +107,12 @@ export function DropdownList({
 }: DropdownListProps) {
   const anchor = React.useRef<HTMLButtonElement | null>(null)
   const portal = useOverlayPortal(anchor)
+  // dropdown-list-trigger-instant-from-keyboard: the last open or close came from the keyboard.
+  // The popup skips its transition, and the trigger carries it for its owner, until a pointer
+  // next touches the trigger or the list.
   const [instant, setInstant] = React.useState(false)
+  // The last input in the list was the pointer: a disabled item it rests on shows no highlight.
+  const [pointer, setPointer] = React.useState(false)
   const [inner, setInner] = React.useState(defaultValue)
   const current = value !== undefined ? value : inner
 
@@ -95,30 +124,62 @@ export function DropdownList({
     )
   }
 
-  // Each item's element, so the first focus after opening can be redirected to the current one.
+  // The trigger must be a real button: the menu's keys, its name and its disabled state come from it.
+  React.useLayoutEffect(() => {
+    if (!isDev()) return
+    const el = anchor.current
+    if (el && el.tagName !== 'BUTTON') {
+      throw new Error(
+        `<DropdownList label="${label}">: the trigger renders a <${el.tagName.toLowerCase()}>, not a <button>. ` +
+          'Pass one button element as `trigger` (guidelines/components/dropdown-list.md).',
+      )
+    }
+  }, [label])
+
+  // dropdown-list-meta-not-a-taxonomy-label: meta is words, never a severity, a risk, a status or a verdict.
+  React.useEffect(() => {
+    if (!isDev()) return
+    for (const item of items) {
+      if (!item.meta) continue
+      const hit = taxonomiesOf(item.meta)
+      if (hit.length) {
+        console.warn(
+          `<DropdownList label="${label}">: item "${item.label}" has meta "${item.meta}", a ${hit.join(' and ')} word. ` +
+            'Meta is words such as "1 new" or "No access", never a taxonomy label (guidelines/components/dropdown-list.md).',
+        )
+      }
+    }
+  }, [items, label])
+
+  // Each item's element, so focus can be sent to the current one while the list is landing.
   const elements = React.useRef(new Map<string, HTMLElement>())
   const landing = React.useRef(Boolean(open ?? defaultOpen))
   React.useLayoutEffect(() => {
     if (open) landing.current = true
   }, [open])
+  const landed = React.useCallback(() => {
+    landing.current = false
+  }, [])
 
   const handleOpenChange = React.useCallback(
     (next: boolean, details: Menu.Root.ChangeEventDetails) => {
       setInstant(fromKeyboard(details))
-      if (next) landing.current = true
+      if (next) {
+        landing.current = true
+        setPointer(false)
+      }
       onOpenChange?.(next)
     },
     [onOpenChange],
   )
 
-  // The first focus to arrive inside the popup after it opens — the popup itself on a pointer open,
-  // the first or last item on a keyboard open — goes to the current item instead. Stopping the
-  // event keeps Base UI from recording the element it chose; the current item's own focus event
-  // then makes it the highlighted one.
+  // dropdown-list-focus-current: while the list is landing, a focus Base UI sends anywhere but the
+  // current item — the popup on a pointer open, the first or last item on a keyboard open, now or
+  // a frame later — is stopped before Base UI records it, and the current item is focused instead.
+  // Its own focus event then makes it Base UI's active item.
   const handleFocusCapture = React.useCallback(
     (event: React.FocusEvent<HTMLDivElement>) => {
       if (!landing.current) return
-      landing.current = false
       const target = elements.current.get(current)
       if (!target || event.target === target) return
       event.stopPropagation()
@@ -127,6 +188,16 @@ export function DropdownList({
     },
     [current],
   )
+
+  const fromPointer = React.useCallback(() => {
+    landed()
+    setPointer(true)
+    setInstant(false)
+  }, [landed])
+  const fromKeys = React.useCallback(() => {
+    landed()
+    setPointer(false)
+  }, [landed])
 
   const handleValueChange = React.useCallback(
     (next: string) => {
@@ -139,14 +210,24 @@ export function DropdownList({
 
   return (
     <Menu.Root open={open} defaultOpen={defaultOpen} onOpenChange={handleOpenChange} modal={false}>
-      <Menu.Trigger ref={anchor} render={trigger} />
+      <Menu.Trigger
+        ref={anchor}
+        render={trigger}
+        data-vela-instant={instant || undefined}
+        onPointerDown={() => setInstant(false)}
+        onPointerMove={() => setInstant(false)}
+      />
       <Menu.Portal {...portal}>
         <Menu.Positioner side="bottom" align={align} className="vela-dropdown-list__positioner">
           <Menu.Popup
             aria-label={label}
             className={cn('vela-dropdown-list', className)}
             data-vela-instant={instant || undefined}
+            data-vela-pointer={pointer || undefined}
             onFocusCapture={handleFocusCapture}
+            onKeyDownCapture={fromKeys}
+            onPointerMoveCapture={fromPointer}
+            onPointerDownCapture={fromPointer}
           >
             <Menu.RadioGroup value={current} onValueChange={handleValueChange} className="vela-dropdown-list__group">
               {items.map((item) => (
@@ -157,6 +238,7 @@ export function DropdownList({
                     else elements.current.delete(item.value)
                   }}
                   value={item.value}
+                  // Typeahead matches the name alone, not the meta.
                   label={item.label}
                   disabled={item.disabled}
                   closeOnClick
@@ -169,8 +251,10 @@ export function DropdownList({
                       <Icon name="check" tone="inherit" />
                     </Menu.RadioItemIndicator>
                   </span>
-                  <span className="vela-dropdown-list__label">{item.label}</span>
-                  {item.meta ? <span className="vela-dropdown-list__meta">{item.meta}</span> : null}
+                  <span className="vela-dropdown-list__text">
+                    <span className="vela-dropdown-list__label">{item.label}</span>
+                    {item.meta ? <span className="vela-dropdown-list__meta">{item.meta}</span> : null}
+                  </span>
                 </Menu.RadioItem>
               ))}
             </Menu.RadioGroup>

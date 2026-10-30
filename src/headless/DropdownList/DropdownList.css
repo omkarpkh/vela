@@ -10,12 +10,19 @@
 
 .vela-dropdown-list {
   box-sizing: border-box;
-  width: var(--vela-popover-width);
-  /* Never wider or taller than the room beside the trigger; past that the list scrolls. */
-  max-width: var(--available-width);
-  max-height: var(--available-height);
+  /* As wide as the longest row, at least the trigger and the minimum, at most the popover width;
+     never wider than the room beside the trigger, which wins over the minimum. */
+  width: max-content;
+  min-width: min(max(var(--anchor-width), var(--vela-dropdown-list-width-min)), var(--available-width));
+  max-width: min(max(var(--vela-popover-width), var(--anchor-width)), var(--available-width));
+  /* About ten and a half rows, then the list scrolls: half a row showing says there is more. */
+  max-height: min(var(--available-height), calc(10.5 * (var(--vela-text-body-line-height) + 2 * var(--vela-space-5)) + 2 * var(--vela-space-5)));
   overflow-y: auto;
-  padding: var(--vela-space-5) 0;
+  /* The inline padding keeps the global focus ring (width + offset, under --vela-space-5) inside the
+     scrolling popup, which would otherwise clip it at the sides. */
+  padding: var(--vela-space-5);
+  /* And an item scrolled into view stops short of the edge by the same amount, ring included. */
+  scroll-padding: var(--vela-space-5);
   background: var(--vela-bg-raised);
   color: var(--vela-text-default);
   /* No shadow: no elevation token exists. The edge is the border, asserted against page and container. */
@@ -26,28 +33,33 @@
   transition: opacity var(--vela-duration-base) var(--vela-ease-standard),
               transform var(--vela-duration-base) var(--vela-ease-standard);
 }
-/* Appearing: a fade and a step of travel from the trigger. Leaving: the fade only, softer. */
-.vela-dropdown-list[data-starting-style] { opacity: 0; transform: translateY(calc(var(--vela-space-5) * -1)); }
-.vela-dropdown-list[data-side='top'][data-starting-style] { transform: translateY(var(--vela-space-5)); }
+/* Appearing: a fade and a step of travel from the trigger, on whichever side it opened. Leaving:
+   the fade only, softer. */
+.vela-dropdown-list[data-side='bottom'][data-starting-style] { opacity: 0; transform: translateY(calc(var(--vela-space-5) * -1)); }
+.vela-dropdown-list[data-side='top'][data-starting-style] { opacity: 0; transform: translateY(var(--vela-space-5)); }
 .vela-dropdown-list[data-ending-style] { opacity: 0; }
 /* From the keyboard, nothing animates (foundations/motion.md). */
 .vela-dropdown-list[data-instant],
 .vela-dropdown-list[data-vela-instant] { transition: none; }
 
-/* An item: the check's slot, the name, the meta. Every item keeps the slot, so the names line up
-   and nothing shifts when the current one changes. Names wrap in full; they never truncate. */
+/* An item: the check's slot, then the name and the meta. Every item keeps the slot, so the names
+   line up and nothing shifts when the current one changes. */
 .vela-dropdown-list__item {
   display: grid;
-  grid-template-columns: var(--vela-icon-size) minmax(0, 1fr) auto;
+  grid-template-columns: var(--vela-icon-size) minmax(0, 1fr);
   column-gap: var(--vela-space-10);
   align-items: start;
   padding: var(--vela-space-5) var(--vela-space-15) var(--vela-space-5) var(--vela-space-10);
   cursor: pointer;
   user-select: none;
 }
-/* The highlight follows the pointer and the keys at once: no transition, a fade would lag. */
-.vela-dropdown-list__item[data-highlighted]:not([aria-disabled='true']) { background: var(--vela-bg-raised-hover); }
-.vela-dropdown-list__item[aria-disabled='true'] { color: var(--vela-text-inactive); cursor: not-allowed; }
+/* The highlight follows the pointer and the keys at once: no transition, a fade would lag. A
+   disabled item takes it from the keyboard only; under the pointer it changes nothing. */
+.vela-dropdown-list__item[data-highlighted]:not([aria-disabled='true']),
+.vela-dropdown-list:not([data-vela-pointer]) .vela-dropdown-list__item[data-highlighted][aria-disabled='true'] { background: var(--vela-bg-raised-hover); }
+.vela-dropdown-list__item[aria-disabled='true'] { cursor: not-allowed; }
+/* A disabled name greys; its meta stays readable, because it says why. */
+.vela-dropdown-list__item[aria-disabled='true'] .vela-dropdown-list__label { color: var(--vela-text-inactive); }
 
 /* The slot is one line tall, so the check sits on the first line of a name that wraps. */
 .vela-dropdown-list__check {
@@ -58,12 +70,27 @@
   color: var(--vela-text-link);
 }
 .vela-dropdown-list__indicator { display: flex; }
-.vela-dropdown-list__label { min-width: 0; overflow-wrap: anywhere; }
-.vela-dropdown-list__meta { font-weight: var(--vela-font-weight-semibold); white-space: nowrap; }
+/* The name and the meta share a line when both fit, the meta at the end; when they do not, the
+   meta drops under the name. Names wrap in full, even an unbroken one; they never truncate. */
+.vela-dropdown-list__text {
+  display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline;
+  column-gap: var(--vela-space-10);
+  min-width: 0;
+}
+.vela-dropdown-list__label { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
+.vela-dropdown-list__meta { flex: 0 0 auto; font-weight: var(--vela-font-weight-semibold); }
+
+/* A finger needs a taller row. */
+@media (pointer: coarse) {
+  .vela-dropdown-list__item { padding-top: var(--vela-space-10); padding-bottom: var(--vela-space-10); }
+  .vela-dropdown-list { max-height: min(var(--available-height), calc(10.5 * (var(--vela-text-body-line-height) + 2 * var(--vela-space-10)) + 2 * var(--vela-space-5))); }
+}
 
 @media (forced-colors: active) {
-  /* Backgrounds are replaced here, so the highlight is the system's own pair. */
-  .vela-dropdown-list__item[data-highlighted]:not([aria-disabled='true']) { background: Highlight; color: HighlightText; forced-color-adjust: none; }
-  .vela-dropdown-list__item[data-highlighted]:not([aria-disabled='true']) .vela-dropdown-list__check { color: HighlightText; }
-  .vela-dropdown-list__item[aria-disabled='true'] { color: GrayText; }
+  /* Backgrounds are replaced here, so the highlight is the system's own pair, on that row alone. */
+  .vela-dropdown-list__item[data-highlighted]:not([aria-disabled='true']),
+  .vela-dropdown-list:not([data-vela-pointer]) .vela-dropdown-list__item[data-highlighted][aria-disabled='true'] { background: Highlight; color: HighlightText; forced-color-adjust: none; }
+  .vela-dropdown-list__check { color: currentColor; }
+  .vela-dropdown-list__item[aria-disabled='true'] .vela-dropdown-list__label { color: GrayText; }
+  .vela-dropdown-list:not([data-vela-pointer]) .vela-dropdown-list__item[data-highlighted][aria-disabled='true'] .vela-dropdown-list__label { color: HighlightText; }
 }

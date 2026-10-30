@@ -195,13 +195,14 @@ function ToastStage({ v }: { v: Values }) {
 
 /**
  * The Dropdown List stage: a host that owns the current view, as the spec's controlled example
- * does, and shows it on the page. One name is long enough to wrap, two items have meta, and one is
- * disabled with its reason in meta.
+ * does, and shows it on the page. One name is long enough to wrap, one is a single unbroken string
+ * whose meta drops under it, three items have meta, and one is disabled with its reason in meta.
  */
 const VIEWS: [DropdownListItem, ...DropdownListItem[]] = [
   { value: 'alerts', label: 'All alerts' },
   { value: 'firewall', label: 'Firewall', meta: '1 new' },
   { value: 'dlp', label: 'Data loss prevention — policy violations across every connected SaaS tenant' },
+  { value: 'pipeline', label: 'customer-ingest-pipeline-eu-west-2', meta: '2 new' },
   { value: 'archive', label: 'Archive', disabled: true, meta: 'No access' },
   { value: 'reports', label: 'Reports', meta: '3 open' },
 ]
@@ -755,7 +756,7 @@ toast.add({ ${opts} })`
     hide: ['value', 'open'],
     noControl: ['defaultValue', 'defaultOpen'],
     implementations: [{ id: 'headless', entry: '@omkarux/vela/headless' }],
-    highlight: () => (t) => /--vela-(bg-raised|border-default|text-(default|link|inactive)|popover-width)/.test(t),
+    highlight: () => (t) => /--vela-(bg-raised|border-default|text-(default|link|inactive)|popover-width|dropdown-list-width-min)/.test(t),
     render: (v) => <DropdownListStage v={v} />,
     code: (v, spec) =>
       printJsx('DropdownList', { label: v.label, align: v.align }, defaultsOf(spec), undefined, {

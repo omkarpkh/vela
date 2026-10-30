@@ -10,34 +10,66 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   `Menu`). A short list from a button where one option is current and choosing another acts at
   once — a hidden tab, another saved view — and the list closes. Its first use is the Tabs overflow
   control, which a later change adds to `tabs.md`. Closed props: `label` (a required string, the
-  menu's name), `trigger` (one element, rendered through Base UI's `render` as on Popover), `items`
-  (a non-empty tuple of `{ value, label, meta?, disabled? }`, those four fields only), `value` or
-  `defaultValue`, `open` or `defaultOpen` (each pair exclusive), `onValueChange`, `onOpenChange`
-  and `align` `start | end`. The popup is `role="menu"` named by `label`, of `menuitemradio` items
-  with exactly the current one checked; an item's name includes its `meta` ("Firewall, 1 new").
-  Opening lands on the **current** item, by pointer or keyboard: Base UI lands on the first item
-  (the last on Arrow Up) or on the popup itself, so the implementation redirects that first focus.
-  A choice closes the list and returns focus to the trigger, and choosing the current item does
-  not call `onValueChange`. A disabled item stays in the arrow-key order with `aria-disabled` and
-  cannot be chosen. Escape, Tab and a press outside close it, and it is not modal: the page keeps
-  its scroll. A value that matches no item, or no current value at all, throws a named error. Names
-  wrap in full, never truncated. The surface is Popover's (raised, a border-default edge, radius 4,
-  no shadow, `--vela-popover-width` capped at the room it has), and it moves as the overlays do:
-  opacity and a `--vela-space-5` step in at `--vela-duration-base`, opacity out, nothing from the
-  keyboard, and the highlight changes at once. 14 rules — 5 compiler (13 fixtures), 7 runtime
-  (18 unit tests), 1 browser (`dropdown-list-names-wrap`, a Playwright spec at desktop width and
-  in a 260px viewport), 1 convention (`meta` is words, never a taxonomy). The Figma builder
-  (`dropdown-list.figma.js`, set "Dropdown List item": `State` default / highlighted / current /
-  disabled, a `Meta` boolean, `Label` and `Meta text`) passes `components:figma:lint`; the set is
-  not built yet, so its `figma-map.json` entry is `state: "none"`. A playground page. DESIGN.md,
-  `overview.md` and the README take Dropdown List off "Not yet specced", and `overview.md` gains a
-  Dropdown List vs Select List vs Actions Dropdown disambiguation.
+  menu's name), `trigger` (one element that renders a `<button>`, through Base UI's `render` as on
+  Popover), `items` (a non-empty tuple of `{ value, label, meta?, disabled? }`, those four fields
+  only), `value` or `defaultValue`, `open` or `defaultOpen` (each pair exclusive), `onValueChange`,
+  `onOpenChange` and `align` `start | end`. The popup is `role="menu"` named by `label`, of
+  `menuitemradio` items with exactly the current one checked; an item's name includes its `meta`
+  ("Firewall, 1 new") and typeahead matches the name alone.
+  - **Opening lands on the current item, however it opens** — a click, Enter, Space, Arrow Down or
+    Arrow Up — and the next arrow key moves on from it, wrapping when it is the last; a disabled
+    current item takes focus too. Base UI 1.9's `MenuRoot` passes no `selectedIndex`, so it lands
+    on the first item (the last on Arrow Up) or the popup; until the first key or pointer move in
+    the list, every focus it sends elsewhere is stopped and sent to the current item, whose own
+    focus handler moves Base UI's `activeIndex` there as well.
+  - A choice closes the list and returns focus to the trigger; choosing the current item does the
+    same without calling `onValueChange`. A disabled item stays in the arrow-key order with
+    `aria-disabled` and cannot be chosen. Escape, Tab and a press outside close it.
+  - **Non-modal** (`modal={false}`): the page keeps its scroll and its accessibility tree, Tab
+    leaves the list, and a press outside still reaches what it landed on.
+  - A keyboard open or close carries `data-vela-instant` on the popup and on the trigger, until the
+    next pointer interaction. In development, a trigger that is not a `<button>` throws a named
+    error, and a `meta` that is a Severity, Risk, Status or Verdict word (ignoring case) warns. A
+    value that matches no item, or no current value at all, throws a named error.
+  - Popover's surface (raised, a border-default edge, radius 4, no shadow), `--vela-space-5` padding
+    on every side so the focus ring is never clipped by the scrolling list (with matching
+    `scroll-padding`). As wide as its longest row: at least 200px and the trigger, at most
+    `--vela-popover-width`, never wider than the room it has; at most about ten and a half rows tall,
+    derived from tokens. Names wrap in full, an unbroken one too, and the meta drops under a name it
+    does not fit beside. A disabled name is `--vela-text-inactive` and its meta stays
+    `--vela-text-default`; keyboard focus on it shows the highlight, pointer hover changes nothing.
+    Under `(pointer: coarse)` items have `--vela-space-10` above and below. In forced colours the
+    highlighted row is `Highlight` / `HighlightText` and the check `currentColor`.
+  - It moves as the overlays do: opacity and a `--vela-space-5` step from the trigger on either side
+    (keyed on `data-side`) at `--vela-duration-base`, opacity out, nothing from the keyboard, and the
+    highlight changes at once.
+  - **18 rules, 17 with proofs** — 5 compiler (13 fixtures), 10 runtime (29 unit tests), 2 browser
+    (`dropdown-list-names-wrap` at desktop width and in a 260px viewport; `dropdown-list-forced-colours`
+    under forced-colours emulation), 1 convention (`meta` is words, never a colour). Three more
+    Playwright specs check the same promises in a real browser: the landing for every way of
+    opening, the focus ring with the last item focused in a scrolled list, and the disabled item's
+    highlight.
+  - The Figma builder (`dropdown-list.figma.js`) draws the "Dropdown List item" set with axes that
+    mirror the markup — `Highlighted`, `Current`, `Disabled` (false / true), a `Meta` boolean,
+    `Label` and `Meta text` — and a one-size "Dropdown List" popup component of four item instances.
+    It passes `components:figma:lint`; nothing has been built in Figma, so the `figma-map.json` entry
+    is `state: "none"`. A playground page in the overlays run. DESIGN.md, `overview.md`, `llms.txt`
+    and the README take Dropdown List off "Not yet specced", and `overview.md` gains a Dropdown List
+    vs Select List vs Actions Dropdown disambiguation.
 - **`--vela-bg-raised-hover`** (grey-100; dark grey-800), the highlighted Dropdown List item.
   `--vela-bg-hover` could not be used: in dark it is the raised surface itself (grey-850), so a
   highlight on it would show nothing (1.00:1). Three new `PAIRS`, light / dark: item text on the
   highlight 6.82 / 7.11 (text 4.5); the current item's check, `--vela-text-link`, on the raised
   surface 6.08 / 4.35 and on the highlight 5.39 / 3.50 (ui 3.0). The current item's name stays
   `--vela-text-default`: the link colour on the dark raised surface is 4.35:1, under 4.5:1 for text.
+- **`--vela-dropdown-list-width-min`** (200px; Figma `dropdown-list/width-min`), the Dropdown List's
+  minimum width. The stylesheets carry no waivers, so a new literal is a new token.
+- **Figma pipeline:** the `Body/Strong` text style (SemiBold 14/21, bound to the body size, line
+  height and the semibold weight), for the Dropdown List item's meta. Builders can declare a one-size
+  component with `// @component`, linted, dumped and diffed like a set; the mock Plugin API models
+  `createInstance()` and `setProperties()`, which refuses an unknown property or variant as Figma does.
+- **`src/lib/dev.ts`**: `isDev()`, the development-time gate for checks that warn or throw, read from
+  the `process.env.NODE_ENV` a consumer's bundler replaces.
 
 ## [0.13.0] — 2026-10-29
 

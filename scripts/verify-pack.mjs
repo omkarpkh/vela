@@ -527,8 +527,8 @@ export const shapes: [DropdownListProps, DropdownListAlign] = [{ label: 'L', tri
     'shipped CSS carries the overlay styles and the tokens they bind')
   check(css.includes('.vela-toast-region') && css.includes('--vela-toast-width:') && css.includes('--vela-duration-toast:'),
     'shipped CSS carries the Toast styles, its width and its dwell')
-  check(css.includes('.vela-dropdown-list__item') && css.includes('--vela-bg-raised-hover:'),
-    'shipped CSS carries the Dropdown List styles and the highlight token they bind')
+  check(css.includes('.vela-dropdown-list__item') && css.includes('--vela-bg-raised-hover:') && css.includes('--vela-dropdown-list-width-min:'),
+    'shipped CSS carries the Dropdown List styles, the highlight token and the minimum width they bind')
 } finally {
   rmSync(app, { recursive: true, force: true })
   rmSync(tarball, { force: true })

@@ -611,46 +611,68 @@ test('the Dropdown List page opens a themed menu on the current item, and a choi
 
 // [[rule: dropdown-list-names-wrap]]
 // The list is where a long name is read in full: it wraps inside the popup's width, never clips,
-// never ends in an ellipsis — at the console width and in a host narrower than the popup, where it
-// is capped at the room it has and the name wraps further.
+// never ends in an ellipsis — a sentence and a single unbroken string alike — at the console width
+// and in a host narrower than the popup, where it is capped at the room it has and the name wraps
+// further. When a name and its meta don't fit side by side, the meta drops under the name.
 test('a Dropdown List name wraps in full inside the list, at desktop width and in a narrow host', async ({ page }) => {
   await page.goto('/#/components/dropdown-list')
   const frame = page.locator('.pg-frame[data-theme="light"] .pg-frame-body')
+  const names = ['Data loss prevention — policy violations across every connected SaaS tenant', 'customer-ingest-pipeline-eu-west-2']
   const check = async () => {
-    await frame.getByRole('button', { name: 'Switch View' }).click()
+    const trigger = frame.getByRole('button', { name: 'Switch View' })
+    await trigger.click()
     const menu = page.getByRole('menu', { name: 'Views' })
     await expect(menu).toBeVisible()
-    const name = 'Data loss prevention — policy violations across every connected SaaS tenant'
-    const item = page.getByRole('menuitemradio', { name })
-    const label = item.locator('.vela-dropdown-list__label')
-    await expect(label).toHaveText(name)
-    const box = await label.evaluate((el) => {
-      const s = getComputedStyle(el)
-      const r = el.getBoundingClientRect(), p = el.closest('[role="menu"]')!.getBoundingClientRect()
-      return {
-        lines: Math.round(r.height / parseFloat(s.lineHeight)),
-        clipped: el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > el.clientHeight + 1,
-        overflow: s.textOverflow, whiteSpace: s.whiteSpace,
-        inside: r.left >= p.left && r.right <= p.right,
-        menuWidth: p.width, viewport: window.innerWidth,
-      }
+    const boxes = []
+    for (const name of names) {
+      const label = page.getByRole('menuitemradio', { name: new RegExp(`^${name}`) }).locator('.vela-dropdown-list__label')
+      await expect(label).toHaveText(name)
+      const box = await label.evaluate((el) => {
+        const s = getComputedStyle(el)
+        const r = el.getBoundingClientRect(), p = el.closest('[role="menu"]')!.getBoundingClientRect()
+        const meta = el.parentElement!.querySelector('.vela-dropdown-list__meta')?.getBoundingClientRect()
+        return {
+          lines: Math.round(r.height / parseFloat(s.lineHeight)),
+          clipped: el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > el.clientHeight + 1,
+          overflow: s.textOverflow, whiteSpace: s.whiteSpace,
+          inside: r.left >= p.left && r.right <= p.right,
+          metaUnder: meta ? meta.top >= r.bottom - 0.5 && meta.left <= r.left + 0.5 && meta.right <= p.right : null,
+          menuWidth: p.width, viewport: window.innerWidth,
+        }
+      })
+      expect(box.lines, name).toBeGreaterThan(1)
+      expect(box.clipped, name).toBe(false)
+      expect(box.overflow, name).not.toBe('ellipsis')
+      expect(box.whiteSpace, name).not.toBe('nowrap')
+      expect(box.inside, name).toBe(true)
+      boxes.push(box)
+    }
+    // The unbroken name fills its line, so its meta drops under it, at the start, inside the list.
+    expect(boxes[1].metaUnder).toBe(true)
+    // A short name and its meta share the line, the meta at the end.
+    const fw = await page.getByRole('menuitemradio', { name: 'Firewall, 1 new' }).evaluate((el) => {
+      const l = el.querySelector('.vela-dropdown-list__label')!.getBoundingClientRect(), m = el.querySelector('.vela-dropdown-list__meta')!.getBoundingClientRect()
+      return { sameLine: Math.abs(l.top - m.top) < 1, atEnd: m.left > l.right }
     })
-    expect(box.lines).toBeGreaterThan(1)
-    expect(box.clipped).toBe(false)
-    expect(box.overflow).not.toBe('ellipsis')
-    expect(box.whiteSpace).not.toBe('nowrap')
-    expect(box.inside).toBe(true)
-    // --vela-popover-width (280), never wider than the room it has.
-    expect(box.menuWidth).toBeLessThanOrEqual(280)
-    expect(box.menuWidth).toBeLessThanOrEqual(box.viewport)
+    expect(fw).toEqual({ sameLine: true, atEnd: true })
+    // At most --vela-popover-width (280), at least 200px and the trigger; never wider than the room it has.
+    const t = (await trigger.boundingBox())!
+    const width = boxes[0].menuWidth
+    expect(width).toBeLessThanOrEqual(280)
+    expect(width).toBeLessThanOrEqual(boxes[0].viewport)
+    if (boxes[0].viewport >= 280) expect(width).toBeGreaterThanOrEqual(Math.max(200, t.width))
     // Every item is at least 31px tall: a 21px line and 10px of padding, over WCAG 2.5.8's 24px.
     for (const h of await page.getByRole('menuitemradio').evaluateAll((els) => els.map((e) => e.getBoundingClientRect().height))) expect(h).toBeGreaterThanOrEqual(31)
     await page.keyboard.press('Escape')
     await expect(menu).toHaveCount(0)
-    return box
+    return boxes[0]
   }
   const wide = await check()
   expect(wide.menuWidth).toBe(280)
+  // The minimum is 200px while the trigger is narrower; it is a bound, not the width.
+  await frame.getByRole('button', { name: 'Switch View' }).click()
+  expect(await page.getByRole('menu').evaluate((el) => getComputedStyle(el).minWidth)).toBe('200px')
+  await page.keyboard.press('Escape')
   // A host narrower than the popup: the navigation is put away so the stage has the viewport.
   await page.setViewportSize({ width: 260, height: 860 })
   const hide = page.getByRole('button', { name: 'Hide navigation' })
@@ -658,6 +680,141 @@ test('a Dropdown List name wraps in full inside the list, at desktop width and i
   const narrow = await check()
   expect(narrow.menuWidth).toBeLessThan(280)
   expect(narrow.lines).toBeGreaterThanOrEqual(wide.lines)
+})
+
+// dropdown-list-focus-current is proved in the unit tests; this is the same promise in a real
+// browser, where Base UI's first highlight is deferred by a frame: every way of opening lands on
+// the current item, and the next arrow key moves on from it.
+test('the Dropdown List lands on the current item however it opens, in a real browser', async ({ page }) => {
+  await page.goto('/#/components/dropdown-list')
+  const frame = page.locator('.pg-frame[data-theme="light"] .pg-frame-body')
+  const trigger = frame.getByRole('button', { name: 'Switch View' })
+  const current = page.getByRole('menuitemradio', { name: 'Firewall, 1 new' })
+  const next = page.getByRole('menuitemradio', { name: /^Data loss prevention/ })
+  const opens: [string, () => Promise<void>][] = [
+    ['click', () => trigger.click()],
+    ['Enter', async () => { await trigger.focus(); await page.keyboard.press('Enter') }],
+    ['Space', async () => { await trigger.focus(); await page.keyboard.press(' ') }],
+    ['ArrowDown', async () => { await trigger.focus(); await page.keyboard.press('ArrowDown') }],
+    ['ArrowUp', async () => { await trigger.focus(); await page.keyboard.press('ArrowUp') }],
+  ]
+  for (const [how, open] of opens) {
+    await open()
+    await expect(current, how).toBeFocused()
+    await page.waitForTimeout(100)
+    await expect(current, how).toBeFocused()
+    await expect(page.locator('[role="menuitemradio"][data-highlighted]'), how).toHaveCount(1)
+    await page.keyboard.press('ArrowDown')
+    await expect(next, how).toBeFocused()
+    await page.keyboard.press('Escape')
+    await expect(page.getByRole('menu')).toHaveCount(0)
+  }
+})
+
+// The global focus ring is an outline outside the item; the popup scrolls, so its padding is what
+// keeps the ring from being clipped — at the sides, and at the bottom with the last item focused
+// in a list that has scrolled. A disabled item shows the highlight under keyboard focus only.
+test('the Dropdown List never clips the focus ring, and a disabled item highlights from the keyboard only', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 420 })
+  await page.goto('/#/components/dropdown-list')
+  const frame = page.locator('.pg-frame[data-theme="light"] .pg-frame-body')
+  const trigger = frame.getByRole('button', { name: 'Switch View' })
+  await trigger.scrollIntoViewIfNeeded()
+  await trigger.focus()
+  await page.keyboard.press('Enter')
+  const menu = page.getByRole('menu', { name: 'Views' })
+  await expect(menu).toBeVisible()
+  const ringInside = () => page.evaluate(() => {
+    const el = document.activeElement as HTMLElement, popup = el.closest('[role="menu"]') as HTMLElement
+    const s = getComputedStyle(el), reach = parseFloat(s.outlineWidth) + parseFloat(s.outlineOffset)
+    const r = el.getBoundingClientRect(), p = popup.getBoundingClientRect()
+    const port = { left: p.left + popup.clientLeft, top: p.top + popup.clientTop, right: p.left + popup.clientLeft + popup.clientWidth, bottom: p.top + popup.clientTop + popup.clientHeight }
+    return {
+      ring: s.outlineStyle !== 'none' && reach > 0,
+      inside: r.left - reach >= port.left - 0.5 && r.right + reach <= port.right + 0.5 && r.top - reach >= port.top - 0.5 && r.bottom + reach <= port.bottom + 0.5,
+      scrolls: popup.scrollHeight > popup.clientHeight,
+    }
+  })
+  for (const key of ['Home', 'End']) {
+    await page.keyboard.press(key)
+    await page.waitForTimeout(50)
+    expect(await ringInside(), key).toMatchObject({ ring: true, inside: true })
+  }
+  // The list is capped by the short viewport, so the End case above was a scrolled list.
+  expect((await ringInside()).scrolls).toBe(true)
+
+  // Keyboard focus on the disabled item shows the highlight surface; its name stays inactive and
+  // its meta stays readable.
+  const archive = page.getByRole('menuitemradio', { name: 'Archive, No access' })
+  await page.keyboard.press('ArrowUp')
+  await expect(archive).toBeFocused()
+  const look = () => archive.evaluate((el) => ({
+    bg: getComputedStyle(el).backgroundColor,
+    name: getComputedStyle(el.querySelector('.vela-dropdown-list__label')!).color,
+    meta: getComputedStyle(el.querySelector('.vela-dropdown-list__meta')!).color,
+  }))
+  const tokens = await archive.evaluate((el) => {
+    const read = (v: string) => {
+      const probe = document.createElement('span'); probe.style.color = `var(${v})`
+      el.closest('.vela-dropdown-list')!.appendChild(probe)
+      const c = getComputedStyle(probe).color; probe.remove(); return c
+    }
+    return { hover: read('--vela-bg-raised-hover'), inactive: read('--vela-text-inactive'), text: read('--vela-text-default') }
+  })
+  await expect(menu).not.toHaveAttribute('data-vela-pointer')
+  await expect(archive).toHaveAttribute('data-highlighted', '')
+  await expect(archive).toHaveCSS('background-color', tokens.hover)
+  expect(await look()).toEqual({ bg: tokens.hover, name: tokens.inactive, meta: tokens.text })
+  // Under the pointer it changes nothing.
+  await archive.hover()
+  await page.mouse.move((await archive.boundingBox())!.x + 40, (await archive.boundingBox())!.y + 10)
+  const hovered = await look()
+  expect(hovered.bg).not.toBe(tokens.hover)
+  expect(hovered.name).toBe(tokens.inactive)
+  await page.keyboard.press('Escape')
+})
+
+// [[rule: dropdown-list-forced-colours]]
+// In forced colours the page's backgrounds are replaced, so the highlighted item is the system's
+// own Highlight / HighlightText pair, opted out of the forcing on that row alone, and the check is
+// drawn in currentColor so it follows the row's text.
+test('the Dropdown List highlights with the system pair in forced colours, and the check follows the text', async ({ page }) => {
+  await page.emulateMedia({ forcedColors: 'active' })
+  await page.goto('/#/components/dropdown-list')
+  const frame = page.locator('.pg-frame[data-theme="light"] .pg-frame-body')
+  await frame.getByRole('button', { name: 'Switch View' }).focus()
+  await page.keyboard.press('Enter')
+  const current = page.getByRole('menuitemradio', { name: 'Firewall, 1 new' })
+  await expect(current).toBeFocused()
+  await expect(current).toHaveAttribute('data-highlighted', '')
+  const read = await current.evaluate((el) => {
+    const probe = document.createElement('span'); probe.style.cssText = 'background: Highlight; color: HighlightText; forced-color-adjust: none'
+    document.body.appendChild(probe)
+    const sys = { bg: getComputedStyle(probe).backgroundColor, fg: getComputedStyle(probe).color }
+    probe.remove()
+    const other = el.parentElement!.querySelector('[role="menuitemradio"]:not([data-highlighted])') as HTMLElement
+    const check = el.querySelector('.vela-dropdown-list__check svg')!
+    return {
+      sys,
+      bg: getComputedStyle(el).backgroundColor, fg: getComputedStyle(el).color,
+      adjust: getComputedStyle(el).forcedColorAdjust,
+      otherAdjust: getComputedStyle(other).forcedColorAdjust,
+      popupAdjust: getComputedStyle(el.closest('[role="menu"]')!).forcedColorAdjust,
+      checkColour: getComputedStyle(el.querySelector('.vela-dropdown-list__check')!).color,
+      checkStroke: getComputedStyle(check).stroke,
+    }
+  })
+  expect(read.bg).toBe(read.sys.bg)
+  expect(read.fg).toBe(read.sys.fg)
+  expect(read.adjust).toBe('none')
+  expect(read.otherAdjust).toBe('auto')
+  expect(read.popupAdjust).toBe('auto')
+  expect(read.checkColour).toBe(read.fg)
+  expect(read.checkStroke).toBe(read.fg)
+  // The highlight moves with the keys, and the row it leaves goes back to the forced colours.
+  await page.keyboard.press('ArrowDown')
+  expect(await current.evaluate((el) => getComputedStyle(el).forcedColorAdjust)).toBe('auto')
+  await page.keyboard.press('Escape')
 })
 
 test('the nav filter narrows the list and the menu button collapses it', async ({ page }) => {
