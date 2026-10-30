@@ -6,6 +6,33 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Unreleased]
 
 ### Changed
+- **Motion rule 1 gains one exception: an icon glyph's own strokes may draw** (decision 004,
+  `decisions/004-icon-strokes-draw`). Inside a `.vela-icon`, by transition only, on the one glyph a
+  person just acted on, `stroke-dashoffset` may animate; `stroke-dasharray` and `pathLength` are
+  set, never animated, with the gap at least the path's length, and a stroke that retracts fully
+  also fades to `opacity: 0`, because a zero-length round-cap dash still paints a dot. `css:check`
+  now accepts `stroke-dashoffset` in a transition only under a selector whose every match sits
+  inside `.vela-icon` (not `.vela-icon-button`, not `:not()`/`:has()`, not across a sibling
+  combinator), fails it everywhere else with "only an icon glyph's strokes may draw", and still
+  fails it in `@keyframes` and fails `stroke-dasharray`. Inside `.vela-icon` a bare length is
+  allowed in `transform-origin` and inside `translate()`, because it is a unit of the 24-unit grid;
+  every other property is checked as before. The dash gap and the retract-to-transparent guard
+  cannot be seen in CSS and are proved by browser-level rules in the owning component's spec. The
+  decision rests on Chromium timings only: for one glyph the two techniques time the same (16.8ms
+  worst frame, none over 20ms, at 1× and 4× slower CPU); at 100 glyphs dashoffset's worst frame is
+  58.3ms against 33.4ms. WebKit, Firefox and real hardware were not measured. No component uses
+  the exception yet.
+- **Motion: a dwell is not motion.** A wait before something appears (the tooltip's delay) survives
+  reduced motion; a delay that staggers the parts of one movement collapses with its durations, in
+  the component's own reduced-motion rules. Under reduced motion a decorative hover pose is removed,
+  not snapped, and the hover shows by colour alone. `base.css` is unchanged.
+- **Button turns off the browser's tap highlight.** `-webkit-tap-highlight-color: transparent` on
+  every Button but `text-link`, so a touch press on iOS and Android shows the press scale without a
+  translucent box over it. A text link keeps the browser's highlight, its only tap feedback, and
+  `.vela-root` does not set it, so a host's links keep theirs. A new `css:check` rule,
+  `tap-highlight`, fails a stylesheet that styles `[data-vela-pressed]` without it (not waivable);
+  where a rule uses `all: unset`, the property comes after it. Button is the only stylesheet with a
+  press response today.
 - **All eighteen Figma sets are published.** The library was published on 29 Oct 2026, twice;
   the second publish carried the 0.13.0 state. Every SETS entry in
   `scripts/sync-figma-descriptions.mjs` — Table's three sets among them — moves from `built` to
