@@ -5,7 +5,8 @@
  * the second is "numeric tokens carry their unit". Until now both were review conventions:
  * nothing failed the build when a component stylesheet wrote `rgb(0 0 0 / 0.06)` or `34px`.
  * This is that check. It reads every src/components/**\/*.css and src/headless/**\/*.css (the
- * stylesheets of the headless-born components, Checkbox and Radio Group) and fails on:
+ * stylesheets of the headless-born components, Checkbox and Radio Group), and every stylesheet of
+ * the site under demo/, and fails on:
  *
  *   raw-colour      a 3/4/6/8-digit hex, rgb()/rgba()/hsl()/hsla()/oklch()/oklab()/lab()/lch()/
  *                   hwb(), or a CSS named colour. `transparent` and `currentColor` are not
@@ -46,9 +47,11 @@
  *   node scripts/check-css.mjs            # report; exit 1 on an unwaived finding
  *   node scripts/check-css.mjs --json     # the findings as JSON (what the vitest test reads)
  *
- * Scope is deliberately the two component trees, src/components and src/headless: base.css owns
- * the sr-only hack and the reduced-motion collapse, which are the two legitimate raw values in the
- * kit, and the token files are generated.
+ * Scope is the two component trees, src/components and src/headless, and the site, demo/: base.css
+ * owns the sr-only hack and the reduced-motion collapse, which are the two legitimate raw values in
+ * the kit, and the token files are generated. The site follows DESIGN.md like the kit does, with one
+ * difference: a layout width that waits for the breakpoint tokens (DESIGN.md, "Responsive and
+ * density") is a true literal there, so the site may carry waivers and the component trees may not.
  */
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join, dirname, relative } from 'node:path'
@@ -246,18 +249,27 @@ export function lintCss(source) {
   return { findings, waivers: [...waivers].map(([l, reason]) => ({ line: l, reason })) }
 }
 
-// The two trees that hold component stylesheets: the core and the headless-born components.
-const DIRS = ['src/components', 'src/headless']
+// The two trees that hold component stylesheets (the core and the headless-born components), and
+// the site's own stylesheets (demo/, the docs site and playground).
+export const COMPONENT_DIRS = ['src/components', 'src/headless']
+export const SITE_DIRS = ['demo']
 
-/** Lint every component stylesheet under `root`. */
+/** Lint every component and site stylesheet under `root`. Each entry says which scope it is in. */
 export function checkCss(root = DEFAULT_ROOT) {
-  const files = DIRS.map((d) => join(root, d)).flatMap((dir) => (statSync(dir, { throwIfNoEntry: false })?.isDirectory() ? walk(dir) : []))
+  const scoped = [
+    ...COMPONENT_DIRS.map((d) => ['component', d]),
+    ...SITE_DIRS.map((d) => ['site', d]),
+  ]
+  const files = scoped.flatMap(([scope, d]) => {
+    const dir = join(root, d)
+    return statSync(dir, { throwIfNoEntry: false })?.isDirectory() ? walk(dir).map((file) => [scope, file]) : []
+  })
   const report = []
-  for (const file of files) {
+  for (const [scope, file] of files) {
     const { findings, waivers } = lintCss(readFileSync(file, 'utf8'))
     const problems = findings.filter((f) => !f.waived)
     for (const w of waivers) if (!w.reason) problems.push({ rule: 'waiver-without-reason', line: w.line, prop: '', value: '', what: 'a vela-allow waiver must say why — /* vela-allow: <reason> */', waived: false })
-    report.push({ file: relative(root, file), findings, waivers, problems })
+    report.push({ scope, file: relative(root, file), findings, waivers, problems })
   }
   return report
 }
@@ -269,8 +281,8 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     console.log(JSON.stringify(report))
     process.exit(failed ? 1 : 0)
   }
-  console.log('\n  COMPONENT CSS\n  ' + '-'.repeat(58))
   for (const r of report) {
+    if (r === report.find((x) => x.scope === r.scope)) console.log(`\n  ${r.scope === 'site' ? 'SITE CSS (demo/)' : 'COMPONENT CSS'}\n  ` + '-'.repeat(58))
     const waived = r.findings.filter((f) => f.waived)
     console.log(`  ${r.file}: ${r.problems.length ? r.problems.length + ' violation(s)' : 'clean'}${waived.length ? `, ${waived.length} waived` : ''}`)
     for (const p of r.problems) console.log(`    ✗ ${p.rule}  line ${p.line}  ${p.prop ? p.prop + ': ' + p.value : ''}\n        ${p.what}`)
@@ -280,6 +292,6 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const waived = report.reduce((n, r) => n + r.findings.filter((f) => f.waived).length, 0)
   console.log(failed
     ? `\n  ${total} violation(s). Bind a --vela-* token, or waive the line with a reason.\n`
-    : `\n  Every component stylesheet binds tokens; ${waived} literal value(s) carry a waiver and a reason.\n`)
+    : `\n  Every component and site stylesheet binds tokens; ${waived} literal value(s) carry a waiver and a reason.\n`)
   process.exit(failed ? 1 : 0)
 }

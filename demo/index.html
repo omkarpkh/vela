@@ -9,7 +9,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet" />
   </head>
   <body>
-    <div id="root"></div>
+    <!-- What shows before the scripts run, and without them (playground spec, section 7). React
+         replaces the contents of #root on its first render. -->
+    <div id="root"><p class="boot">Loading Vela's playground…</p></div>
+    <noscript>
+      <p class="boot">Vela's playground needs JavaScript. The specs are readable on GitHub.
+        <a href="https://github.com/omkarpkh/vela/tree/main/guidelines">Read the guidelines on GitHub</a></p>
+    </noscript>
     <script type="module" src="./main.tsx"></script>
   </body>
 </html>

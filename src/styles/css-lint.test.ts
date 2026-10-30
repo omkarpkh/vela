@@ -9,7 +9,7 @@ import { checkCss, lintCss } from '../../scripts/check-css.mjs'
 // colour or a bare length in src/components/**/*.css or src/headless/**/*.css fails `npm test` unless the line carries
 // a `/* vela-allow: <reason> */` waiver, and every waiver is printed, never silent.
 describe('component CSS binds tokens', () => {
-  const report = checkCss()
+  const report = checkCss().filter((r) => r.scope === 'component')
 
   it('lints every component stylesheet', () => {
     expect(report.map((r) => r.file).sort()).toEqual([
@@ -42,6 +42,30 @@ describe('component CSS binds tokens', () => {
     // A new waiver is a new token request: add the token, bind it, and this stays empty.
     const waiving = report.filter((r) => r.waivers.length).map((r) => r.file.split('/')[2]).sort()
     expect(waiving).toEqual([])
+  })
+})
+
+// The site (demo/) follows DESIGN.md like the kit: semantic tokens, units carried by the token. The
+// one difference is that a layout width waiting for the breakpoint tokens is a true literal there, so
+// the site may waive it, with a reason, where the component stylesheets may not. The audit counted
+// 36 bare values in the site CSS; what is left is pinned here, so a new literal is a decision.
+describe('site CSS binds tokens', () => {
+  const report = checkCss().filter((r) => r.scope === 'site')
+  const SITE_STYLESHEETS = ['demo/demo.css', 'demo/playground.css', 'demo/shell/shell.css']
+
+  it('lints every stylesheet under demo/', () => {
+    expect(report.map((r) => r.file).sort()).toEqual([...SITE_STYLESHEETS].sort())
+  })
+
+  it.each(SITE_STYLESHEETS)('%s has no raw colour, primitive or bare length without a waiver', (file) => {
+    const r = report.find((x) => x.file === file)!
+    expect(r.problems.map((p) => `${p.rule} line ${p.line}: ${p.prop}: ${p.value} — ${p.what}`)).toEqual([])
+  })
+
+  it('every site waiver says why, and the waived literals stay few', () => {
+    for (const r of report) for (const w of r.waivers) expect(w.reason, `${r.file} line ${w.line}`).not.toBe('')
+    const waived = report.flatMap((r) => r.findings.filter((f) => f.waived).map((f) => `${r.file}:${f.line} ${f.prop}`))
+    expect(waived.length, waived.join('\n')).toBeLessThanOrEqual(20)
   })
 })
 
