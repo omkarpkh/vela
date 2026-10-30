@@ -19,11 +19,21 @@
  *                   a hover colour is a state settling, not movement — but width, height,
  *                   margin, padding, left/top, `all`, or a bare duration (which means `all`)
  *                   fail. Inside @keyframes only the moving properties are allowed.
+ *                   The one exception (rule 1, decision 004): an icon glyph's own strokes may
+ *                   draw, so `stroke-dashoffset` may transition inside a `.vela-icon` selector.
+ *                   Nowhere else, never in @keyframes, and never `stroke-dasharray`.
+ *   tap-highlight   a stylesheet that styles `[data-vela-pressed]` gives that control its own
+ *                   press response, so it must also set `-webkit-tap-highlight-color:
+ *                   transparent`, or a touch press gets the browser's grey flash on top of it.
+ *                   Not waivable.
  *
  * Allowed without a waiver: `0` in any unit; `1px` (and `-1px`) where it is a hairline or the
  * compensation for one — border*, outline*, inset*, margin*, top/right/bottom/left; `100%` and
  * every other percentage (translate percentages included); unitless numbers (line-height,
- * `scale(0.97)`, opacity); durations and angles.
+ * `scale(0.97)`, opacity); durations and angles. Inside a `.vela-icon` selector, where a length is
+ * a unit of the glyph's 24-unit grid rather than a screen pixel, a bare length is also allowed in
+ * `transform-origin` and inside `translate()`, `translateX()` and `translateY()`. Every other
+ * property inside an icon is checked as usual.
  *
  * A bare value that genuinely has no token yet is WAIVED INLINE, on the same line, with a reason:
  *
@@ -75,6 +85,35 @@ const WAIVER = /\/\*\s*vela-allow:\s*([^*]*?)\s*\*\//
 const MOVES = new Set(['transform', 'translate', 'scale', 'rotate', 'opacity', 'filter'])
 const COLOUR_PROPS = /^(color|background-color|border(-(top|right|bottom|left|block|inline)(-(start|end))?)?-color|outline-color|fill|stroke|text-decoration-color|caret-color|accent-color)$/
 const TIME = /^-?\d*\.?\d+m?s$/
+// The icon-stroke exception (foundations/motion.md, rule 1; decisions/004-icon-strokes-draw).
+const DRAWS = 'stroke-dashoffset'
+const ICON = /\.vela-icon(?![\w-])/
+/** Remove each `name(...)` matched by `fn` (a regex source ending in `\(`), parentheses balanced. */
+const dropFns = (v, fn) => {
+  const re = new RegExp(fn, 'gi')
+  let out = '', last = 0, m
+  while ((m = re.exec(v))) {
+    let depth = 1, i = m.index + m[0].length
+    for (; i < v.length && depth; i++) { if (v[i] === '(') depth++; if (v[i] === ')') depth-- }
+    out += v.slice(last, m.index)
+    last = i
+    re.lastIndex = i
+  }
+  return out + v.slice(last)
+}
+/**
+ * Whether a block's selector puts every element it matches inside a Vela icon. Each selector in
+ * the list must name `.vela-icon` as a compound of its own — not inside :not(), :has(), :is() or any
+ * other functional pseudo-class, not in an attribute value — and nothing after it may be a sibling
+ * combinator, which would leave the icon. `.vela-icon-button` is not `.vela-icon`.
+ */
+const inIcon = (selector) => !selector.startsWith('@') && topLevel(selector).every((s) => {
+  const bare = dropFns(s, ':[\\w-]+\\(').replace(/\[[^\]]*\]/g, '')
+  const at = bare.search(ICON)
+  return at >= 0 && !/[+~]/.test(bare.slice(at))
+})
+/** Lengths on the icon grid: `transform-origin` whole, and the contents of translate(). */
+const gridless = (prop, value) => (prop === 'transform-origin' ? '' : dropFns(value, '\\btranslate[xy]?\\('))
 /** Split on commas outside parentheses: `color 1s, transform 2s cubic-bezier(0, 0, 1, 1)` → two items. */
 const topLevel = (v) => {
   const out = []
@@ -131,7 +170,9 @@ export function lintCss(source) {
   let buf = ''
   let line = 1
   let start = 1
-  const blocks = []   // the selector or at-rule of each open block, so a declaration knows it is in @keyframes
+  const blocks = []   // the selector or at-rule of each open block, so a declaration knows it is in @keyframes or an icon
+  let pressedLine = 0   // the first selector that styles [data-vela-pressed]
+  let tapCleared = false
   const flush = (isDecl) => {
     const text = buf
     buf = ''
@@ -160,16 +201,21 @@ export function lintCss(source) {
     // Motion: what a transition or a keyframe may move.
     const inKeyframes = blocks.some((b) => /^@(-webkit-)?keyframes\b/.test(b))
     if (inKeyframes && !MOVES.has(prop) && !prop.startsWith('--')) hit('motion-property', `@keyframes animate ${prop} — only transform, translate, scale, rotate, opacity and filter move`)
+    const icon = blocks.some(inIcon)
     if (prop === 'transition' || prop === 'transition-property') {
       for (const p of transitioned(prop, value)) {
         if (p === 'none' || MOVES.has(p) || COLOUR_PROPS.test(p)) continue
+        if (p === DRAWS && icon) continue
         hit('motion-property', p === 'all'
           ? 'transitions `all` (a bare duration means all) — name the property: transform, opacity, filter, or a colour'
-          : `transitions ${p} — only transform, opacity and filter move; colours may settle; layout never animates`)
+          : p === DRAWS
+            ? 'transitions stroke-dashoffset — only an icon glyph\'s strokes may draw (inside .vela-icon)'
+            : `transitions ${p} — only transform, opacity and filter move; colours may settle; layout never animates`)
       }
     }
+    if (prop === '-webkit-tap-highlight-color' && value.trim().toLowerCase() === 'transparent') tapCleared = true
 
-    for (const l of value.matchAll(LENGTH)) {
+    for (const l of (icon ? gridless(prop, value) : value).matchAll(LENGTH)) {
       const n = Number(l[1])
       if (n === 0) continue
       if (Math.abs(n) === 1 && l[2] === 'px' && HAIRLINE_PROPS.test(prop)) continue
@@ -179,13 +225,21 @@ export function lintCss(source) {
   for (let i = 0; i < code.length; i++) {
     const ch = code[i]
     if (ch === '\n') line++
-    if (ch === '{') { blocks.push(buf.trim()); flush(false); start = line; continue }
+    if (ch === '{') {
+      const selector = buf.trim()
+      if (!pressedLine && selector.includes('[data-vela-pressed')) pressedLine = start
+      blocks.push(selector); flush(false); start = line; continue
+    }
     if (ch === ';') { flush(true); start = line; continue }
     if (ch === '}') { flush(true); blocks.pop(); start = line; continue }
     if (!buf.trim() && ch !== '\n') start = line
     buf += ch
   }
   flush(true)
+
+  // A control with its own press response turns the browser's off. Not waivable: the fix is one line.
+  if (pressedLine && !tapCleared) findings.push({ rule: 'tap-highlight', line: pressedLine, prop: '-webkit-tap-highlight-color', value: '',
+    what: 'styles [data-vela-pressed] but never sets -webkit-tap-highlight-color: transparent — a touch press would get the browser\'s flash on top of its own press response', waived: false })
 
   return { findings, waivers: [...waivers].map(([l, reason]) => ({ line: l, reason })) }
 }

@@ -152,6 +152,10 @@ markup already carries, not a new variant.
 - **Pressed** — pointer only, `transform: scale(0.97)`, keyed on `[data-vela-pressed]` (set by
   the component) or `:active` without JS, and excluded for `:focus-visible`, so Space and Enter
   never scale: a keyboard press collapses the focus ring instead. The hit target never moves.
+  A control with its own press response sets `-webkit-tap-highlight-color: transparent` beside it,
+  in its own stylesheet (after any `all: unset`, which resets it), so a touch press does not also
+  get the browser's flash; `css:check` fails a stylesheet that styles `[data-vela-pressed]` without
+  it. Never on `.vela-root`: a host's links inside it would lose their only tap feedback.
 - **Selected / checked / invalid** — CSS keys on the ARIA state the markup already carries:
   `[aria-selected="true"]` (Tabs), `[aria-checked="true"]` (Toggle, Checkbox, Radio Group),
   `[aria-checked="mixed"]` (an indeterminate Checkbox), `[aria-invalid="true"]` (Input, Checkbox,
@@ -195,7 +199,8 @@ action; a warning or a toast with an action stays until dismissed.
 
 Only `transform`, `opacity` and `filter` animate (a colour may settle, as a hover does; layout
 never moves), and `scripts/check-css.mjs` fails a transition or keyframe that moves anything
-else. Pointer states enter faster than they leave
+else. The one exception is an icon glyph's own strokes, which may draw with `stroke-dashoffset`
+by transition inside a `.vela-icon`, under the guards in `foundations/motion.md` (decision 004). Pointer states enter faster than they leave
 (hover in at `fast`, out at `base`; press in at `instant`, out at `base`). Transitions, not
 keyframes, for anything a person can re-trigger. No looping attention-seekers — the loading
 spinner is the one loop. **`prefers-reduced-motion` is handled once, globally**, in
