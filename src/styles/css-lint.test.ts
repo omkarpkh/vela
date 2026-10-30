@@ -73,6 +73,9 @@ describe('the CSS checker', () => {
     expect(rules('.a { transform: translateX(14px); }')).toEqual(['raw-length:transform'])
     expect(rules('.a { padding: 0; margin: 0px; width: 100%; line-height: 1.5; opacity: .5; transform: scale(0.97) translate(-50%, 0); transition: opacity 700ms; rotate: 90deg; }')).toEqual([])
     expect(rules('.a { border: 1px solid; inset: -1px; margin-bottom: -1px; outline-offset: 1px; border-bottom: 1px solid var(--vela-border-subtle); }')).toEqual([])
+    // A hairline drawn as an inset shadow; a shadow's blur or a larger offset is still a raw length.
+    expect(rules('.a { box-shadow: inset 0 -1px 0 var(--vela-border-subtle); }')).toEqual([])
+    expect(rules('.a { box-shadow: 0 4px 8px var(--vela-border-subtle); }')).toEqual(['raw-length:box-shadow', 'raw-length:box-shadow'])
     // 1px is a hairline, not a general-purpose unit.
     expect(rules('.a { padding: 1px; gap: 1px; }')).toEqual(['raw-length:padding', 'raw-length:gap'])
   })

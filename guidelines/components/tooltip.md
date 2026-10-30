@@ -5,9 +5,8 @@ full text of a truncated value — shown on hover after a short rest and at once
 dismissed by Escape. **Text only.** A user who never sees it misses nothing they need.
 
 **Status:** Experimental — born in `@omkarux/vela/headless` (Base UI 1.9) with Popover and Dialog;
-there is no core implementation, and its Figma set is built in the library file (from
-`scripts/figma/components/tooltip.figma.js`) but not published yet. Approved once the API has settled and the set is
-published; see `GOVERNANCE.md`.
+there is no core implementation, and its Figma set is published in the library (built from
+`scripts/figma/components/tooltip.figma.js`). Approved once the API has settled; see `GOVERNANCE.md`.
 **Dependencies:** @base-ui/react (optional peer, via /headless)
 
 ## When to use Tooltip (vs. Popover, vs. inline text)
@@ -159,8 +158,8 @@ text property holds one default for the whole set, so it cannot carry a differen
 variant. `Lines` is not a prop: a one-line tooltip hugs its text and a two-line one
 is `tooltip/width-max` wide and wraps, which is the only place the cap is visible in the file. There
 is no placement axis: without an arrow — Vela overlays carry none — the four placements look the
-same. The set is created by `scripts/figma/components/tooltip.figma.js`; until that builder has
-been run in the file, the library has no Tooltip set.
+same. The set is created by `scripts/figma/components/tooltip.figma.js`; it is published in
+the library.
 
 | Figma property | Code prop |
 |---|---|

@@ -33,6 +33,37 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   `tap-highlight`, fails a stylesheet that styles `[data-vela-pressed]` without it (not waivable);
   where a rule uses `all: unset`, the property comes after it. Button is the only stylesheet with a
   press response today.
+- **All eighteen Figma sets are published.** The library was published on 29 Oct 2026, twice;
+  the second publish carried the 0.13.0 state. Every SETS entry in
+  `scripts/sync-figma-descriptions.mjs` — Table's three sets among them — moves from `built` to
+  `published` with its node unchanged, `guidelines/figma-map.json` is regenerated, and the Status
+  page names each set and its page instead of "Built, not published". The nine components that
+  stay Experimental keep their Status lines, reworded to say the set is published, each with its
+  remaining condition: the API settling (Checkbox, Radio Group, Popover, Tooltip, Dialog, Toast,
+  Table), an API review (Text Area), the kit's inline glyphs moving onto it (Icon). Each spec's
+  Figma mapping section says its set is published, and `guidelines/llms.txt` labels Text Area and
+  Icon Experimental, as it already did the others.
+- **Risk Pill is Approved.** Its Status line said "Approved once the set is published"; the set
+  is published, every Hard-constraints rule is tagged and proved by `rules:check`, its colour
+  pairs are in `PAIRS` and its visual baselines are committed, so the Status line comes off.
+  Seven components are Approved and nine Experimental (`GOVERNANCE.md`, `README.md`,
+  `guidelines/overview.md`).
+
+### Fixed
+- **Tabs: the selected underline renders 2px, as specified; it rendered 1px.** The tab list scrolls,
+  so it clips at its padding box, and the underline overlapped the list's rule, a border outside
+  that box: its lower pixel was cut. The rule is now an inset shadow inside the box, the triggers
+  no longer pull 1px below it, and the sliding bar sits at `bottom: 0`. The list keeps its height.
+  The pixel is inside the screenshots' 1% tolerance, so no baseline needed rewriting; the new
+  browser rule below is what catches it.
+- **Tabs in forced colours (Windows contrast themes): the selected tab can be found again.** The
+  browser turned every tab's transparent border into a visible underline in the text colour, so
+  every tab looked selected. Tabs now has forced-colours rules: the selected label and underline
+  are `Highlight`, no other tab has an underline, disabled is `GrayText`, the focus ring
+  `Highlight`, the rule a `CanvasText` border. Checked in Chromium's forced-colours emulation;
+  not yet on Windows itself.
+- New browser rules `tabs-underline-not-clipped` and `tabs-forced-colours-selected`. The CSS
+  checker now accepts a ±1px hairline drawn as a `box-shadow`, as it does for borders.
 
 ## [0.13.0] — 2026-10-29
 
