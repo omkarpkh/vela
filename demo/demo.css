@@ -14,6 +14,9 @@
 
 /* ---------------------------------------------------------------- shell -- */
 body { margin: 0; background: var(--vela-bg-global); }
+/* index.html's first paint and its <noscript> line: body text, before React renders. */
+.boot { margin: 0; padding: var(--vela-space-30) var(--vela-space-20); font-family: var(--vela-font-family-primary); font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height); color: var(--vela-text-default); }
+.boot a { color: var(--vela-text-link); }
 .shell { min-height: 100vh; display: flex; flex-direction: column; }
 .skip { position: absolute; left: var(--vela-space-10); top: var(--vela-space-10); transform: translateY(-200%); z-index: 100; padding: var(--vela-space-10) var(--vela-space-15); background: var(--vela-bg-raised); color: var(--vela-text-link); border: 1px solid var(--vela-border-default); border-radius: var(--vela-radius-4); }
 .skip:focus { transform: none; }
@@ -107,7 +110,7 @@ body { margin: 0; background: var(--vela-bg-global); }
    the signal. The same tag marks a Proposal page. */
 .site-tag { display: inline-block; padding: 0 var(--vela-space-5); border: 1px solid var(--vela-border-default); border-radius: var(--vela-radius-4); background: transparent; color: var(--vela-text-default); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); font-weight: var(--vela-font-weight-regular); }
 .status-note { display: block; margin-top: var(--vela-space-5); max-width: 42ch; }
-@media (max-width: 900px) { .status-table { display: block; overflow-x: auto; } }
+.status-scroll { overflow-x: auto; }
 
 /* --------------------------------------------------------- motion review -- */
 .motion-section { padding: var(--vela-space-30) 0; border-bottom: 1px solid var(--vela-border-subtle); }
@@ -116,7 +119,7 @@ body { margin: 0; background: var(--vela-bg-global); }
 .motion-copy code, .motion-tokens code { font-family: var(--vela-font-family-mono); font-size: var(--site-code-size); overflow-wrap: anywhere; }
 .motion-status { color: var(--vela-text-de-emphasized); }
 .motion-section { container-type: inline-size; }   /* so the stage drops to one column in a narrow column (playground.css) */
-.motion-frame { background: var(--vela-bg-global); color: var(--vela-text-default); min-height: 0; justify-content: flex-start; }
+.motion-frame { background: var(--vela-bg-global); color: var(--vela-text-default); min-height: 0; }
 .motion-frame__body { width: 100%; display: flex; flex-direction: column; gap: var(--vela-space-30); }
 .motion-sample__label { margin: 0 0 var(--vela-space-5); color: var(--vela-text-de-emphasized); }
 .motion-sample__panel { margin: 0; color: var(--vela-text-de-emphasized); }

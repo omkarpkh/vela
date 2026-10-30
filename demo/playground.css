@@ -13,14 +13,21 @@
 .pg-toolbar__spacer { flex: 1; }
 
 /* The stage column is a container: the two frames stack whenever the column itself is narrow,
-   whether that is a small viewport or the nav and props panel eating a wide one. */
+   whether that is a small viewport or the nav and props panel eating a wide one.
+   Content wider than the stage scrolls sideways inside the stage, never the page, and there is no
+   edge fade: a frame's column grows to its content's minimum width, and the stage scrolls. While it
+   scrolls it is a named, focusable region (ScrollRegion, "Stage, scrollable"). */
 .pg-main { container-type: inline-size; min-width: 0; }
-.pg-stage { display: grid; grid-template-columns: 1fr 1fr; gap: var(--vela-space-15); }
+.pg-stage { display: grid; grid-template-columns: 1fr 1fr; gap: var(--vela-space-15); overflow-x: auto; overflow-y: hidden; }
 .pg-stage--single { grid-template-columns: 1fr; }
 @container (max-width: 640px) { .pg-stage { grid-template-columns: 1fr; } }
-.pg-frame { position: relative; border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4); padding: var(--vela-space-60) var(--vela-space-30) var(--vela-space-40); min-height: var(--site-stage-min); display: flex; align-items: center; justify-content: center; }
+.pg-frame { position: relative; border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4); padding: var(--vela-space-60) var(--vela-space-30) var(--vela-space-40); min-height: var(--site-stage-min); }
 .pg-frame-label { position: absolute; top: var(--vela-space-10); left: var(--vela-space-15); color: var(--vela-text-de-emphasized); }
-.pg-frame-body { max-width: 100%; min-width: 0; }
+/* Anchored to the top-left: the body is the frame's width and starts at its top, so nothing
+   re-centres when a prop changes and only what the prop changed moves. This replaces the
+   per-component :has() exceptions (Table, and Tabs from #25): a Table gets its host's width, and a
+   Tabs list holds still, because every component now sits where a page column would put it. */
+.pg-frame-body { inline-size: 100%; }
 /* Copy inside a playground overlay (Popover, Dialog): the overlay is portalled out of the frame. */
 .pg-overlay-copy { margin: 0 0 var(--vela-space-10); }
 /* The Toast stage: the Save button, and the page's own record of what was saved. */
@@ -92,14 +99,6 @@
 .pg-icon__cell { display: flex; align-items: center; gap: var(--vela-space-5); min-width: 0; color: var(--vela-text-de-emphasized); }
 .pg-icon__name { overflow-wrap: anywhere; }
 
-/* Table (Phase 1). The frame body hugs its content, and a Table's width never comes from its
-   content — it is an inline-size container, so a wide table cannot widen its host. Here the host
-   gives it the frame's width, as a page column would. The bounded height is the host's half of
-   stickyHeader: the region fills it and scrolls, and the header pins to its top. */
-.pg-frame-body:has(> .vela-table) { width: 100%; }
-/* Tabs: the frame centres a body that hugs its content, and each panel's text is a different
-   length and height, so switching tabs moved the whole tab list sideways and up or down. Give
-   the body the frame's width and hold it at the top, so the list stays put and only the panel
-   below it changes, as on a real page. */
-.pg-frame-body:has(> .vela-tabs) { width: 100%; align-self: flex-start; }
+/* Table (Phase 1): the bounded height is the host's half of stickyHeader; the region fills it and
+   scrolls, and the header pins to its top. */
 .pg-table-bounded { max-block-size: 220px; }   /* vela-allow: the stage's bounded host for stickyHeader; any height shorter than the rows will do */

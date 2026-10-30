@@ -40,3 +40,27 @@
     box-shadow: none;
   }
 }
+
+/* ------------------------------------------------------ error boundaries -- */
+/* Stage error (playground spec, section 7): it takes the stage's place, the same frame and height,
+   so nothing around it moves. Site error: the whole page. Body text on the page surface. */
+.shell-error {
+  min-height: var(--site-stage-min);
+  border: 1px solid var(--vela-border-default); border-radius: var(--vela-radius-4);
+  background: var(--vela-bg-global); color: var(--vela-text-default);
+  padding: var(--vela-space-20);
+  display: flex; flex-direction: column; align-items: flex-start; gap: var(--vela-space-15);
+}
+.shell-error__lead { margin: 0; max-width: 64ch; }
+.shell-error__details summary { cursor: pointer; color: var(--vela-text-link); }
+.shell-error__text {
+  margin: var(--vela-space-10) 0 0; padding: var(--vela-space-10) var(--vela-space-15);
+  border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4);
+  font-family: var(--vela-font-family-mono); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height);
+  white-space: pre-wrap; overflow-wrap: anywhere;
+}
+.shell-error__actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--vela-space-15); }
+.shell-error__link { color: var(--vela-text-link); }
+.shell-site-error { min-height: 100vh; }
+.shell-site-error__body { max-width: 64ch; padding: var(--vela-space-60) var(--vela-space-20); margin: 0 auto; display: flex; flex-direction: column; gap: var(--vela-space-15); }
+.shell-site-error__body h1, .shell-site-error__body p { margin: 0; }

@@ -2,6 +2,7 @@ import { REGISTRY } from '../playground/registry'
 import { href } from '../router'
 import { figmaUrl } from '../links'
 import { version } from '../../package.json'
+import { ScrollRegion } from '../shell/ScrollRegion'
 
 // Component lifecycle, read from the specs. GOVERNANCE.md: Approved is the default and is not
 // written down; any other label is a `**Status:**` line under the intent paragraph. This page
@@ -46,6 +47,7 @@ export function Status() {
         </p>
       </header>
       <div className="doc__body">
+        <ScrollRegion label="Component status, scrollable" className="status-scroll">
         <table className="status-table">
           <thead>
             <tr><th scope="col">Component</th><th scope="col">Status</th><th scope="col">What it promises</th><th scope="col">Where</th></tr>
@@ -61,6 +63,7 @@ export function Status() {
             ))}
           </tbody>
         </table>
+        </ScrollRegion>
         <p className="vela-meta">
           Approved means specced, built, tested, in the Figma library, every rule tagged and proved. The first component to leave Approved
           carries its label in the spec, in the Figma set's description and here, from the same line.
