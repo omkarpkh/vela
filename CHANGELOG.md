@@ -5,6 +5,25 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+### Added
+- **Tabs: a hover preview, the Seed.** When a pointer rests `--vela-delay-preview` (80ms) on an
+  unselected, enabled tab, a short soft-ended bar fades in under it in the underline's 2px slot,
+  in `--vela-border-active` at `--vela-opacity-preview` (0.55): a third of the tab, never under
+  `--vela-tab-preview-width-min` (24px), never wider than the tab. It fades in over
+  `--vela-duration-travel` on `--vela-ease-out` and leaves faster, at `--vela-duration-base` with no
+  delay; a pointer sweeping across the row shows nothing. Never on the selected or a disabled tab,
+  never from the keyboard, never on touch (`@media (hover: hover)` only). In forced colours it is a
+  1px `CanvasText` line, never `Highlight`. No new prop; both implementations. The Seed is
+  2.46:1 on the page (light) and is not asserted in `PAIRS`: it is a supplementary hint, and the
+  spec and `scripts/contrast-core.mjs` say why.
+- **Tokens:** `--vela-opacity-preview` (0.55, Figma `opacity/preview`, opacity scope, beside
+  `opacity/scrim`), `--vela-delay-preview` (80ms, Figma `delay/preview`, beside `delay/tooltip`) and
+  `--vela-tab-preview-width-min` (24px, Figma `tab/preview-width-min`, width/height scope). Not yet
+  synced to the Figma library.
+- New Tabs rules: `tabs-preview-rest-delay`, `tabs-preview-never-selected-or-disabled`,
+  `tabs-preview-pointer-only`, `tabs-preview-size` and `tabs-preview-forced-colours` (browser), and
+  `tabs-preview-decorative` (runtime).
+
 ### Added (Experimental)
 - **Dropdown List — Experimental, `@omkarux/vela/headless` only** (`dropdown-list.md`; Base UI 1.9
   `Menu`). A short list from a button where one option is current and choosing another acts at
@@ -72,6 +91,22 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   the `process.env.NODE_ENV` a consumer's bundler replaces.
 
 ### Changed
+- **Tabs: a pointer press grows the underline in place; it no longer slides across the row.** The
+  Seed under the pressed tab grows from its centre into the full underline on `--vela-ease-spring`
+  over `--vela-duration-travel`, while the old underline shrinks back and fades under the old tab.
+  The list-wide bar (`.vela-tabs__indicator`) is gone; each trigger now holds two empty
+  `aria-hidden` layers, `.vela-tabs__seed` and `.vela-tabs__line`. The headless implementation no
+  longer renders Base UI's `Tabs.Indicator`. Keyboard switches stay instant, reduced motion lands at
+  the end state, a second press mid-flight retargets, and at rest the underline is still the
+  selected tab's own border, so a still tab list renders as before. The rules that described the
+  travelling bar are replaced, each keeping its promise for the new movement:
+  `tabs-indicator-moves-by-transform` → `tabs-press-grows-in-place`, `tabs-indicator-retargets` →
+  `tabs-press-retargets`, `tabs-indicator-reduced-motion-end-state` →
+  `tabs-press-reduced-motion-end-state`, `tabs-indicator-rest-is-the-border` →
+  `tabs-underline-rest-is-the-border`. `tabs-keyboard-switch-is-instant` now also says no Seed
+  shows, and `tabs-underline-not-clipped` covers every Seed.
+- The descriptions of `--vela-duration-travel` and `--vela-ease-spring` name the grow-in-place
+  underline instead of the sliding indicator; their values are unchanged.
 - **Motion rule 1 gains one exception: an icon glyph's own strokes may draw** (decision 004,
   `decisions/004-icon-strokes-draw`). Inside a `.vela-icon`, by transition only, on the one glyph a
   person just acted on, `stroke-dashoffset` may animate; `stroke-dasharray` and `pathLength` are

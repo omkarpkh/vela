@@ -19,9 +19,9 @@ cannot be named in one of those words, it does not ship.
   read as lag, so contact and acknowledgement arrive together. Press-in only.
 - `--vela-duration-fast` (120ms): anything else that answers a pointer.
 - `--vela-duration-base` (180ms): anything that settles or appears.
-- `--vela-duration-travel` (240ms): travel across a distance — the Tabs indicator sliding to the
-  tab that was pressed. The one step above `base`; still under 300ms, past which motion starts to
-  feel like waiting.
+- `--vela-duration-travel` (240ms): a change that crosses a distance — the Tabs underline growing
+  in place under the tab that was pressed, and the Tabs hover preview fading in. The one step above
+  `base`; still under 300ms, past which motion starts to feel like waiting.
 
 Three curves, each for one kind of movement:
 
@@ -29,7 +29,7 @@ Three curves, each for one kind of movement:
 |---|---|---|
 | `--vela-ease-standard` | `cubic-bezier(0.2, 0, 0.2, 1)` | things that change or move while on screen: a hover colour, a press, a toggle knob. Never a bare `ease`. |
 | `--vela-ease-out` | `cubic-bezier(0.25, 1, 0.5, 1)` | things that enter. |
-| `--vela-ease-spring` | a spring: stiffness 1200, damping 56, mass 1 | the few moments a spec names — today only the Tabs indicator after a pointer press. Always with `--vela-duration-travel`. |
+| `--vela-ease-spring` | a spring: stiffness 1200, damping 56, mass 1 | the few moments a spec names — today only the Tabs underline growing in place after a pointer press. Always with `--vela-duration-travel`. |
 
 Why these values:
 
@@ -40,9 +40,9 @@ Why these values:
   and reads as late. Stronger curves (an expo-like `0.16, 1, 0.3, 1`) finish visibly in half the
   stated time and spend the rest creeping by fractions of a pixel. This is the middle.
 - **The spring** has a damping ratio of 0.81: it is 95% of the way in about 100ms, overshoots by
-  1.3% (about 2px on a 150px slide) at about 155ms, and is within 0.2% of rest by 240ms. That one
-  small settle is the "life" — the bar arrives, leans, and stops — without a wobble a console
-  would not tolerate. The three physical values are the source in the token file;
+  1.3% of the change (under 1px on a 100px tab's underline) at about 155ms, and is within 0.2% of
+  rest by 240ms. That one small settle is the "life" — the underline reaches full width, leans, and
+  stops — without a wobble a console would not tolerate. The three physical values are the source in the token file;
   `scripts/spring.mjs` solves the spring and writes it as a CSS `linear()` easing, sampled every
   millisecond and reduced to the points the shape needs. Where `linear()` is not supported the
   token is `--vela-ease-out`, declared first, with the spring under
@@ -53,12 +53,16 @@ Why these values:
 
 **These three — `duration-travel`, `ease-out`, `ease-spring` — are provisional until the owner has
 reviewed their feel** on the playground's Motion review page (`#/motion`), which plays the Tabs
-indicator in both themes and both implementations, with a Replay and a ×5 slow-motion switch.
+hover preview and press in both themes and both implementations, with a Replay and a ×5 slow-motion switch.
 Tune by feel, then look again the next day.
 
 - `--vela-delay-tooltip` (600ms): not an animation — how long the pointer rests on a control before
   its Tooltip opens, so a pointer crossing a toolbar does not flash every label. Keyboard focus does
   not wait. Equal to Base UI's own default, which applies when the stylesheet is not loaded.
+- `--vela-delay-preview` (80ms): not an animation — how long the pointer rests on an unselected tab
+  before its hover preview (the Seed) starts to appear, so a pointer sweeping across the row shows
+  nothing. On the way in only: leaving starts at once. Like the Tooltip's delay it survives the
+  reduced-motion collapse, which shortens durations, not delays.
 - `--vela-duration-toast` (6000ms): not an animation either — how long a Toast that times out stays
   on screen (a `success` or `info` with no action; a warning, or a toast with an action, never times
   out). The timer pauses while the region is hovered or holds focus. The reduced-motion collapse

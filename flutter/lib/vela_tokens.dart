@@ -1220,8 +1220,12 @@ abstract final class VelaSizing {
   static const double dialogWidthWide = 720;
   /// Tooltip: the widest a tooltip grows before its text wraps. A tooltip is a phrase, not a paragraph.
   static const double tooltipWidthMax = 240;
+  /// Tabs: the shortest the hover preview (the Seed) is drawn. It is a third of its tab, never under this and never wider than the tab: a third of a two-letter tab would be about 4px.
+  static const double tabPreviewWidthMin = 24;
   /// The opacity bg-scrim is drawn at behind a Dialog. A number, not a colour alpha: primitives are opaque and the Figma sync carries opaque colours only.
   static const double opacityScrim = 0.5;
+  /// The strength a hover preview is drawn at: the Tabs Seed, in the selected underline's colour at this opacity (2.46:1 on the page in light, 2.59:1 in dark). A supplementary mark, not a state indicator; the label's hover colour carries the hover. A number, not a colour alpha, like opacity-scrim.
+  static const double opacityPreview = 0.55;
   /// z-index of every overlay (Popover, Tooltip, Dialog, the Toast region) portalled to <body>. One layer: overlays stack among themselves by DOM order, the later one on top.
   static const double layerOverlay = 1000;
   /// Toast: the width of every toast in the region. Never wider than the viewport less --vela-space-20 a side, so at a 400px viewport it is exactly this.
@@ -1239,17 +1243,19 @@ abstract final class VelaMotion {
   static const Duration durationFast = Duration(milliseconds: 120);
   /// Anything that settles or enters: hover out, appearing.
   static const Duration durationBase = Duration(milliseconds: 180);
-  /// Travel across a distance: the Tabs indicator sliding to the tab that was pressed. The one step above duration-base, still under 300ms. The spring curve is drawn over this duration, so the two are used together.
+  /// The one step above duration-base, still under 300ms, for a change that crosses a distance: the Tabs underline growing in place under the tab that was pressed, and the Tabs hover preview fading in. The spring curve is drawn over this duration, so the two are used together.
   static const Duration durationTravel = Duration(milliseconds: 240);
   /// How long the pointer rests on a trigger before its Tooltip opens. A delay, not an animation: it stops tooltips flashing as the pointer crosses a toolbar. Equal to Base UI's default, which applies when the stylesheet is not loaded.
   static const Duration delayTooltip = Duration(milliseconds: 600);
+  /// How long the pointer rests on an unselected tab before its hover preview (the Tabs Seed) starts to appear. A delay on the way in only, not an animation: a pointer sweeping across a row of tabs shows nothing, and the reduced-motion collapse never shortens it.
+  static const Duration delayPreview = Duration(milliseconds: 80);
   /// How long a Toast that times out (success or info, with no action) stays before it leaves. A dwell, not an animation: the reduced-motion collapse never touches it, and the timer pauses while the region is hovered or holds focus. Warnings and any toast with an action never time out.
   static const Duration durationToast = Duration(milliseconds: 6000);
   /// For things that change or move while on screen: a hover colour, a press, a knob sliding. Never a bare ease. Things that enter take ease-out; the spring is only for the moments a spec names.
   static const Cubic easeStandard = Cubic(0.2, 0, 0.2, 1);
   /// For things that enter. Starts at four times the average speed, so the first frame already shows movement, then slows to rest with no overshoot.
   static const Cubic easeOut = Cubic(0.25, 1, 0.5, 1);
-  /// A spring for the few moments a spec names, such as the Tabs indicator after a pointer press: it arrives quickly and settles with a slight overshoot. The stiffness, damping and mass in the extension are the source; CSS receives them as a linear() easing drawn over duration-travel. Where linear() is not supported, and in any tool that does not read the spring, the value is ease-out.
+  /// A spring for the few moments a spec names, such as the Tabs underline growing under a pressed tab: it arrives quickly and settles with a slight overshoot. The stiffness, damping and mass in the extension are the source; CSS receives them as a linear() easing drawn over duration-travel. Where linear() is not supported, and in any tool that does not read the spring, the value is ease-out.
   static const Cubic easeSpring = Cubic(0.25, 1, 0.5, 1);
   /// The physics of [easeSpring], for `SpringDescription(mass: easeSpringMass, stiffness: easeSpringStiffness, damping: easeSpringDamping)`.
   static const double easeSpringStiffness = 1200;
