@@ -151,6 +151,10 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   `guidelines/overview.md`).
 
 ### Fixed
+- **Correction to the 0.12.1 entry, 31 October 2026.** It says the Figma builders "now reproduce
+  the library as it was corrected by hand on 9 October". Those corrections (Contextual Alert's
+  status mark, Button's icon shape and Tab's count styles) were made by an AI session, not by hand.
+  The 0.12.1 entry is left as released; this note is the correction (Figma thread, R19).
 - **Tabs: the selected underline renders 2px, as specified; it rendered 1px.** The tab list scrolls,
   so it clips at its padding box, and the underline overlapped the list's rule, a border outside
   that box: its lower pixel was cut. The rule is now an inset shadow inside the box, the triggers
