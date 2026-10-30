@@ -4,9 +4,8 @@ A short list of options where **exactly one** is chosen — an enforcement mode,
 period, a severity to assign — all visible at once, committed by a Save.
 
 **Status:** Experimental — born in `@omkarux/vela/headless` (Base UI 1.9) alongside Checkbox;
-there is no core implementation, and its Figma set is built in the library file (from
-`scripts/figma/components/radio-group.figma.js`) but not published yet. Approved once the API has settled and the set
-is published; see `GOVERNANCE.md`.
+there is no core implementation, and its Figma set is published in the library (built from
+`scripts/figma/components/radio-group.figma.js`). Approved once the API has settled; see `GOVERNANCE.md`.
 **Dependencies:** @base-ui/react (optional peer, via /headless)
 
 ## When to use Radio Group (vs. Select, vs. Checkbox)
@@ -175,8 +174,8 @@ difference is recorded here:
 Library file: **Vela Design System** → page `Radio Group`. The component set is a single
 **Radio**, not the whole group — as the Tabs set is a single Tab: two variants, `State`
 (unselected / selected), plus a `Label text` text property and a `Description` boolean. The set
-is created by `scripts/figma/components/radio-group.figma.js`; until that builder has been run in
-the file, the library has no Radio set. Compose a group by stacking Radio instances under a text
+is created by `scripts/figma/components/radio-group.figma.js`; it is published in
+the library. Compose a group by stacking Radio instances under a text
 label.
 
 | Figma property | Code prop |

@@ -2,8 +2,8 @@
  * @omkarux/vela/headless — the Base UI-backed entry point. Experimental (GOVERNANCE.md).
  *
  * Same specs, same CSS, same tests as `@omkarux/vela` where a component ships from both (Tabs);
- * Checkbox, Radio Group, the three overlays (Popover, Tooltip, Dialog) and Toast were born here
- * and ship from this entry only. The behaviour comes from Base UI
+ * Checkbox, Radio Group, the three overlays (Popover, Tooltip, Dialog), Toast and Dropdown List were
+ * born here and ship from this entry only. The behaviour comes from Base UI
  * (`@base-ui/react`, MIT), which is an OPTIONAL peer dependency: install it to import from here.
  * The default entry point `@omkarux/vela` does not import this module and keeps zero runtime
  * dependencies — `scripts/verify-pack.mjs` asserts that against the built output.
@@ -30,6 +30,11 @@ export { Tooltip } from './Tooltip'
 export type { TooltipProps, TooltipPlacement, TooltipAlign } from './Tooltip'
 export { Dialog } from './Dialog'
 export type { DialogProps, DialogCloseProps, DialogSize, DialogVariant } from './Dialog'
+
+// Dropdown List, headless-born (guidelines/components/dropdown-list.md): a menu of radio items on
+// Base UI's Menu, opened from one button.
+export { DropdownList } from './DropdownList'
+export type { DropdownListProps, DropdownListItem, DropdownListAlign } from './DropdownList'
 
 // Toast, headless-born (guidelines/components/toast.md): a provider for the region, a hook to add.
 export { ToastProvider, useToast } from './Toast'

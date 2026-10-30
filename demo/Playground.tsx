@@ -5,12 +5,20 @@ import darkJson from '../tokens/vela.dark.tokens.json'
 import { REGISTRY, type Values } from './playground/registry'
 import { parseSpec, sectionOf, type Control } from './playground/spec'
 import { Markdown } from './playground/Markdown'
-import { dependenciesOf } from './pages/Status'
+import { installFor } from './playground/install'
 import { LINKS, figmaUrl } from './links'
+import { Segments } from './shell/Segments'
+import { ScrollRegion } from './shell/ScrollRegion'
+import { StageBoundary, type Settings } from './shell/ErrorBoundary'
 import './playground.css'
 
 type Mode = 'light' | 'dark'
 type StageView = 'both' | Mode
+const STAGE_VIEWS = [
+  { value: 'both', label: 'Light + dark' },
+  { value: 'light', label: 'Light' },
+  { value: 'dark', label: 'Dark' },
+] as const
 // DTCG 2025.10: colours are { colorSpace, components, hex } objects, aliases are full paths
 // ({primitives.grey-700}), the vendor data sits under the reverse-domain key, and the dark
 // values live in tokens/vela.dark.tokens.json — the overlay tokens/vela.resolver.json applies.
@@ -72,6 +80,12 @@ function CopyButton({ text }: { text: string }) {
   )
 }
 
+// The component under test renders here, as its own element, so a render error throws inside the
+// stage's error boundary rather than in the page that holds it.
+function Rendered({ entry, v }: { entry: (typeof REGISTRY)[number]; v: Values }) {
+  return <>{entry.render(v)}</>
+}
+
 export function Playground({ id }: { id: string }) {
   const entry = REGISTRY.find((e) => e.id === id)
   if (!entry) return <p className="vela-body">No component called “{id}”.</p>
@@ -96,17 +110,18 @@ function PlaygroundFor({ entry }: { entry: (typeof REGISTRY)[number] }) {
   const [values, setValues] = useState<Values>(initial)
   const [reduced, setReduced] = useState(false)
   const [stage, setStage] = useState<StageView>('both')
+  // Bumped by "Reset settings" in the stage's error state, so a reset to the same values still retries.
+  const [attempt, setAttempt] = useState(0)
   useEffect(() => setValues(initial), [initial])
 
   const v = entry.constrain ? entry.constrain(values) : values
   const unavailable = entry.unavailable?.(v) ?? {}
   const code = entry.code(v, spec)
-  // Two entry points, one playground: the import line and the "Dependencies" line follow the chosen
-  // implementation; a component with one implementation (core-only, or headless-born) reads its
-  // dependencies from the spec.
+  // Two entry points, one playground: the import line and the install command follow the chosen
+  // implementation. The install command is generated from package.json's peerDependenciesMeta.
   const impl = entry.implementations?.find((i) => i.id === v.implementation) ?? entry.implementations?.[0]
   const importPath = impl?.entry ?? '@omkarux/vela'
-  const dependencies = impl?.dependencies ?? dependenciesOf(entry.spec)
+  const install = installFor(importPath)
   const sourcePath = impl && impl.id !== 'core' ? `src/${impl.id}/${entry.src}/${entry.src}.tsx` : `src/components/${entry.src}/${entry.src}.tsx`
   const bound = entry.bindingKey ? spec.bindings[entry.bindingKey(v)] : undefined
   const boundTokens = new Set(Object.values(bound ?? {}))
@@ -119,6 +134,13 @@ function PlaygroundFor({ entry }: { entry: (typeof REGISTRY)[number] }) {
   const uncontrolled = spec.props.filter((p) => !controls.some((c) => c.prop === p.prop) && !entry.hide?.includes(p.prop))
   const dirty = JSON.stringify(values) !== JSON.stringify(initial)
   const frames: Mode[] = stage === 'both' ? ['light', 'dark'] : [stage]
+  // What a stage error report may carry: values from closed sets only (selects and switches, the
+  // implementation, the stage view), never the free text typed into a field.
+  const closedSettings: Settings = Object.fromEntries([
+    ...controls.filter((c) => c.kind !== 'text').map((c) => [c.prop, v[c.prop]] as const),
+    ...(impl ? [['implementation', impl.id] as const] : []),
+    ['stage', stage] as const,
+  ])
 
   return (
     <>
@@ -138,33 +160,33 @@ function PlaygroundFor({ entry }: { entry: (typeof REGISTRY)[number] }) {
       <div className="pg">
         <div className="pg-main">
           <div className="pg-toolbar">
-            <div className="pg-toolbar__group" role="group" aria-label="Stage">
-              {(['both', 'light', 'dark'] as StageView[]).map((s) => (
-                <Button key={s} size="tiny" variant={stage === s ? 'primary' : 'standard'} appearance={stage === s ? 'filled' : 'hollow'} onClick={() => setStage(s)}>
-                  {s === 'both' ? 'Light + dark' : s[0].toUpperCase() + s.slice(1)}
-                </Button>
-              ))}
-            </div>
+            <Segments label="Stage" value={stage} options={STAGE_VIEWS} onChange={setStage} />
             {entry.implementations && entry.implementations.length > 1 && (
-              <div className="pg-toolbar__group" role="group" aria-label="Implementation">
-                {entry.implementations.map((i) => (
-                  <Button key={i.id} size="tiny" variant={impl?.id === i.id ? 'primary' : 'standard'} appearance={impl?.id === i.id ? 'filled' : 'hollow'} onClick={() => setValues((s) => ({ ...s, implementation: i.id }))}>
-                    {i.id}
-                  </Button>
-                ))}
-              </div>
+              <Segments
+                label="Implementation"
+                value={impl?.id ?? entry.implementations[0].id}
+                options={entry.implementations.map((i) => ({ value: i.id, label: i.id }))}
+                onChange={(id) => setValues((s) => ({ ...s, implementation: id }))}
+              />
             )}
             <div className="pg-toolbar__spacer" />
             <Toggle label="Reduced motion" size="tiny" checked={reduced} onChange={setReduced} />
           </div>
-          <div className={cn('pg-stage', frames.length === 1 && 'pg-stage--single', reduced && 'pg-reduced')}>
-            {frames.map((m) => (
-              <div key={m} className="vela-root pg-frame" data-theme={m}>
-                <span className="pg-frame-label vela-meta">{m}</span>
-                <div key={JSON.stringify(v)} className="pg-frame-body">{entry.render(v)}</div>
-              </div>
-            ))}
-          </div>
+          <StageBoundary
+            key={`${entry.id}|${stage}|${JSON.stringify(v)}|${attempt}`}
+            component={entry.id}
+            settings={closedSettings}
+            onReset={() => { setValues(initial); setAttempt((n) => n + 1) }}
+          >
+            <ScrollRegion label="Stage, scrollable" className={cn('pg-stage', frames.length === 1 && 'pg-stage--single', reduced && 'pg-reduced')}>
+              {frames.map((m) => (
+                <div key={m} className="vela-root pg-frame" data-theme={m}>
+                  <span className="pg-frame-label vela-meta">{m}</span>
+                  <div className="pg-frame-body"><Rendered entry={entry} v={v} /></div>
+                </div>
+              ))}
+            </ScrollRegion>
+          </StageBoundary>
 
           <section className="pg-panel pg-contract" aria-label="Contract">
             <Tabs defaultValue="code" size="regular">
@@ -176,19 +198,20 @@ function PlaygroundFor({ entry }: { entry: (typeof REGISTRY)[number] }) {
               </Tabs.List>
               <Tabs.Panel value="code">
                 <div className="pg-code-wrap">
-                  <pre className="pg-code">{code}</pre>
+                  <ScrollRegion as="pre" label="Code, scrollable" className="pg-code">{code}</ScrollRegion>
                   <CopyButton text={code} />
                 </div>
                 <p className="pg-p pg-install">
                   <code>{`import { ${entry.imports ?? entry.src} } from '${importPath}'`}</code>
                   {' · '}
-                  <span className="pg-dependencies">Dependencies: {dependencies}</span>
+                  <code className="pg-install-command">{install.command}</code>
+                  {install.note && <span className="pg-install-note"> {install.note}</span>}
                 </p>
                 <p className="pg-p">Defaults from the Props table are omitted, exactly as the spec's own example writes them.</p>
               </Tabs.Panel>
               <Tabs.Panel value="tokens">
-                <div className="pg-tablewrap">
-                  <table className="pg-table">
+                <ScrollRegion label="Tokens, scrollable" className="pg-tablewrap">
+                  <table className="pg-table pg-table--tokens">
                     <thead><tr><th>Token</th><th>Light</th><th>Dark</th><th>Figma</th></tr></thead>
                     <tbody>
                       {spec.tokens.map((t) => {
@@ -205,7 +228,7 @@ function PlaygroundFor({ entry }: { entry: (typeof REGISTRY)[number] }) {
                       })}
                     </tbody>
                   </table>
-                </div>
+                </ScrollRegion>
                 <p className="pg-p">{bound || entry.highlight ? 'Highlighted rows are bound for the current values.' : 'Every token this spec names, resolved for both themes.'}</p>
               </Tabs.Panel>
               <Tabs.Panel value="rules">

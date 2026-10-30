@@ -89,11 +89,19 @@ async function dump(n, depth) {
   if (n.type === 'POLYGON') o.pts = n.pointCount;
   if (n.type === 'BOOLEAN_OPERATION') o.op = n.booleanOperation;
   if (n.componentPropertyReferences && Object.keys(n.componentPropertyReferences).length) o.ref = n.componentPropertyReferences;
+  if (n.type === 'INSTANCE') {
+    const main = await n.getMainComponentAsync();
+    o.main = main ? clean(main.name) : null;
+    const props = {}; for (const [k, p] of Object.entries(n.componentProperties || {}).sort(([a], [b]) => a.localeCompare(b))) props[k.replace(/#.*$/, '')] = p.value;
+    o.props = props;
+  }
   if ('children' in n && depth < 5) { o.ch = []; for (const c of n.children) o.ch.push(await dump(c, depth + 1)); }
   return o;
 }
 async function dumpSet(set, a, b) {
-  const defs = {}; for (const [k, d] of Object.entries(set.componentPropertyDefinitions)) defs[k] = d.type + '=' + JSON.stringify(d.defaultValue);
+  const defs = {}; for (const [k, d] of Object.entries(set.componentPropertyDefinitions || {})) defs[k] = d.type + '=' + JSON.stringify(d.defaultValue);
+  // A one-size component (\`// @component\`) is dumped as a set of one: itself.
+  if (set.type === 'COMPONENT') return { set: set.name, count: 1, defs, variants: [await dump(set, 0)] };
   const variants = []; const kids = set.children.slice(a || 0, b || set.children.length);
   for (const v of kids) variants.push(await dump(v, 0));
   return { set: set.name, count: set.children.length, defs, variants };
@@ -127,9 +135,11 @@ export async function build(which) {
   const m = isFile ? metaFromFile(which) : meta(which)
   const figma = createMockFigma({ variables: VARS, styles: mockStyles(), pages: [m.page] })
   const result = await new AsyncFunction('figma', isFile ? generateFrom(m, which) : generate(which))(figma)
+  const page = figma.root.children[0]
   const sets = m.sets.map((name) => {
-    const set = figma.root.children[0].findOne((n) => n.type === 'COMPONENT_SET' && n.name === name)
-    if (!set) throw new Error(`${which}: the builder did not create the set "${name}" (${JSON.stringify(result)})`)
+    const one = (m.components || []).includes(name)
+    const set = one ? page.children.find((n) => n.type === 'COMPONENT' && n.name === name) : page.findOne((n) => n.type === 'COMPONENT_SET' && n.name === name)
+    if (!set) throw new Error(`${which}: the builder did not create the ${one ? 'component' : 'set'} "${name}" (${JSON.stringify(result)})`)
     return set
   })
   return { figma, set: sets[0], sets, meta: m }
@@ -162,6 +172,8 @@ export function lint(set, allow = [], { docPage = false } = {}) {
     if (docPage && /^(COMPONENT|COMPONENT_SET|INSTANCE)$/.test(n.type)) hit('component-on-doc-page', n, n.type)
     if (n.type !== 'COMPONENT_SET') {
       if (/placeholder/i.test(n.name) || DEFAULT_NAMES.test(n.name)) hit('bad-name', n, `"${n.name}"`)
+      // An instance must say which variant it is; the main component's own tree is linted on the set.
+      if (n.type === 'INSTANCE' && !(n.mainComponent && n.mainComponent.parent)) hit('bad-name', n, 'an instance with no main component')
       for (const p of [...(n.fills || []), ...(n.strokes || [])]) if (!(p.boundVariables && p.boundVariables.color)) hit('raw-colour', n, p.type)
       if (!inBool && 'topLeftRadius' in n) for (const f of ['topLeftRadius', 'topRightRadius', 'bottomLeftRadius', 'bottomRightRadius']) if (n[f] && !bound(f)) hit('raw-radius', n, `${f}=${n[f]}`)
       if ('layoutMode' in n && n.layoutMode !== 'NONE') {
@@ -181,7 +193,8 @@ export function lint(set, allow = [], { docPage = false } = {}) {
     }
     for (const c of n.children || []) walk(c, inBool || n.type === 'BOOLEAN_OPERATION', n.type === 'COMPONENT_SET')
   }
-  walk(set, false, docPage)
+  // A one-size component's own canvas width is exempt, as a set's variants' are.
+  walk(set, false, docPage || set.type === 'COMPONENT')
   // A TEXT property is one set-wide default. Layers bound to it that the builder wrote differently
   // would all show the last word written — per-variant text belongs in an unbound layer.
   const byProp = {}
@@ -205,7 +218,7 @@ export function diff(expected, live) {
     if (e.t !== l.t || e.n !== l.n) { out.push(`${path}: expected ${e.t} "${e.n}", live ${l.t} "${l.n}"`); return }
     const fixedH = (e.ls || '').startsWith('FIXED') || e.t === 'ELLIPSE' || e.t === 'POLYGON' || e.t === 'RECTANGLE' || e.t === 'BOOLEAN_OPERATION'
     const fixedV = (e.ls || '').endsWith('FIXED') || e.t === 'ELLIPSE' || e.t === 'POLYGON' || e.t === 'RECTANGLE' || e.t === 'BOOLEAN_OPERATION'
-    for (const k of ['hidden', 'lm', 'ax', 'sz', 'gap', 'pad', 'ls', 'fill', 'stroke', 'sw', 'swx', 'sa', 'rad', 'style', 'font', 'fs', 'lh', 'chars', 'tar', 'ta', 'pts', 'op']) {
+    for (const k of ['hidden', 'lm', 'ax', 'sz', 'gap', 'pad', 'ls', 'fill', 'stroke', 'sw', 'swx', 'sa', 'rad', 'style', 'font', 'fs', 'lh', 'chars', 'tar', 'ta', 'pts', 'op', 'main', 'props']) {
       if (k === 'ls' && root) continue
       const a = JSON.stringify(e[k] ?? null), b = JSON.stringify(l[k] ?? null)
       if (a !== b) out.push(`${path}: ${k} expected ${a}, live ${b}`)
@@ -314,7 +327,7 @@ return out;
 const page = figma.root.children.find(p => p.name === ${JSON.stringify(m.page)});
 if (!page) return { error: 'no page ' + ${JSON.stringify(m.page)} };
 await figma.setCurrentPageAsync(page);
-const set = page.findOne(n => n.type === 'COMPONENT_SET' && n.name === ${JSON.stringify(setName)});
+const set = page.findOne(n => (n.type === 'COMPONENT_SET' || (n.type === 'COMPONENT' && n.parent === page)) && n.name === ${JSON.stringify(setName)});
 if (!set) return { error: 'no set ' + ${JSON.stringify(setName)} };
 ${DUMP_SRC}
 return await dumpSet(set, ${a ?? 0}, ${b ?? 'undefined'});

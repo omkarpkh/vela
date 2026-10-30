@@ -28,7 +28,7 @@ const version = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).ver
 
 // spec file → Figma component set name and source directory. `entry` is the source tree the
 // component lives in: `components` (the core, `@omkarux/vela`) unless it says `headless`
-// (`@omkarux/vela/headless` only — Checkbox, Radio Group, Popover, Tooltip, Dialog and Toast have no core
+// (`@omkarux/vela/headless` only — Checkbox, Radio Group, Popover, Tooltip, Dialog, Toast and Dropdown List have no core
 // implementation).
 // `state` is a closed set: 'published' (the set is in the published library, `node` is its id),
 // 'built' (the set exists in the file but is not published; `node` is its id once the Figma
@@ -43,27 +43,30 @@ export const SETS = {
   'button.md': { set: 'Button', src: 'Button', state: 'published', node: '7:122', export: 'Button' },
   'toggle.md': { set: 'Toggle', src: 'Toggle', state: 'published', node: '8:49', export: 'Toggle' },
   'input.md': { set: 'Input', src: 'Input', state: 'published', node: '8:110', export: 'Input' },
-  'text-area.md': { set: 'Text Area', src: 'TextArea', state: 'built', node: '127:102', export: 'TextArea' },
+  'text-area.md': { set: 'Text Area', src: 'TextArea', state: 'published', node: '127:102', export: 'TextArea' },
   'contextual-alert.md': { set: 'Contextual Alert', src: 'ContextualAlert', state: 'published', node: '77:15', export: 'ContextualAlert' },
   'status-indicator.md': { set: 'Status Indicator', src: 'StatusIndicator', state: 'published', node: '8:32', export: 'StatusIndicator' },
-  'risk-pill.md': { set: 'Risk Pill', src: 'RiskPill', state: 'built', node: '127:14', export: 'RiskPill' },
+  'risk-pill.md': { set: 'Risk Pill', src: 'RiskPill', state: 'published', node: '127:14', export: 'RiskPill' },
   'tabs.md': { set: 'Tab', src: 'Tabs', state: 'published', node: '11:20', export: 'Tabs.Trigger' },
-  'icon.md': { set: 'Icon', src: 'Icon', state: 'built', node: '131:324', export: 'Icon' },
-  'checkbox.md': { set: 'Checkbox', src: 'Checkbox', entry: 'headless', state: 'built', node: '128:50', export: 'Checkbox' },
-  'radio-group.md': { set: 'Radio', src: 'RadioGroup', entry: 'headless', state: 'built', node: '128:64', export: 'RadioGroup.Radio' },
+  'icon.md': { set: 'Icon', src: 'Icon', state: 'published', node: '131:324', export: 'Icon' },
+  'checkbox.md': { set: 'Checkbox', src: 'Checkbox', entry: 'headless', state: 'published', node: '128:50', export: 'Checkbox' },
+  'radio-group.md': { set: 'Radio', src: 'RadioGroup', entry: 'headless', state: 'published', node: '128:64', export: 'RadioGroup.Radio' },
   // A component built from several sets (scripts/figma/components/table.figma.js declares three)
   // names the first as `set` / `export` and the rest under `also`, each with its own export and
   // node; the entry's `state` covers every set (Table's are built together). Each set gets the
   // same description except the line naming its part, and the map lists each one.
   'table.md': {
-    set: 'Table Header Cell', src: 'Table', state: 'built', node: '130:82', export: 'Table.HeaderCell',
+    set: 'Table Header Cell', src: 'Table', state: 'published', node: '130:82', export: 'Table.HeaderCell',
     also: [{ set: 'Table Cell', node: '130:91', export: 'Table.Cell' }, { set: 'Table Row', node: '130:148', export: 'Table.Row' }],
   },
-  'popover.md': { set: 'Popover', src: 'Popover', entry: 'headless', state: 'built', node: '127:109', export: 'Popover' },
-  'tooltip.md': { set: 'Tooltip', src: 'Tooltip', entry: 'headless', state: 'built', node: '127:114', export: 'Tooltip' },
-  'dialog.md': { set: 'Dialog', src: 'Dialog', entry: 'headless', state: 'built', node: '129:54', export: 'Dialog' },
+  'popover.md': { set: 'Popover', src: 'Popover', entry: 'headless', state: 'published', node: '127:109', export: 'Popover' },
+  'tooltip.md': { set: 'Tooltip', src: 'Tooltip', entry: 'headless', state: 'published', node: '127:114', export: 'Tooltip' },
+  'dialog.md': { set: 'Dialog', src: 'Dialog', entry: 'headless', state: 'published', node: '129:54', export: 'Dialog' },
   // A toast is raised with `toast.add(...)` from `useToast()`, inside the app's one ToastProvider.
-  'toast.md': { set: 'Toast', src: 'Toast', entry: 'headless', state: 'built', node: '129:94', export: 'useToast', imports: ['ToastProvider', 'useToast'] },
+  'toast.md': { set: 'Toast', src: 'Toast', entry: 'headless', state: 'published', node: '129:94', export: 'useToast', imports: ['ToastProvider', 'useToast'] },
+  // No set yet: the builder (scripts/figma/components/dropdown-list.figma.js) is ready; building it is
+  // the Figma thread's job, with the maintainer's approval.
+  'dropdown-list.md': { set: 'Dropdown List item', src: 'DropdownList', entry: 'headless', state: 'none', node: null, export: 'DropdownList' },
 }
 export const FILE_KEY = 'XO2rmeCcgOjyKe4oipgF4j'
 

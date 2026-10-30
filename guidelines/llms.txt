@@ -3,8 +3,8 @@
 > A token-first design system. Two-layer colour architecture (primitives -> semantics), three
 > deliberately separate status taxonomies, full light and dark theming, zero runtime dependencies
 > in the core entry (the `/headless` entry needs one optional peer, Base UI, and is where Checkbox,
-> Radio Group, Popover, Tooltip, Dialog and Toast ship from).
-> 64 of the 160 design rules are enforced by the TypeScript types; the rest are checked at runtime, in a
+> Radio Group, Popover, Tooltip, Dialog, Toast and Dropdown List ship from).
+> 69 of the 178 design rules are enforced by the TypeScript types; the rest are checked at runtime, in a
 > real browser, or by review. Each rule in the component guidelines is tagged with its level.
 >
 > THESE SPECS ARE FRAMEWORK-AGNOSTIC. The published package is a React implementation of them, and
@@ -65,12 +65,12 @@ behaviour has no Figma expression at all.
 - [Button](components/button.md)
 - [Toggle](components/toggle.md)
 - [Input](components/input.md)
-- [Text Area](components/text-area.md)
+- [Text Area](components/text-area.md) — `@omkarux/vela`, Experimental
 - [Contextual Alert](components/contextual-alert.md)
 - [Status Indicator](components/status-indicator.md)
 - [Risk Pill](components/risk-pill.md)
 - [Tabs](components/tabs.md)
-- [Icon](components/icon.md) — 50 curated Lucide glyphs (ISC, see NOTICE), compiled into the core entry; `ICON_NAMES` is the closed list
+- [Icon](components/icon.md) — 50 curated Lucide glyphs (ISC, see NOTICE), compiled into the core entry; `ICON_NAMES` is the closed list; Experimental
 - [Checkbox](components/checkbox.md) — `@omkarux/vela/headless` only, Experimental
 - [Radio Group](components/radio-group.md) — `@omkarux/vela/headless` only, Experimental
 - [Table](components/table.md) — `@omkarux/vela`, Experimental
@@ -78,3 +78,4 @@ behaviour has no Figma expression at all.
 - [Tooltip](components/tooltip.md) — `@omkarux/vela/headless` only, Experimental
 - [Dialog](components/dialog.md) — `@omkarux/vela/headless` only, Experimental (with `variant="alert"`)
 - [Toast](components/toast.md) — `@omkarux/vela/headless` only, Experimental (`ToastProvider` + `useToast()`)
+- [Dropdown List](components/dropdown-list.md) — `@omkarux/vela/headless` only, Experimental (Base UI `Menu`; no Figma set yet)

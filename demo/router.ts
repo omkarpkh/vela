@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react'
 
 // Hash routes, so every page has a link that survives a reload and the back button works,
 // with no router dependency. `#/components/button`, `#/foundations/motion`, `#/adopt`, `#/how`,
-// `#/motion` (the motion review page), `#/status`, `#/changelog`, `#/roadmap`, `#/contributing`, `#/accessibility`, `#/`.
+// `#/motion` (the motion review page), `#/status`, `#/changelog`, `#/roadmap`, `#/contributing`, `#/accessibility`, `#/`,
+// and `#/proposals/evidence-locker` for a Proposal page (a spec that is not built).
 export type Route =
   | { kind: 'overview' }
   | { kind: 'component'; id: string }
+  | { kind: 'proposal'; id: string }
   | { kind: 'foundation'; id: string }
   | { kind: 'adopt' }
   | { kind: 'motion' }
@@ -16,6 +18,7 @@ export type Route =
 export function parseHash(hash: string): Route {
   const parts = hash.replace(/^#\/?/, '').split('/').filter(Boolean)
   if (parts[0] === 'components' && parts[1]) return { kind: 'component', id: parts[1] }
+  if (parts[0] === 'proposals' && parts[1]) return { kind: 'proposal', id: parts[1] }
   if (parts[0] === 'foundations' && parts[1]) return { kind: 'foundation', id: parts[1] }
   if (parts[0] === 'adopt') return { kind: 'adopt' }
   if (parts[0] === 'motion') return { kind: 'motion' }
@@ -28,6 +31,7 @@ export function parseHash(hash: string): Route {
 
 export const href = (r: Route): string =>
   r.kind === 'component' ? `#/components/${r.id}`
+  : r.kind === 'proposal' ? `#/proposals/${r.id}`
   : r.kind === 'foundation' ? `#/foundations/${r.id}`
   : r.kind === 'adopt' ? '#/adopt'
   : r.kind === 'motion' ? '#/motion'
