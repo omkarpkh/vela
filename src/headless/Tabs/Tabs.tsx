@@ -7,7 +7,8 @@ import type {
   TabTriggerProps,
   TabPanelProps,
 } from '../../components/Tabs/Tabs'
-import { useIndicatorMotion, indicatorVars, type IndicatorMotion } from '../../components/Tabs/motion'
+import { TabLayers } from '../../components/Tabs/layers'
+import { useTabsMotion, usePreviewScale, type TabsMotion } from '../../components/Tabs/motion'
 
 /**
  * Tabs on Base UI — the Phase 1 proving case for `@omkarux/vela/headless`.
@@ -27,19 +28,19 @@ import { useIndicatorMotion, indicatorVars, type IndicatorMotion } from '../../c
  *   is skipped and `Tabs.css` keys on `:disabled`, so the trigger renders the native `disabled`
  *   attribute through Base UI's `render` prop instead; Base UI's roving focus skips a natively
  *   disabled element, the browser keeps it out of the tab order and swallows its clicks.
- * - **The selected indicator.** Base UI's `Tabs.Indicator` measures the selected tab and exposes
- *   it as `--active-tab-left` / `--active-tab-width` (and as numbers in its state). The indicator
- *   here maps those onto the two properties the shared `Tabs.css` reads, and the motion state —
- *   pointer slides, keyboard is instant — is the same hook the core uses
- *   (`components/Tabs/motion.ts`).
+ * - **The underline and the hover preview.** Base UI's `Tabs.Indicator` (a bar that travels to
+ *   the selected tab) is not used: the spec grows the underline in place under the pressed tab.
+ *   Each trigger renders the same two decorative layers as the core (the Seed and the line it grows
+ *   into), and the motion state — pointer grows in place, keyboard is instant — and the Seed's
+ *   measured size are the same hooks the core uses (`components/Tabs/motion.ts`).
  */
 
 // Vela's own provider guard, so the named error is the same one the core implementation throws
 // (Base UI's message is different, and in a production build it is an error code). It also
-// carries the indicator's motion state, which Base UI has no notion of.
-const VelaTabsContext = React.createContext<IndicatorMotion | null>(null)
+// carries the underline's motion state, which Base UI has no notion of.
+const VelaTabsContext = React.createContext<TabsMotion | null>(null)
 
-function useVelaTabs(component: string): IndicatorMotion {
+function useVelaTabs(component: string): TabsMotion {
   const motion = React.useContext(VelaTabsContext)
   if (!motion) {
     throw new Error(`<Tabs.${component}> must be rendered inside <Tabs>.`)
@@ -55,12 +56,12 @@ export function Tabs({
   children,
   className,
 }: TabsProps) {
-  const motion = useIndicatorMotion()
+  const motion = useTabsMotion()
   const { onChange } = motion
   const handleValueChange = React.useCallback(
     (next: unknown, details?: { event?: Event }) => {
       // A person's change carries its event; Base UI's own automatic changes (an initial or a
-      // missing value) do not, and they are not a switch the indicator should answer.
+      // missing value) do not, and they are not a switch the underline should answer.
       if (details?.event) onChange()
       // Vela tab values are strings; Base UI's are `any` (and `null` when nothing is active).
       if (typeof next === 'string') onValueChange?.(next)
@@ -86,13 +87,15 @@ export function Tabs({
 function TabList({ children, className, ...rest }: TabListProps) {
   const { moving, changes, settle, listProps } = useVelaTabs('List')
   const listRef = React.useRef<HTMLDivElement>(null)
-  const indicatorRef = React.useRef<HTMLSpanElement>(null)
 
-  // Base UI writes the indicator's new position during the commit that changes the selection;
-  // this runs after it, so the bar's transition already exists when settle() asks for it.
+  // Base UI writes the new aria-selected during the commit that changes the selection; this runs
+  // after it, so the layers' transitions already exist when settle() asks for them.
   React.useLayoutEffect(() => {
-    if (moving) settle(indicatorRef.current)
+    if (moving) settle(listRef.current)
   }, [moving, changes, settle])
+
+  // Each trigger's Seed is a third of its width with a floor, so it is measured per tab.
+  usePreviewScale(listRef, children)
 
   return (
     // activateOnFocus: the spec's automatic activation — an arrow key both moves focus and
@@ -106,17 +109,6 @@ function TabList({ children, className, ...rest }: TabListProps) {
       {...rest}
     >
       {children}
-      <BaseTabs.Indicator
-        ref={indicatorRef}
-        className="vela-tabs__indicator"
-        aria-hidden="true"
-        // Position from Base UI's own variable; the scale needs a plain number (CSS cannot divide
-        // one length by another everywhere yet), so it comes from Base UI's state and the list's width.
-        style={(state) => {
-          const width = listRef.current?.clientWidth
-          return state.activeTabSize && width ? indicatorVars('var(--active-tab-left)', state.activeTabSize.width / width) : {}
-        }}
-      />
     </BaseTabs.List>
   )
 }
@@ -134,6 +126,7 @@ function TabTrigger({ value, children, count, disabled, className }: TabTriggerP
     >
       {children}
       {count !== undefined && <span className="vela-tabs__count">{count}</span>}
+      <TabLayers />
     </BaseTabs.Tab>
   )
 }

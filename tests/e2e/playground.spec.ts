@@ -182,10 +182,10 @@ test('on the Tabs page the tab list stays put when the panel changes, and never 
 
 // The list clips at its padding box (it scrolls), so anything below that edge is cut. The rule
 // used to be a border outside the box with the underline overlapping it, and the underline's lower
-// pixel was cut: a 2px underline rendered 1px. Both the selected tab's border and the bar must lie
-// wholly inside the padding box, at every width.
+// pixel was cut: a 2px underline rendered 1px. The selected tab's border, the line that lies on it
+// and every tab's Seed must lie wholly inside the padding box, at every width.
 // [[rule: tabs-underline-not-clipped]]
-test('the selected underline and the bar lie inside the tab list\'s padding box, so they render 2px', async ({ page }) => {
+test('the selected underline, its line and every Seed lie inside the tab list\'s padding box, so they render 2px', async ({ page }) => {
   for (const width of [412, 1280]) {
     await page.setViewportSize({ width, height: 900 })
     for (const impl of ['core', 'headless'] as const) {
@@ -197,16 +197,22 @@ test('the selected underline and the bar lie inside the tab list\'s padding box,
         const box = l.getBoundingClientRect()
         const paddingBottom = box.top + l.clientTop + l.clientHeight
         const tab = l.querySelector<HTMLElement>('[aria-selected="true"]')!
-        const bar = l.querySelector<HTMLElement>('.vela-tabs__indicator')!
+        const line = tab.querySelector<HTMLElement>('.vela-tabs__line')!
+        const below = (el: Element) => el.getBoundingClientRect().bottom - paddingBottom
         return {
-          tab: tab.getBoundingClientRect().bottom - paddingBottom,
-          bar: bar.getBoundingClientRect().bottom - paddingBottom,
+          tab: below(tab),
+          line: below(line),
+          lineHeight: line.getBoundingClientRect().height,
+          seeds: [...l.querySelectorAll('.vela-tabs__seed')].map(below),
           border: getComputedStyle(tab).borderBottomWidth,
         }
       })
       expect(g.border, `${impl} ${width}`).toBe('2px')
+      expect(g.lineHeight, `${impl} ${width}`).toBe(2)
       expect(g.tab, `${impl} ${width}: tab below the clip`).toBeLessThanOrEqual(0.01)
-      expect(g.bar, `${impl} ${width}: bar below the clip`).toBeLessThanOrEqual(0.01)
+      expect(g.line, `${impl} ${width}: line below the clip`).toBeLessThanOrEqual(0.01)
+      expect(g.seeds.length, `${impl} ${width}`).toBeGreaterThan(0)
+      for (const s of g.seeds) expect(s, `${impl} ${width}: a Seed below the clip`).toBeLessThanOrEqual(0.01)
     }
   }
 })
@@ -239,6 +245,232 @@ test('in forced colours only the selected tab is marked: Highlight label and und
     }
     expect(s.tabs.some((t) => t.disabled), `${impl}: the stage has a disabled tab to check`).toBe(true)
   }
+})
+
+// The Tabs hover preview, the Seed (tabs.md, Hard constraints and Motion), on the playground's Tabs
+// page in both implementations: Alerts is selected, Assets is the one enabled unselected tab, Audit
+// is disabled. Ported from the prototype's checks (demo/pages/motion/TabsPreviewProto.tsx, on the
+// prototype branch) to the real component.
+test.describe('the Tabs hover preview', () => {
+  const frame = (page: import('@playwright/test').Page) => page.locator('.pg-frame[data-theme="light"]')
+  const tabOf = (page: import('@playwright/test').Page, name: string) => frame(page).getByRole('tab', { name: new RegExp(`^${name}`) })
+  const seedOf = (page: import('@playwright/test').Page, name: string) => tabOf(page, name).locator('.vela-tabs__seed')
+  const opacity = (page: import('@playwright/test').Page, name: string) => seedOf(page, name).evaluate((e) => Number(getComputedStyle(e).opacity))
+  const open = async (page: import('@playwright/test').Page, impl: 'core' | 'headless') => {
+    await page.goto('/#/components/tabs')
+    if (impl === 'headless') await page.getByRole('group', { name: 'Implementation' }).getByRole('button', { name: 'headless' }).click()
+    await expect(frame(page).getByRole('tablist')).toBeVisible()
+    await page.evaluate(() => document.fonts.ready)
+    await page.mouse.move(0, 0)
+  }
+  // A token's value, as the stylesheet resolves it on the Seed itself.
+  const token = (page: import('@playwright/test').Page, name: string) => seedOf(page, 'Assets').evaluate((e, n) => getComputedStyle(e).getPropertyValue(n).trim(), name)
+
+  for (const impl of ['core', 'headless'] as const) {
+    test.describe(impl, () => {
+      test.describe('with motion', () => {
+        test.use({ reducedMotion: 'no-preference' })
+
+        // [[rule: tabs-preview-rest-delay]]
+        test('a sweep across the row shows nothing; a rest shows the Seed after the delay, and it leaves faster than it came', async ({ page }) => {
+          await open(page, impl)
+          // Sample every Seed's opacity on every frame, and how long the pointer stayed on Assets.
+          await frame(page).evaluate((f) => {
+            const w = window as unknown as { __max: number; __raf: number; __on: number; __dwell: number }
+            w.__max = 0; w.__dwell = 0
+            const seeds = f.querySelectorAll('.vela-tabs__seed')
+            const tick = () => { for (const e of seeds) w.__max = Math.max(w.__max, Number(getComputedStyle(e).opacity)); w.__raf = requestAnimationFrame(tick) }
+            tick()
+            const assets = [...f.querySelectorAll('[role="tab"]')].find((t) => t.textContent!.startsWith('Assets'))!
+            assets.addEventListener('pointerenter', () => { w.__on = performance.now() })
+            assets.addEventListener('pointerleave', () => { w.__dwell += performance.now() - w.__on })
+          })
+          const first = (await tabOf(page, 'Alerts').boundingBox())!
+          const last = (await tabOf(page, 'Audit').boundingBox())!
+          const y = first.y + first.height / 2
+          await page.mouse.move(first.x + 2, y)
+          await page.mouse.move(last.x + last.width - 2, y, { steps: 8 })
+          await page.mouse.move(last.x + last.width - 2, y + 200)
+          await page.waitForTimeout(400)
+          const sweep = await page.evaluate(() => {
+            const w = window as unknown as { __max: number; __raf: number; __dwell: number }
+            cancelAnimationFrame(w.__raf)
+            return { max: w.__max, dwell: w.__dwell }
+          })
+          // The sweep crossed Assets in less than the rest, so its Seed never started.
+          expect(sweep.dwell, 'the runner crossed Assets faster than the rest delay').toBeGreaterThan(0)
+          expect(sweep.dwell, 'the runner crossed Assets faster than the rest delay').toBeLessThan(80)
+          expect(sweep.max).toBe(0)
+
+          // A rest: one opacity transition that waits --vela-delay-preview, then fades in over
+          // --vela-duration-travel on --vela-ease-out, to --vela-opacity-preview.
+          await tabOf(page, 'Assets').hover()
+          const ms = (v: string) => parseFloat(v) * (v.endsWith('ms') ? 1 : 1000)
+          const [delay, travel, base, strength] = await Promise.all(['--vela-delay-preview', '--vela-duration-travel', '--vela-duration-base', '--vela-opacity-preview'].map((n) => token(page, n)))
+          const timing = () => seedOf(page, 'Assets').evaluate((e) => e.getAnimations().map((a) => {
+            const t = (a.effect as KeyframeEffect).getTiming()
+            return { property: (a as CSSTransition).transitionProperty, delay: t.delay, duration: t.duration }
+          }))
+          expect(await timing()).toEqual([{ property: 'opacity', delay: ms(delay), duration: ms(travel) }])
+          expect(ms(delay)).toBe(80)
+          // The curve, compared as the browser computes both: the Seed's, and the token's on a probe.
+          expect(await seedOf(page, 'Assets').evaluate((e) => {
+            const probe = document.createElement('i')
+            probe.style.transitionTimingFunction = 'var(--vela-ease-out)'
+            e.parentElement!.appendChild(probe)
+            const want = getComputedStyle(probe).transitionTimingFunction
+            probe.remove()
+            return getComputedStyle(e).transitionTimingFunction === want
+          })).toBe(true)
+          await expect.poll(() => opacity(page, 'Assets')).toBeCloseTo(Number(strength), 3)
+          expect(Number(strength)).toBe(0.55)
+
+          // Leaving: no delay, and --vela-duration-base, shorter than the way in.
+          await page.mouse.move(0, 0)
+          expect(await timing()).toEqual([{ property: 'opacity', delay: 0, duration: ms(base) }])
+          expect(ms(base)).toBeLessThan(ms(travel))
+          await expect.poll(() => opacity(page, 'Assets')).toBe(0)
+        })
+      })
+
+      // The project default: reducedMotion 'reduce'. The collapse in base.css shortens durations,
+      // not delays, so the rest is still a rest: a sweep still shows nothing.
+      // [[rule: tabs-preview-rest-delay]]
+      test('under reduced motion the Seed still waits for the rest, then appears at its strength at once', async ({ page }) => {
+        await open(page, impl)
+        expect(await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches)).toBe(true)
+        // From the pointer arriving on Assets to the first frame its Seed shows.
+        await frame(page).evaluate((f) => {
+          const w = window as unknown as { __on: number; __shown: number }
+          w.__on = 0; w.__shown = 0
+          const assets = [...f.querySelectorAll('[role="tab"]')].find((t) => t.textContent!.startsWith('Assets'))!
+          const seed = assets.querySelector('.vela-tabs__seed')!
+          assets.addEventListener('pointerenter', () => { w.__on = performance.now() }, { once: true })
+          const tick = () => {
+            if (w.__on && Number(getComputedStyle(seed).opacity) > 0) { w.__shown = performance.now(); return }
+            requestAnimationFrame(tick)
+          }
+          tick()
+        })
+        await tabOf(page, 'Assets').hover()
+        await expect.poll(() => opacity(page, 'Assets')).toBeCloseTo(0.55, 3)
+        const cs = await seedOf(page, 'Assets').evaluate((e) => ({ delay: getComputedStyle(e).transitionDelay, duration: getComputedStyle(e).transitionDuration }))
+        expect(cs.delay).toBe('0.08s')
+        expect(parseFloat(cs.duration)).toBeLessThan(0.001)
+        const waited = await page.evaluate(() => {
+          const w = window as unknown as { __on: number; __shown: number }
+          return w.__shown - w.__on
+        })
+        // A frame of slack under the 80ms: the first frame after the delay is the first that can show it.
+        expect(waited).toBeGreaterThanOrEqual(64)
+      })
+
+      // [[rule: tabs-preview-never-selected-or-disabled]]
+      test('the Seed never shows on the selected tab or on a disabled one', async ({ page }) => {
+        await open(page, impl)
+        for (const name of ['Alerts', 'Audit']) {
+          await tabOf(page, name).hover()
+          await page.waitForTimeout(400)
+          expect(await opacity(page, name), name).toBe(0)
+        }
+        // The control: the same rest on Assets shows it.
+        await tabOf(page, 'Assets').hover()
+        await expect.poll(() => opacity(page, 'Assets')).toBeCloseTo(0.55, 3)
+      })
+
+      // [[rule: tabs-preview-size]]
+      test('the Seed is a third of its tab, never under the floor token, never wider than the tab, and centred', async ({ page }) => {
+        await open(page, impl)
+        const min = parseFloat(await token(page, '--vela-tab-preview-width-min'))
+        expect(min).toBe(24)
+        // The second tab, by position: its label is rewritten below.
+        const assets = frame(page).getByRole('tab').nth(1)
+        await expect(assets).toHaveAccessibleName(/^Assets/)
+        const measure = async (label: string, count: boolean) => {
+          await assets.evaluate((t, [label, count]) => {
+            t.firstChild!.textContent = label as string
+            const c = t.querySelector<HTMLElement>('.vela-tabs__count')
+            if (c) c.style.display = count ? '' : 'none'
+          }, [label, count] as const)
+          await page.mouse.move(0, 0)
+          await assets.hover()
+          await expect.poll(() => assets.locator('.vela-tabs__seed').evaluate((e) => Number(getComputedStyle(e).opacity))).toBeCloseTo(0.55, 3)
+          return assets.locator('.vela-tabs__seed').evaluate((e) => {
+            const s = e.getBoundingClientRect(), t = e.parentElement!.getBoundingClientRect()
+            return { seed: s.width, tab: t.width, offCentre: Math.abs(s.left + s.width / 2 - (t.left + t.width / 2)) }
+          })
+        }
+        // A long label: a third. "IP 340": a third would be under the floor, so the floor. "IP" alone
+        // (13px or so): narrower than the floor, so the tab's own width.
+        for (const [label, count] of [['Device posture inventory', true], ['IP', true], ['IP', false]] as const) {
+          const m = await measure(label, count)
+          const expected = Math.min(m.tab, Math.max(min, m.tab / 3))
+          expect(Math.abs(m.seed - expected), `${label}${count ? ' 340' : ''}: ${JSON.stringify(m)}`).toBeLessThan(0.5)
+          expect(m.seed).toBeLessThanOrEqual(m.tab + 0.01)
+          expect(m.offCentre).toBeLessThan(0.5)
+          if (label === 'IP' && !count) expect(m.tab).toBeLessThan(min)
+          if (label === 'IP' && count) expect(m.tab / 3).toBeLessThan(min)
+        }
+      })
+
+      // [[rule: tabs-preview-forced-colours]]
+      test('in forced colours the Seed is a solid 1px CanvasText line, never the selection\'s Highlight', async ({ page }) => {
+        await page.emulateMedia({ forcedColors: 'active' })
+        await open(page, impl)
+        await tabOf(page, 'Assets').hover()
+        await expect.poll(() => opacity(page, 'Assets')).toBe(1)
+        const s = await frame(page).getByRole('tablist').evaluate((l) => {
+          const sys = (c: string) => { const p = document.createElement('i'); p.style.cssText = `forced-color-adjust:none;background:${c}`; l.appendChild(p); const v = getComputedStyle(p).backgroundColor; p.remove(); return v }
+          const seed = [...l.querySelectorAll<HTMLElement>('[role="tab"]')].find((t) => t.textContent!.startsWith('Assets'))!.querySelector<HTMLElement>('.vela-tabs__seed')!
+          const line = l.querySelector<HTMLElement>('[aria-selected="true"] .vela-tabs__line')!
+          const cs = getComputedStyle(seed)
+          return { canvasText: sys('CanvasText'), highlight: sys('Highlight'), bg: cs.backgroundColor, mask: cs.maskImage, height: cs.height, line: getComputedStyle(line).backgroundColor }
+        })
+        expect(s.canvasText).not.toBe(s.highlight)
+        expect(s.bg).toBe(s.canvasText)
+        expect(s.mask).toBe('none')
+        expect(s.height).toBe('1px')
+        // The selected tab's line is the selection, so it is Highlight like its border.
+        expect(s.line).toBe(s.highlight)
+      })
+    })
+  }
+
+  // [[rule: tabs-preview-pointer-only]]
+  test('every rule that shows the Seed sits under @media (hover: hover)', async ({ page }) => {
+    await open(page, 'core')
+    const found = await page.evaluate(() => {
+      const out: { selector: string; media: string[] }[] = []
+      const walk = (rules: CSSRuleList, media: string[]) => {
+        for (const r of rules) {
+          if (r instanceof CSSMediaRule) walk(r.cssRules, [...media, r.conditionText])
+          else if (r instanceof CSSStyleRule && r.selectorText.includes(':hover') && r.selectorText.includes('vela-tabs__seed')) out.push({ selector: r.selectorText, media })
+        }
+      }
+      for (const sheet of document.styleSheets) { try { walk(sheet.cssRules, []) } catch { /* a cross-origin sheet: not ours */ } }
+      return out
+    })
+    expect(found.length).toBeGreaterThan(0)
+    for (const r of found) expect(r.media.some((m) => m.includes('hover: hover')), r.selector).toBe(true)
+  })
+
+  test.describe('on a touch screen', () => {
+    test.use({ hasTouch: true, isMobile: true })
+    // [[rule: tabs-preview-pointer-only]]
+    test('a device without hover never shows the Seed, even under a pointer', async ({ page }) => {
+      for (const impl of ['core', 'headless'] as const) {
+        await open(page, impl)
+        expect(await page.evaluate(() => matchMedia('(hover: hover)').matches)).toBe(false)
+        await tabOf(page, 'Assets').hover()
+        await page.waitForTimeout(400)
+        expect(await opacity(page, 'Assets'), impl).toBe(0)
+        // A tap still selects, and the underline lands under the tapped tab.
+        await tabOf(page, 'Assets').tap()
+        await expect(tabOf(page, 'Assets')).toHaveAttribute('aria-selected', 'true')
+        await expect.poll(() => tabOf(page, 'Assets').locator('.vela-tabs__line').evaluate((e) => getComputedStyle(e).opacity)).toBe('1')
+      }
+    })
+  })
 })
 
 test('the Table page sorts through the host: the button names the next direction, aria-sort follows', async ({ page }) => {
@@ -1005,51 +1237,52 @@ test('the Icon page sizes every glyph from the tokens and draws the stroke on th
   await expect(page.locator('.pg-code')).toContainText('<Icon name="shield-x" size="small" />')
 })
 
-// The Tabs selected indicator (tabs.md, Motion), on the Motion review page, in both
-// implementations. jsdom has no layout and no Web Animations, so all four proofs live here.
-// The page's own "×5 slow motion" switch widens the window in which a flight can be inspected;
-// it changes only the playback rate of running animations, never the CSS under test.
-test.describe('the Tabs indicator', () => {
-  type Probe = {
-    moving: boolean; instant: boolean; opacity: string; transitionProperty: string
-    left: string; width: string; listWidth: number; x: number; scale: number
-    animations: { property: string; rate: number }[]
-    elsewhere: string[]
-  }
-  // What the bar is doing right now: its computed geometry, its transform as numbers, and every
-  // animation on it and anywhere else in the Tabs subtree.
+// The Tabs underline on a press (tabs.md, Motion), on the Motion review page, in both
+// implementations: a pointer press grows the pressed tab's Seed into the underline where it is and
+// the old underline shrinks away under the old tab; nothing travels across the row. jsdom has no
+// layout and no Web Animations, so these proofs live here. The page's own "×5 slow motion" switch
+// widens the window in which a flight can be inspected; it changes only the playback rate of
+// running animations, never the CSS under test.
+test.describe('the Tabs press', () => {
+  type Layer = { opacity: number; scale: number; left: string; width: number; tabWidth: number; centre: number; tabCentre: number; colour: string; animations: string[] }
+  type TabProbe = { name: string; selected: boolean; border: string; seed: Layer; line: Layer }
+  type Probe = { moving: boolean; instant: boolean; tabs: TabProbe[]; animations: { target: string; property: string }[]; bars: number }
+  // What every tab's two layers are doing right now: computed opacity and scale, their box against
+  // the tab's, and every animation on them and anywhere else in the Tabs subtree.
   const probe = (impl: string) => async (page: import('@playwright/test').Page) =>
     page.locator(`.motion-frame[data-theme="light"] [data-implementation="${impl}"] .vela-tabs`).evaluate((root): Probe => {
       const list = root.querySelector<HTMLElement>('.vela-tabs__list')!
-      const bar = root.querySelector<HTMLElement>('.vela-tabs__indicator')!
-      const cs = getComputedStyle(bar)
-      const m = new DOMMatrix(cs.transform === 'none' ? undefined : cs.transform)
       const prop = (a: Animation) => (a as CSSTransition).transitionProperty ?? (a as CSSAnimation).animationName ?? '?'
+      const layer = (el: HTMLElement, tab: HTMLElement): Layer => {
+        const cs = getComputedStyle(el)
+        const m = new DOMMatrix(cs.transform === 'none' ? undefined : cs.transform)
+        const r = el.getBoundingClientRect(), t = tab.getBoundingClientRect()
+        return {
+          opacity: Number(cs.opacity), scale: m.a, left: cs.left, width: parseFloat(cs.width), tabWidth: tab.clientWidth,
+          centre: r.left + r.width / 2, tabCentre: t.left + t.width / 2, colour: cs.backgroundColor,
+          animations: el.getAnimations().map(prop).sort(),
+        }
+      }
+      const tabs = [...list.querySelectorAll<HTMLElement>('[role="tab"]')].map((t) => ({
+        name: t.firstChild!.textContent!.trim(),
+        selected: t.getAttribute('aria-selected') === 'true',
+        border: getComputedStyle(t).borderBottomColor,
+        seed: layer(t.querySelector<HTMLElement>('.vela-tabs__seed')!, t),
+        line: layer(t.querySelector<HTMLElement>('.vela-tabs__line')!, t),
+      }))
       return {
         moving: list.hasAttribute('data-vela-moving'),
         instant: root.hasAttribute('data-vela-instant'),
-        opacity: cs.opacity,
-        transitionProperty: cs.transitionProperty,
-        left: cs.left,
-        width: cs.width,
-        listWidth: list.clientWidth,
-        x: m.e,
-        scale: m.a,
-        animations: bar.getAnimations().map((a) => ({ property: prop(a), rate: a.playbackRate })),
-        elsewhere: root.getAnimations({ subtree: true }).filter((a) => (a.effect as KeyframeEffect).target !== bar).map(prop),
+        tabs,
+        animations: root.getAnimations({ subtree: true }).map((a) => ({ target: String(((a.effect as KeyframeEffect).target as Element).className), property: prop(a) })),
+        bars: root.querySelectorAll('.vela-tabs__indicator').length,
       }
     })
-  // Where the bar belongs under a tab: its left edge in the list's coordinates, its width as a
-  // fraction of the list's.
-  const target = (impl: string, name: string) => async (page: import('@playwright/test').Page) =>
-    page.locator(`.motion-frame[data-theme="light"] [data-implementation="${impl}"] .vela-tabs__list`).evaluate((list: HTMLElement, name) => {
-      const tab = [...list.querySelectorAll<HTMLElement>('[role="tab"]')].find((t) => t.textContent!.startsWith(name))!
-      const l = list.getBoundingClientRect(), t = tab.getBoundingClientRect()
-      return { x: t.left - l.left + list.scrollLeft, scale: t.width / list.clientWidth }
-    }, name)
+  const of = (p: Probe, name: string) => p.tabs.find((t) => t.name === name)!
   const tab = (page: import('@playwright/test').Page, impl: string, name: string) =>
     page.locator('.motion-frame[data-theme="light"]').getByRole('tablist', { name: `Views (${impl})` }).getByRole('tab', { name: new RegExp(`^${name}`) })
   const slowMotion = (page: import('@playwright/test').Page) => page.getByRole('switch', { name: '×5 slow motion' }).click()
+  const NONE = 'rgba(0, 0, 0, 0)'
 
   for (const impl of ['core', 'headless'] as const) {
     test.describe(impl, () => {
@@ -1063,95 +1296,174 @@ test.describe('the Tabs indicator', () => {
       test.describe('with motion', () => {
         test.use({ reducedMotion: 'no-preference' })
 
-        // [[rule: tabs-indicator-moves-by-transform]]
-        test('a pointer switch slides the bar by transform alone, on the spring, while left and width stay put', async ({ page }) => {
+        // [[rule: tabs-press-grows-in-place]]
+        test('a pointer press grows the Seed into the underline where it is, and the old underline shrinks away under its tab', async ({ page }) => {
           await slowMotion(page)
           const before = await probe(impl)(page)
           expect(before.moving).toBe(false)
-          expect(before.opacity).toBe('0')
+          // No bar crosses the row any more: there is no row-level indicator at all.
+          expect(before.bars).toBe(0)
+          expect(of(before, 'Alerts').line.opacity).toBe(1)
+          expect(of(before, 'Audit log').line.opacity).toBe(0)
+          const start = of(before, 'Audit log').line.scale
+          expect(start).toBeLessThan(0.5)
+
           await tab(page, impl, 'Audit log').click()
           const a = await probe(impl)(page)
           expect(a.moving).toBe(true)
-          expect(a.opacity).toBe('1')
-          expect(a.transitionProperty).toBe('transform')
-          // One animation on the bar, a transform transition…
-          expect(a.animations.map((x) => x.property)).toEqual(['transform'])
-          // …slowed by the review switch, whose frame loop reaches a new transition on its next frame.
-          await expect.poll(async () => (await probe(impl)(page)).animations).toEqual([{ property: 'transform', rate: 0.2 }])
-          // Nothing in the Tabs animates geometry: only the triggers' colour may be settling.
-          expect(a.elsewhere.every((p) => p === 'color')).toBe(true)
+          // The pressed tab's border is set aside while its layers grow; the old tab's line shrinks.
+          expect(of(a, 'Audit log').border).toBe(NONE)
+          expect(of(a, 'Audit log').seed.animations).toEqual(['opacity', 'transform'])
+          expect(of(a, 'Audit log').line.animations).toEqual(['opacity', 'transform'])
+          expect(of(a, 'Alerts').line.animations).toEqual(['opacity', 'transform'])
+          // Nothing else moves: only transform and opacity on the layers, and the labels' colour.
+          for (const x of a.animations) {
+            if (x.target.includes('vela-tabs__trigger')) {
+              expect(x.property).toBe('color')
+            } else {
+              expect(['vela-tabs__seed', 'vela-tabs__line']).toContain(x.target)
+              expect(['opacity', 'transform']).toContain(x.property)
+            }
+          }
+
           await page.waitForTimeout(150)
           const b = await probe(impl)(page)
           expect(b.moving).toBe(true)
-          // Layout never moves: the bar is the list's full width at its left edge throughout.
+          // Growing under Audit log, shrinking under Alerts…
+          expect(of(b, 'Audit log').line.scale).toBeGreaterThan(start + 0.02)
+          expect(of(b, 'Audit log').line.scale).toBeLessThan(0.999)
+          expect(of(b, 'Alerts').line.scale).toBeLessThan(0.999)
+          expect(of(b, 'Alerts').line.opacity).toBeLessThan(1)
+          // …each in its own place: every layer stays centred under its own tab, and its layout box
+          // is the tab's width throughout, so only transform ever changes.
           for (const p of [before, a, b]) {
-            expect(p.left).toBe('0px')
-            expect(Math.abs(parseFloat(p.width) - p.listWidth)).toBeLessThan(1)   // clientWidth is rounded
+            for (const t of p.tabs) {
+              for (const l of [t.seed, t.line]) {
+                expect(Math.abs(l.centre - l.tabCentre), t.name).toBeLessThan(1)
+                expect(l.left).toBe('0px')
+                expect(Math.abs(l.width - l.tabWidth), t.name).toBeLessThan(1)
+              }
+            }
           }
-          // …while the transform travels towards the pressed tab.
-          const end = await target(impl, 'Audit log')(page)
-          expect(Math.abs(b.x - end.x)).toBeLessThan(Math.abs(before.x - end.x))
           await expect.poll(async () => (await probe(impl)(page)).moving, { timeout: 5000 }).toBe(false)
+          const end = await probe(impl)(page)
+          expect(of(end, 'Audit log').border).not.toBe(NONE)
+          expect(of(end, 'Audit log').line.opacity).toBe(1)
+          expect(of(end, 'Audit log').line.scale).toBeCloseTo(1, 3)
+          expect(of(end, 'Alerts').line.opacity).toBe(0)
         })
 
-        // [[rule: tabs-indicator-retargets]]
-        test('a second press mid-flight turns the bar from where it is and it ends under the second tab', async ({ page }) => {
+        // [[rule: tabs-press-retargets]]
+        test('a second press mid-flight turns every layer from where it is, and the underline ends under the second tab', async ({ page }) => {
           await slowMotion(page)
           await tab(page, impl, 'Audit log').click()
           await page.waitForTimeout(250)
-          const mid = await probe(impl)(page)
-          expect(mid.moving).toBe(true)
-          await tab(page, impl, 'Assets').click()
-          const turned = await probe(impl)(page)
-          const assets = await target(impl, 'Assets')(page)
-          // Retargeted, not restarted or snapped: still in flight, one transform transition, and
-          // not yet under Assets.
-          expect(turned.moving).toBe(true)
-          expect(turned.animations.map((x) => x.property)).toEqual(['transform'])
-          expect(Math.abs(turned.x - assets.x)).toBeGreaterThan(2)
+          // Press Assets in the page itself, reading Audit log's growing line just before the press,
+          // and then the transition the press gave it: where it starts is where the line was.
+          const r = await page.locator('.motion-frame[data-theme="light"]').getByRole('tablist', { name: `Views (${impl})` }).evaluate(async (list) => {
+            const find = (n: string) => [...list.querySelectorAll<HTMLElement>('[role="tab"]')].find((t) => t.textContent!.startsWith(n))!
+            const lineOf = (t: HTMLElement) => t.querySelector<HTMLElement>('.vela-tabs__line')!
+            const scaleOf = (t: string) => new DOMMatrix(t === 'none' ? undefined : t).a
+            const line = (t: HTMLElement) => {
+              const cs = getComputedStyle(lineOf(t))
+              return { scale: scaleOf(cs.transform), opacity: Number(cs.opacity) }
+            }
+            const audit = find('Audit log'), assets = find('Assets')
+            const before = line(audit)
+            const init = { bubbles: true, cancelable: true, button: 0, pointerType: 'mouse', isPrimary: true }
+            assets.dispatchEvent(new PointerEvent('pointerdown', init))
+            assets.dispatchEvent(new PointerEvent('pointerup', init))
+            assets.click()
+            await new Promise((done) => setTimeout(done, 0))
+            const startOf = (property: 'transform' | 'opacity') => {
+              const a = lineOf(audit).getAnimations().find((x) => (x as CSSTransition).transitionProperty === property)
+              const v = a ? String((a.effect as KeyframeEffect).getKeyframes()[0][property]) : ''
+              return a ? (property === 'transform' ? scaleOf(v) : Number(v)) : NaN
+            }
+            return {
+              before, from: { scale: startOf('transform'), opacity: startOf('opacity') }, assets: line(assets),
+              assetsSelected: assets.getAttribute('aria-selected'), moving: list.hasAttribute('data-vela-moving'),
+            }
+          })
+          expect(r.assetsSelected).toBe('true')
+          expect(r.moving).toBe(true)
+          // Retargeted, not restarted or snapped: Audit log's line was mid-growth, and its new
+          // transitions, towards its Seed's size and out, start from where it was.
+          expect(r.before.scale).toBeGreaterThan(0.4)
+          expect(r.before.scale).toBeLessThan(0.999)
+          // The new transition starts where the line was (a frame of the slowed growth apart at most),
+          // never from the full underline or from nothing.
+          expect(Math.abs(r.from.scale - r.before.scale), JSON.stringify(r)).toBeLessThan(0.03)
+          expect(Math.abs(r.from.opacity - r.before.opacity), JSON.stringify(r)).toBeLessThan(0.03)
+          // Assets grows from its own place, not from Audit log's.
+          expect(r.assets.scale).toBeLessThan(0.6)
           await expect.poll(async () => (await probe(impl)(page)).moving, { timeout: 5000 }).toBe(false)
           const rest = await probe(impl)(page)
-          expect(rest.x).toBeCloseTo(assets.x, 0)
-          expect(rest.scale).toBeCloseTo(assets.scale, 3)
           await expect(tab(page, impl, 'Assets')).toHaveAttribute('aria-selected', 'true')
-          expect(await tab(page, impl, 'Assets').evaluate((el) => getComputedStyle(el).borderBottomColor)).not.toBe('rgba(0, 0, 0, 0)')
+          for (const t of rest.tabs) {
+            expect(t.line.opacity, t.name).toBe(t.name === 'Assets' ? 1 : 0)
+            expect(t.border === NONE, t.name).toBe(t.name !== 'Assets')
+          }
+          expect(of(rest, 'Assets').line.scale).toBeCloseTo(1, 3)
         })
 
         // [[rule: tabs-keyboard-switch-is-instant]]
-        test('a keyboard switch moves the underline at once: nothing in the Tabs animates', async ({ page }) => {
+        // [[rule: tabs-preview-pointer-only]]
+        test('a keyboard switch moves the underline at once: nothing in the Tabs animates and no Seed shows', async ({ page }) => {
+          // A pointer resting on Identities shows its Seed…
+          await tab(page, impl, 'Identities').hover()
+          await expect.poll(async () => of(await probe(impl)(page), 'Identities').seed.opacity).toBeCloseTo(0.55, 2)
           await tab(page, impl, 'Alerts').focus()
           await page.keyboard.press('ArrowRight')
           const p = await probe(impl)(page)
           expect(p.moving).toBe(false)
           expect(p.instant).toBe(true)
           expect(p.animations).toEqual([])
-          expect(p.elsewhere).toEqual([])
           await expect(tab(page, impl, 'Assets')).toHaveAttribute('aria-selected', 'true')
-          expect(await tab(page, impl, 'Assets').evaluate((el) => getComputedStyle(el).borderBottomColor)).not.toBe('rgba(0, 0, 0, 0)')
-          expect(await tab(page, impl, 'Alerts').evaluate((el) => getComputedStyle(el).borderBottomColor)).toBe('rgba(0, 0, 0, 0)')
+          expect(of(p, 'Assets').border).not.toBe(NONE)
+          expect(of(p, 'Assets').line.opacity).toBe(1)
+          expect(of(p, 'Alerts').border).toBe(NONE)
+          expect(of(p, 'Alerts').line.opacity).toBe(0)
+          // …and the keyboard puts it away at once: no Seed anywhere while the keyboard is in use.
+          for (const t of p.tabs) expect(t.seed.opacity, t.name).toBe(0)
+          // A pointer moving over the list again brings it back, after the rest.
+          const box = (await tab(page, impl, 'Identities').boundingBox())!
+          await page.mouse.move(box.x + box.width / 2 + 1, box.y + box.height / 2)
+          await expect.poll(async () => of(await probe(impl)(page), 'Identities').seed.opacity).toBeCloseTo(0.55, 2)
         })
       })
 
       // The project default: reducedMotion 'reduce'.
-      // [[rule: tabs-indicator-reduced-motion-end-state]]
-      // [[rule: tabs-indicator-rest-is-the-border]]
-      test('under reduced motion a pointer switch lands at its end state, and at rest the underline is the tab\'s own border', async ({ page }) => {
+      // [[rule: tabs-press-reduced-motion-end-state]]
+      // [[rule: tabs-underline-rest-is-the-border]]
+      test('under reduced motion a pointer press lands at its end state, and at rest the underline is the tab\'s own border', async ({ page }) => {
         await tab(page, impl, 'Audit log').click()
-        // The reduced-motion collapse gives every property change a 0.01ms transition, the bar's
-        // hand-back to the border included, so "at rest" is polled for rather than read once.
-        await expect.poll(async () => { const p = await probe(impl)(page); return [p.moving, p.opacity] }, { timeout: 2000 }).toEqual([false, '0'])
+        // The reduced-motion collapse gives every property change a 0.01ms transition, the hand-back
+        // to the border included, so "at rest" is polled for rather than read once.
+        await expect.poll(async () => (await probe(impl)(page)).moving, { timeout: 2000 }).toBe(false)
         const rest = await probe(impl)(page)
-        const end = await target(impl, 'Audit log')(page)
-        // The bar has gone to the tab and is invisible; the tab's border is the underline, in the
-        // bar's colour (--vela-border-active), and no other tab has one.
-        expect(rest.opacity).toBe('0')
-        expect(rest.x).toBeCloseTo(end.x, 0)
-        expect(rest.scale).toBeCloseTo(end.scale, 3)
-        const barColour = await page.locator(`.motion-frame[data-theme="light"] [data-implementation="${impl}"] .vela-tabs__indicator`).evaluate((el) => getComputedStyle(el).backgroundColor)
-        for (const name of ['Alerts', 'Assets', 'Identities', 'Audit log']) {
-          const colour = await tab(page, impl, name).evaluate((el) => getComputedStyle(el).borderBottomColor)
-          expect(colour, name).toBe(name === 'Audit log' ? barColour : 'rgba(0, 0, 0, 0)')
+        expect(rest.animations).toEqual([])
+        for (const t of rest.tabs) {
+          if (t.selected) {
+            // The selected tab's border is the underline, in --vela-border-active; the line on it is
+            // the same colour at full strength and full width…
+            expect(t.name).toBe('Audit log')
+            expect(t.border).not.toBe(NONE)
+            expect(t.line.colour).toBe(t.border)
+            expect([t.line.opacity, Math.round(t.line.scale * 1000) / 1000]).toEqual([1, 1])
+          } else {
+            expect(t.border, t.name).toBe(NONE)
+            expect(t.line.opacity, t.name).toBe(0)
+          }
+          expect(t.seed.opacity, t.name).toBe(0)
         }
+        // …on exactly the border's pixels, so the still list renders as the border alone did.
+        const g = await tab(page, impl, 'Audit log').evaluate((t) => {
+          const r = t.getBoundingClientRect(), l = t.querySelector('.vela-tabs__line')!.getBoundingClientRect()
+          return { tab: [r.left, r.right, r.bottom], line: [l.left, l.right, l.bottom], height: l.height, border: parseFloat(getComputedStyle(t).borderBottomWidth) }
+        })
+        g.line.forEach((v, i) => expect(Math.abs(v - g.tab[i])).toBeLessThan(0.01))
+        expect(g.height).toBe(g.border)
       })
     })
   }
@@ -1159,7 +1471,7 @@ test.describe('the Tabs indicator', () => {
   test('the Motion review page lists every motion token with its value and reason, in light and dark', async ({ page }) => {
     await page.goto('/#/motion')
     const rows = page.locator('.motion-tokens tbody tr')
-    await expect(rows).toHaveCount(10)
+    await expect(rows).toHaveCount(11)
     await expect(page.locator('.motion-tokens tr[data-token="ease-spring"] td').first()).toContainText('stiffness 1200, damping 56, mass 1')
     await expect(page.locator('.motion-tokens tr[data-token="ease-out"] td').first()).toHaveText('cubic-bezier(0.25, 1, 0.5, 1)')
     await expect(page.locator('.motion-frame[data-theme="dark"] .vela-tabs__list')).toHaveCount(2)

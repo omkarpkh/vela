@@ -2,7 +2,6 @@
 .vela-tabs { display: flex; flex-direction: column; }
 
 .vela-tabs__list {
-  position: relative; /* the indicator's containing block; it scrolls with the tabs */
   display: flex; align-items: stretch; gap: var(--vela-space-20);
   /* The list rule is drawn inside the padding box, as an inset shadow, so the 2px selected
      underline can lie over its bottom pixel without leaving the box. A scroll container clips at
@@ -26,7 +25,7 @@
   cursor: pointer; white-space: nowrap;
   border-bottom: var(--vela-stroke-2) solid transparent;
   /* Colour only. The underline does not fade: at rest it is this border, in flight it is the
-     indicator below, and the hand-over between them must be instant to be invisible. */
+     line below, and the hand-over between them must be instant to be invisible. */
   transition: color var(--vela-duration-fast) var(--vela-ease-standard);
 }
 .vela-tabs--large .vela-tabs__trigger { font-size: var(--vela-text-tab-large-size); line-height: var(--vela-text-tab-large-line-height); }
@@ -41,27 +40,69 @@
 /* From the keyboard nothing animates: a keyboard switch changes colour and underline at once. */
 .vela-tabs[data-vela-instant] .vela-tabs__trigger { transition: none; }
 
-/* The selected indicator (guidelines/components/tabs.md#motion). At rest the underline is the
-   selected trigger's own border above, so a still tab list renders exactly as it did before this
-   bar existed. The bar always sits under the selected tab, invisible; while a pointer switch is in
-   flight (data-vela-moving, set in the same commit as the new selection) it is shown, the
-   selected trigger's border is hidden, and the bar's transform travels to the new tab — the full
-   list width scaled down from its left edge, so only transform ever moves. Same geometry as the
-   border: a stroke-2 bar whose bottom edge is the trigger's, the list's padding box. */
-.vela-tabs__indicator {
-  position: absolute; left: 0; bottom: 0;
-  width: 100%; height: var(--vela-stroke-2);
-  background: var(--vela-border-active);
-  transform-origin: 0 0;
-  transform: translateX(var(--vela-tabs-indicator-x, 0)) scaleX(var(--vela-tabs-indicator-scale, 0));
+/* The hover preview and the press (guidelines/components/tabs.md#motion). Two decorative layers
+   in each trigger lie exactly where its border lies, the 2px below the padding box: the Seed, a
+   soft-ended bar in the underline's colour, and the line, the square-ended underline the Seed
+   grows into. Both are the trigger's full width scaled from the centre to the Seed's size
+   (--vela-tabs-preview-scale: a third of the tab, floored at --vela-tab-preview-width-min, set per
+   trigger by the component), so growing is transform alone. The colour is set once, as `color`,
+   and drawn as currentColor: the mask reads only its alpha, and every Vela colour is opaque. */
+.vela-tabs__seed,
+.vela-tabs__line {
+  position: absolute; left: 0; right: 0;
+  bottom: calc(-1 * var(--vela-stroke-2)); height: var(--vela-stroke-2);
+  color: var(--vela-border-active);
+  background: currentColor;
+  transform-origin: 50% 50%;
+  transform: scaleX(var(--vela-tabs-preview-scale, 0.3333));
   opacity: 0;
   pointer-events: none;
 }
-.vela-tabs__list[data-vela-moving] .vela-tabs__indicator {
-  opacity: 1;
-  transition: transform var(--vela-duration-travel) var(--vela-ease-spring);
+/* Soft ends: a static alpha mask in the Seed's own box, so it scales with the Seed. Leaving the
+   preview it fades at base, faster than it arrived. */
+.vela-tabs__seed {
+  -webkit-mask-image: linear-gradient(90deg, transparent, currentColor 30%, currentColor 70%, transparent);
+  mask-image: linear-gradient(90deg, transparent, currentColor 30%, currentColor 70%, transparent);
+  transition: opacity var(--vela-duration-base) var(--vela-ease-standard);
 }
+
+/* The Seed: only where hover exists, only on an enabled tab that is not selected, never after a
+   keyboard switch until the pointer moves again (data-vela-instant), and only once the pointer
+   has rested --vela-delay-preview. The delay is on the way in only: a pointer that leaves sooner
+   cancels the transition before it has moved anything, so a sweep across the row shows nothing. */
+@media (hover: hover) {
+  .vela-tabs:not([data-vela-instant]) .vela-tabs__trigger:hover:not(:disabled):not([aria-selected='true']) .vela-tabs__seed {
+    opacity: var(--vela-opacity-preview);
+    transition: opacity var(--vela-duration-travel) var(--vela-ease-out) var(--vela-delay-preview);
+  }
+}
+
+/* At rest the selected tab's line lies on its border at full strength, the same colour on the same
+   pixels, so the still list renders as the border alone did; it is there so that it can shrink away
+   when another tab is pressed. Nothing here transitions: a change from code or the keyboard lands. */
+.vela-tabs__trigger[aria-selected='true'] .vela-tabs__line { opacity: 1; transform: scaleX(1); }
+.vela-tabs__trigger[aria-selected='true'] .vela-tabs__seed { transition: none; }
+
+/* A pointer press grows in place (data-vela-moving, set in the same commit as the new selection).
+   The pressed tab's border is set aside; its Seed grows from where it is to the full width and full
+   strength on the spring, and its square line grows with it while fading in on the standard curve
+   (slow at first), so the soft ends turn square as the growth completes. The old tab's line shrinks
+   back to the Seed's size and fades where it is. Nothing travels across the row. When the flight
+   ends the border takes over again, in the same place, at once. */
 .vela-tabs__list[data-vela-moving] .vela-tabs__trigger[aria-selected='true'] { border-bottom-color: transparent; }
+.vela-tabs__list[data-vela-moving] .vela-tabs__trigger[aria-selected='true'] .vela-tabs__seed {
+  opacity: 1; transform: scaleX(1);
+  transition: transform var(--vela-duration-travel) var(--vela-ease-spring), opacity var(--vela-duration-travel) var(--vela-ease-out);
+}
+.vela-tabs__list[data-vela-moving] .vela-tabs__trigger[aria-selected='true'] .vela-tabs__line {
+  transition: transform var(--vela-duration-travel) var(--vela-ease-spring), opacity var(--vela-duration-travel) var(--vela-ease-standard);
+}
+.vela-tabs__list[data-vela-moving] .vela-tabs__trigger:not([aria-selected='true']) :is(.vela-tabs__seed, .vela-tabs__line) {
+  transition: transform var(--vela-duration-travel) var(--vela-ease-spring), opacity var(--vela-duration-travel) var(--vela-ease-out);
+}
+
+/* From the keyboard nothing animates and no Seed shows. */
+.vela-tabs[data-vela-instant] :is(.vela-tabs__seed, .vela-tabs__line) { transition: none; }
 
 .vela-tabs__count { margin-left: var(--vela-space-5); font-weight: var(--vela-font-weight-semibold); }
 
@@ -75,7 +116,10 @@
    the selected tab is the one in Highlight, with a Highlight underline; the others carry no
    underline; a disabled tab is GrayText; focus stays a Highlight ring. The list rule becomes a
    CanvasText border below the padding box (the shadow is gone), which the underline no longer
-   overlaps, so nothing is clipped. */
+   overlaps, so nothing is clipped. The Seed must not borrow Highlight, or preview and selection
+   collapse into one mark: it is a solid 1px CanvasText line at its own length, so it differs from
+   the selection in colour, weight and length, with no mask (an image there is removed). The line is
+   the selection, so it is Highlight. */
 @media (forced-colors: active) {
   .vela-tabs__list { border-bottom: 1px solid CanvasText; }
   .vela-tabs__trigger { forced-color-adjust: none; color: CanvasText; border-bottom-color: transparent; }
@@ -84,5 +128,17 @@
   .vela-tabs__trigger:hover:not(:disabled):not([aria-selected='true']) { color: CanvasText; }
   .vela-tabs__trigger:disabled { color: GrayText; }
   .vela-root .vela-tabs__trigger:focus-visible { outline-color: Highlight; }
-  .vela-tabs__indicator { forced-color-adjust: none; background: Highlight; }
+  /* The upper pixel of the underline's slot, set by its two edges (a hairline needs no height):
+     a pixel of Canvas then parts it from the list rule below, so the two never merge into one. */
+  .vela-tabs__seed {
+    forced-color-adjust: none; color: CanvasText;
+    -webkit-mask-image: none; mask-image: none;
+    top: 100%; bottom: -1px; height: auto;
+  }
+  .vela-tabs__line { forced-color-adjust: none; color: Highlight; }
+}
+/* A system colour drawn at reduced strength is no longer a system colour: in forced colours the
+   Seed is drawn whole. */
+@media (forced-colors: active) and (hover: hover) {
+  .vela-tabs:not([data-vela-instant]) .vela-tabs__trigger:hover:not(:disabled):not([aria-selected='true']) .vela-tabs__seed { opacity: 1; }
 }
