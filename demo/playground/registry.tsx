@@ -44,6 +44,18 @@ export interface Implementation {
 export type Group = 'Actions' | 'Inputs' | 'Feedback' | 'Overlays' | 'Data'
 export const GROUPS: Group[] = ['Actions', 'Inputs', 'Feedback', 'Overlays', 'Data']
 
+/** Why a value can't be chosen now, and what would let it be. "Locked" is never shown or spoken. */
+export interface Lock {
+  /** The panel's heading: the value and the setting, e.g. "text-link needs primary". */
+  heading: string
+  /** One sentence a person can act on, e.g. "text-link is primary only." */
+  reason: string
+  /** The spec rule that forbids it. */
+  rule: string
+  /** Legal moves: each sets every prop it names, together, so the result is always legal. */
+  moves: { label: string; patch: Values }[]
+}
+
 export interface Entry {
   id: string
   name: string
@@ -78,8 +90,14 @@ export interface Entry {
   implementations?: Implementation[]
   /** Mirrors the type-level rules: invalid combinations do not exist, so they cannot be picked. */
   constrain?: (v: Values) => Values
-  /** Which control options are unavailable for the current values (shown, never selectable). */
-  unavailable?: (v: Values) => Record<string, string[]>
+  /**
+   * The values the spec's rules lock with the current settings (playground spec, section 5,
+   * "Locked values"; specs/segmented-control.md). By prop, then by value (`'true'` for a switch).
+   * A locked value stays in view and reachable, says its rule, and offers the legal moves.
+   */
+  locks?: (v: Values) => Record<string, Record<string, Lock>>
+  /** Plain words for a prop under "Also in the API", where the spec's Notes are too terse to stand alone. */
+  explain?: Record<string, string>
   render: (v: Values) => ReactNode
   code: (v: Values, spec: Spec) => string
   /** The Token bindings row that applies to the current values, if the spec has one. */
@@ -247,14 +265,44 @@ export const REGISTRY: Entry[] = [
     // type changes nothing on the stage: "submit" only means anything inside a <form>, and the
     // spec says so ("submit only for a form's commit button"). Documented, not demonstrated.
     noControl: ['type'],
-    constrain: (v) =>
-      v.appearance === 'text-link'
-        ? { ...v, variant: 'primary', icon: false, size: v.size === 'tiny' ? 'tiny' : 'regular' }
-        : v,
-    unavailable: (v): Record<string, string[]> =>
-      v.appearance === 'text-link'
-        ? { variant: ['standard', 'destructive'], size: ['large', 'huge'], icon: ['true'] }
-        : {},
+    explain: {
+      type: '`type` sets what a click does when the button sits inside a form. With "submit", clicking it sends the form. With "button" (the default), clicking it only runs your own code. It is not the label.',
+    },
+    // The spec's two text-link rules, as locks rather than silent corrections: text-link is primary
+    // only (button-text-link-requires-primary), and tiny or regular with no icon
+    // (button-text-link-size-and-icon). Each locked value says which rule, and how to get there.
+    locks: (v) => {
+      const out: Record<string, Record<string, Lock>> = {}
+      const PRIMARY = { reason: 'text-link is primary only.', rule: 'button-text-link-requires-primary' }
+      const SIZE = { reason: 'text-link is tiny or regular only.', rule: 'button-text-link-size-and-icon' }
+      const ICON = { reason: 'text-link never carries an icon.', rule: 'button-text-link-size-and-icon' }
+      if (v.appearance === 'text-link') {
+        out.variant = Object.fromEntries((['standard', 'destructive'] as const).map((x) => [x, {
+          heading: `${x} needs filled or hollow`, ...PRIMARY,
+          moves: [{ label: `Use ${x}, filled`, patch: { variant: x, appearance: 'filled' } }, { label: `Use ${x}, hollow`, patch: { variant: x, appearance: 'hollow' } }],
+        }]))
+        out.size = Object.fromEntries((['large', 'huge'] as const).map((x) => [x, {
+          heading: `${x} needs filled or hollow`, ...SIZE,
+          moves: [{ label: `Use ${x}, filled`, patch: { size: x, appearance: 'filled' } }, { label: `Use ${x}, hollow`, patch: { size: x, appearance: 'hollow' } }],
+        }]))
+        out.icon = { true: { heading: 'An icon needs filled or hollow', ...ICON, moves: [{ label: 'Add the icon, filled', patch: { icon: true, appearance: 'filled' } }] } }
+        return out
+      }
+      // text-link from here: everything it needs, named, and one move that sets it all at once.
+      const needs: { what: string; reason: string; rule: string; patch: Values }[] = []
+      if (v.variant !== 'primary') needs.push({ what: 'primary', ...PRIMARY, patch: { variant: 'primary' } })
+      if (v.size === 'large' || v.size === 'huge') needs.push({ what: 'regular size', ...SIZE, patch: { size: 'regular' } })
+      if (v.icon === true) needs.push({ what: 'no icon', ...ICON, patch: { icon: false } })
+      if (needs.length > 0) {
+        const patch = Object.assign({ appearance: 'text-link' }, ...needs.map((n) => n.patch)) as Values
+        out.appearance = { 'text-link': {
+          heading: `text-link needs ${needs.map((n) => n.what).join(' and ')}`,
+          reason: needs.map((n) => n.reason).join(' '), rule: needs[0].rule,
+          moves: [{ label: `Switch to ${needs.map((n) => n.what).join(', ')}, text-link`, patch }],
+        } }
+      }
+      return out
+    },
     render: (v) => (
       <Button
         variant={(str(v.variant) || 'standard') as 'primary' | 'standard' | 'destructive'}

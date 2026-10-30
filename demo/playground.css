@@ -50,6 +50,11 @@
 .pg-tabs > .vela-tabs > .vela-tabs__panel { padding-top: var(--vela-space-20); }
 
 .pg { display: grid; grid-template-columns: minmax(0, 1fr) var(--site-props-width); gap: var(--vela-space-20); align-items: start; }
+/* Full width (section 5): the stage takes the row; the controls become a grid below it, then the code. */
+.pg--full { grid-template-columns: minmax(0, 1fr); }
+.pg--full .pg-props { position: static; }
+.pg--full .pg-controls { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--site-props-width), 1fr)); gap: var(--vela-space-15) var(--vela-space-20); }
+.pg--full .pg-codebar { margin-top: 0; }
 @media (max-width: 960px) { .pg { grid-template-columns: 1fr; } }
 
 .pg-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: var(--vela-space-15); margin: 0 0 var(--vela-space-15); min-height: var(--vela-control-height-35); }
@@ -151,3 +156,45 @@
 /* Table (Phase 1): the bounded height is the host's half of stickyHeader; the region fills it and
    scrolls, and the header pins to its top. */
 .pg-table-bounded { max-block-size: 220px; }   /* vela-allow: the stage's bounded host for stickyHeader; any height shorter than the rows will do */
+
+/* ----------------------------------------------------- workbench (slice 2) -- */
+.pg-reset { display: inline-flex; align-items: center; gap: var(--vela-space-5); }
+.pg-reset__why { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-de-emphasized); }
+/* "Skip to code": the controls' first stop, seen only when it has focus (D4). */
+.pg-skip.vela-sr-only:focus-visible { position: static; width: auto; height: auto; margin: 0; overflow: visible; clip: auto; white-space: normal; align-self: flex-start; color: var(--vela-text-link); }
+.pg-props__lead { margin: var(--vela-space-5) 0 0; font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
+.pg-props__head { flex-direction: column; align-items: flex-start; }
+/* A link's notice (section 11): read in order with the controls, not announced as an alert. */
+.pg-notice { border: 1px solid var(--vela-border-default); border-radius: var(--vela-radius-4); padding: var(--vela-space-10) var(--vela-space-15); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
+.pg-notice p { margin: 0; }
+.pg-notice p + p { margin-top: var(--vela-space-5); }
+.pg-controls { display: flex; flex-direction: column; gap: var(--vela-space-15); }
+.pg-control { display: flex; flex-direction: column; gap: var(--vela-space-10); min-width: 0; }
+.pg-field__note { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
+/* A change mark (design change 3): a 2px start edge while the value differs from the page's
+   default. A border, so it survives forced colours; the colour is not the only signal, the edge is. */
+.pg-field { padding-inline-start: var(--vela-space-10); border-inline-start: var(--vela-stroke-2) solid transparent; }
+.pg-field.is-changed { border-inline-start-color: var(--vela-border-active); }
+.pg-field--switch { gap: var(--vela-space-5); }
+/* The lock panel: on the raised surface, the rule in words, its id and enforcement, the moves. */
+.pg-lock { border: 1px solid var(--vela-border-default); border-radius: var(--vela-radius-4); background: var(--vela-bg-raised); padding: var(--vela-space-10) var(--vela-space-15); display: flex; flex-direction: column; gap: var(--vela-space-10); color: var(--vela-text-default); }
+.pg-lock:focus-visible { outline: var(--vela-focus-ring-width) solid var(--vela-focus-ring-color); outline-offset: var(--vela-focus-ring-offset); }
+.pg-lock__heading { margin: 0; font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height); font-weight: var(--vela-font-weight-semibold); }
+.pg-lock__reason { margin: 0; font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); }
+.pg-lock__rule { margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: var(--vela-space-5) var(--vela-space-10); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); }
+.pg-lock__rule code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; overflow-wrap: anywhere; }
+.pg-lock__moves { display: flex; flex-wrap: wrap; align-items: center; gap: var(--vela-space-10); }
+/* A changed code line: the same start edge, and a tint that settles once (not under reduced motion). */
+.pg-code__line { display: inline-block; min-width: 100%; box-sizing: border-box; margin-inline-start: calc(-1 * var(--vela-space-10)); padding-inline-start: calc(var(--vela-space-10) - var(--vela-stroke-2)); border-inline-start: var(--vela-stroke-2) solid transparent; }
+.pg-code__line.is-changed { border-inline-start-color: var(--vela-border-active); position: relative; z-index: 0; }
+/* The settle is a tint under the text that fades once: opacity only, as Vela's motion rule asks. */
+.pg-code__line.is-changed::before { content: ''; position: absolute; inset: 0; z-index: -1; background: var(--vela-bg-selected); opacity: 0; pointer-events: none; animation: pg-settle var(--vela-duration-slow) var(--vela-ease-standard); }
+@keyframes pg-settle { from { opacity: 1; } to { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .pg-code__line.is-changed::before { animation: none; } }
+.pg-uncontrolled__lead { margin: 0 0 var(--vela-space-10); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
+.pg-uncontrolled dl { display: flex; flex-direction: column; gap: var(--vela-space-10); }
+.pg-uncontrolled__row dd .pg-p { margin: var(--vela-space-5) 0 0; }
+.pg-uncontrolled__type { color: var(--vela-text-default); }
+@media (forced-colors: active) {
+  .pg-field.is-changed, .pg-code__line.is-changed { border-inline-start-color: Highlight; }
+}

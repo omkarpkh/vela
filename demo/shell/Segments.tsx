@@ -14,14 +14,20 @@
  *   (--vela-bg-selected) with a 2px active edge, so the signal is shape as well as colour.
  * - Under forced colours the selected segment is Highlight / HighlightText with a 2px border, with
  *   forced-color-adjust: none on that element only (shell.css).
- * - Locked values (focusable, aria-disabled, a lock panel) are slice 2 and are not here.
+ * - Locked values (slice 2; specs/segmented-control.md, "Locked, the state"): a value the other
+ *   settings rule out stays a tab stop with aria-disabled="true", its reason as its accessible
+ *   description, default text with a dashed edge, never faded, and no glyph. Pressing it selects
+ *   nothing and calls onLockedPress. The word "locked" is never on screen or in a name.
  */
+import { useId } from 'react'
 import { cn } from '../../src'
 import './shell.css'
 
 export interface SegmentOption<T extends string> {
   value: T
   label: string
+  /** Can't be chosen with the other settings as they are; the reason is one sentence a person can act on. */
+  locked?: { reason: string }
 }
 
 export interface SegmentsProps<T extends string> {
@@ -30,21 +36,31 @@ export interface SegmentsProps<T extends string> {
   value: T
   options: readonly SegmentOption<T>[]
   onChange: (value: T) => void
+  /** Called when a locked value is pressed: open the panel that says the rule and the legal moves. */
+  onLockedPress?: (value: T) => void
   className?: string
 }
 
-export function Segments<T extends string>({ label, value, options, onChange, className }: SegmentsProps<T>) {
+export function Segments<T extends string>({ label, value, options, onChange, onLockedPress, className }: SegmentsProps<T>) {
+  const id = useId()
   return (
     <div className={cn('shell-segments', className)} role="group" aria-label={label}>
-      {options.map((o) => (
+      {options.map((o, i) => (
         <button
           key={o.value}
           type="button"
-          className="shell-segment"
+          className={cn('shell-segment', o.locked && 'is-locked')}
+          data-value={o.value}
           aria-current={o.value === value ? 'true' : undefined}
-          onClick={() => { if (o.value !== value) onChange(o.value) }}
+          aria-disabled={o.locked ? 'true' : undefined}
+          aria-describedby={o.locked ? `${id}-r${i}` : undefined}
+          onClick={() => {
+            if (o.locked) onLockedPress?.(o.value)
+            else if (o.value !== value) onChange(o.value)
+          }}
         >
           {o.label}
+          {o.locked && <span id={`${id}-r${i}`} className="vela-sr-only">{o.locked.reason}</span>}
         </button>
       ))}
     </div>

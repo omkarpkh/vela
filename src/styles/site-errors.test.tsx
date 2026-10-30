@@ -16,7 +16,7 @@ vi.mock('../../demo/playground/registry', async (importOriginal) => {
     name: 'Boom',
     seed: { ...button.seed, variant: 'destructive' },
     constrain: undefined,
-    unavailable: undefined,
+    locks: undefined,
     render: (v) => {
       if (v.variant === 'destructive') throw new Error('Boom cannot render a destructive variant')
       return button.render(v)
@@ -69,11 +69,11 @@ describe('the stage error boundary', () => {
     const body = url.searchParams.get('body')!
     expect(body).toContain('Component: boom')
     expect(body).toContain('- variant: destructive')
-    expect(body).toContain('- stage: both')
+    expect(body).toContain('- stage: beside')
     expect(body).toMatch(/Commit: \S+/)
     expect(body).not.toContain('Save Changes')   // the label is free text
 
-    // The page around the stage still works: the heading, the props panel, the nav and its filter.
+    // The page around the stage still works: the heading, the controls, the nav and its filter.
     expect(screen.getByRole('heading', { level: 1, name: 'Boom' })).toBeInTheDocument()
     const nav = screen.getByRole('navigation', { name: 'Site' })
     await user.type(within(nav).getByLabelText('Filter'), 'tog')
@@ -82,13 +82,13 @@ describe('the stage error boundary', () => {
     await user.clear(within(nav).getByLabelText('Filter'))
 
     // A prop change retries: a variant that renders brings the stage back.
-    const props = screen.getByRole('complementary', { name: 'Props' })
-    await user.selectOptions(within(props).getByLabelText('variant'), 'primary')
+    const props = screen.getByRole('complementary', { name: 'Controls' })
+    await user.click(within(within(props).getByRole('group', { name: 'variant' })).getByRole('button', { name: 'primary' }))
     expect(screen.queryByRole('alert')).toBeNull()
-    expect(document.querySelectorAll('.pg-frame-body .vela-btn').length).toBe(2)
+    expect(document.querySelectorAll('.pg-frame-body .vela-btn').length).toBe(1)   // Compare is Off: one frame, the page's theme
 
     // Back to the failing value: the boundary catches it again, and Reset settings retries with the seed.
-    await user.selectOptions(within(props).getByLabelText('variant'), 'destructive')
+    await user.click(within(within(props).getByRole('group', { name: 'variant' })).getByRole('button', { name: 'destructive' }))
     expect(await screen.findByRole('alert')).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Reset settings' }))
     expect(await screen.findByRole('alert')).toBeInTheDocument()   // the seed itself is the failing value
