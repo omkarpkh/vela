@@ -165,21 +165,23 @@ be named in one of those words does not ship. The frequency gate: something trig
 of times a day gets instant feedback under 200ms; from the keyboard, nothing animates.
 
 Four durations and three curves, and no component defines its own duration or curve
-(`--vela-delay-tooltip`, 600ms, is a wait before a Tooltip opens on hover, not an animation; see
-the overlays bullet below):
+(`--vela-delay-tooltip`, 600ms, is a wait before a Tooltip opens on hover, and `--vela-delay-preview`,
+80ms, the rest before the Tabs hover preview appears; neither is an animation, see the overlays
+bullet below and `guidelines/components/tabs.md#motion`):
 
 - `--vela-duration-instant` (70ms) — a press landing; press-in only.
 - `--vela-duration-fast` (120ms) — anything else that answers a pointer.
 - `--vela-duration-base` (180ms) — anything that settles or appears.
-- `--vela-duration-travel` (240ms) — travel across a distance (the Tabs indicator). Still under 300ms.
+- `--vela-duration-travel` (240ms) — a change that crosses a distance (the Tabs underline growing
+  under a pressed tab, the Tabs hover preview fading in). Still under 300ms.
 - `--vela-ease-standard` `cubic-bezier(0.2, 0, 0.2, 1)` — things that change or move while on
   screen: hover colours, a press, a knob. Never a bare `ease`.
 - `--vela-ease-out` `cubic-bezier(0.25, 1, 0.5, 1)` — things that enter: fast at the start, at
   rest at the end, no overshoot.
 - `--vela-ease-spring` — a spring (stiffness 1200, damping 56, mass 1), generated into a CSS
   `linear()` easing over `--vela-duration-travel` at token build time; `--vela-ease-out` where
-  `linear()` is not supported. Only for the moments a spec names (today: the Tabs indicator after
-  a pointer press), always paired with `--vela-duration-travel`.
+  `linear()` is not supported. Only for the moments a spec names (today: the Tabs underline growing in
+  place after a pointer press), always paired with `--vela-duration-travel`.
 
 The three new values (`duration-travel`, `ease-out`, `ease-spring`) are **provisional** until the
 owner has reviewed their feel on the playground's Motion review page (`#/motion`). The overlays

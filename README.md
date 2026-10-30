@@ -7,7 +7,7 @@
 A token-first design system. The tokens and the component specs are framework-agnostic;
 this repository is a **React implementation** of them. Sixteen components, two themes, zero runtime
 dependencies in the core entry — and every design rule in the documentation is tagged with how it is
-enforced: 64 of the 152 by the TypeScript compiler, the rest at runtime, in a real browser, or by review
+enforced: 64 of the 160 by the TypeScript compiler, the rest at runtime, in a real browser, or by review
 (counted by `npm run rules:check`).
 
 **Status:** every component carries a lifecycle label — Approved, Known bugs, Experimental or

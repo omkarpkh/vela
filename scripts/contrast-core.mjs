@@ -169,6 +169,15 @@ export const PAIRS = [
     ]
   }),
   ['--vela-icon-default', '--vela-bg-global', 'Table sort glyph, unsorted column', 'ui'],
+  // The Tabs hover preview (the Seed, guidelines/components/tabs.md) is deliberately NOT a pair, like
+  // the Tooltip's edge above. It is --vela-border-active drawn at --vela-opacity-preview (0.55) over
+  // the surface: 2.46:1 on the page and 2.34:1 on a container in light, 2.59:1 and 2.48:1 in dark,
+  // under the 3:1 a 'ui' pair needs, and a composite no token holds, so this resolver could not
+  // assert it anyway. It is a supplementary hint, never the only sign of anything: the hover is the
+  // label's own colour change (text-de-emphasized to text-default, asserted as text), the selection
+  // is the full-strength underline ('Focus ring' and 'Active border on container' above, the same
+  // token), and touch and keyboard users, who never see the Seed, lose nothing. Reaching 3:1 would
+  // take a strength of 0.64 to 0.70 depending on theme and surface; the decided strength is 0.55.
 ]
 
 export const THRESHOLD = { text: 4.5, ui: 3.0 }
