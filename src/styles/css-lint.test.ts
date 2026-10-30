@@ -97,6 +97,9 @@ describe('the CSS checker', () => {
     expect(rules('.a { transform: translateX(14px); }')).toEqual(['raw-length:transform'])
     expect(rules('.a { padding: 0; margin: 0px; width: 100%; line-height: 1.5; opacity: .5; transform: scale(0.97) translate(-50%, 0); transition: opacity 700ms; rotate: 90deg; }')).toEqual([])
     expect(rules('.a { border: 1px solid; inset: -1px; margin-bottom: -1px; outline-offset: 1px; border-bottom: 1px solid var(--vela-border-subtle); }')).toEqual([])
+    // A hairline drawn as an inset shadow; a shadow's blur or a larger offset is still a raw length.
+    expect(rules('.a { box-shadow: inset 0 -1px 0 var(--vela-border-subtle); }')).toEqual([])
+    expect(rules('.a { box-shadow: 0 4px 8px var(--vela-border-subtle); }')).toEqual(['raw-length:box-shadow', 'raw-length:box-shadow'])
     // 1px is a hairline, not a general-purpose unit.
     expect(rules('.a { padding: 1px; gap: 1px; }')).toEqual(['raw-length:padding', 'raw-length:gap'])
   })
@@ -125,6 +128,57 @@ describe('the CSS checker', () => {
     expect(rules('@media (hover: hover) { @keyframes b { 50% { margin-left: 0; } } }')).toEqual(['motion-property:margin-left'])
     // Outside @keyframes the same declarations are ordinary layout.
     expect(rules('@keyframes a { to { opacity: 1; } } .b { width: 100%; }')).toEqual([])
+  })
+
+  // Rule 1's one exception (decisions/004-icon-strokes-draw): an icon glyph's own strokes may draw
+  // on and off with stroke-dashoffset, by transition, inside .vela-icon. Nothing else gains.
+  it('lets stroke-dashoffset transition inside .vela-icon only, never in @keyframes, never dasharray', () => {
+    const what = (css: string) => lintCss(css).findings.map((f) => f.what)
+    expect(rules('.vela-icon .part { transition: stroke-dashoffset var(--vela-duration-travel) var(--vela-ease-out), opacity var(--vela-duration-fast) var(--vela-ease-standard); }')).toEqual([])
+    expect(rules('@media (hover: hover) { .vela-copy:hover .vela-icon .part { transition-property: stroke-dashoffset, opacity; } }')).toEqual([])
+    expect(rules('.chart path { transition: stroke-dashoffset var(--vela-duration-fast) var(--vela-ease-standard); }')).toEqual(['motion-property:transition'])
+    expect(what('.chart path { transition: stroke-dashoffset var(--vela-duration-fast) var(--vela-ease-standard); }')).toEqual(["transitions stroke-dashoffset — only an icon glyph's strokes may draw (inside .vela-icon)"])
+    expect(rules('.vela-icon .part { transition: stroke-dasharray var(--vela-duration-fast) var(--vela-ease-standard); }')).toEqual(['motion-property:transition'])
+    expect(rules('@keyframes draw { to { stroke-dashoffset: 1; } }')).toEqual(['motion-property:stroke-dashoffset'])
+    expect(what('@keyframes draw { to { stroke-dashoffset: 1; } }')).toEqual(['@keyframes animate stroke-dashoffset — only transform, translate, scale, rotate, opacity and filter move'])
+  })
+
+  it('counts a selector as inside an icon only when every element it matches is', () => {
+    const draws = (selector: string) => rules(`${selector} { transition: stroke-dashoffset var(--vela-duration-fast); }`)
+    expect(draws('.vela-icon')).toEqual([])
+    expect(draws('.vela-copy[data-copied] > .vela-icon .tick')).toEqual([])
+    // A different class, a negation, a parent that has an icon, a sibling of one, a list with an outsider.
+    for (const selector of ['.vela-icon-button path', '.x:not(.vela-icon) path', '.btn:has(.vela-icon)', '.vela-icon + .chart path', '.vela-icon ~ svg path', '.vela-icon .a, .chart path', '[class~="vela-icon"] path'])
+      expect(draws(selector), selector).toEqual(['motion-property:transition'])
+  })
+
+  it('accepts raw lengths on the icon grid only for transform-origin and inside translate()', () => {
+    expect(rules('.vela-icon .x { transform-origin: 22px 22px; }')).toEqual([])
+    expect(rules('.vela-icon .x { transform: translate(2px, -1.5px) rotate(-8deg); }')).toEqual([])
+    expect(rules('.vela-icon .x { transform: translateX(3px) translateY(-1px) scale(1.2); }')).toEqual([])
+    expect(rules('.vela-icon .x { margin: 3px; }')).toEqual(['raw-length:margin'])
+    expect(rules('.vela-icon .x { stroke-width: 2px; }')).toEqual(['raw-length:stroke-width'])
+    // Only the translate() function: other functions, and the `translate` longhand, are still checked.
+    expect(rules('.vela-icon .x { transform: translate(2px) skewX(2px); }')).toEqual(['raw-length:transform'])
+    expect(rules('.vela-icon .x { translate: 2px 1px; }')).toEqual(['raw-length:translate', 'raw-length:translate'])
+    // Outside an icon a length is a screen pixel and needs a token.
+    expect(rules('.card { transform-origin: 22px 22px; }')).toEqual(['raw-length:transform-origin', 'raw-length:transform-origin'])
+    expect(rules('.vela-icon-button { transform-origin: 22px 22px; }')).toEqual(['raw-length:transform-origin', 'raw-length:transform-origin'])
+  })
+
+  // A control with its own press response turns off the browser's tap flash (DESIGN.md, States: Pressed).
+  it('fails a stylesheet that styles [data-vela-pressed] without -webkit-tap-highlight-color: transparent', () => {
+    const tap = (css: string) => rules(css).filter((r) => r.startsWith('tap-highlight'))
+    expect(tap('.b[data-vela-pressed] { transform: scale(0.97); }')).toEqual(['tap-highlight:-webkit-tap-highlight-color'])
+    expect(lintCss('.a { color: inherit; }\n.b[data-vela-pressed] { transform: scale(0.97); }').findings.map((f) => f.line)).toEqual([2])
+    expect(tap('.b { -webkit-tap-highlight-color: transparent; }\n.b[data-vela-pressed] { transform: scale(0.97); }')).toEqual([])
+    expect(tap('.b { all: unset; -webkit-tap-highlight-color: transparent; } .b[data-vela-pressed] { transform: scale(0.97); }')).toEqual([])
+    // A highlight that is merely recoloured is still a flash; and a comment is not a declaration.
+    expect(tap('.b { -webkit-tap-highlight-color: var(--vela-bg-hover); } .b[data-vela-pressed] { transform: scale(0.97); }')).toEqual(['tap-highlight:-webkit-tap-highlight-color'])
+    expect(tap('/* -webkit-tap-highlight-color: transparent; */ .b[data-vela-pressed] { transform: scale(0.97); }')).toEqual(['tap-highlight:-webkit-tap-highlight-color'])
+    // The check keys on the flag; a stylesheet that never styles it is not asked.
+    expect(tap('.b:active { transform: scale(0.97); }')).toEqual([])
+    expect(lintCss('.b[data-vela-pressed] { transform: scale(0.97); } /* vela-allow: no */').findings.map((f) => f.waived)).toEqual([false])
   })
 
   it('honours an inline waiver with a reason, reports it, and rejects one without', () => {
