@@ -225,4 +225,50 @@ test.describe('Tabs hover preview prototype', () => {
       expect(['under the hovered tab', 'hidden']).toContain(r)
     })
   })
+
+  // Hybrid, the eye-tracking rule: a press at most two tabs from the selected one, both wholly in
+  // view, travels (the shipped bar); anything else grows in place (A) and hands back to the border.
+  test.describe('hybrid press', () => {
+    test.use({ reducedMotion: 'no-preference' })
+    const probe = (page: Page) => light(page).evaluate((f) => ({
+      press: f.getAttribute('data-press'),
+      moving: f.querySelector('[role="tablist"]')!.hasAttribute('data-vela-moving'),
+      bar: getComputedStyle(f.querySelector('.vela-tabs__indicator')!).visibility,
+    }))
+    test('near travels, far grows in place, and out of view counts as far', async ({ page }) => {
+      await choose(page, 'Click', 'hybrid')
+      await expect(page.locator('.tp-section').getByLabel('Seed between tabs')).toHaveValue('glide')
+      // Near: Overview → Assets, two tabs, both in view.
+      await tabs(page).nth(2).click()
+      expect(await probe(page)).toEqual({ press: null, moving: true, bar: 'visible' })
+      await expect.poll(async () => (await probe(page)).moving).toBe(false)
+      // Far: Assets → Sessions, six tabs.
+      await tabs(page).nth(8).click()
+      expect(await probe(page)).toEqual({ press: 'grow', moving: true, bar: 'hidden' })
+      // …and back to the tab's own border once the switch ends.
+      await expect.poll(async () => (await probe(page)).press).toBe(null)
+      expect(await tabs(page).nth(8).evaluate((t) => getComputedStyle(t).borderBottomColor)).not.toBe('rgba(0, 0, 0, 0)')
+      await expect(light(page).locator('.tp-caption')).toContainText('6 tabs from Assets → far → it grows in place (A)')
+    })
+    test('a neighbour whose selected tab has scrolled out of view grows in place', async ({ page }) => {
+      await page.setViewportSize({ width: 412, height: 900 })
+      await page.reload()
+      await choose(page, 'Click', 'hybrid')
+      await tabs(page).nth(1).click()   // Alerts selected, then scroll it out of view
+      await expect.poll(async () => (await probe(page)).moving).toBe(false)
+      // Scroll the row so Alerts is cut by its left edge; Identities stays in view.
+      await light(page).getByRole('tablist').evaluate((l) => {
+        const alerts = l.querySelectorAll<HTMLElement>('[role="tab"]')[1]
+        l.scrollLeft = alerts.offsetLeft - l.offsetLeft + 10
+      })
+      // Identities is two tabs from Alerts, but Alerts is out of view.
+      const alertsInView = await light(page).evaluate((f) => {
+        const l = f.querySelector('[role="tablist"]')!.getBoundingClientRect(); const t = f.querySelectorAll('[role="tab"]')[1].getBoundingClientRect()
+        return t.left >= l.left && t.right <= l.right
+      })
+      expect(alertsInView).toBe(false)
+      await tabs(page).nth(3).click()
+      expect((await probe(page)).press).toBe('grow')
+    })
+  })
 })

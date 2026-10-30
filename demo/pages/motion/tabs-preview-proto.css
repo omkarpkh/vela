@@ -35,7 +35,7 @@
 /* ---- the layers: hidden unless the variant uses them ---- */
 .tp .tp-l { position: absolute; left: 0; right: 0; display: none; opacity: 0; pointer-events: none; }
 .tp[data-variant='seed'] .tp-seed,
-.tp[data-variant='seed'][data-click='grow'] .tp-line,
+.tp[data-variant='seed']:is([data-click='grow'], [data-click='hybrid']) .tp-line,
 .tp[data-variant='seed'][data-bloom='on'] .tp-bloom,
 .tp[data-variant='hairline'] .tp-hair { display: block; }
 
@@ -107,13 +107,13 @@
    cut faded the line in over the second half only; the Seed's feathered ends, scaled up with it,
    then hid the growth and it read as a short line that snapped full at the end.) A press before the Seed appeared grows from the
    centre anyway: the scale is a third whether or not the Seed was visible. */
-.tp[data-variant='seed'][data-click='grow'] .vela-tabs__trigger[aria-selected='true'] { border-bottom-color: transparent; }
-.tp[data-variant='seed'][data-click='grow'] .vela-tabs__indicator { visibility: hidden; }
-.tp[data-variant='seed'][data-click='grow'] .vela-tabs__trigger[aria-selected='true'] .tp-seed {
+.tp[data-variant='seed'] .tp-frame[data-press='grow'] .vela-tabs__trigger[aria-selected='true'] { border-bottom-color: transparent; }
+.tp[data-variant='seed'] .tp-frame[data-press='grow'] .vela-tabs__indicator { visibility: hidden; }
+.tp[data-variant='seed'] .tp-frame[data-press='grow'] .vela-tabs__trigger[aria-selected='true'] .tp-seed {
   opacity: 1; transform: scaleX(1);
   transition: transform var(--vela-duration-travel) var(--vela-ease-spring), opacity var(--vela-duration-travel) var(--vela-ease-out);
 }
-.tp[data-variant='seed'][data-click='grow'] .vela-tabs__trigger[aria-selected='true'] .tp-line {
+.tp[data-variant='seed'] .tp-frame[data-press='grow'] .vela-tabs__trigger[aria-selected='true'] .tp-line {
   opacity: 1; transform: scaleX(1);
   transition:
     transform var(--vela-duration-travel) var(--vela-ease-spring),
@@ -121,9 +121,43 @@
 }
 /* …and at the same moment the old underline dissolves where it is: back to a third, towards its
    centre, and out, over the same duration. Only a pointer switch marks the list moving. */
-.tp[data-variant='seed'][data-click='grow'] .vela-tabs__list[data-vela-moving] .vela-tabs__trigger[aria-selected='false'] :is(.tp-seed, .tp-line) {
+.tp[data-variant='seed'] .tp-frame[data-press='grow'] .vela-tabs__list[data-vela-moving] .vela-tabs__trigger[aria-selected='false'] :is(.tp-seed, .tp-line) {
   transition: transform var(--vela-duration-travel) var(--vela-ease-spring), opacity var(--vela-duration-travel) var(--vela-ease-out);
 }
+
+/* ---- Hybrid: travel when near, grow in place when far ----
+   One rule for the eye (motion/tabs-hover-hybrid-ideation.md, idea 2): a press at most two tabs
+   from the selected one, with both wholly in view, travels (B, the shipped bar, untouched); any
+   other press grows in place (A). At rest the underline is the tab's own border, as shipped. For a
+   far press the controller (usePress) sets data-press="grow" on the frame in the click's capture
+   phase, so A's rules above run for that one switch, and clears it when the shipped data-vela-moving
+   ends. The old tab's underline is its border here, not A's line, so it dissolves by colour (a
+   colour may settle; foundations/motion.md), where it is. */
+.tp[data-click='hybrid'] .tp-frame[data-press='grow'] .vela-tabs__list[data-vela-moving] .vela-tabs__trigger[aria-selected='false'] {
+  transition: color var(--vela-duration-fast) var(--vela-ease-standard), border-bottom-color var(--vela-duration-travel) var(--vela-ease-out);
+}
+/* The hand-back after a far press: A's line and the tab's border are the same colour and place,
+   so the swap is invisible as long as the line does not fade over a border that is already there. */
+.tp[data-click='hybrid'] .tp-frame:not([data-press]) .vela-tabs__trigger[aria-selected='true'] :is(.tp-line, .tp-seed) { transition: none; }
+
+/* ---- Explain: annotations for the review (demo only) ----
+   The near zone (Hybrid): a bracket above the tabs a press may travel to, labelled. Captions under
+   each row say what the last two events were and which rule decided them. */
+.tp-host { position: relative; }
+.tp[data-explain='on'] .tp-host { padding-top: var(--vela-space-25); }
+.tp-band {
+  position: absolute; top: 0; height: var(--vela-space-5);
+  border: 1px solid var(--vela-border-default); border-bottom: none;
+  pointer-events: none;
+  transition: transform var(--vela-duration-base) var(--vela-ease-out), opacity var(--vela-duration-base) var(--vela-ease-standard);
+}
+.tp-band__label {
+  position: absolute; bottom: 100%; left: 0; right: 0; text-align: center; white-space: nowrap;
+  color: var(--vela-text-de-emphasized);
+}
+.tp-caption { margin: var(--vela-space-10) 0 0; min-height: calc(2 * var(--vela-text-meta-line-height)); }
+.tp-caption__line { display: block; color: var(--vela-text-default); }
+.tp-caption__line + .tp-caption__line { color: var(--vela-text-de-emphasized); }
 
 /* ---- Seed between tabs: Glide ----
    One row-level Seed in the tab list, the shipped indicator's geometry (the list's full width at
