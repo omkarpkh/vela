@@ -5,6 +5,22 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+### Fixed
+- **Tabs: the selected underline renders 2px, as specified; it rendered 1px.** The tab list scrolls,
+  so it clips at its padding box, and the underline overlapped the list's rule, a border outside
+  that box: its lower pixel was cut. The rule is now an inset shadow inside the box, the triggers
+  no longer pull 1px below it, and the sliding bar sits at `bottom: 0`. The list keeps its height.
+  The pixel is inside the screenshots' 1% tolerance, so no baseline needed rewriting; the new
+  browser rule below is what catches it.
+- **Tabs in forced colours (Windows contrast themes): the selected tab can be found again.** The
+  browser turned every tab's transparent border into a visible underline in the text colour, so
+  every tab looked selected. Tabs now has forced-colours rules: the selected label and underline
+  are `Highlight`, no other tab has an underline, disabled is `GrayText`, the focus ring
+  `Highlight`, the rule a `CanvasText` border. Checked in Chromium's forced-colours emulation;
+  not yet on Windows itself.
+- New browser rules `tabs-underline-not-clipped` and `tabs-forced-colours-selected`. The CSS
+  checker now accepts a ±1px hairline drawn as a `box-shadow`, as it does for borders.
+
 ## [0.13.0] — 2026-10-29
 
 ### Changed — breaking
