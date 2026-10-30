@@ -44,14 +44,18 @@
 .pg-select:focus-visible { outline: var(--vela-focus-ring-width) solid var(--vela-focus-ring-color); outline-offset: var(--vela-focus-ring-offset); }
 .pg-booleans { display: flex; flex-direction: column; gap: var(--vela-space-10); padding-top: var(--vela-space-5); }
 .pg-uncontrolled { border-top: 1px solid var(--vela-border-subtle); padding-top: var(--vela-space-15); }
-.pg-uncontrolled h3 { margin: 0 0 var(--vela-space-10); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); font-weight: var(--vela-font-weight-semibold); color: var(--vela-text-de-emphasized); text-transform: uppercase; letter-spacing: var(--vela-text-meta-tracking); }
+/* The props panel is --vela-bg-container: de-emphasized text there is 4.35:1 in light (a negative
+   case in PAIRS), so the panel's secondary text is text-default and is told apart by size and case. */
+.pg-uncontrolled h3 { margin: 0 0 var(--vela-space-10); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); font-weight: var(--vela-font-weight-semibold); color: var(--vela-text-default); text-transform: uppercase; letter-spacing: var(--vela-text-meta-tracking); }
 .pg-uncontrolled dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: var(--vela-space-5) var(--vela-space-10); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); }
 .pg-uncontrolled dt { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--vela-text-default); }
-.pg-uncontrolled dd { margin: 0; color: var(--vela-text-de-emphasized); }
+.pg-uncontrolled dd { margin: 0; color: var(--vela-text-default); }
 .pg-uncontrolled code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
-.pg-hint { margin: 0; color: var(--vela-text-de-emphasized); }
+.pg-hint { margin: 0; color: var(--vela-text-default); }
 
-.pg-contract { margin-top: var(--vela-space-20); padding: var(--vela-space-15) var(--vela-space-20) var(--vela-space-20); }
+/* The contract panel holds a Tabs, whose inactive triggers are de-emphasized text: on the page
+   surface, not the container, so they keep 4.90:1 rather than 4.35:1 in light. */
+.pg-contract { background: var(--vela-bg-global); margin-top: var(--vela-space-20); padding: var(--vela-space-15) var(--vela-space-20) var(--vela-space-20); }
 .pg-contract .vela-tabs__panel { padding-top: var(--vela-space-20); }
 .pg-code-wrap { position: relative; }
 .pg-code-copy { position: absolute; top: var(--vela-space-10); right: var(--vela-space-10); }

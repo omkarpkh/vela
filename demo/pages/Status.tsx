@@ -54,7 +54,7 @@ export function Status() {
             {rows.map((r) => (
               <tr key={r.id}>
                 <th scope="row"><a href={href({ kind: 'component', id: r.id })}>{r.name}</a></th>
-                <td><span className={`status-label status-label--${r.label.toLowerCase().replace(/\s+/g, '-')}`}>{r.label}</span>{r.note && <span className="vela-meta status-note">{r.note}</span>}</td>
+                <td><span className="site-tag">{r.label}</span>{r.note && <span className="vela-meta status-note">{r.note}</span>}</td>
                 <td className="vela-meta">{PROMISE[r.label]}</td>
                 <td className="vela-meta"><a href={`https://github.com/omkarpkh/vela/blob/main/guidelines/components/${r.id}.md`}>spec</a> · <a href={figmaUrl()}>Figma</a></td>
               </tr>
