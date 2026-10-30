@@ -78,6 +78,7 @@
   --vela-bg-global: var(--vela-white);
   --vela-bg-container: var(--vela-grey-100);
   --vela-bg-raised: var(--vela-white);
+  --vela-bg-raised-hover: var(--vela-grey-100);   /* a highlighted Dropdown List item — see dropdown-list.md */
   --vela-bg-hover: var(--vela-grey-100);
   --vela-bg-tooltip: var(--vela-grey-800);
   --vela-bg-scrim: var(--vela-black);

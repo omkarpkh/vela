@@ -1039,6 +1039,16 @@
         }
       }
     },
+    "bg-raised-hover": {
+      "$type": "color",
+      "$value": "{primitives.grey-100}",
+      "$description": "A highlighted row on a raised surface — a Dropdown List item under the pointer or keyboard focus. Not bg-hover: in dark that IS the raised surface (grey-850), so a highlight on it would show nothing (1.00:1).",
+      "$extensions": {
+        "com.omkarux.vela": {
+          "figma": "surface/raised-hover"
+        }
+      }
+    },
     "bg-hover": {
       "$type": "color",
       "$value": "{primitives.grey-100}",

@@ -78,6 +78,7 @@
   @bg-global
   @bg-container
   @bg-raised
+  @bg-raised-hover   /* a highlighted Dropdown List item — see dropdown-list.md */
   @bg-hover
   @bg-tooltip
   @bg-scrim

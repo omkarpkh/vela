@@ -77,6 +77,7 @@ class VelaColors extends ThemeExtension<VelaColors> {
     required this.bgGlobal,
     required this.bgContainer,
     required this.bgRaised,
+    required this.bgRaisedHover,
     required this.bgHover,
     required this.bgTooltip,
     required this.bgScrim,
@@ -202,6 +203,9 @@ class VelaColors extends ThemeExtension<VelaColors> {
   final Color bgContainer;
   /// `--vela-bg-raised` · Figma `surface/raised`
   final Color bgRaised;
+  /// `--vela-bg-raised-hover` · Figma `surface/raised-hover`
+  /// A highlighted row on a raised surface — a Dropdown List item under the pointer or keyboard focus. Not bg-hover: in dark that IS the raised surface (grey-850), so a highlight on it would show nothing (1.00:1).
+  final Color bgRaisedHover;
   /// `--vela-bg-hover` · Figma `surface/hover`
   final Color bgHover;
   /// `--vela-bg-tooltip` · Figma `surface/tooltip`
@@ -508,6 +512,7 @@ class VelaColors extends ThemeExtension<VelaColors> {
     bgGlobal: VelaPrimitives.white,
     bgContainer: VelaPrimitives.grey100,
     bgRaised: VelaPrimitives.white,
+    bgRaisedHover: VelaPrimitives.grey100,
     bgHover: VelaPrimitives.grey100,
     bgTooltip: VelaPrimitives.grey800,
     bgScrim: VelaPrimitives.black,
@@ -632,6 +637,7 @@ class VelaColors extends ThemeExtension<VelaColors> {
     bgGlobal: VelaPrimitives.grey950,
     bgContainer: VelaPrimitives.grey900,
     bgRaised: VelaPrimitives.grey850,
+    bgRaisedHover: VelaPrimitives.grey800,
     bgHover: VelaPrimitives.grey850,
     bgTooltip: VelaPrimitives.grey700,
     bgScrim: VelaPrimitives.black,
@@ -756,6 +762,7 @@ class VelaColors extends ThemeExtension<VelaColors> {
     Color? bgGlobal,
     Color? bgContainer,
     Color? bgRaised,
+    Color? bgRaisedHover,
     Color? bgHover,
     Color? bgTooltip,
     Color? bgScrim,
@@ -878,6 +885,7 @@ class VelaColors extends ThemeExtension<VelaColors> {
       bgGlobal: bgGlobal ?? this.bgGlobal,
       bgContainer: bgContainer ?? this.bgContainer,
       bgRaised: bgRaised ?? this.bgRaised,
+      bgRaisedHover: bgRaisedHover ?? this.bgRaisedHover,
       bgHover: bgHover ?? this.bgHover,
       bgTooltip: bgTooltip ?? this.bgTooltip,
       bgScrim: bgScrim ?? this.bgScrim,
@@ -1005,6 +1013,7 @@ class VelaColors extends ThemeExtension<VelaColors> {
       bgGlobal: Color.lerp(bgGlobal, other.bgGlobal, t)!,
       bgContainer: Color.lerp(bgContainer, other.bgContainer, t)!,
       bgRaised: Color.lerp(bgRaised, other.bgRaised, t)!,
+      bgRaisedHover: Color.lerp(bgRaisedHover, other.bgRaisedHover, t)!,
       bgHover: Color.lerp(bgHover, other.bgHover, t)!,
       bgTooltip: Color.lerp(bgTooltip, other.bgTooltip, t)!,
       bgScrim: Color.lerp(bgScrim, other.bgScrim, t)!,

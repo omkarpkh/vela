@@ -12,6 +12,9 @@
     "bg-raised": {
       "$value": "{primitives.grey-850}"
     },
+    "bg-raised-hover": {
+      "$value": "{primitives.grey-800}"
+    },
     "bg-hover": {
       "$value": "{primitives.grey-850}"
     },
