@@ -11,6 +11,7 @@ import { rulesOf, dependenciesFor, figmaSetFor, builtLine } from './playground/f
 import { LINKS } from './links'
 import { replaceRoute, type PageTab } from './router'
 import { CopyButton, CopyStatus, useCopy } from './shell/Copy'
+import { buildIndex, closest } from './playground/search'
 import { Segments } from './shell/Segments'
 import { ScrollRegion } from './shell/ScrollRegion'
 import { StageBoundary, COMMIT, type Settings } from './shell/ErrorBoundary'
@@ -76,8 +77,27 @@ function Rendered({ entry, v }: { entry: (typeof REGISTRY)[number]; v: Values })
 
 export function Playground({ id, tab }: { id: string; tab?: PageTab }) {
   const entry = REGISTRY.find((e) => e.id === id)
-  if (!entry) return <p className="vela-body">No component called “{id}”.</p>
+  if (!entry) return <Unknown name={id} />
   return <PlaygroundFor entry={entry} tab={tab} />
+}
+
+/** A link to a component that doesn't exist (playground spec, section 7): the closest names, by search. */
+function Unknown({ name }: { name: string }) {
+  const near = useMemo(() => closest(buildIndex(), name), [name])
+  return (
+    <article className="pg-unknown">
+      <h1 className="vela-h2">There's no component called “{name}”.</h1>
+      {near.length > 0 && (
+        <>
+          <p className="vela-body">The closest names:</p>
+          <ul className="pg-list">
+            {near.map((i) => <li key={i.id}><a href={i.href}>{i.title}</a></li>)}
+          </ul>
+        </>
+      )}
+      <p className="vela-body"><a href="#/status">Browse all components</a></p>
+    </article>
+  )
 }
 
 const BUILT = builtLine(COMMIT, import.meta.env.VITE_VELA_BUILT)
@@ -184,7 +204,7 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
     <>
       <header className="pg-head">
         <div className="pg-head__text">
-          <p className="vela-meta pg-head__eyebrow">Component</p>
+          <p className="vela-meta pg-head__eyebrow">Components / {entry.group}</p>
           <h1 className="vela-h2">{entry.name}</h1>
           <div className="pg-intro"><Markdown source={spec.intro} /></div>
         </div>

@@ -12,7 +12,7 @@ const noSidewaysScroll = (page: Page) =>
 test.describe('Proposal pages', () => {
   test('the Evidence Locker page is a written spec: no stage, no Copy, no props panel, no install', async ({ page }) => {
     await page.goto('/')
-    await page.getByRole('navigation', { name: 'Site' }).getByRole('link', { name: 'Evidence Locker', exact: true }).click()
+    await page.getByRole('navigation', { name: 'Site' }).getByRole('link', { name: 'Evidence Locker Proposal', exact: true }).click()
     await expect(page).toHaveURL(/#\/proposals\/evidence-locker$/)
     const main = page.getByRole('main')
     // The first block is a heading.
@@ -364,5 +364,144 @@ test.describe('the page header', () => {
     await code.getByRole('button', { name: 'Copy snippet' }).click()
     await expect(code.getByRole('status')).toHaveText(/^Couldn't copy\./)
     expect(await page.evaluate(() => window.getSelection()?.toString())).toBe(await code.locator('.pg-code').textContent())
+  })
+})
+
+// Slice 3 of the playground redesign: Find (playground spec, sections 2, 3 and 10).
+test.describe('find', () => {
+  test('the nav is grouped by job, components carry their lifecycle in words, and Demos sit under Project', async ({ page }) => {
+    await page.goto('/#/components/popover')
+    const nav = page.getByRole('navigation', { name: 'Site' })
+    const groups = nav.getByRole('heading', { level: 4 })
+    await expect(groups).toHaveText(['Actions', 'Inputs', 'Feedback', 'Overlays', 'Data', 'Agent review'])
+    await expect(nav.getByRole('link', { name: 'Popover Experimental' })).toHaveAttribute('aria-current', 'page')
+    await expect(nav.getByRole('link', { name: 'Dropdown List Experimental' })).toBeVisible()
+    await expect(nav.getByRole('link', { name: 'Button', exact: true })).toBeVisible()
+    await expect(nav.getByRole('link', { name: 'Evidence Locker Proposal' })).toBeVisible()
+    // Dropdown List is an Overlay (decided by the playground thread, 30 Oct), not an Input.
+    const overlays = nav.locator('.sitenav__group--sub', { has: page.getByRole('heading', { name: 'Overlays' }) })
+    await expect(overlays.getByRole('link')).toHaveText(['Popover Experimental', 'Tooltip Experimental', 'Dialog Experimental', 'Dropdown List Experimental'])
+    const project = nav.locator('.sitenav__group', { has: page.getByRole('heading', { level: 3, name: 'Project' }) })
+    await expect(project.getByRole('link', { name: 'Adopt without rewrite' })).toBeVisible()
+    await expect(nav.getByRole('heading', { name: 'Demos' })).toHaveCount(0)
+    // The breadcrumb names the group.
+    await expect(page.getByText('Components / Overlays')).toBeVisible()
+  })
+
+  test('a group collapses, but never the one that holds the current page', async ({ page }) => {
+    await page.goto('/#/components/popover')
+    const nav = page.getByRole('navigation', { name: 'Site' })
+    const inputs = nav.getByRole('button', { name: 'Inputs' })
+    await expect(inputs).toHaveAttribute('aria-expanded', 'true')
+    await inputs.click()
+    await expect(inputs).toHaveAttribute('aria-expanded', 'false')
+    await expect(nav.getByRole('link', { name: 'Toggle', exact: true })).toBeHidden()
+    await inputs.click()
+    await expect(nav.getByRole('link', { name: 'Toggle', exact: true })).toBeVisible()
+    // Overlays holds the current page: a heading, with nothing to collapse.
+    await expect(nav.getByRole('button', { name: 'Overlays' })).toHaveCount(0)
+    await expect(nav.getByRole('heading', { name: 'Overlays' })).toBeVisible()
+  })
+
+  test('search opens from the button, from Ctrl K and from /, and Escape returns focus to the button', async ({ page }) => {
+    await page.goto('/#/components/button')
+    const button = page.getByRole('button', { name: 'Search components, foundations and rules' })
+    await expect(button).toContainText('Search, or type a name you know')
+    const dialog = page.getByRole('dialog', { name: 'Search' })
+    await button.click()
+    await expect(dialog).toBeVisible()
+    await expect(dialog.getByRole('combobox', { name: 'Search' })).toBeFocused()
+    await page.keyboard.press('Escape')
+    await expect(dialog).toBeHidden()
+    await expect(button).toBeFocused()
+    await page.keyboard.press('Control+k')
+    await expect(dialog).toBeVisible()
+    await page.keyboard.press('Escape')
+    await page.locator('h1').click()
+    await page.keyboard.press('/')
+    await expect(dialog).toBeVisible()
+    await page.keyboard.press('Escape')
+    // `/` in a text field types a slash.
+    const field = page.getByRole('complementary', { name: 'Props' }).getByRole('textbox').first()
+    await field.click()
+    await page.keyboard.press('/')
+    await expect(dialog).toBeHidden()
+  })
+
+  test('"modal" finds Dialog by its alias, and Enter opens it', async ({ page }) => {
+    await page.goto('/#/components/button')
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+    await page.keyboard.press('Control+k')
+    const dialog = page.getByRole('dialog', { name: 'Search' })
+    await dialog.getByRole('combobox').fill('modal')
+    const first = dialog.getByRole('option').first()
+    await expect(first).toHaveAttribute('aria-selected', 'true')
+    await expect(first).toContainText('Dialog')
+    await expect(first).toContainText('Experimental')
+    await expect(first).toContainText('also called: modal')
+    await page.keyboard.press('Enter')
+    await expect(page).toHaveURL(/#\/components\/dialog$/)
+    await expect(page.getByRole('heading', { level: 1, name: 'Dialog' })).toBeVisible()
+  })
+
+  // A2: an alias two things share is ranked, and each result's line tells them apart.
+  test('"dropdown" lists Dropdown List first, then says Select List is not in Vela yet', async ({ page }) => {
+    await page.goto('/')
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+    await page.keyboard.press('Control+k')
+    const dialog = page.getByRole('dialog', { name: 'Search' })
+    await dialog.getByRole('combobox').fill('dropdown')
+    const options = dialog.getByRole('option')
+    await expect(options.nth(0)).toContainText('Dropdown List')
+    await expect(options.nth(0)).toContainText('acts at once')
+    await expect(options.nth(1)).toContainText('Select List')
+    await expect(options.nth(1)).toContainText("Select List isn't in Vela yet. It's planned for Phase 1.")
+    await expect(options.nth(1)).toContainText('A form value')
+    // Arrow keys move; the input keeps focus and names the active option.
+    await page.keyboard.press('ArrowDown')
+    await expect(options.nth(1)).toHaveAttribute('aria-selected', 'true')
+    await expect(dialog.getByRole('combobox')).toHaveAttribute('aria-activedescendant', (await options.nth(1).getAttribute('id'))!)
+  })
+
+  test('no result says so, names what search covers, and never returns Project or Demos pages', async ({ page }) => {
+    await page.goto('/')
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+    await page.keyboard.press('Control+k')
+    const dialog = page.getByRole('dialog', { name: 'Search' })
+    await dialog.getByRole('combobox').fill('zzzz')
+    await expect(dialog).toContainText('Nothing matches “zzzz”.')
+    await expect(dialog).toContainText('Search covers component names, aliases and rule ids.')
+    await expect(dialog.getByRole('link', { name: 'Browse all components' })).toBeVisible()
+    for (const q of ['changelog', 'roadmap', 'adopt', 'motion review']) {
+      await dialog.getByRole('combobox').fill(q)
+      await expect(dialog.getByRole('option').filter({ hasText: /^(Changelog|Roadmap|Adopt without rewrite|Motion review)/ })).toHaveCount(0)
+    }
+  })
+
+  test('a rule id finds its component\'s Rules tab', async ({ page }) => {
+    await page.goto('/')
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+    await page.keyboard.press('Control+k')
+    const dialog = page.getByRole('dialog', { name: 'Search' })
+    await dialog.getByRole('combobox').fill('toggle-label-required')
+    await expect(dialog.getByRole('option').first()).toContainText('toggle-label-required')
+    await page.keyboard.press('Enter')
+    await expect(page).toHaveURL(/#\/components\/toggle\/rules$/)
+  })
+
+  test('a link to a component that does not exist suggests the closest names', async ({ page }) => {
+    await page.goto('/#/components/modal-window')
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('There\'s no component called “modal-window”.')
+    await expect(page.getByRole('link', { name: 'Dialog', exact: true }).last()).toHaveAttribute('href', '#/components/dialog')
+    await expect(page.getByRole('main').getByRole('link', { name: 'Browse all components' })).toBeVisible()
+  })
+
+  test('on a phone the search button is the icon alone, named "Search"', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.goto('/')
+    const button = page.getByRole('button', { name: 'Search', exact: true })
+    await expect(button).toBeVisible()
+    await expect(button).not.toContainText('type a name')
+    expect(await noSidewaysScroll(page)).toBe(true)
   })
 })

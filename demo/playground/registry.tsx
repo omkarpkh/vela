@@ -36,9 +36,23 @@ export interface Implementation {
   entry: '@omkarux/vela' | '@omkarux/vela/headless'
 }
 
+/**
+ * The nav group, by job (playground spec, section 2). It lives here, never in a spec field (A23, C4).
+ * Inputs: a value a form keeps and submits. Overlays: opens over the page from a trigger and closes
+ * again. The rest follow the approved canvas.
+ */
+export type Group = 'Actions' | 'Inputs' | 'Feedback' | 'Overlays' | 'Data'
+export const GROUPS: Group[] = ['Actions', 'Inputs', 'Feedback', 'Overlays', 'Data']
+
 export interface Entry {
   id: string
   name: string
+  group: Group
+  /**
+   * Other names people search for (playground spec, section 10): first the names the spec's own
+   * "When to use" gives, then the common names in other systems. Search only; never shown as a title.
+   */
+  aliases: string[]
   spec: string
   /** Spec file and source folder, for the page's links. */
   file: string
@@ -226,6 +240,8 @@ export const REGISTRY: Entry[] = [
     file: 'button.md',
     src: 'Button',
     name: 'Button',
+    group: 'Actions',
+    aliases: ['action', 'call to action', 'cta'],
     spec: buttonMd,
     seed: { children: 'Save Changes', variant: 'primary', icon: true },
     // type changes nothing on the stage: "submit" only means anything inside a <form>, and the
@@ -266,6 +282,8 @@ export const REGISTRY: Entry[] = [
     file: 'toggle.md',
     src: 'Toggle',
     name: 'Toggle',
+    group: 'Inputs',
+    aliases: ['switch', 'on/off', 'toggle switch'],
     spec: toggleMd,
     seed: { label: 'Email alerts', defaultChecked: true },
     render: (v) => (
@@ -286,6 +304,8 @@ export const REGISTRY: Entry[] = [
     file: 'input.md',
     src: 'Input',
     name: 'Input',
+    group: 'Inputs',
+    aliases: ['text field', 'textbox', 'text input', 'field'],
     spec: inputMd,
     seed: { label: 'Tenant name', hint: 'Lowercase letters only', error: '' },
     render: (v) => (
@@ -305,6 +325,8 @@ export const REGISTRY: Entry[] = [
     file: 'text-area.md',
     src: 'TextArea',
     name: 'Text Area',
+    group: 'Inputs',
+    aliases: ['textarea', 'multiline', 'comment box'],
     spec: textAreaMd,
     seed: { label: 'Justification', hint: 'Shown to the approver', error: '', defaultValue: 'Blocking the transfer: the destination bucket is public.' },
     // `value` is the controlled arm: on this stage it would freeze the field, so the page drives
@@ -347,6 +369,8 @@ export const REGISTRY: Entry[] = [
     file: 'contextual-alert.md',
     src: 'ContextualAlert',
     name: 'Contextual Alert',
+    group: 'Feedback',
+    aliases: ['banner', 'callout', 'inline alert', 'inline message'],
     spec: alertMd,
     seed: { severity: 'warning', title: 'Scan incomplete', children: 'The scan could not reach 3 of 12 hosts.', onDismiss: true },
     extra: [{ prop: 'onDismiss', kind: 'boolean', type: '() => void', default: false, notes: 'Present → the alert can be dismissed.' }],
@@ -369,6 +393,8 @@ export const REGISTRY: Entry[] = [
     file: 'status-indicator.md',
     src: 'StatusIndicator',
     name: 'Status Indicator',
+    group: 'Feedback',
+    aliases: ['status', 'status dot', 'health'],
     spec: statusMd,
     seed: { status: 'healthy', label: 'api-gateway-01' },
     highlight: (v) => (t) => t.includes(`-status-${str(v.status) || 'unknown'}`),
@@ -380,6 +406,8 @@ export const REGISTRY: Entry[] = [
     file: 'risk-pill.md',
     src: 'RiskPill',
     name: 'Risk Pill',
+    group: 'Feedback',
+    aliases: ['risk', 'risk badge', 'risk level'],
     spec: riskMd,
     // An empty label is the default on purpose: the pill then renders the level word, which is
     // what the spec says happens, and the printed code carries no label prop.
@@ -393,6 +421,8 @@ export const REGISTRY: Entry[] = [
     file: 'tabs.md',
     src: 'Tabs',
     name: 'Tabs',
+    group: 'Data',
+    aliases: ['tab', 'tab bar', 'tab list'],
     spec: tabsMd,
     seed: { implementation: 'core' },
     hide: ['defaultValue'],
@@ -432,6 +462,8 @@ export const REGISTRY: Entry[] = [
     file: 'icon.md',
     src: 'Icon',
     name: 'Icon',
+    group: 'Data',
+    aliases: ['glyph', 'symbol', 'icons'],
     spec: iconMd,
     seed: { name: 'shield-x', label: '' },
     // `name` is the IconName union — fifty literals the Props table names by type rather than
@@ -470,6 +502,8 @@ export const REGISTRY: Entry[] = [
     file: 'checkbox.md',
     src: 'Checkbox',
     name: 'Checkbox',
+    group: 'Inputs',
+    aliases: ['check box', 'tick box'],
     spec: checkboxMd,
     seed: { label: 'Accept the data-processing terms', defaultChecked: true, description: '', error: '' },
     // `checked` is the controlled arm: on this stage it would freeze the box, so the page drives
@@ -503,6 +537,8 @@ export const REGISTRY: Entry[] = [
     file: 'radio-group.md',
     src: 'RadioGroup',
     name: 'Radio Group',
+    group: 'Inputs',
+    aliases: ['radio', 'radio button', 'option buttons'],
     spec: radioGroupMd,
     seed: { label: 'Enforcement', defaultValue: 'block', error: '' },
     // `value` is the controlled arm (it would freeze the stage); `defaultValue` becomes a select of
@@ -539,6 +575,8 @@ export const REGISTRY: Entry[] = [
     file: 'table.md',
     src: 'Table',
     name: 'Table',
+    group: 'Data',
+    aliases: ['data table', 'grid', 'data grid'],
     spec: tableMd,
     seed: { caption: 'Assets' },
     // children is the composition below, not a value a control can hold.
@@ -577,6 +615,8 @@ export const REGISTRY: Entry[] = [
     file: 'popover.md',
     src: 'Popover',
     name: 'Popover',
+    group: 'Overlays',
+    aliases: ['flyout', 'popup', 'pop-up'],
     spec: popoverMd,
     seed: { title: 'Filter alerts', children: 'Show alerts from the last 24 hours, critical and major only.' },
     hide: ['open'],
@@ -605,6 +645,8 @@ export const REGISTRY: Entry[] = [
     file: 'tooltip.md',
     src: 'Tooltip',
     name: 'Tooltip',
+    group: 'Overlays',
+    aliases: ['hint', 'tip', 'hover text'],
     spec: tooltipMd,
     seed: { content: 'Download the last 24 hours as CSV' },
     implementations: [{ id: 'headless', entry: '@omkarux/vela/headless' }],
@@ -627,6 +669,8 @@ export const REGISTRY: Entry[] = [
     file: 'dialog.md',
     src: 'Dialog',
     name: 'Dialog',
+    group: 'Overlays',
+    aliases: ['modal', 'confirm', 'alert dialog', 'confirmation'],
     spec: dialogMd,
     seed: {
       variant: 'standard',
@@ -699,6 +743,8 @@ export const REGISTRY: Entry[] = [
     src: 'Toast',
     imports: 'ToastProvider, useToast',
     name: 'Toast',
+    group: 'Feedback',
+    aliases: ['snackbar', 'notification', 'flash message'],
     spec: toastMd,
     seed: { severity: 'success', title: 'Policy saved', description: 'Block legacy TLS now applies to 14 tenants.', action: false },
     extra: [
@@ -745,6 +791,8 @@ toast.add({ ${opts} })`
     file: 'dropdown-list.md',
     src: 'DropdownList',
     name: 'Dropdown List',
+    group: 'Overlays',
+    aliases: ['dropdown', 'menu', 'overflow menu', 'view switcher'],
     spec: dropdownListMd,
     seed: { label: 'Views' },
     hide: ['value', 'open'],

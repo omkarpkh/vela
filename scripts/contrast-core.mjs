@@ -202,6 +202,14 @@ export const PAIRS = [
   ['--vela-text-default', '--vela-bg-raised-hover', 'Dropdown List item text, highlighted',          'text'],
   ['--vela-text-link',    '--vela-bg-raised',       'Dropdown List current-item check',              'ui'],
   ['--vela-text-link',    '--vela-bg-raised-hover', 'Dropdown List current-item check, highlighted', 'ui'],
+  // The site's search (demo/shell/Search.tsx, playground slice 3). The header button reads as a
+  // field: placeholder text and the search glyph on the control surface. The dialog is the raised
+  // surface: its glyph, and the active result, which is the Dropdown List's highlight (above) plus a
+  // 2px active edge so the choice is not told by a tint alone.
+  ['--vela-control-placeholder', '--vela-control-bg', 'Site search button text', 'text'],
+  ['--vela-icon-default', '--vela-control-bg', 'Site search button glyph', 'ui'],
+  ['--vela-icon-default', '--vela-bg-raised', 'Site search dialog glyph', 'ui'],
+  ['--vela-border-active', '--vela-bg-raised-hover', 'Site search active result edge', 'ui'],
   // The Tabs hover preview (the Seed, guidelines/components/tabs.md) is deliberately NOT a pair, like
   // the Tooltip's edge above. It is --vela-border-active drawn at --vela-opacity-preview (0.55) over
   // the surface: 2.46:1 on the page and 2.34:1 on a container in light, 2.59:1 and 2.48:1 in dark,

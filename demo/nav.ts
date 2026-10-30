@@ -1,4 +1,5 @@
 import { REGISTRY } from './playground/registry'
+import { statusOf } from './playground/status'
 import { PROPOSALS as SPECS } from './playground/proposals'
 import colorMd from '../guidelines/foundations/color.md?raw'
 import typographyMd from '../guidelines/foundations/typography.md?raw'
@@ -20,6 +21,9 @@ export const FOUNDATIONS = [
   { id: 'motion', md: motionMd },
 ].map((f) => ({ ...f, title: titleOf(f.md, f.id) }))
 
-export const COMPONENTS = REGISTRY.map((e) => ({ id: e.id, title: e.name }))
+export const COMPONENTS = REGISTRY.map((e) => {
+  const status = statusOf(e.spec).label
+  return { id: e.id, title: e.name, group: e.group, tag: status === 'Approved' ? undefined : status }
+})
 // Specs that are written and not built (guidelines/proposals/), read from that folder's README.
 export const PROPOSALS = SPECS.map((p) => ({ id: p.id, title: p.name }))

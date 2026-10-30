@@ -70,3 +70,49 @@
    announced; empty, it takes no height. A failure is told by its words, not by a colour. */
 .shell-copy-status { margin: 0; font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
 .shell-copy-status.is-failed { font-weight: var(--vela-font-weight-semibold); }
+
+/* ---------------------------------------------------------------- search -- */
+/* Search (playground spec, sections 3 and 10): stands in for a command palette until Combobox. The
+   header button reads like a field; on a phone it is the icon alone, named "Search". */
+.shell-search-button {
+  display: inline-flex; align-items: center; gap: var(--vela-space-10);
+  height: var(--vela-control-height-35); min-width: var(--vela-control-height-35); padding: 0 var(--vela-space-10);
+  border: 1px solid var(--vela-control-border); border-radius: var(--vela-radius-4);
+  background: var(--vela-control-bg); color: var(--vela-control-placeholder);
+  font: inherit; font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height); cursor: pointer;
+}
+.shell-search-button.is-compact { justify-content: center; padding: 0; color: var(--vela-text-default); }
+.shell-search-button svg { flex: none; color: var(--vela-icon-default); }
+@media (hover: hover) { .shell-search-button:hover { border-color: var(--vela-control-border-hover); } }
+.shell-kbd {
+  display: inline-block; padding: 0 var(--vela-space-5);
+  border: 1px solid var(--vela-border-default); border-radius: var(--vela-radius-3);
+  font-family: inherit; font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default);
+}
+.shell-search {
+  width: var(--vela-dialog-width-wide); max-width: calc(100vw - 2 * var(--vela-space-15));
+  margin-top: var(--vela-space-60); padding: 0;
+  border: 1px solid var(--vela-border-default); border-radius: var(--vela-radius-4);
+  background: var(--vela-bg-raised); color: var(--vela-text-default);
+}
+.shell-search::backdrop { background: var(--vela-bg-scrim); opacity: var(--vela-opacity-scrim); }
+.shell-search__field { display: flex; align-items: center; gap: var(--vela-space-10); padding: var(--vela-space-10) var(--vela-space-15); border-bottom: 1px solid var(--vela-border-subtle); }
+.shell-search__field svg { flex: none; color: var(--vela-icon-default); }
+.shell-search__input { flex: 1; min-width: 0; height: var(--vela-control-height-35); border: none; background: transparent; color: var(--vela-text-default); font: inherit; font-size: var(--vela-text-body-size); }
+.shell-search__input:focus-visible { outline: none; }
+.shell-search__field:focus-within { box-shadow: inset 0 calc(-1 * var(--vela-focus-ring-width)) 0 var(--vela-focus-ring-color); }
+.shell-search__count { flex: none; font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
+.shell-search__list { list-style: none; margin: 0; padding: var(--vela-space-5); max-height: calc(100vh - 4 * var(--vela-space-60)); overflow-y: auto; }
+.shell-search__option { display: flex; flex-direction: column; gap: var(--vela-space-5); padding: var(--vela-space-10); border-radius: var(--vela-radius-4); cursor: pointer; }
+.shell-search__option[aria-selected='true'] { background: var(--vela-bg-raised-hover); box-shadow: inset var(--vela-stroke-2) 0 0 var(--vela-border-active); }
+.shell-search__title { display: flex; flex-wrap: wrap; align-items: center; gap: var(--vela-space-5) var(--vela-space-10); font-weight: var(--vela-font-weight-semibold); font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height); }
+.shell-search__alias { font-weight: var(--vela-font-weight-regular); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); }
+.shell-search__sign { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
+.shell-search__empty { padding: var(--vela-space-15) var(--vela-space-20); font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height); }
+.shell-search__empty p { margin: 0 0 var(--vela-space-5); }
+.shell-search__foot { display: flex; flex-wrap: wrap; gap: var(--vela-space-10) var(--vela-space-20); padding: var(--vela-space-10) var(--vela-space-15); border-top: 1px solid var(--vela-border-subtle); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
+@media (forced-colors: active) {
+  .shell-search__option[aria-selected='true'] { forced-color-adjust: none; background: Highlight; color: HighlightText; }
+  .shell-search__option[aria-selected='true'] .site-tag { border-color: HighlightText; color: HighlightText; }
+  .shell-search__field:focus-within { outline: var(--vela-focus-ring-width) solid Highlight; outline-offset: calc(-1 * var(--vela-focus-ring-width)); }
+}

@@ -145,3 +145,21 @@ body { margin: 0; background: var(--vela-bg-global); }
 .motion-key::before { content: ''; width: var(--vela-space-15); height: var(--vela-stroke-2); background: currentColor; }
 .motion-tokens td { overflow-wrap: anywhere; }
 .motion-new { color: var(--vela-text-link); font-weight: var(--vela-font-weight-semibold); }
+
+/* Nav groups by job (playground spec, section 2). A component group is a sub-heading under
+   Components; any group can be collapsed, except the one holding the current page. A lifecycle tag
+   sits at the link's end, in words. */
+.sitenav__group--sub { margin-top: var(--vela-space-5); }
+.sitenav__group h4 { margin: 0; }
+.sitenav__heading { display: block; padding: 0 var(--vela-space-10); font: inherit; }
+.sitenav__group--sub .sitenav__heading { padding-top: var(--vela-space-5); padding-bottom: var(--vela-space-5); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); font-weight: var(--vela-font-weight-semibold); color: var(--vela-text-default); }
+.sitenav__toggle { display: flex; align-items: center; gap: var(--vela-space-5); width: 100%; min-height: var(--vela-control-height-24); border: none; border-radius: var(--vela-radius-4); background: transparent; color: inherit; text-align: left; text-transform: inherit; letter-spacing: inherit; font-weight: inherit; cursor: pointer; }
+.sitenav__toggle::after { content: ''; width: var(--vela-icon-16); height: var(--vela-icon-16); margin-left: auto; background: currentColor; transition: transform var(--vela-duration-base) var(--vela-ease-standard);
+  -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M4 6l4 4 4-4' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/></svg>") center / contain no-repeat;
+  mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M4 6l4 4 4-4' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/></svg>") center / contain no-repeat; }
+.sitenav__toggle[aria-expanded='false']::after { transform: rotate(-90deg); }
+@media (hover: hover) { .sitenav__toggle:hover { background: var(--vela-bg-hover); } }
+.sitenav__tag { margin-left: auto; }
+.sitenav__link { gap: var(--vela-space-10); }
+/* A top-level heading already carries the nav's inset; its toggle adds none of its own. */
+.sitenav__group h3 .sitenav__heading { padding: 0; }
