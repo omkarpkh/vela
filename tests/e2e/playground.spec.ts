@@ -60,18 +60,19 @@ test('the Text Area page counts as you type and the field only ever resizes vert
 })
 
 // Two entry points, one playground (decisions/002): the Tabs page renders the same props through
-// the core or the headless (Base UI) implementation, and the Code tab's import line and
-// "Dependencies" line follow the choice. Both implementations must behave the same on the stage.
-test('the Tabs page switches implementation, and the import and Dependencies lines follow', async ({ page }) => {
+// the core or the headless (Base UI) implementation, and the Code tab's import line and install
+// command follow the choice. Both implementations must behave the same on the stage.
+test('the Tabs page switches implementation, and the import line and install command follow', async ({ page }) => {
   await page.goto('/#/components/tabs')
   await expect(page.getByRole('heading', { level: 1, name: 'Tabs' })).toBeVisible()
   const contract = page.getByRole('region', { name: 'Contract' })
   await expect(contract.locator('.pg-install')).toContainText("import { Tabs } from '@omkarux/vela'")
-  await expect(contract.locator('.pg-dependencies')).toHaveText('Dependencies: none')
+  await expect(contract.locator('.pg-install-command')).toHaveText('npm i @omkarux/vela')
+  await expect(contract.locator('.pg-install-note')).toHaveCount(0)
 
   await page.getByRole('group', { name: 'Implementation' }).getByRole('button', { name: 'headless' }).click()
   await expect(contract.locator('.pg-install')).toContainText("import { Tabs } from '@omkarux/vela/headless'")
-  await expect(contract.locator('.pg-dependencies')).toHaveText('Dependencies: @base-ui/react (optional peer, via /headless)')
+  await expect(contract.locator('.pg-install-command')).toHaveText('npm i @omkarux/vela @base-ui/react')
 
   // The light frame's tabs, now rendered by Base UI, still honour the spec: arrow keys select,
   // the disabled tab is skipped, only the active panel is mounted, the stylesheet applies.
@@ -94,7 +95,7 @@ test('the Tabs page switches implementation, and the import and Dependencies lin
 })
 
 // Checkbox and Radio Group are headless-born: one implementation, so no Implementation control,
-// the import line names `/headless` and the Dependencies line is the spec's. On the stage the
+// the import line names `/headless` and the install command names Base UI. On the stage the
 // Base UI markup must hit the stylesheet: the fill keys on aria-checked, disabled on :disabled.
 test('the Checkbox page renders the headless Checkbox: Space toggles, the fill follows aria-checked', async ({ page }) => {
   await page.goto('/#/components/checkbox')
@@ -102,7 +103,7 @@ test('the Checkbox page renders the headless Checkbox: Space toggles, the fill f
   await expect(page.getByRole('group', { name: 'Implementation' })).toHaveCount(0)
   const contract = page.getByRole('region', { name: 'Contract' })
   await expect(contract.locator('.pg-install')).toContainText("import { Checkbox } from '@omkarux/vela/headless'")
-  await expect(contract.locator('.pg-dependencies')).toHaveText('Dependencies: @base-ui/react (optional peer, via /headless)')
+  await expect(contract.locator('.pg-install-command')).toHaveText('npm i @omkarux/vela @base-ui/react')
 
   const frame = page.locator('.pg-frame[data-theme="light"] .pg-frame-body')
   const box = frame.getByRole('checkbox', { name: 'Accept the data-processing terms' })
@@ -133,7 +134,7 @@ test('the Radio Group page renders the headless group: arrows move the selection
   await expect(page.getByRole('group', { name: 'Implementation' })).toHaveCount(0)
   const contract = page.getByRole('region', { name: 'Contract' })
   await expect(contract.locator('.pg-install')).toContainText("import { RadioGroup } from '@omkarux/vela/headless'")
-  await expect(contract.locator('.pg-dependencies')).toHaveText('Dependencies: @base-ui/react (optional peer, via /headless)')
+  await expect(contract.locator('.pg-install-command')).toHaveText('npm i @omkarux/vela @base-ui/react')
 
   const frame = page.locator('.pg-frame[data-theme="light"] .pg-frame-body')
   await expect(frame.getByRole('radiogroup', { name: 'Enforcement' })).toBeVisible()
@@ -158,9 +159,8 @@ test('the Radio Group page renders the headless group: arrows move the selection
 // table renders aria-sort and a real button, and the host re-sorts. The button's name is asserted
 // exactly, in a real browser: "Open findings, sort ascending", label first, no stray space.
 // The Tabs stage at phone width: the frame used to centre a body that hugs its content, so a
-// panel with shorter text moved the whole tab list. And the list scrolls sideways only: the
-// underline's 1px past the padding box must not become a vertical scroll range, which a touch
-// browser shows as a stray scrollbar at the list's end.
+// panel with shorter text moved the whole tab list. And the list scrolls sideways only: no
+// vertical scroll range, which a touch browser shows as a stray scrollbar at the list's end.
 test('on the Tabs page the tab list stays put when the panel changes, and never scrolls vertically', async ({ page }) => {
   await page.setViewportSize({ width: 412, height: 900 })
   for (const impl of ['core', 'headless'] as const) {
@@ -177,6 +177,67 @@ test('on the Tabs page the tab list stays put when the panel changes, and never 
     // Hidden, not auto: no vertical scroll range a person can reach, so no scrollbar to draw.
     await expect(list).toHaveCSS('overflow-y', 'hidden')
     await expect(list).toHaveCSS('overflow-x', 'auto')
+  }
+})
+
+// The list clips at its padding box (it scrolls), so anything below that edge is cut. The rule
+// used to be a border outside the box with the underline overlapping it, and the underline's lower
+// pixel was cut: a 2px underline rendered 1px. Both the selected tab's border and the bar must lie
+// wholly inside the padding box, at every width.
+// [[rule: tabs-underline-not-clipped]]
+test('the selected underline and the bar lie inside the tab list\'s padding box, so they render 2px', async ({ page }) => {
+  for (const width of [412, 1280]) {
+    await page.setViewportSize({ width, height: 900 })
+    for (const impl of ['core', 'headless'] as const) {
+      await page.goto('/#/components/tabs')
+      if (impl === 'headless') await page.getByRole('group', { name: 'Implementation' }).getByRole('button', { name: 'headless' }).click()
+      const list = page.locator('.pg-frame[data-theme="light"]').getByRole('tablist')
+      await expect(list).toBeVisible()
+      const g = await list.evaluate((l: HTMLElement) => {
+        const box = l.getBoundingClientRect()
+        const paddingBottom = box.top + l.clientTop + l.clientHeight
+        const tab = l.querySelector<HTMLElement>('[aria-selected="true"]')!
+        const bar = l.querySelector<HTMLElement>('.vela-tabs__indicator')!
+        return {
+          tab: tab.getBoundingClientRect().bottom - paddingBottom,
+          bar: bar.getBoundingClientRect().bottom - paddingBottom,
+          border: getComputedStyle(tab).borderBottomWidth,
+        }
+      })
+      expect(g.border, `${impl} ${width}`).toBe('2px')
+      expect(g.tab, `${impl} ${width}: tab below the clip`).toBeLessThanOrEqual(0.01)
+      expect(g.bar, `${impl} ${width}: bar below the clip`).toBeLessThanOrEqual(0.01)
+    }
+  }
+})
+
+// Windows contrast themes replace author colours and turn transparent borders visible; without
+// its own rules every tab drew an underline and the selected one could not be found.
+// [[rule: tabs-forced-colours-selected]]
+test('in forced colours only the selected tab is marked: Highlight label and underline; disabled is GrayText', async ({ page }) => {
+  await page.emulateMedia({ forcedColors: 'active' })
+  for (const impl of ['core', 'headless'] as const) {
+    await page.goto('/#/components/tabs')
+    if (impl === 'headless') await page.getByRole('group', { name: 'Implementation' }).getByRole('button', { name: 'headless' }).click()
+    const list = page.locator('.pg-frame[data-theme="light"]').getByRole('tablist')
+    await expect(list).toBeVisible()
+    const s = await list.evaluate((l: HTMLElement) => {
+      const sys = (c: string) => { const p = document.createElement('i'); p.style.color = c; l.appendChild(p); const v = getComputedStyle(p).color; p.remove(); return v }
+      return {
+        highlight: sys('Highlight'), grayText: sys('GrayText'),
+        tabs: [...l.querySelectorAll<HTMLElement>('[role="tab"]')].map((t) => {
+          const cs = getComputedStyle(t)
+          return { selected: t.getAttribute('aria-selected') === 'true', disabled: (t as HTMLButtonElement).disabled || t.hasAttribute('data-disabled'), color: cs.color, underline: cs.borderBottomColor }
+        }),
+      }
+    })
+    expect(s.tabs.filter((t) => t.selected)).toHaveLength(1)
+    for (const t of s.tabs) {
+      if (t.selected) expect([t.color, t.underline], impl).toEqual([s.highlight, s.highlight])
+      else expect(t.underline, impl).toBe('rgba(0, 0, 0, 0)')
+      if (t.disabled) expect(t.color, impl).toBe(s.grayText)
+    }
+    expect(s.tabs.some((t) => t.disabled), `${impl}: the stage has a disabled tab to check`).toBe(true)
   }
 })
 
@@ -270,7 +331,7 @@ test('the Popover page opens a themed, non-modal popover: focus moves in, Escape
   await expect(page.getByRole('group', { name: 'Implementation' })).toHaveCount(0)
   const contract = page.getByRole('region', { name: 'Contract' })
   await expect(contract.locator('.pg-install')).toContainText("import { Popover } from '@omkarux/vela/headless'")
-  await expect(contract.locator('.pg-dependencies')).toHaveText('Dependencies: @base-ui/react (optional peer, via /headless)')
+  await expect(contract.locator('.pg-install-command')).toHaveText('npm i @omkarux/vela @base-ui/react')
 
   for (const theme of ['light', 'dark'] as const) {
     const trigger = page.locator(`.pg-frame[data-theme="${theme}"] .pg-frame-body`).getByRole('button', { name: 'Filters' })
@@ -426,7 +487,7 @@ test('the Toast page raises a polite, themed toast without moving focus, and its
   await expect(page.getByRole('group', { name: 'Implementation' })).toHaveCount(0)
   const contract = page.getByRole('region', { name: 'Contract' })
   await expect(contract.locator('.pg-install')).toContainText("import { ToastProvider, useToast } from '@omkarux/vela/headless'")
-  await expect(contract.locator('.pg-dependencies')).toHaveText('Dependencies: @base-ui/react (optional peer, via /headless)')
+  await expect(contract.locator('.pg-install-command')).toHaveText('npm i @omkarux/vela @base-ui/react')
 
   for (const theme of ['light', 'dark'] as const) {
     const frame = page.locator(`.pg-frame[data-theme="${theme}"] .pg-frame-body`)

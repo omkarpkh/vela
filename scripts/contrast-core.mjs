@@ -56,7 +56,15 @@ export function contrast(fgHex, bgHex) {
   return (hi + 0.05) / (lo + 0.05)
 }
 
-/** [foreground, background, label, kind]  kind: 'text' (4.5) | 'ui' (3.0) */
+/**
+ * [foreground, background, label, kind, expect?]  kind: 'text' (4.5) | 'ui' (3.0)
+ *
+ * `expect` is for a negative case: `{ failsIn: ['light'] }` asserts that the pair is BELOW the
+ * minimum in those themes, so a pairing that must never ship is written down and measured rather
+ * than remembered. If the tokens move and it starts to pass, the test says so and the entry goes.
+ *
+ * @type {[string, string, string, 'text' | 'ui', { failsIn: ('light' | 'dark')[] }?][]}
+ */
 export const PAIRS = [
   ['--vela-text-default',        '--vela-bg-global',    'Body text on page',            'text'],
   ['--vela-text-default',        '--vela-bg-container', 'Body text on container',       'text'],
@@ -170,6 +178,22 @@ export const PAIRS = [
   }),
   ['--vela-icon-default', '--vela-bg-global', 'Table sort glyph, unsorted column', 'ui'],
 
+  // The site (demo/), which follows DESIGN.md like the kit. A tag (the Status page's lifecycle
+  // labels, the Proposal tag) is neutral and outlined: text-default, the default border, no fill,
+  // never a severity colour. It sits on the page (body text on page, above) or on a container. A
+  // locked value keeps text-default on the raised surface of the panel that explains the lock; it
+  // is not dimmed to text-inactive, which is 2.27:1 there. The outlines are the default border on
+  // the page and on a container, already asserted above.
+  ['--vela-text-default', '--vela-bg-container', 'Site tag text on container',             'text'],
+  ['--vela-text-default', '--vela-bg-raised',    'Site locked value text on raised surface', 'text'],
+  // A segment of the site's Segmented Control stand-in (demo/shell/Segments.tsx), hovered. At
+  // rest it is body text on the page or the container; selected, body text on bg-selected with the
+  // active border on it (both above).
+  ['--vela-text-default', '--vela-bg-hover',     'Site segment label, hovered',             'text'],
+  // Negative case: de-emphasized text on a container is 4.35:1 in light and fails. The site's
+  // navigation and props panel used it; they now use text-default. Asserted below the minimum in
+  // light so nobody reaches for it again; in dark it is 4.65:1.
+  ['--vela-text-de-emphasized', '--vela-bg-container', 'De-emphasized text on container (negative case: must not ship)', 'text', { failsIn: ['light'] }],
   // Dropdown List (Phase 1, headless). The popup is Popover's surface, so its body text and edge are
   // asserted above. What is new is the highlighted item, on --vela-bg-raised-hover: not bg-hover,
   // which in dark IS the raised surface (grey-850) and would show nothing. The current item's check
@@ -182,9 +206,15 @@ export const PAIRS = [
 
 export const THRESHOLD = { text: 4.5, ui: 3.0 }
 
-export function auditTheme(map) {
-  return PAIRS.map(([fg, bg, label, kind]) => {
+/**
+ * Measure every pair in one theme. `pass` is whether the pair did what it is listed for: met the
+ * minimum, or, for a negative case in this theme, stayed below it (`negative: true`).
+ */
+export function auditTheme(map, theme) {
+  return PAIRS.map(([fg, bg, label, kind, expect]) => {
     const ratio = contrast(resolve(map, fg), resolve(map, bg))
-    return { label, kind, ratio, min: THRESHOLD[kind], pass: ratio >= THRESHOLD[kind], fg, bg }
+    const min = THRESHOLD[kind]
+    const negative = !!theme && !!expect?.failsIn?.includes(theme)
+    return { label, kind, ratio, min, negative, pass: negative ? ratio < min : ratio >= min, fg, bg }
   })
 }

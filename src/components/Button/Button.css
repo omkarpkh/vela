@@ -59,6 +59,13 @@
   --vela-btn-press-duration: var(--vela-duration-instant);
   transform: scale(0.97);
 }
+/* The press is this button's touch feedback, so the browser's own tap flash is turned off; on
+   iOS and Android it would otherwise paint a translucent box over the scale. On the button
+   itself rather than the press rule, so it is in place before the touch begins. Disabled and
+   busy buttons lose the flash too, which is right: they must not pretend to react. A text link
+   keeps it, because it has no press of its own and the flash is its only tap
+   feedback. Never set on .vela-root: a host's links inside it would lose theirs. */
+.vela-btn:not(.vela-btn--text-link) { -webkit-tap-highlight-color: transparent; }
 
 /* The scale pulls the edges inward while the pointer is down, so a press that lands near an
    edge can come back up where the button no longer is. The click then retargets to the

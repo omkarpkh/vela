@@ -32,13 +32,8 @@ export type Values = Record<string, string | boolean | undefined>
  */
 export interface Implementation {
   id: string
-  /** Where a consumer imports it from. */
+  /** Where a consumer imports it from; the install command follows (demo/playground/install.ts). */
   entry: '@omkarux/vela' | '@omkarux/vela/headless'
-  /**
-   * Shown as "Dependencies: …". Omitted, it is read from the spec's `**Dependencies:**` line — what a
-   * component with a single implementation (Checkbox, Radio Group: headless only) does.
-   */
-  dependencies?: string
 }
 
 export interface Entry {
@@ -402,11 +397,10 @@ export const REGISTRY: Entry[] = [
     seed: { implementation: 'core' },
     hide: ['defaultValue'],
     // The Phase 1 proving case: the same props through either implementation, against the same
-    // spec and the same stylesheet. The values here are the ones tabs.md states under
-    // "Implementations"; the spec's own `**Dependencies:**` line is the core's.
+    // spec and the same stylesheet. The entries are the ones tabs.md states under "Implementations".
     implementations: [
-      { id: 'core', entry: '@omkarux/vela', dependencies: 'none' },
-      { id: 'headless', entry: '@omkarux/vela/headless', dependencies: '@base-ui/react (optional peer, via /headless)' },
+      { id: 'core', entry: '@omkarux/vela' },
+      { id: 'headless', entry: '@omkarux/vela/headless' },
     ],
     render: (v) => {
       const T = v.implementation === 'headless' ? HeadlessTabs : Tabs
@@ -482,7 +476,7 @@ export const REGISTRY: Entry[] = [
     // defaultChecked instead. name and value only mean anything inside a <form> or a Group.
     hide: ['checked'],
     noControl: ['name', 'value'],
-    // Headless-born: one implementation, so no Implementation control; the Dependencies line is the spec's.
+    // Headless-born: one implementation, so no Implementation control; the install names Base UI.
     implementations: [{ id: 'headless', entry: '@omkarux/vela/headless' }],
     render: (v) => (
       <Checkbox

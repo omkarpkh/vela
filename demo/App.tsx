@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
-import { Button, Input, cn } from '../src'
+import { Input, cn } from '../src'
 import pkg from '../package.json'
 import './demo.css'
 import { useRoute, href, sameRoute, type Route } from './router'
-import { FOUNDATIONS, COMPONENTS } from './nav'
+import { FOUNDATIONS, COMPONENTS, PROPOSALS } from './nav'
 import { LINKS, figmaUrl } from './links'
 import { Overview } from './pages/Overview'
 import { Foundation } from './pages/Foundation'
@@ -13,8 +13,15 @@ import { Adopt } from './Adopt'
 import { Playground } from './Playground'
 import { How } from './pages/How'
 import { Motion } from './pages/Motion'
+import { Proposal } from './pages/Proposal'
+import { Segments } from './shell/Segments'
 
 type Theme = 'system' | 'light' | 'dark'
+const THEMES = [
+  { value: 'system', label: 'System' },
+  { value: 'light', label: 'Light' },
+  { value: 'dark', label: 'Dark' },
+] as const
 
 function NavLink({ to, current, children }: { to: Route; current: Route; children: React.ReactNode }) {
   const active = sameRoute(to, current)
@@ -35,6 +42,7 @@ function MenuIcon() {
 
 const titleFor = (r: Route) =>
   r.kind === 'component' ? COMPONENTS.find((c) => c.id === r.id)?.title
+  : r.kind === 'proposal' ? PROPOSALS.find((p) => p.id === r.id)?.title
   : r.kind === 'foundation' ? FOUNDATIONS.find((f) => f.id === r.id)?.title
   : r.kind === 'adopt' ? 'Adopt without rewrite'
   : r.kind === 'motion' ? 'Motion review'
@@ -64,6 +72,7 @@ export function App() {
   const q = filter.trim().toLowerCase()
   const components = COMPONENTS.filter((c) => !q || c.title.toLowerCase().includes(q))
   const foundations = FOUNDATIONS.filter((f) => !q || f.title.toLowerCase().includes(q))
+  const proposals = PROPOSALS.filter((p) => !q || p.title.toLowerCase().includes(q))
 
   return (
     <div className={cn('vela-root shell', !navOpen && 'shell--nav-closed')}>
@@ -85,19 +94,7 @@ export function App() {
           <span className="vela-meta brand__meta">@omkarux/vela {pkg.version}</span>
         </a>
         <div className="topbar__right">
-          <div className="demo-themes" role="group" aria-label="Theme">
-            {(['system', 'light', 'dark'] as Theme[]).map((t) => (
-              <Button
-                key={t}
-                size="tiny"
-                variant={theme === t ? 'primary' : 'standard'}
-                appearance={theme === t ? 'filled' : 'hollow'}
-                onClick={() => setTheme(t)}
-              >
-                {t[0].toUpperCase() + t.slice(1)}
-              </Button>
-            ))}
-          </div>
+          <Segments label="Theme" value={theme} options={THEMES} onChange={setTheme} />
           <a className="topbar__link vela-meta" href={LINKS.github}>GitHub</a>
           <a className="topbar__link vela-meta" href={LINKS.npm}>npm</a>
           <a className="topbar__link vela-meta" href={figmaUrl()}>Figma</a>
@@ -124,6 +121,12 @@ export function App() {
               {components.map((c) => <NavLink key={c.id} to={{ kind: 'component', id: c.id }} current={route}>{c.title}</NavLink>)}
             </div>
           )}
+          {proposals.length > 0 && (
+            <div className="sitenav__group">
+              <h3>Proposals</h3>
+              {proposals.map((p) => <NavLink key={p.id} to={{ kind: 'proposal', id: p.id }} current={route}>{p.title}</NavLink>)}
+            </div>
+          )}
           <div className="sitenav__group">
             <h3>Demos</h3>
             <NavLink to={{ kind: 'adopt' }} current={route}>Adopt without rewrite</NavLink>
@@ -143,6 +146,7 @@ export function App() {
         <main id="main" className="content">
           {route.kind === 'overview' && <Overview />}
           {route.kind === 'component' && <Playground key={route.id} id={route.id} />}
+          {route.kind === 'proposal' && <Proposal key={route.id} id={route.id} />}
           {route.kind === 'foundation' && <Foundation id={route.id} />}
           {route.kind === 'adopt' && <Adopt mode={theme} />}
           {route.kind === 'motion' && <Motion />}

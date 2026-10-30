@@ -34,7 +34,7 @@
     {
       "set": "Checkbox",
       "page": "Checkbox",
-      "state": "built",
+      "state": "published",
       "node": "128:50",
       "url": "https://www.figma.com/design/XO2rmeCcgOjyKe4oipgF4j/Vela-Design-System?node-id=128-50",
       "import": "import { Checkbox } from '@omkarux/vela/headless'",
@@ -84,7 +84,7 @@
     {
       "set": "Dialog",
       "page": "Dialog",
-      "state": "built",
+      "state": "published",
       "node": "129:54",
       "url": "https://www.figma.com/design/XO2rmeCcgOjyKe4oipgF4j/Vela-Design-System?node-id=129-54",
       "import": "import { Dialog } from '@omkarux/vela/headless'",
@@ -142,7 +142,7 @@
     {
       "set": "Icon",
       "page": "Icon",
-      "state": "built",
+      "state": "published",
       "node": "131:324",
       "url": "https://www.figma.com/design/XO2rmeCcgOjyKe4oipgF4j/Vela-Design-System?node-id=131-324",
       "import": "import { Icon } from '@omkarux/vela'",
@@ -192,7 +192,7 @@
     {
       "set": "Popover",
       "page": "Popover",
-      "state": "built",
+      "state": "published",
       "node": "127:109",
       "url": "https://www.figma.com/design/XO2rmeCcgOjyKe4oipgF4j/Vela-Design-System?node-id=127-109",
       "import": "import { Popover } from '@omkarux/vela/headless'",
@@ -213,7 +213,7 @@
     {
       "set": "Radio",
       "page": "Radio Group",
-      "state": "built",
+      "state": "published",
       "node": "128:64",
       "url": "https://www.figma.com/design/XO2rmeCcgOjyKe4oipgF4j/Vela-Design-System?node-id=128-64",
       "import": "import { RadioGroup } from '@omkarux/vela/headless'",
@@ -238,7 +238,7 @@
     {
       "set": "Risk Pill",
       "page": "Risk Pill",
-      "state": "built",
+      "state": "published",
       "node": "127:14",
       "url": "https://www.figma.com/design/XO2rmeCcgOjyKe4oipgF4j/Vela-Design-System?node-id=127-14",
       "import": "import { RiskPill } from '@omkarux/vela'",
@@ -288,7 +288,7 @@
     {
       "set": "Table Header Cell",
       "page": "Table",
-      "state": "built",
+      "state": "published",
       "node": "130:82",
       "url": "https://www.figma.com/design/XO2rmeCcgOjyKe4oipgF4j/Vela-Design-System?node-id=130-82",
       "import": "import { Table } from '@omkarux/vela'",
@@ -348,7 +348,7 @@
       "also": [
         {
           "set": "Table Cell",
-          "state": "built",
+          "state": "published",
           "node": "130:91",
           "url": "https://www.figma.com/design/XO2rmeCcgOjyKe4oipgF4j/Vela-Design-System?node-id=130-91",
           "import": "import { Table } from '@omkarux/vela'",
@@ -356,7 +356,7 @@
         },
         {
           "set": "Table Row",
-          "state": "built",
+          "state": "published",
           "node": "130:148",
           "url": "https://www.figma.com/design/XO2rmeCcgOjyKe4oipgF4j/Vela-Design-System?node-id=130-148",
           "import": "import { Table } from '@omkarux/vela'",
@@ -396,7 +396,7 @@
     {
       "set": "Text Area",
       "page": "Text Area",
-      "state": "built",
+      "state": "published",
       "node": "127:102",
       "url": "https://www.figma.com/design/XO2rmeCcgOjyKe4oipgF4j/Vela-Design-System?node-id=127-102",
       "import": "import { TextArea } from '@omkarux/vela'",
@@ -429,7 +429,7 @@
     {
       "set": "Toast",
       "page": "Toast",
-      "state": "built",
+      "state": "published",
       "node": "129:94",
       "url": "https://www.figma.com/design/XO2rmeCcgOjyKe4oipgF4j/Vela-Design-System?node-id=129-94",
       "import": "import { ToastProvider, useToast } from '@omkarux/vela/headless'",
@@ -483,7 +483,7 @@
     {
       "set": "Tooltip",
       "page": "Tooltip",
-      "state": "built",
+      "state": "published",
       "node": "127:114",
       "url": "https://www.figma.com/design/XO2rmeCcgOjyKe4oipgF4j/Vela-Design-System?node-id=127-114",
       "import": "import { Tooltip } from '@omkarux/vela/headless'",

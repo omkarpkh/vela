@@ -11,9 +11,9 @@ enforced: 69 of the 170 by the TypeScript compiler, the rest at runtime, in a re
 (counted by `npm run rules:check`).
 
 **Status:** every component carries a lifecycle label — Approved, Known bugs, Experimental or
-Retired, defined in [`GOVERNANCE.md`](GOVERNANCE.md). Six are **Approved**; Risk Pill, Icon, Text Area,
-Checkbox, Radio Group, Popover, Tooltip, Dialog, Table, Toast and Dropdown List are **Experimental** (Icon
-and Text Area until their Figma sets are published).
+Retired, defined in [`GOVERNANCE.md`](GOVERNANCE.md). Seven are **Approved**; Icon, Text Area, Checkbox,
+Radio Group, Popover, Tooltip, Dialog, Table, Toast and Dropdown List are **Experimental**. Every
+component's Figma set is published in the library except Dropdown List's, which has a builder and no set yet.
 
 ```bash
 npm install @omkarux/vela
@@ -154,7 +154,7 @@ document.documentElement.removeAttribute('data-theme')        // follow the OS
 
 ```bash
 npm run dev        # demo showcase at localhost:5174
-npm test           # 700 unit and contract tests, of 806 checks in all — the numbers are generated into demo/checks.json
+npm test           # 700 unit and contract tests, of 808 checks in all — the numbers are generated into demo/checks.json
 npm run checks     # counts every automated check into demo/checks.json (diffed in verify)
 npm run contrast   # WCAG report for both themes
 npm run verify     # tokens:check + icons:check + rules:check + typecheck + tests + checks:check + build + pack-and-consume gate

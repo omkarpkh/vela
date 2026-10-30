@@ -84,9 +84,13 @@ to type sits on the component itself.
 ## Rules
 
 1. Only `transform`, `opacity` and `filter` animate. Never width, height, margin, padding or position.
-   A colour may settle (a hover), which is a state, not movement. `scripts/check-css.mjs` fails a
-   component stylesheet whose transition or keyframes move anything else, and a bare duration
-   (which transitions `all`).
+   A colour may settle (a hover), which is a state, not movement. **One exception: an icon glyph's
+   own strokes may draw on and off with `stroke-dashoffset`,** inside a `.vela-icon`, by transition
+   only, on the one glyph a person just acted on. `stroke-dasharray` and `pathLength` are set, never
+   animated, with the gap at least the path's length. A stroke that retracts fully also fades to
+   `opacity: 0`, because a zero-length dash with round caps still paints a dot.
+   `scripts/check-css.mjs` fails a component stylesheet whose transition or keyframes move anything
+   else, and a bare duration (which transitions `all`).
    A `transform` that changes an element's size must not change where it can be clicked: scale the
    visual and hold the hit target, or the control moves out from under the pointer that is pressing it.
 2. Pointer states enter faster than they leave (hover in at `fast`, out at `base`; press in at `instant`,
@@ -99,8 +103,42 @@ to type sits on the component itself.
 4. Hover only where hover exists. Wrap hover rules in `@media (hover: hover)`; touch gets press feedback.
 5. `prefers-reduced-motion` is handled once, globally, in `src/styles/base.css`: durations collapse, loops
    run once. Every animation must read correctly frozen at its end state. That is the test.
+   A dwell — a wait before something appears, such as the tooltip's delay or the Tabs Seed's rest — is
+   not motion and survives reduced motion. A delay that staggers the parts of one movement is
+   choreography: it collapses with its durations, in the component's own reduced-motion rules.
+   `base.css` is unchanged.
+   Under reduced motion, a hover pose that is only decorative (such as a glyph's lean) is removed, not
+   snapped. The hover is then shown by colour alone.
 6. No looping attention-seekers: no pulsing dots, breathing buttons, glowing rings. The loading spinner is
    the one loop, and it stops meaning anything if something else pulses.
+
+## The icon-stroke exception
+
+Rule 1's exception exists so a glyph's own strokes can morph — the copy button's mark, the
+disclosure chevron — without the glyph being rebuilt from dozens of parts that move only by
+`transform` and `opacity`. Each guard keeps it that small. The reasoning and the measurements are
+in `decisions/004-icon-strokes-draw`.
+
+| Guard | Why |
+|---|---|
+| Inside `.vela-icon` only | Keeps the exception to 12–20px glyphs; lines, borders and charts can't use it |
+| Transitions only, never `@keyframes` | Rule 3; the morph retargets mid-flight |
+| `stroke-dashoffset` only | dasharray and `pathLength` stay static |
+| The dash gap is at least the path's length | `1 1` wraps and draws a dot at the far end |
+| Fully retracted means `opacity: 0` too | A zero-length round-cap dash renders a dot (Chromium) |
+| One glyph at a time | Cost grows with the number of glyphs drawing |
+
+`scripts/check-css.mjs` checks the first three, as far as a stylesheet shows them (`pathLength` is
+an SVG attribute, not CSS): it accepts `stroke-dashoffset` in a transition only
+under a selector in which every element matched sits inside `.vela-icon`, fails it everywhere else
+and in any `@keyframes`, and still fails `stroke-dasharray`. Inside `.vela-icon` it also accepts a
+bare length in `transform-origin` and inside `translate()`, because there a length is a unit of the
+glyph's 24-unit grid, not a screen pixel; every other property is checked as usual.
+
+**Two guards CSS can't check:** the dash gap, and fully retracted meaning `opacity: 0`. They are
+proved by browser-level (Playwright) rules in the owning component's spec, for example
+`copy-button-strokes-retract-clean`, not by the linter. "One glyph at a time" is a convention,
+held in review.
 
 ## What this buys
 
