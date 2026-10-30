@@ -25,6 +25,11 @@
   box-shadow: inset 0 0 0 1px var(--vela-border-active);   /* vela-allow: the second pixel of the 2px selected edge, a hairline drawn inside so selecting never changes a segment's width */
 }
 
+/* Locked (specs/segmented-control.md): default text, never faded; a dashed inset edge; no hover fill
+   and no press, because it can't be chosen. Its reason is read with it, not shown. */
+.shell-segment.is-locked { border-style: dashed; cursor: not-allowed; }
+@media (hover: hover) { .shell-segment.is-locked:hover { background: transparent; } }
+
 /* ------------------------------------------------------- forced colours -- */
 /* Windows High Contrast and the like (playground spec, section 13). The UA repaints every colour and
    drops box-shadow, so the selected segment would be told apart by nothing. It takes Highlight and
@@ -32,6 +37,7 @@
    Chromium paints a backplate behind the text and the label vanished into it. */
 @media (forced-colors: active) {
   .shell-segment { border-color: ButtonText; }
+  .shell-segment.is-locked { border-color: GrayText; border-style: dashed; }
   .shell-segment[aria-current="true"] {
     forced-color-adjust: none;
     background: Highlight;

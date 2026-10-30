@@ -146,6 +146,15 @@ markup already carries, not a new variant.
 - **Disabled** — the native attribute. CSS keys on `:disabled`. A disabled control leaves the
   tab order; explain why in adjacent helper text. A control that cannot act must not pretend to
   react, so disabled and busy controls do not animate.
+- **Locked** — a value in a set (a segment, a list item) that can't be chosen with the other
+  settings as they are, while the control itself still works. It stays reachable: in the tab
+  or arrow-key order, marked `aria-disabled="true"`, never the native attribute. It states its
+  reason in words a person can act on, read with it: as its accessible description, or as its
+  `meta` in a Dropdown List. The reason is never faded. Choosing it selects nothing, and it
+  never animates as a press. "Locked" is Vela's internal word. People meet the screen reader's
+  own word for `aria-disabled` and the reason, and never "Locked" as a status, because in a
+  console "locked" means locked accounts and policies. A whole control that can't act is
+  Disabled, above. Cited by Segmented Control (`locked`) and Dropdown List (disabled items).
 - **Loading** — the label stays, a spinner appears, `aria-busy="true"` is set, the control stays
   focusable and ignores clicks. CSS keys on `[aria-busy="true"]`. Swapping the label for a
   spinner would strip the accessible name mid-request; disabling it would drop focus.
