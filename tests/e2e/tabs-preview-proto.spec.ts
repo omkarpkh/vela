@@ -132,7 +132,7 @@ test.describe('Tabs hover preview prototype', () => {
     expect(bloomTop).toBeGreaterThanOrEqual(textBottom)
   })
 
-  test('forced colours: the Seed is a solid line in Highlight, no mask, no bloom', async ({ page }) => {
+  test('forced colours: the Seed is a solid 1px line in CanvasText, never the selection\'s Highlight; no mask, no bloom', async ({ page }) => {
     await page.emulateMedia({ forcedColors: 'active' })
     await choose(page, 'Seed between tabs', 'fade')
     await page.locator('.tp-section').getByRole('switch', { name: 'Dawn bloom' }).click()
@@ -140,17 +140,89 @@ test.describe('Tabs hover preview prototype', () => {
     await tab.hover()
     await expect.poll(async () => (await seedOpacities(page))[3]).toBe(1)
     const seed = await tab.locator('.tp-seed').evaluate((e) => {
-      const probe = document.createElement('span')
-      probe.style.cssText = 'forced-color-adjust:none;background:Highlight'
-      document.body.append(probe)
-      const highlight = getComputedStyle(probe).backgroundColor
-      probe.remove()
+      const sys = (c: string) => {
+        const probe = document.createElement('span')
+        probe.style.cssText = `forced-color-adjust:none;background:${c}`
+        document.body.append(probe)
+        const v = getComputedStyle(probe).backgroundColor
+        probe.remove()
+        return v
+      }
       const cs = getComputedStyle(e)
-      return { bg: cs.backgroundColor, highlight, mask: cs.maskImage, height: cs.height }
+      return { bg: cs.backgroundColor, canvasText: sys('CanvasText'), highlight: sys('Highlight'), mask: cs.maskImage, height: cs.height }
     })
-    expect(seed.bg).toBe(seed.highlight)
+    // Neutral, so preview and selection never collapse into one mark.
+    expect(seed.bg).toBe(seed.canvasText)
+    expect(seed.bg).not.toBe(seed.highlight)
     expect(seed.mask).toBe('none')
     expect(seed.height).toBe('1px')
     expect(await tab.locator('.tp-bloom').evaluate((e) => getComputedStyle(e).display)).toBe('none')
+  })
+
+  // The sweep's short-label gap: a third of a 13px tab was 4px. The Seed is a third, floored at
+  // 24px, never wider than the tab, in both modes.
+  test('a short label still gets a Seed of at least 24px, or the tab\'s width', async ({ page }) => {
+    for (const between of ['fade', 'glide'] as const) {
+      await choose(page, 'Click', 'land')
+      await choose(page, 'Seed between tabs', between)
+      await tabs(page).nth(3).evaluate((t) => { t.firstChild!.textContent = 'IP' })
+      await tabs(page).nth(5).evaluate((t) => { t.firstChild!.textContent = 'Device posture' })
+      for (const i of [3, 5]) {
+        await page.mouse.move(0, 0)
+        await tabs(page).nth(i).hover()
+        const sel = between === 'glide' ? '.tp-glide[data-shown] .tp-glide__seed' : `[role="tab"]:nth-child(${i + 1}) .tp-seed`
+        await expect.poll(() => light(page).locator(sel).count()).toBe(1)
+        await page.waitForTimeout(400)
+        const { seed, tab } = await light(page).locator(sel).evaluate((e, i) => ({
+          seed: e.getBoundingClientRect().width,
+          tab: document.querySelectorAll('.tp-frame[data-theme="light"] [role="tab"]')[i].getBoundingClientRect().width,
+        }), i)
+        expect(seed, `${between} tab ${i}`).toBeGreaterThanOrEqual(Math.min(24, tab) - 0.5)
+        expect(seed, `${between} tab ${i}`).toBeLessThanOrEqual(Math.max(24, tab / 3) + 0.5)
+      }
+      await page.reload()
+      await page.locator('.tp-section').scrollIntoViewIfNeeded()
+    }
+  })
+
+  test.describe('glide, the out-delay', () => {
+    test.use({ reducedMotion: 'no-preference' })
+    // The sweep's stale-position gap: the Seed stayed under a tab the pointer had left.
+    test('a pointer that stops between tabs, or crosses tabs without resting, lets the Seed go', async ({ page }) => {
+      await tabs(page).nth(9).hover()
+      await expect.poll(() => glideShown(page)).toBe(1)
+      const b9 = (await tabs(page).nth(9).boundingBox())!
+      const b4 = (await tabs(page).nth(4).boundingBox())!
+      const y = b9.y + b9.height / 2
+      // Into the gap after tab 4, across tabs 8..5 without resting.
+      await page.mouse.move(b4.x + b4.width + 6, y, { steps: 6 })
+      await page.waitForTimeout(450)
+      expect(await glideShown(page)).toBe(0)
+      // Back onto a tab and resting there: it appears again.
+      await page.mouse.move(b4.x + b4.width / 2, y, { steps: 2 })
+      await expect.poll(() => glideShown(page)).toBe(1)
+    })
+
+    test('when the row scrolls under a still pointer, the Seed follows the tab now under it', async ({ page }) => {
+      await page.setViewportSize({ width: 400, height: 900 })
+      await page.reload()
+      await tabs(page).nth(1).evaluate((t) => t.scrollIntoView({ block: 'center', inline: 'nearest' }))
+      const b1 = (await tabs(page).nth(1).boundingBox())!
+      await page.mouse.move(b1.x + b1.width / 2 - 2, b1.y + b1.height / 2)
+      await page.mouse.move(b1.x + b1.width / 2, b1.y + b1.height / 2)
+      await expect.poll(() => glideShown(page)).toBe(1)
+      await page.mouse.wheel(160, 0)
+      await page.waitForTimeout(700)
+      const r = await light(page).evaluate((f) => {
+        const s = f.querySelector('.tp-glide[data-shown] .tp-glide__seed')
+        if (!s) return 'hidden'
+        const sb = s.getBoundingClientRect(); const cx = sb.left + sb.width / 2
+        const under = [...f.querySelectorAll('[role="tab"]')].find((t) => t.matches(':hover'))
+        if (!under) return 'no tab under the pointer'
+        const tb = under.getBoundingClientRect()
+        return Math.abs(cx - (tb.left + tb.width / 2)) < 1 ? 'under the hovered tab' : 'elsewhere'
+      })
+      expect(['under the hovered tab', 'hidden']).toContain(r)
+    })
   })
 })

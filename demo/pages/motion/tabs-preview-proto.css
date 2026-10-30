@@ -17,7 +17,10 @@
      --vela-delay-tooltip. Not added in this PR: no shipped token moves for a prototype. */
   --tp-strength: 0.4;
   --tp-rest: 80ms;           /* the pointer must rest this long before the preview starts */
-  --tp-seed-scale: 0.3333;   /* the Seed is a third of the tab */
+  --tp-seed-scale: 0.3333;   /* the Seed is a third of the tab… */
+  /* …but never under 24px (Material 3's tab indicator floor), and never wider than the tab: a third
+     of a 13px "IP" tab was 4px, about 2px solid once feathered. The floor needs the trigger's width,
+     so TabsPreviewProto.tsx measures it and sets --tp-s on each trigger (a ResizeObserver). */
   --tp-hair-strength: 0.4;   /* the control is fixed at ~40% */
   --tp-bloom-strength: 0.15; /* the bloom, very low */
 }
@@ -48,7 +51,7 @@
   bottom: calc(-1 * var(--vela-stroke-2)); height: var(--vela-stroke-2);
   background: var(--vela-border-active);
   transform-origin: 50% 50%;
-  transform: scaleX(var(--tp-seed-scale));
+  transform: scaleX(var(--tp-s, var(--tp-seed-scale)));
 }
 /* Soft ends: a static alpha mask, in the Seed's own box, so it scales with the Seed. */
 .tp .tp-seed {
@@ -62,7 +65,7 @@
   bottom: 0; height: var(--vela-space-5);
   background: linear-gradient(to top, var(--vela-border-active), transparent);
   transform-origin: 50% 50%;
-  transform: scaleX(var(--tp-seed-scale));
+  transform: scaleX(var(--tp-s, var(--tp-seed-scale)));
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 30%, #000 70%, transparent); /* vela-allow: mask alpha only, not a colour */
   mask-image: linear-gradient(90deg, transparent, #000 30%, #000 70%, transparent); /* vela-allow: mask alpha only, not a colour */
 }
@@ -135,7 +138,7 @@
    the row Seed fading out over it keeps the hand-over from dipping. No mid-way contraction: it
    would need keyframes, and a re-triggerable movement is a transition (foundations/motion.md). */
 .tp .tp-glide {
-  position: absolute; left: 0; bottom: -1px;
+  position: absolute; left: 0; bottom: 0;
   width: 100%; height: var(--vela-stroke-2);
   display: none; opacity: 0; pointer-events: none;
   transform-origin: 0 0;
@@ -170,20 +173,29 @@
    and B's marker is gone at once. The rest delay stays: it is a wait, like --vela-delay-tooltip,
    not an animation. ---- */
 
-/* ---- forced colours: a solid 1px line in Highlight, no gradient, no bloom ---- */
+/* ---- forced colours ----
+   The shipped Tabs marks the selection in Highlight (label and a 2px underline, #29). The preview
+   must not borrow that colour, or preview and selection collapse into one mark: it is a solid 1px
+   line in CanvasText, the neutral text colour, at its own length. So it differs from the selection
+   three ways: colour, weight and length. No gradient (backgrounds-as-images are removed there), no
+   mask, no bloom. A's grown underline is the selection, so it is Highlight at 2px. */
 @media (forced-colors: active) {
   .tp .tp-seed,
   .tp .tp-hair {
     forced-color-adjust: none;
-    background: Highlight;
+    background: CanvasText;
     -webkit-mask-image: none; mask-image: none;
     bottom: -1px; height: 1px; /* vela-allow: a hairline; there is no 1px stroke token */
   }
-  .tp .tp-line { forced-color-adjust: none; background: ButtonText; }
+  .tp .tp-line { forced-color-adjust: none; background: Highlight; }
   .tp .tp-bloom, .tp .tp-glide__bloom { display: none !important; }
-  .tp .tp-glide__seed { forced-color-adjust: none; background: Highlight; -webkit-mask-image: none; mask-image: none; bottom: auto; height: 1px; } /* vela-allow: a hairline; there is no 1px stroke token */
+  .tp .tp-glide__seed { forced-color-adjust: none; background: CanvasText; -webkit-mask-image: none; mask-image: none; bottom: auto; height: 1px; } /* vela-allow: a hairline; there is no 1px stroke token */
   .tp .tp-glide[data-shown] { opacity: 1; }
 }
 @media (forced-colors: active) and (hover: hover) and (pointer: fine) {
   .tp:not([data-between='glide']) .vela-tabs__trigger:hover:not(:disabled):not([aria-selected='true']) :is(.tp-seed, .tp-hair) { opacity: 1; }
 }
+
+/* The review frames shrink with the page, so the row scrolls inside them at phone width instead of
+   pushing the page sideways (the frame used to keep its content's width: 850px at a 320px page). */
+.tp .tp-frame, .tp .tp-frame__body, .tp .vela-tabs { min-width: 0; max-width: 100%; }

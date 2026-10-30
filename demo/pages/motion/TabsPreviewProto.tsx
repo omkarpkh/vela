@@ -50,6 +50,17 @@ const SLOW = 5
 // Further than this many tabs away, the Seed does not glide: it fades out at the old tab and in at
 // the new one, so it never sweeps across the whole row.
 const GLIDE_MAX = 2
+// The Seed is a third of its tab, but never under this (Material 3's tab indicator floor) and never
+// wider than the tab. Same value as the comment beside --tp-seed-scale in the CSS.
+const SEED_MIN_PX = 24
+// Glide only: once the pointer has left the tab the Seed is under (into a gap, or onto another tab
+// it has not rested on yet), the Seed waits this long for a new rest and then fades out where it
+// is, so it never stays under a tab the pointer has left. Shorter than a show delay would be, and
+// inside the 150-200ms the hover-intent research suggests; restarted only when the pointer leaves
+// that tab again, not by every move, so a pointer travelling along the row still lets it go.
+const OUT_MS = 180
+/** The Seed's scale, as a fraction of its tab's width: a third, floored at SEED_MIN_PX, at most 1. */
+const seedScale = (tabWidth: number) => (tabWidth > 0 ? Math.min(1, Math.max(1 / 3, SEED_MIN_PX / tabWidth)) : 1 / 3)
 
 /**
  * The gliding Seed's controller. Imperative on purpose: it only ever sets two custom properties and
@@ -74,20 +85,27 @@ function useGlide(frame: RefObject<HTMLDivElement | null>, enabled: boolean, slo
     let active = 0
     let at: HTMLElement | null = null       // the tab the visible Seed is under, or null when hidden
     let timer = 0
+    let out = 0                              // the out-delay, running while the pointer is off `at`
+    let px = -1, py = -1                     // the pointer's last position over the list
 
     const place = (el: HTMLElement, tab: HTMLElement) => {
       const m = measureIndicator(list, tab)
       if (!m) return
-      const w = m.scale * list.clientWidth
-      el.style.setProperty('--tp-gx', `${m.x + w / 3}px`)
-      el.style.setProperty('--tp-gs', String(m.scale / 3))
+      const w = m.scale * list.clientWidth          // the tab's width
+      const s = seedScale(w)                         // the Seed, as a fraction of it
+      el.style.setProperty('--tp-gx', `${m.x + (w * (1 - s)) / 2}px`)
+      el.style.setProperty('--tp-gs', String(m.scale * s))
     }
     const hide = (el: HTMLElement, why: 'leave' | 'select') => {
       el.removeAttribute('data-shown')
       el.setAttribute('data-hide', why)
     }
-    const hideAll = (why: 'leave' | 'select') => { if (at) hide(els[active], why); at = null }
+    const hideAll = (why: 'leave' | 'select') => { window.clearTimeout(out); out = 0; if (at) hide(els[active], why); at = null }
+    // Off the Seed's tab: start the out-delay once; a rest that lands first cancels it.
+    const away = () => { if (at && !out) out = window.setTimeout(() => { out = 0; hideAll('leave') }, OUT_MS * (slowRef.current ? SLOW : 1)) }
+    const back = () => { window.clearTimeout(out); out = 0 }
     const show = (tab: HTMLElement) => {
+      back()
       const all = tabs()
       const el = els[active]
       if (at && Math.abs(all.indexOf(tab) - all.indexOf(at)) <= GLIDE_MAX) {
@@ -113,17 +131,29 @@ function useGlide(frame: RefObject<HTMLDivElement | null>, enabled: boolean, slo
 
     // A rest is the pointer standing still on a tab, not merely being over it: every move restarts
     // the wait, so a pointer travelling along the row at any speed never pulls the Seed after it.
+    // The tab under the pointer: on a move, or after the row scrolled under a still pointer.
+    const consider = (tab: HTMLElement | null) => {
+      window.clearTimeout(timer)
+      // Back on the Seed's tab: keep it. Anywhere else (a gap, or a tab not yet rested on): the
+      // out-delay runs, and a tab starts its own rest.
+      if (tab && tab === at) { back(); return }
+      away()
+      if (tab) timer = window.setTimeout(() => rested(tab), REST_MS * (slowRef.current ? SLOW : 1))
+    }
     const onMove = (e: PointerEvent) => {
       if (e.pointerType === 'touch' || !fine.matches) return
-      window.clearTimeout(timer)
-      const tab = (e.target as Element).closest<HTMLElement>('[role="tab"]')
-      // Between tabs, or still on the tab the Seed is under: nothing to do.
-      if (!tab || tab === at) return
-      timer = window.setTimeout(() => rested(tab), REST_MS * (slowRef.current ? SLOW : 1))
+      px = e.clientX; py = e.clientY
+      consider((e.target as Element).closest<HTMLElement>('[role="tab"]'))
     }
-    const onLeave = () => { window.clearTimeout(timer); hideAll('leave') }
+    const onScroll = () => {
+      if (px < 0) return
+      const under = document.elementFromPoint(px, py)
+      consider(under && list.contains(under) ? under.closest<HTMLElement>('[role="tab"]') : null)
+    }
+    const onLeave = () => { window.clearTimeout(timer); px = py = -1; hideAll('leave') }
     list.addEventListener('pointermove', onMove)
     list.addEventListener('pointerleave', onLeave)
+    list.addEventListener('scroll', onScroll, { passive: true })
     api.current = {
       // A selection (pointer or keyboard) on the tab the Seed is under: it fades out over the first
       // half of the travel, or at once when the root is marked instant.
@@ -134,8 +164,10 @@ function useGlide(frame: RefObject<HTMLDivElement | null>, enabled: boolean, slo
     }
     return () => {
       window.clearTimeout(timer)
+      window.clearTimeout(out)
       list.removeEventListener('pointermove', onMove)
       list.removeEventListener('pointerleave', onLeave)
+      list.removeEventListener('scroll', onScroll)
       api.current = null
       for (const el of els) { el.removeAttribute('data-shown'); el.removeAttribute('data-hide'); el.removeAttribute('data-move') }
     }
@@ -165,9 +197,22 @@ function Layers({ value }: { value: string }) {
   )
 }
 
+/** Sets each trigger's --tp-s (the Seed's scale with its floor) from its width, and keeps it current. */
+function useSeedScale(frame: RefObject<HTMLDivElement | null>) {
+  useEffect(() => {
+    const triggers = [...(frame.current?.querySelectorAll<HTMLElement>('[role="tab"]') ?? [])]
+    const set = (t: HTMLElement) => t.style.setProperty('--tp-s', String(seedScale(t.offsetWidth)))
+    triggers.forEach(set)
+    const ro = new ResizeObserver((entries) => entries.forEach((e) => set(e.target as HTMLElement)))
+    triggers.forEach((t) => ro.observe(t))
+    return () => ro.disconnect()
+  }, [frame])
+}
+
 function Row({ theme, glide, slow }: { theme: 'light' | 'dark'; glide: boolean; slow: boolean }) {
   const frame = useRef<HTMLDivElement>(null)
   const onSelect = useGlide(frame, glide, slow)
+  useSeedScale(frame)
   return (
     <div ref={frame} className="vela-root pg-frame tp-frame" data-theme={theme}>
       <span className="pg-frame-label vela-meta">{theme}</span>
@@ -245,7 +290,7 @@ export function TabsPreviewProto({ slow, onSlowChange }: { slow: boolean; onSlow
       </p>
       <p className="vela-meta motion-copy tp-provisional">
         Provisional, demo-only values: strength 40% / 55% (a future <code>--vela-opacity-preview</code> token; not added),
-        the 80ms rest delay, the Seed at one third of the tab, the bloom at {'≈'}15%. They live in
+        the 80ms rest delay, the 180ms out-delay (Glide), the Seed at one third of the tab but never under 24px, the bloom at {'≈'}15%. They live in
         <code> demo/pages/motion/tabs-preview-proto.css</code>; no shipped stylesheet, token or API changes.
       </p>
       <div className="pg-toolbar motion-toolbar tp-toolbar">
