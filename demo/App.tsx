@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Button, Input, cn } from '../src'
+import { Input, cn } from '../src'
 import pkg from '../package.json'
 import './demo.css'
 import { useRoute, href, sameRoute, type Route } from './router'
@@ -13,8 +13,14 @@ import { Adopt } from './Adopt'
 import { Playground } from './Playground'
 import { How } from './pages/How'
 import { Motion } from './pages/Motion'
+import { Segments } from './shell/Segments'
 
 type Theme = 'system' | 'light' | 'dark'
+const THEMES = [
+  { value: 'system', label: 'System' },
+  { value: 'light', label: 'Light' },
+  { value: 'dark', label: 'Dark' },
+] as const
 
 function NavLink({ to, current, children }: { to: Route; current: Route; children: React.ReactNode }) {
   const active = sameRoute(to, current)
@@ -85,19 +91,7 @@ export function App() {
           <span className="vela-meta brand__meta">@omkarux/vela {pkg.version}</span>
         </a>
         <div className="topbar__right">
-          <div className="demo-themes" role="group" aria-label="Theme">
-            {(['system', 'light', 'dark'] as Theme[]).map((t) => (
-              <Button
-                key={t}
-                size="tiny"
-                variant={theme === t ? 'primary' : 'standard'}
-                appearance={theme === t ? 'filled' : 'hollow'}
-                onClick={() => setTheme(t)}
-              >
-                {t[0].toUpperCase() + t.slice(1)}
-              </Button>
-            ))}
-          </div>
+          <Segments label="Theme" value={theme} options={THEMES} onChange={setTheme} />
           <a className="topbar__link vela-meta" href={LINKS.github}>GitHub</a>
           <a className="topbar__link vela-meta" href={LINKS.npm}>npm</a>
           <a className="topbar__link vela-meta" href={figmaUrl()}>Figma</a>

@@ -51,7 +51,7 @@ describe('component CSS binds tokens', () => {
 // 36 bare values in the site CSS; what is left is pinned here, so a new literal is a decision.
 describe('site CSS binds tokens', () => {
   const report = checkCss().filter((r) => r.scope === 'site')
-  const SITE_STYLESHEETS = ['demo/demo.css', 'demo/playground.css']
+  const SITE_STYLESHEETS = ['demo/demo.css', 'demo/playground.css', 'demo/shell/shell.css']
 
   it('lints every stylesheet under demo/', () => {
     expect(report.map((r) => r.file).sort()).toEqual([...SITE_STYLESHEETS].sort())
@@ -65,7 +65,7 @@ describe('site CSS binds tokens', () => {
   it('every site waiver says why, and the waived literals stay few', () => {
     for (const r of report) for (const w of r.waivers) expect(w.reason, `${r.file} line ${w.line}`).not.toBe('')
     const waived = report.flatMap((r) => r.findings.filter((f) => f.waived).map((f) => `${r.file}:${f.line} ${f.prop}`))
-    expect(waived.length, waived.join('\n')).toBeLessThanOrEqual(19)
+    expect(waived.length, waived.join('\n')).toBeLessThanOrEqual(20)
   })
 })
 

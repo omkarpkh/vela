@@ -27,7 +27,6 @@ body { margin: 0; background: var(--vela-bg-global); }
 .topbar__right { margin-left: auto; display: flex; align-items: center; gap: var(--vela-space-20); }
 .topbar__link { color: var(--vela-text-default); text-decoration: none; }
 .topbar__link:hover { color: var(--vela-text-link); }
-.demo-themes { display: flex; gap: var(--vela-space-5); }
 @media (max-width: 600px) { .brand__meta, .topbar__link { display: none; } }
 
 .shell__body { display: flex; flex: 1; align-items: flex-start; }

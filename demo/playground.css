@@ -10,7 +10,6 @@
 @media (max-width: 960px) { .pg { grid-template-columns: 1fr; } }
 
 .pg-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: var(--vela-space-15); margin: 0 0 var(--vela-space-15); min-height: var(--vela-control-height-35); }
-.pg-toolbar__group { display: flex; gap: var(--vela-space-5); }
 .pg-toolbar__spacer { flex: 1; }
 
 /* The stage column is a container: the two frames stack whenever the column itself is narrow,
@@ -66,6 +65,14 @@
 .pg-table th { color: var(--vela-text-de-emphasized); font-weight: var(--vela-font-weight-semibold); white-space: nowrap; }
 .pg-table code, .pg-p code, .pg-list code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: var(--site-code-size); }
 .pg-table tr.is-bound td { background: var(--vela-bg-selected); }
+/* A bound row is a change mark: it follows the current props. The tint is not the only signal; the
+   start edge carries the active border, as a selected Table row does. Under forced colours the tint
+   and the inset are dropped, so the mark is drawn as a real border. */
+.pg-table--tokens tr > :first-child { padding-inline-start: var(--vela-space-10); }
+.pg-table tr.is-bound td:first-child { box-shadow: inset var(--vela-stroke-2) 0 0 var(--vela-border-active); }
+@media (forced-colors: active) {
+  .pg-table tr.is-bound td:first-child { border-inline-start: var(--vela-stroke-2) solid Highlight; }
+}
 .pg-chip { display: inline-block; border-radius: var(--vela-radius-3); border: 1px solid var(--vela-border-subtle); margin-right: var(--vela-space-5);
   width: 14px; height: 14px; vertical-align: -2px;   /* vela-allow: a colour swatch has no size token; it sits on the code's baseline */
 }

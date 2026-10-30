@@ -7,10 +7,16 @@ import { parseSpec, sectionOf, type Control } from './playground/spec'
 import { Markdown } from './playground/Markdown'
 import { dependenciesOf } from './pages/Status'
 import { LINKS, figmaUrl } from './links'
+import { Segments } from './shell/Segments'
 import './playground.css'
 
 type Mode = 'light' | 'dark'
 type StageView = 'both' | Mode
+const STAGE_VIEWS = [
+  { value: 'both', label: 'Light + dark' },
+  { value: 'light', label: 'Light' },
+  { value: 'dark', label: 'Dark' },
+] as const
 // DTCG 2025.10: colours are { colorSpace, components, hex } objects, aliases are full paths
 // ({primitives.grey-700}), the vendor data sits under the reverse-domain key, and the dark
 // values live in tokens/vela.dark.tokens.json — the overlay tokens/vela.resolver.json applies.
@@ -138,21 +144,14 @@ function PlaygroundFor({ entry }: { entry: (typeof REGISTRY)[number] }) {
       <div className="pg">
         <div className="pg-main">
           <div className="pg-toolbar">
-            <div className="pg-toolbar__group" role="group" aria-label="Stage">
-              {(['both', 'light', 'dark'] as StageView[]).map((s) => (
-                <Button key={s} size="tiny" variant={stage === s ? 'primary' : 'standard'} appearance={stage === s ? 'filled' : 'hollow'} onClick={() => setStage(s)}>
-                  {s === 'both' ? 'Light + dark' : s[0].toUpperCase() + s.slice(1)}
-                </Button>
-              ))}
-            </div>
+            <Segments label="Stage" value={stage} options={STAGE_VIEWS} onChange={setStage} />
             {entry.implementations && entry.implementations.length > 1 && (
-              <div className="pg-toolbar__group" role="group" aria-label="Implementation">
-                {entry.implementations.map((i) => (
-                  <Button key={i.id} size="tiny" variant={impl?.id === i.id ? 'primary' : 'standard'} appearance={impl?.id === i.id ? 'filled' : 'hollow'} onClick={() => setValues((s) => ({ ...s, implementation: i.id }))}>
-                    {i.id}
-                  </Button>
-                ))}
-              </div>
+              <Segments
+                label="Implementation"
+                value={impl?.id ?? entry.implementations[0].id}
+                options={entry.implementations.map((i) => ({ value: i.id, label: i.id }))}
+                onChange={(id) => setValues((s) => ({ ...s, implementation: id }))}
+              />
             )}
             <div className="pg-toolbar__spacer" />
             <Toggle label="Reduced motion" size="tiny" checked={reduced} onChange={setReduced} />
@@ -188,7 +187,7 @@ function PlaygroundFor({ entry }: { entry: (typeof REGISTRY)[number] }) {
               </Tabs.Panel>
               <Tabs.Panel value="tokens">
                 <div className="pg-tablewrap">
-                  <table className="pg-table">
+                  <table className="pg-table pg-table--tokens">
                     <thead><tr><th>Token</th><th>Light</th><th>Dark</th><th>Figma</th></tr></thead>
                     <tbody>
                       {spec.tokens.map((t) => {
