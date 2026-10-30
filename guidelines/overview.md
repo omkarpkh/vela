@@ -26,7 +26,7 @@ below, then open the per-component file for props, tokens, and anti-patterns.
 
 Checkbox, Radio Group, Popover, Tooltip, Dialog and Toast ship from `@omkarux/vela/headless` (Base
 UI as an optional peer) and are Experimental; the other ten ship from `@omkarux/vela` with no
-dependencies (Risk Pill, Icon, Text Area and Table are Experimental there).
+dependencies (Icon, Text Area and Table are Experimental there).
 
 ## Disambiguations (where AI usually picks wrong)
 

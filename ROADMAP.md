@@ -34,9 +34,8 @@ a CSS lint with no waivers; the project files a public library carries; decision
 indexed; a "Responsive behaviour" section in every spec; visual CI at four widths.
 
 Open: docs-site routes (this page among them); Figma library hygiene (changelog, status,
-deprecated, patterns and sandbox pages; no foreign libraries subscribed); the Risk Pill
-Figma set; density and breakpoint tokens, deferred until the first container-query component
-needs them. Table is the first container-query component; density and breakpoint tokens are due before its Approved label.
+deprecated, patterns and sandbox pages; no foreign libraries subscribed); density and
+breakpoint tokens, deferred until the first container-query component needs them. Table is the first container-query component; density and breakpoint tokens are due before its Approved label.
 
 ## Phase 1 — Headless behaviour layer
 

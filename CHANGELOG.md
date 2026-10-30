@@ -5,6 +5,23 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+### Changed
+- **All eighteen Figma sets are published.** The library was published on 29 Oct 2026, twice;
+  the second publish carried the 0.13.0 state. Every SETS entry in
+  `scripts/sync-figma-descriptions.mjs` — Table's three sets among them — moves from `built` to
+  `published` with its node unchanged, `guidelines/figma-map.json` is regenerated, and the Status
+  page names each set and its page instead of "Built, not published". The nine components that
+  stay Experimental keep their Status lines, reworded to say the set is published, each with its
+  remaining condition: the API settling (Checkbox, Radio Group, Popover, Tooltip, Dialog, Toast,
+  Table), an API review (Text Area), the kit's inline glyphs moving onto it (Icon). Each spec's
+  Figma mapping section says its set is published, and `guidelines/llms.txt` labels Text Area and
+  Icon Experimental, as it already did the others.
+- **Risk Pill is Approved.** Its Status line said "Approved once the set is published"; the set
+  is published, every Hard-constraints rule is tagged and proved by `rules:check`, its colour
+  pairs are in `PAIRS` and its visual baselines are committed, so the Status line comes off.
+  Seven components are Approved and nine Experimental (`GOVERNANCE.md`, `README.md`,
+  `guidelines/overview.md`).
+
 ## [0.13.0] — 2026-10-29
 
 ### Changed — breaking

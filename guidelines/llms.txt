@@ -65,12 +65,12 @@ behaviour has no Figma expression at all.
 - [Button](components/button.md)
 - [Toggle](components/toggle.md)
 - [Input](components/input.md)
-- [Text Area](components/text-area.md)
+- [Text Area](components/text-area.md) — `@omkarux/vela`, Experimental
 - [Contextual Alert](components/contextual-alert.md)
 - [Status Indicator](components/status-indicator.md)
 - [Risk Pill](components/risk-pill.md)
 - [Tabs](components/tabs.md)
-- [Icon](components/icon.md) — 50 curated Lucide glyphs (ISC, see NOTICE), compiled into the core entry; `ICON_NAMES` is the closed list
+- [Icon](components/icon.md) — 50 curated Lucide glyphs (ISC, see NOTICE), compiled into the core entry; `ICON_NAMES` is the closed list; Experimental
 - [Checkbox](components/checkbox.md) — `@omkarux/vela/headless` only, Experimental
 - [Radio Group](components/radio-group.md) — `@omkarux/vela/headless` only, Experimental
 - [Table](components/table.md) — `@omkarux/vela`, Experimental

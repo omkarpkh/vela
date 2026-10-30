@@ -3,10 +3,6 @@
 A small read-only pill carrying one of exactly three risk levels, usually in a table cell or
 next to the thing that was scored — a user, an asset, a finding.
 
-**Status:** Experimental — specced, built and tested; its Figma set is built in the library
-file (from `scripts/figma/components/risk-pill.figma.js`) but not published yet. Approved once
-the set is published; see `GOVERNANCE.md`.
-
 ## When to use Risk Pill
 
 - A risk **score** on an object → **Risk Pill**.
@@ -98,8 +94,8 @@ between densities.
 Library file: **Vela Design System** → page `Risk Pill`. Six variants: `Risk` (3) x `Size` (2),
 each with its own level word in a text layer named `Label`. There is no `Label text` property:
 a Figma text property holds one default for the whole set, so it cannot carry a different word
-per variant. The set is created by `scripts/figma/components/risk-pill.figma.js`; it is built
-in the file, not yet published.
+per variant. The set is created by `scripts/figma/components/risk-pill.figma.js`; it is published
+in the library.
 
 | Figma property | Code prop |
 |---|---|
