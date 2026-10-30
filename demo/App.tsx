@@ -3,7 +3,7 @@ import { Input, cn } from '../src'
 import pkg from '../package.json'
 import './demo.css'
 import { useRoute, href, sameRoute, type Route } from './router'
-import { FOUNDATIONS, COMPONENTS } from './nav'
+import { FOUNDATIONS, COMPONENTS, PROPOSALS } from './nav'
 import { LINKS, figmaUrl } from './links'
 import { Overview } from './pages/Overview'
 import { Foundation } from './pages/Foundation'
@@ -13,6 +13,7 @@ import { Adopt } from './Adopt'
 import { Playground } from './Playground'
 import { How } from './pages/How'
 import { Motion } from './pages/Motion'
+import { Proposal } from './pages/Proposal'
 import { Segments } from './shell/Segments'
 
 type Theme = 'system' | 'light' | 'dark'
@@ -41,6 +42,7 @@ function MenuIcon() {
 
 const titleFor = (r: Route) =>
   r.kind === 'component' ? COMPONENTS.find((c) => c.id === r.id)?.title
+  : r.kind === 'proposal' ? PROPOSALS.find((p) => p.id === r.id)?.title
   : r.kind === 'foundation' ? FOUNDATIONS.find((f) => f.id === r.id)?.title
   : r.kind === 'adopt' ? 'Adopt without rewrite'
   : r.kind === 'motion' ? 'Motion review'
@@ -70,6 +72,7 @@ export function App() {
   const q = filter.trim().toLowerCase()
   const components = COMPONENTS.filter((c) => !q || c.title.toLowerCase().includes(q))
   const foundations = FOUNDATIONS.filter((f) => !q || f.title.toLowerCase().includes(q))
+  const proposals = PROPOSALS.filter((p) => !q || p.title.toLowerCase().includes(q))
 
   return (
     <div className={cn('vela-root shell', !navOpen && 'shell--nav-closed')}>
@@ -118,6 +121,12 @@ export function App() {
               {components.map((c) => <NavLink key={c.id} to={{ kind: 'component', id: c.id }} current={route}>{c.title}</NavLink>)}
             </div>
           )}
+          {proposals.length > 0 && (
+            <div className="sitenav__group">
+              <h3>Proposals</h3>
+              {proposals.map((p) => <NavLink key={p.id} to={{ kind: 'proposal', id: p.id }} current={route}>{p.title}</NavLink>)}
+            </div>
+          )}
           <div className="sitenav__group">
             <h3>Demos</h3>
             <NavLink to={{ kind: 'adopt' }} current={route}>Adopt without rewrite</NavLink>
@@ -137,6 +146,7 @@ export function App() {
         <main id="main" className="content">
           {route.kind === 'overview' && <Overview />}
           {route.kind === 'component' && <Playground key={route.id} id={route.id} />}
+          {route.kind === 'proposal' && <Proposal key={route.id} id={route.id} />}
           {route.kind === 'foundation' && <Foundation id={route.id} />}
           {route.kind === 'adopt' && <Adopt mode={theme} />}
           {route.kind === 'motion' && <Motion />}

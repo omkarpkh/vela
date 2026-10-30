@@ -1,4 +1,5 @@
 import { REGISTRY } from './playground/registry'
+import { PROPOSALS as SPECS } from './playground/proposals'
 import colorMd from '../guidelines/foundations/color.md?raw'
 import typographyMd from '../guidelines/foundations/typography.md?raw'
 import spacingMd from '../guidelines/foundations/spacing.md?raw'
@@ -20,3 +21,5 @@ export const FOUNDATIONS = [
 ].map((f) => ({ ...f, title: titleOf(f.md, f.id) }))
 
 export const COMPONENTS = REGISTRY.map((e) => ({ id: e.id, title: e.name }))
+// Specs that are written and not built (guidelines/proposals/), read from that folder's README.
+export const PROPOSALS = SPECS.map((p) => ({ id: p.id, title: p.name }))
