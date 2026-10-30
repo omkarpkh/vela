@@ -4,7 +4,7 @@
 on and off with `stroke-dashoffset`, inside a `.vela-icon`, by transition only, on the one glyph a
 person just acted on. `scripts/check-css.mjs` enforces the parts CSS can show; the rest are
 browser-level rules in the owning component's spec. The option that scored highest, S5, is the one
-decided, by one point in 85. The rule and the checks are in Unreleased; no component uses the
+decided, by one point in 85. Shipped in 0.14.0: the rule and the checks; no component uses the
 exception yet.**
 
 The prototypes, the scoring and the timing harness are not in this repository. They are in the
