@@ -27,7 +27,7 @@ const MODES = [
 const CUSTOM_REASON = 'Custom is coming with createBrand.'
 const BRANDS = [
   { value: 'default', label: 'Default', swatch: '--vela-btn-primary-bg' },
-  { value: 'custom', label: 'Custom', locked: { reason: CUSTOM_REASON } },
+  { value: 'custom', label: 'Custom', locked: { reason: CUSTOM_REASON, describedBy: 'appearance-custom-reason' } },
 ] as const
 
 const themeWord = (t: Theme) => MODES.find((m) => m.value === t)!.label
@@ -79,7 +79,7 @@ export function Appearance({ theme, onTheme, compact }: { theme: Theme; onTheme:
           <span className="shell-appearance__label" aria-hidden="true">Brand</span>
           <Segments label="Brand" value="default" options={BRANDS} onChange={() => {}} />
           {/* The lock glyph never appears without its reason in view (icon.md, Glyphs). */}
-          <span className="shell-appearance__note">{CUSTOM_REASON}</span>
+          <span id="appearance-custom-reason" className="shell-appearance__note">{CUSTOM_REASON}</span>
         </div>
         <p className="shell-appearance__note">Severity, risk and status colours are the same in every brand.</p>
       </section>

@@ -746,7 +746,9 @@ test.describe('slice 5 · phone and Appearance', () => {
     const custom = panel.getByRole('group', { name: 'Brand' }).getByRole('button', { name: 'Custom' })
     await expect(custom).toHaveAttribute('aria-disabled', 'true')
     await expect(custom).toHaveAccessibleDescription('Custom is coming with createBrand.')
-    await expect(panel.getByText('Custom is coming with createBrand.', { exact: true }).last()).toBeVisible()
+    // Said once: the button's description is the visible note, with no hidden copy beside it.
+    await expect(panel.getByText('Custom is coming with createBrand.', { exact: true })).toHaveCount(1)
+    await expect(panel.getByText('Custom is coming with createBrand.', { exact: true })).toBeVisible()
     await expect(panel).not.toContainText(/locked/i)
     await page.keyboard.press('Escape')
     await expect(panel).toBeHidden()
@@ -923,8 +925,155 @@ test.describe('slice 4 · proof', () => {
   })
 })
 
+// Slice 6a: the Patterns section and the Copy page, opening and sections 1 to 4 (playground spec,
+// section 12). The live examples are the icon thread's lab build as a shell part; the switches
+// simulate a browser's refusals and say so.
+test.describe('slice 6a · Copy page', () => {
+  test('opens from the nav, in Patterns after Components, and from its own address', async ({ page }) => {
+    await page.goto('/')
+    const nav = page.getByRole('navigation', { name: 'Site' })
+    const groups = await nav.locator(':scope > .sitenav__group > :is(h3)').allTextContents()
+    expect(groups.map((g) => g.trim()).filter((g) => g !== 'Elsewhere')).toEqual(['Start', 'Foundations', 'Components', 'Patterns', 'Project'])
+    await nav.getByRole('link', { name: 'Copy', exact: true }).click()
+    await expect(page).toHaveURL(/#\/patterns\/copy$/)
+    await expect(page.getByRole('heading', { level: 1, name: 'Copy' })).toBeVisible()
+    await expect(page).toHaveTitle('Copy · Vela')
+    await page.goto('/#/patterns/copy')
+    await page.reload()
+    await expect(page.getByRole('heading', { level: 2, name: '1 · When to offer copy, and when not' })).toBeVisible()
+    await expect(nav.getByRole('link', { name: 'Copy', exact: true })).toHaveAttribute('aria-current', 'page')
+  })
+
+  test('each switch says what it simulates while it is on', async ({ page }) => {
+    await page.goto('/#/patterns/copy')
+    const example = page.getByRole('group', { name: /Turn a switch on, then copy/ })
+    await expect(example).not.toContainText('Simulated')
+    await example.getByRole('switch', { name: 'Clipboard blocked' }).click()
+    await expect(example).toContainText('Simulated: The clipboard is blocked')
+    await example.getByRole('switch', { name: 'Clipboard blocked' }).click()
+    await expect(example).not.toContainText('Simulated')
+    await example.getByRole('switch', { name: 'Embedded app' }).click()
+    await expect(example).toContainText('Simulated: An embedded app')
+    await example.getByRole('switch', { name: 'Embedded app' }).click()
+    const platform = example.getByRole('group', { name: 'Platform' })
+    const current = await platform.locator('[aria-current="true"]').textContent()
+    await platform.getByRole('button', { name: current === 'Touch' ? 'Ctrl+C' : 'Touch', exact: true }).click()
+    await expect(example).toContainText('Simulated: The platform is')
+  })
+
+  test('no "don\'t" drawing takes focus', async ({ page }) => {
+    await page.goto('/#/patterns/copy')
+    const section = page.getByRole('heading', { level: 2, name: /^1 · / }).locator('..')
+    await section.getByRole('button', { name: 'Copy IP address', exact: true }).focus()
+    for (let i = 0; i < 20; i++) {
+      await page.keyboard.press('Tab')
+      const inside = await page.evaluate(() => {
+        const el = document.activeElement
+        return { drawing: !!el?.closest('.copy-drawing'), section: !!el?.closest('section[aria-labelledby="copy-s1"]') }
+      })
+      expect(inside.drawing).toBe(false)
+      if (!inside.section) break
+    }
+    for (const d of await section.getByRole('img', { name: /^Don't: / }).all()) await expect(d).not.toHaveAttribute('tabindex')
+  })
+
+  test('a blocked copy fails for real: the text is selected and the platform\'s words say so', async ({ page }) => {
+    await page.goto('/#/patterns/copy')
+    const example = page.getByRole('group', { name: /Turn a switch on, then copy/ })
+    await example.getByRole('switch', { name: 'Clipboard blocked' }).click()
+    await example.getByRole('group', { name: 'Platform' }).getByRole('button', { name: 'Ctrl+C', exact: true }).click()
+    const copy = example.getByRole('button', { name: 'Copy session id' })
+    await copy.click()
+    const words = "Couldn't copy: your browser blocked the clipboard. The text is selected, so press Ctrl+C."
+    await expect(example.getByText(words)).toBeVisible()
+    await expect(copy).toHaveAccessibleDescription(words)
+    await expect(copy).toHaveAttribute('data-state', 'failed')
+    expect(await page.evaluate(() => window.getSelection()?.toString())).toBe('sess_41c9e07a2b')
+    // The way out: when the person copies the selection, the page sees it and the tick arrives.
+    await page.keyboard.press('Control+C')
+    await expect(copy).toHaveAttribute('data-state', 'copied')
+  })
+
+  test('a success is announced once, politely, and focus stays on the control', async ({ page }) => {
+    await page.goto('/#/patterns/copy')
+    await expect(page.locator('.copy-page__announcer')).toHaveCount(1)
+    await page.evaluate(() => {
+      const region = document.querySelector('.copy-page__announcer')!
+      ;(window as unknown as { said: string[] }).said = []
+      new MutationObserver(() => { const t = region.textContent ?? ''; if (t) (window as unknown as { said: string[] }).said.push(t) })
+        .observe(region, { childList: true, characterData: true, subtree: true })
+    })
+    const copy = page.getByRole('button', { name: 'Copy db-primary IP address' })
+    await copy.focus()
+    await page.keyboard.press('Enter')
+    await expect(copy).toHaveAttribute('data-state', 'copied')
+    await page.waitForTimeout(300)
+    expect(await page.evaluate(() => (window as unknown as { said: string[] }).said)).toEqual(['Copied db-primary IP address'])
+    await expect(page.locator('.copy-page__announcer')).toHaveAttribute('role', 'status')
+    await expect(copy).toBeFocused()
+    // After the hold the tick hands back, and the word Copied marks the one taken.
+    await expect(copy).toHaveAttribute('data-state', /idle|hover/, { timeout: 3000 })
+    await expect(page.getByRole('row', { name: /db-primary/ }).getByText('Copied', { exact: true })).toBeVisible()
+  })
+
+  test('nothing jumps when the word Copied arrives: its place is kept while it is hidden', async ({ page }) => {
+    await page.goto('/#/patterns/copy')
+    // Positions on the page, not in the viewport, so a press that scrolls the page is not a jump.
+    const at = (l: Locator) => l.evaluate((el) => { const r = el.getBoundingClientRect(); return { x: r.left + window.scrollX, y: r.top + window.scrollY } })
+    // The Hosts table: the IP address column keeps its left edge through the copy and the mark.
+    const row = page.getByRole('row', { name: /db-primary/ })
+    const cell = row.getByRole('cell')
+    const copy = row.getByRole('button', { name: 'Copy db-primary IP address' })
+    const before = await at(cell)
+    await copy.click()
+    await expect(copy).toHaveAttribute('data-state', 'copied')
+    await page.mouse.move(0, 0)
+    await expect(row.getByText('Copied', { exact: true })).toBeVisible({ timeout: 3000 })
+    expect(Math.abs((await at(cell)).x - before.x)).toBeLessThanOrEqual(1)
+    for (const other of ['cache-02', 'edge-11']) {
+      const c = page.getByRole('row', { name: new RegExp(other) }).getByRole('cell')
+      expect(Math.abs((await at(c)).x - before.x)).toBeLessThanOrEqual(1)
+    }
+
+    // Section 2, at real size: the value and its control stay put when the mark arrives.
+    const s2 = page.locator('section[aria-labelledby="copy-s2"]')
+    const tryCopy = s2.getByRole('button', { name: 'Copy request id', exact: true })
+    const tryBefore = await at(tryCopy)
+    await tryCopy.click()
+    await page.mouse.move(0, 0)
+    await expect(s2.locator('.copy-try').getByText('Copied', { exact: true })).toBeVisible({ timeout: 3000 })
+    const tryAfter = await at(tryCopy)
+    expect(Math.abs(tryAfter.x - tryBefore.x)).toBeLessThanOrEqual(1)
+    expect(Math.abs(tryAfter.y - tryBefore.y)).toBeLessThanOrEqual(1)
+
+    // Section 3: Show me puts the mark beside the value; the value and the control don't move.
+    const s3 = page.locator('section[aria-labelledby="copy-s3"]')
+    const specimen = s3.locator('.copy-specimen .shell-cm')
+    const value = s3.locator('.copy-specimen__value')
+    const start = { control: await at(specimen), value: await at(value) }
+    await s3.getByRole('button', { name: 'Show me: Marked, in a group, Copied', exact: true }).click()
+    await expect(s3.locator('.copy-specimen').getByText('Copied', { exact: true })).toBeVisible()
+    for (const [name, el] of [['control', specimen], ['value', value]] as const) {
+      const box = await at(el)
+      expect(Math.abs(box.x - start[name].x), name).toBeLessThanOrEqual(1)
+      expect(Math.abs(box.y - start[name].y), name).toBeLessThanOrEqual(1)
+    }
+  })
+
+  test('the page is its own chunk: it is not loaded on a component page', async ({ page }) => {
+    const requested: string[] = []
+    page.on('request', (r) => requested.push(new URL(r.url()).pathname))
+    await page.goto('/#/components/button')
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+    expect(requested.filter((u) => /CopyPattern/.test(u))).toEqual([])
+    await page.getByRole('navigation', { name: 'Site' }).getByRole('link', { name: 'Copy', exact: true }).click()
+    await expect(page.getByRole('heading', { level: 1, name: 'Copy' })).toBeVisible()
+    expect(requested.filter((u) => /CopyPattern/.test(u)).length).toBeGreaterThan(0)
+  })
+})
+
 test.describe('axe', () => {
-  for (const path of ['/#/components/button', '/#/components/tabs', '/#/components/dropdown-list', '/#/proposals/evidence-locker'])
+  for (const path of ['/#/components/button', '/#/components/tabs', '/#/components/dropdown-list', '/#/proposals/evidence-locker', '/#/patterns/copy'])
     for (const theme of ['Light', 'Dark'] as const)
       test(`${path} in ${theme.toLowerCase()} has no WCAG A or AA violation`, async ({ page }) => {
         const { default: AxeBuilder } = await import('@axe-core/playwright')

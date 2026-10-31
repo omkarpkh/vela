@@ -29,7 +29,7 @@ export interface SegmentOption<T extends string> {
   value: T
   label: string
   /** Can't be chosen with the other settings as they are; the reason is one sentence a person can act on. */
-  locked?: { reason: string }
+  locked?: { reason: string; describedBy?: string }
   /** A swatch before the label, filled with this semantic token (the Appearance panel's brands). */
   swatch?: string
 }
@@ -57,7 +57,7 @@ export function Segments<T extends string>({ label, value, options, onChange, on
           data-value={o.value}
           aria-current={o.value === value ? 'true' : undefined}
           aria-disabled={o.locked ? 'true' : undefined}
-          aria-describedby={o.locked ? `${id}-r${i}` : undefined}
+          aria-describedby={o.locked ? (o.locked.describedBy ?? `${id}-r${i}`) : undefined}
           onClick={() => {
             if (o.locked) onLockedPress?.(o.value)
             else if (o.value !== value) onChange(o.value)
@@ -68,7 +68,8 @@ export function Segments<T extends string>({ label, value, options, onChange, on
           {o.label}
         </button>
         {/* The reason sits beside the button, not in it, so it is the description and never the name. */}
-        {o.locked && <span id={`${id}-r${i}`} className="vela-sr-only">{o.locked.reason}</span>}
+        {/* When the host already shows the reason, the button points at that and nothing is said twice. */}
+        {o.locked && !o.locked.describedBy && <span id={`${id}-r${i}`} className="vela-sr-only">{o.locked.reason}</span>}
         </Fragment>
       ))}
     </div>

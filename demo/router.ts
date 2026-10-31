@@ -3,7 +3,8 @@ import { useEffect, useState } from 'react'
 // Hash routes, so every page has a link that survives a reload and the back button works,
 // with no router dependency. `#/components/button`, `#/foundations/motion`, `#/adopt`, `#/how`,
 // `#/motion` (the motion review page), `#/status`, `#/changelog`, `#/roadmap`, `#/contributing`, `#/accessibility`, `#/`,
-// and `#/proposals/evidence-locker` for a Proposal page (a spec that is not built).
+// `#/proposals/evidence-locker` for a Proposal page (a spec that is not built), and
+// `#/patterns/copy` for a Pattern page (guidelines/patterns/, shown once its content is approved).
 // A component page's other tabs add a segment (`#/components/button/rules`); the Playground tab is
 // the page's own address, so every old link still opens the right page (playground spec, B6).
 // Anything after a `?` is the shared-link query (slice 2) and is not read here.
@@ -15,6 +16,7 @@ export type Route =
   | { kind: 'overview' }
   | { kind: 'component'; id: string; tab?: PageTab }
   | { kind: 'proposal'; id: string }
+  | { kind: 'pattern'; id: string }
   | { kind: 'foundation'; id: string }
   | { kind: 'adopt' }
   | { kind: 'motion' }
@@ -26,6 +28,7 @@ export function parseHash(hash: string): Route {
   const parts = hash.replace(/^#\/?/, '').split('?')[0].split('/').filter(Boolean)
   if (parts[0] === 'components' && parts[1]) return isPageTab(parts[2]) ? { kind: 'component', id: parts[1], tab: parts[2] } : { kind: 'component', id: parts[1] }
   if (parts[0] === 'proposals' && parts[1]) return { kind: 'proposal', id: parts[1] }
+  if (parts[0] === 'patterns' && parts[1]) return { kind: 'pattern', id: parts[1] }
   if (parts[0] === 'foundations' && parts[1]) return { kind: 'foundation', id: parts[1] }
   if (parts[0] === 'adopt') return { kind: 'adopt' }
   if (parts[0] === 'motion') return { kind: 'motion' }
@@ -39,6 +42,7 @@ export function parseHash(hash: string): Route {
 export const href = (r: Route): string =>
   r.kind === 'component' ? `#/components/${r.id}${r.tab ? `/${r.tab}` : ''}`
   : r.kind === 'proposal' ? `#/proposals/${r.id}`
+  : r.kind === 'pattern' ? `#/patterns/${r.id}`
   : r.kind === 'foundation' ? `#/foundations/${r.id}`
   : r.kind === 'adopt' ? '#/adopt'
   : r.kind === 'motion' ? '#/motion'

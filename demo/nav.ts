@@ -27,3 +27,8 @@ export const COMPONENTS = REGISTRY.map((e) => {
 })
 // Specs that are written and not built (guidelines/proposals/), read from that folder's README.
 export const PROPOSALS = SPECS.map((p) => ({ id: p.id, title: p.name }))
+
+// Patterns (guidelines/patterns/): a pattern is listed only once its content is approved, by hand,
+// because the nav must not read the pattern's text (that would pull it into the first chunk). Copy
+// was approved by Omkar on 31 Oct 2026 (copy.md, Status). Each id has a page of its own.
+export const PATTERNS = [{ id: 'copy', title: 'Copy' }] as const

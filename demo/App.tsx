@@ -3,7 +3,7 @@ import { cn } from '../src'
 import pkg from '../package.json'
 import './demo.css'
 import { useRoute, href, sameRoute, type Route } from './router'
-import { FOUNDATIONS, COMPONENTS, PROPOSALS } from './nav'
+import { FOUNDATIONS, COMPONENTS, PROPOSALS, PATTERNS } from './nav'
 import { LINKS, figmaUrl } from './links'
 import { Doc, DOCS } from './pages/Doc'
 import { Appearance, type Theme } from './shell/Appearance'
@@ -20,6 +20,8 @@ const Playground = lazy(() => import('./Playground').then((m) => ({ default: m.P
 const How = lazy(() => import('./pages/How').then((m) => ({ default: m.How })))
 const Motion = lazy(() => import('./pages/Motion').then((m) => ({ default: m.Motion })))
 const Proposal = lazy(() => import('./pages/Proposal').then((m) => ({ default: m.Proposal })))
+// The Copy pattern page is its own chunk, and nothing else imports it.
+const CopyPattern = lazy(() => import('./pages/CopyPattern').then((m) => ({ default: m.CopyPattern })))
 
 
 function NavLink({ to, current, tag, children }: { to: Route; current: Route; tag?: string; children: React.ReactNode }) {
@@ -86,6 +88,7 @@ function SiteLinks({ className }: { className: string }) {
 const titleFor = (r: Route) =>
   r.kind === 'component' ? COMPONENTS.find((c) => c.id === r.id)?.title
   : r.kind === 'proposal' ? PROPOSALS.find((p) => p.id === r.id)?.title
+  : r.kind === 'pattern' ? PATTERNS.find((p) => p.id === r.id)?.title
   : r.kind === 'foundation' ? FOUNDATIONS.find((f) => f.id === r.id)?.title
   : r.kind === 'adopt' ? 'Adopt without rewrite'
   : r.kind === 'motion' ? 'Motion review'
@@ -178,6 +181,11 @@ export function App() {
               )}
             </div>
           )}
+          {PATTERNS.length > 0 && (
+            <NavGroup title="Patterns" holdsCurrent={route.kind === 'pattern'}>
+              {PATTERNS.map((p) => <NavLink key={p.id} to={{ kind: 'pattern', id: p.id }} current={route}>{p.title}</NavLink>)}
+            </NavGroup>
+          )}
           <NavGroup title="Project" holdsCurrent={['status', 'doc', 'adopt', 'motion'].includes(route.kind)}>
             <NavLink to={{ kind: 'status' }} current={route}>Component status</NavLink>
             <NavLink to={{ kind: 'doc', id: 'changelog' }} current={route}>Changelog</NavLink>
@@ -201,6 +209,7 @@ export function App() {
           {route.kind === 'overview' && <Overview />}
           {route.kind === 'component' && <Playground key={route.id} id={route.id} tab={route.tab} />}
           {route.kind === 'proposal' && <Proposal key={route.id} id={route.id} />}
+          {route.kind === 'pattern' && (route.id === 'copy' ? <CopyPattern /> : <p className="vela-body">No pattern called “{route.id}”.</p>)}
           {route.kind === 'foundation' && <Foundation id={route.id} />}
           {route.kind === 'adopt' && <Adopt mode={theme} />}
           {route.kind === 'motion' && <Motion />}
