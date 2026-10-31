@@ -170,6 +170,56 @@ for (const [level, { files, kind }] of Object.entries(proofs)) {
   }
 }
 
+// ---------- patterns: pattern-cites-real-rules (guidelines/patterns/README.md) ----------
+// A pattern's Tests table cites component rules, each with its level, and states the components'
+// totals. Nothing else keeps those true when a component spec changes. A component that is only
+// specified (no guidelines/components/<name>.md yet) is skipped and printed as not built yet.
+// VELA_PATTERN_DIR points the check at another folder; src/styles/patterns.test.ts uses it for its fixtures.
+const patternDir = process.env.VELA_PATTERN_DIR || join(root, 'guidelines/patterns')
+const patternNotes = []
+const specFile = (name) => `${name.toLowerCase().replace(/\s+/g, '-')}.md`
+const builtSpecs = new Set(readdirSync(specDir).filter((f) => f.endsWith('.md')))
+// The component a rule id belongs to: the longest spec file name that prefixes it.
+const ownerOf = (id, names) => names.filter((n) => id.startsWith(`${n}-`)).sort((a, b) => b.length - a.length)[0]
+let patternFiles = []
+try { patternFiles = readdirSync(patternDir).filter((f) => f.endsWith('.md') && f !== 'README.md') } catch { /* no patterns yet */ }
+for (const file of patternFiles) {
+  const md = readFileSync(join(patternDir, file), 'utf8')
+  const where = `guidelines/patterns/${file}`
+  // The per-component totals: "- Copy Button: 20 rules, 16 with proofs;"
+  const comps = [...md.matchAll(/^- ([A-Z][A-Za-z ]+): (\d+) rules, (\d+) with proofs/gm)]
+    .map(([, name, total, proved]) => ({ name: name.trim(), file: specFile(name.trim()), total: +total, proved: +proved }))
+  const names = comps.map((c) => c.file.replace(/\.md$/, ''))
+  // The cited rules: table rows "| promise | `rule-id` | level |"
+  const cited = [...md.matchAll(/^\|[^|\n]*\|\s*`([a-z0-9-]+)`\s*\|\s*([a-z]+)\s*\|\s*$/gm)].map(([, id, level]) => ({ id, level }))
+  if (!cited.length) fail(`${where}: no cited rules found — a pattern's Tests table lists "| promise | \`rule-id\` | level |"`)
+  for (const c of cited) {
+    if (!LEVELS.includes(c.level)) { fail(`${where} cites ${c.id} as "${c.level}", which is not a level (${LEVELS.join(', ')})`); continue }
+    const r = rules.find((x) => x.id === c.id)
+    const owner = ownerOf(c.id, names) ?? ownerOf(c.id, [...builtSpecs].map((f) => f.replace(/\.md$/, '')))
+    if (r) {
+      if (r.level !== c.level) fail(`${where} cites ${c.id} as ${c.level}; ${r.file} says ${r.level}`)
+    } else if (owner && !builtSpecs.has(`${owner}.md`)) {
+      patternNotes.push(`${where}: ${c.id} (${c.level}) — ${owner} is not built yet`)
+    } else {
+      fail(`${where} cites ${c.id} (${c.level}), which no component spec defines`)
+    }
+  }
+  // The totals, for the components that are built.
+  for (const c of comps) {
+    if (!builtSpecs.has(c.file)) { patternNotes.push(`${where}: ${c.name} totals (${c.total}, ${c.proved} with proofs) — not built yet`); continue }
+    const own = rules.filter((r) => r.file === c.file)
+    const proved = own.filter((r) => r.level !== 'convention').length
+    if (own.length !== c.total || proved !== c.proved)
+      fail(`${where} says ${c.name} has ${c.total} rules, ${c.proved} with proofs; ${c.file} has ${own.length}, ${proved} with proofs`)
+  }
+  const overall = md.match(/\*\*(\d+) rules, (\d+) with proofs\*\*/)
+  if (overall && comps.length) {
+    const [t, p] = [comps.reduce((n, c) => n + c.total, 0), comps.reduce((n, c) => n + c.proved, 0)]
+    if (+overall[1] !== t || +overall[2] !== p) fail(`${where}: the total says ${overall[1]} rules, ${overall[2]} with proofs; its components add up to ${t}, ${p}`)
+  }
+}
+
 // ---------- report ----------
 const count = (l) => rules.filter((r) => r.level === l).length
 console.log('\n  RULE COVERAGE\n  ' + '-'.repeat(58))
@@ -179,6 +229,9 @@ console.log(`  ${rules.length} rules across ${new Set(rules.map((r) => r.file)).
 console.log(`  ${fixtures.length} fixtures, ${rejected.size} proved rejected by the types; ` +
   `${count('runtime')} runtime rules referenced by unit tests, ` +
   `${count('browser')} browser rules by specs`)
+if (patternFiles.length)
+  console.log(`  ${patternFiles.length} pattern(s) checked (pattern-cites-real-rules)` +
+    (patternNotes.length ? `; not built yet:\n    ${patternNotes.join('\n    ')}` : ''))
 if (problems.length) {
   console.log('')
   for (const p of problems) console.log(`  FAIL  ${p}`)
