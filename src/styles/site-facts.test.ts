@@ -37,7 +37,8 @@ describe('the contract facts', () => {
 
   it('links a Figma set only when the library has one with a node', () => {
     expect(figmaSetFor('button.md')?.url).toMatch(/node-id=7-122$/)
-    expect(figmaSetFor('dropdown-list.md')).toBeUndefined()
+    // Built in the library, not yet published: the file is public, so the link opens it.
+    expect(figmaSetFor('dropdown-list.md')).toMatchObject({ state: 'built', url: expect.stringMatching(/node-id=164-85$/) })
     expect(figmaSetFor('no-such.md')).toBeUndefined()
   })
 

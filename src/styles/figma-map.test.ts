@@ -94,8 +94,9 @@ describe('Figma → code map', () => {
     const pub = all.filter((s: any) => s.state === 'published').map((s: any) => s.set).sort()
     expect(pub).toEqual(['Button', 'Checkbox', 'Contextual Alert', 'Dialog', 'Icon', 'Input', 'Popover', 'Radio', 'Risk Pill', 'Status Indicator', 'Tab', 'Table Cell', 'Table Header Cell', 'Table Row', 'Text Area', 'Toast', 'Toggle', 'Tooltip'])
     expect(map.sets.find((s: any) => s.set === 'Risk Pill')).toMatchObject({ state: 'published', node: '127:14' })
-    expect(all.filter((s: any) => s.state === 'built')).toEqual([])
-    expect(all.filter((s: any) => s.state === 'none').map((s: any) => [s.set, s.node, s.url])).toEqual([['Dropdown List item', null, null]])
+    // Built for 0.14.0 by the Figma thread (R20), not yet published.
+    expect(all.filter((s: any) => s.state === 'built').map((s: any) => [s.set, s.node])).toEqual([['Dropdown List item', '164:85']])
+    expect(all.filter((s: any) => s.state === 'none')).toEqual([])
   })
 
   it('maps the Tab set to Tabs.Trigger, because the set is one trigger', () => {
