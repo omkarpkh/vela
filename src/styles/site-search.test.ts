@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { buildIndex, search, closest, MISSING } from '../../demo/playground/search'
+import { buildIndex, search, closest, MISSING, missingTag } from '../../demo/playground/search'
 import { REGISTRY, GROUPS } from '../../demo/playground/registry'
 
 // Playground slice 3 (playground spec, sections 2 and 10): search over titles, aliases and the
@@ -21,6 +21,14 @@ describe('search', () => {
     const select = search(index, 'dropdown')[1].item
     expect(select.kind).toBe('missing')
     expect(select.tag).toBe('Planned')
+  })
+
+  it('tags a missing component by where it stands: Planned only for what the roadmap plans', () => {
+    const tagOf = (id: string) => index.find((i) => i.kind === 'missing' && i.id === id)!.tag
+    expect([tagOf('select-list'), tagOf('combobox'), tagOf('spinner')]).toEqual(['Planned', 'Planned', 'Planned'])
+    expect([tagOf('icon-button'), tagOf('segmented-control')]).toEqual(['Specified', 'Specified'])
+    expect([tagOf('tag'), tagOf('side-navigation')]).toEqual(['Not in Vela', 'Not in Vela'])
+    for (const m of MISSING) expect(['Planned', 'Specified', 'Not in Vela'], m.id).toContain(missingTag(m.stands))
   })
 
   it('puts a title before an alias at the same strength: "alert" is Contextual Alert, then Dialog', () => {
