@@ -73,15 +73,22 @@ The library is compiled from the contract, not the other way round. The pipeline
 npm run tokens:figma            # variables, create-or-update by name
 npm run styles:figma            # text styles bound to those variables
 npm run figma:build <name>      # a component set, created once from scripts/figma/components/<name>.figma.js
+npm run figma:build <name> -- --extend   # a published set, extended in place by its <name>.<id>.extend.figma.js files
 npm run components:figma:lint   # every builder, run in the mock Plugin API against the reviewer rules; runs in npm test
 npm run figma:build:pages       # the Changelog and Status doc pages, compiled from the repo; rebuilt in place on each run
 npm run guidelines:figma        # each spec's summary into its set's description
 ```
 
 Each script prints a Plugin API script to run inside the library file. Builders create; they
-do not update. A variant added to a shipped set is built in place, by a person, after the API
-review, then `npm run components:figma:check <name> <live.json>` proves the live set and the
-builder agree. The Figma main components are labelled "Main components — do not touch": edit
+do not update, because a set rebuilt would detach its instances. A change to a published set,
+after the API review, is an extension: `scripts/figma/components/<name>.<id>.extend.figma.js`,
+declaring `// @extends <name>` and one `// @adds <node name>` for each node it creates. It may add
+variants (with `appendVariant`, which places them in free space), properties and frames; it may
+not remove, rename or move anything the set has. `--extend` runs the extensions the file doesn't
+have yet and stops, with a list, if anything already in the set changed; the lint runs each one
+twice in the mock. Create mode runs the builder and then its extensions, so
+`npm run components:figma:check <name> <live.json>` still proves the live set and the builder
+agree. The Figma main components are labelled "Main components — do not touch": edit
 through the builders and the scripts, not by hand in the canvas.
 
 ### 5. Changelog

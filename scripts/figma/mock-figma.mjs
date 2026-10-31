@@ -24,6 +24,12 @@
  * children, which the lint has already walked on the main component. `setProperties` checks every
  * key against the containing set's definitions, as Figma does: a VARIANT value swaps the main
  * component for the variant it names, and an unknown key or value throws.
+ *
+ * Extensions (31 Oct 2026, scripts/figma/components/*.extend.figma.js): a set's VARIANT
+ * definitions follow its children, as Figma's do, so a variant appended or renamed adds or drops
+ * an option; its `defaultVariant` is the top-left-most variant on the canvas (Figma's documented
+ * rule), and each VARIANT definition's default is that variant's value. `getNodeByIdAsync` finds a
+ * node until it is removed. A node has `isMask`, and a gradient paint keeps its stops.
  */
 const MIXED = Symbol('figma.mixed')
 let seq = 0
@@ -38,7 +44,8 @@ const DEFAULT_NAME = { FRAME: 'Frame', COMPONENT: 'Component', COMPONENT_SET: 'C
 class SceneNode {
   constructor(type, figma) {
     Object.defineProperty(this, '_figma', { value: figma, enumerable: false })
-    this.id = nid(type); this.type = type; this.name = DEFAULT_NAME[type]; this.visible = true
+    this.id = nid(type); this.type = type; this.name = DEFAULT_NAME[type]; this.visible = true; this.isMask = false
+    figma._nodes.set(this.id, this)
     this.parent = null; this.x = 0; this.y = 0; this.width = 100; this.height = 100
     this.fills = []; this.strokes = []; this.strokeAlign = 'INSIDE'
     this._sw = { top: 1, right: 1, bottom: 1, left: 1 }
@@ -52,7 +59,9 @@ class SceneNode {
       const id = p.boundVariables && p.boundVariables.color && p.boundVariables.color.id
       const was = prev[i] && prev[i].boundVariables && prev[i].boundVariables.color && prev[i].boundVariables.color.id
       const color = id && id !== was ? (this._figma._resolveColour(id) ?? p.color) : p.color
-      return color ? { ...p, color: { ...color } } : { ...p }
+      const q = color ? { ...p, color: { ...color } } : { ...p }
+      if (Array.isArray(p.gradientStops)) q.gradientStops = p.gradientStops.map((g) => ({ ...g, color: { ...g.color } }))
+      return q
     })
   }
   get fills() { return (this._fills || []).map((p) => ({ ...p })) } set fills(v) { this._setPaints('_fills', v) }
@@ -79,7 +88,7 @@ class SceneNode {
     const v = variable.valuesByMode[Object.keys(variable.valuesByMode)[0]]
     if (typeof v === 'number') this[field] = v
   }
-  remove() { if (this.parent) { const c = this.parent.children; c.splice(c.indexOf(this), 1); this.parent = null } }
+  remove() { if (this.parent) { const c = this.parent.children; c.splice(c.indexOf(this), 1); this.parent = null } this._figma._nodes.delete(this.id) }
 }
 
 class ContainerNode extends SceneNode {
@@ -177,18 +186,31 @@ class InstanceNode extends FrameNode {
 }
 
 class ComponentSetNode extends FrameNode {
-  constructor(figma) { super('COMPONENT_SET', figma); this.componentPropertyDefinitions = {}; this.description = '' }
+  constructor(figma) { super('COMPONENT_SET', figma); this._defs = {}; this.description = '' }
   addComponentProperty(name, type, defaultValue) {
     const key = type === 'VARIANT' ? name : `${name}#${this.id}`
-    this.componentPropertyDefinitions[key] = { type, defaultValue }
+    this._defs[key] = { type, defaultValue }
     return key
   }
-  _variantDefs() {
+  // The top-left-most variant, spatially: the one dragged in from the library. Ties keep layer order.
+  get defaultVariant() {
+    let best = null
+    for (const c of this.children) if (!best || c.y < best.y || (c.y === best.y && c.x < best.x)) best = c
+    return best
+  }
+  // VARIANT definitions come from the variants' names, every time they are read, in the order their
+  // options first appear; the other properties are the ones added, the same objects each time (a TEXT
+  // property's default is written through them).
+  get componentPropertyDefinitions() {
+    const out = {}
+    const dflt = this.defaultVariant
+    const dv = dflt ? Object.fromEntries(dflt.name.split(', ').map((p) => p.split('='))) : {}
     for (const c of this.children) for (const pair of c.name.split(', ')) {
       const [k, v] = pair.split('=')
-      const d = (this.componentPropertyDefinitions[k] ??= { type: 'VARIANT', defaultValue: v, variantOptions: [] })
+      const d = (out[k] ??= { type: 'VARIANT', defaultValue: dv[k] ?? v, variantOptions: [] })
       if (!d.variantOptions.includes(v)) d.variantOptions.push(v)
     }
+    return Object.assign(out, this._defs)
   }
 }
 
@@ -279,6 +301,8 @@ export function createMockFigma({ variables, styles, pages }) {
   const styleList = styles.map((s, i) => ({ id: `S:${i},`, type: 'TEXT', name: s.name, fontName: s.fontName, fontSize: s.fontSize, lineHeight: s.lineHeight, letterSpacing: s.letterSpacing, description: s.description ?? '' }))
   const figma = {
     mixed: MIXED,
+    _nodes: new Map(),
+    async getNodeByIdAsync(id) { return figma._nodes.get(id) ?? figma.root.children.find((p) => p.id === id) ?? null },
     _resolveColour(id) { const v = byId[id]; return v && v.resolvedType === 'COLOR' ? hexToRgb(v.valuesByMode['mode:0']) : null },
     root: { children: pages.map((n) => new PageNode(n)) },
     currentPage: null,
@@ -294,7 +318,7 @@ export function createMockFigma({ variables, styles, pages }) {
     createRectangle() { const n = new RectangleNode(figma); figma.currentPage.appendChild(n); return n },
     createEllipse() { const n = new EllipseNode(figma); figma.currentPage.appendChild(n); return n },
     createPolygon() { const n = new PolygonNode(figma); figma.currentPage.appendChild(n); return n },
-    combineAsVariants(nodes, parent) { const set = new ComponentSetNode(figma); for (const n of nodes) set.appendChild(n); parent.appendChild(set); set._variantDefs(); return set },
+    combineAsVariants(nodes, parent) { const set = new ComponentSetNode(figma); for (const n of nodes) set.appendChild(n); parent.appendChild(set); return set },
     // createNodeFromSvg returns a frame without auto layout holding one vector per drawn element, with
     // the SVG's stroke as a raw paint — which is why a builder must rebind it. The frame takes the
     // svg's width and height attributes.
