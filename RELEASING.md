@@ -50,9 +50,9 @@ Open the release PR against `main`, titled `X.Y.Z — <one line from the changel
 `verify`, `flutter` and `visual`. Merge when all three pass. The merge to `main` deploys the docs
 site (job `pages`), so the site is at the new version before the package is.
 
-## 7. Figma
+## 7. Figma: write the file, don't publish yet
 
-Run the pipeline against the library so the file matches the tag:
+Run the pipeline against the library so the file matches the merge commit:
 
 ```bash
 npm run tokens:figma        # if any token changed
@@ -61,15 +61,13 @@ npm run guidelines:figma    # always: every description ends with the version st
 npm run figma:build:pages   # always: the Changelog and Status pages, compiled from the merge commit
 ```
 
-Rebuild the Changelog and Status pages (`npm run figma:build:pages`) and run them in the library
-before publishing: run `npm run -s figma:build:pages -- changelog` and `-- status`, paste each
-script into the library file (Figma MCP `use_figma` or Scripter), and check the stamp at the foot
-of each page names the merge commit. Each script rebuilds its page's frame in place, so the frame
-keeps its id and re-running is safe.
+Rebuild the Changelog and Status pages: run `npm run -s figma:build:pages -- changelog` and
+`-- status`, paste each script into the library file (Figma MCP `use_figma` or Scripter), and check
+the stamp at the foot of each page names the merge commit. Each script rebuilds its page's frame in
+place, so the frame keeps its id and re-running is safe.
 
-Then publish the library from Figma. The publish description starts with the version and copies
-the changelog entry: `X.Y.Z — <entry>`. Publishing the library is approval-gated: the maintainer
-clicks it, not a script.
+**Don't publish the library yet.** The pages say the version is "On npm" and every description
+names it, so the library is published only once the package is on the registry (step 9).
 
 ## 8. Tag
 
@@ -78,20 +76,30 @@ git tag vX.Y.Z <merge commit>
 git push origin vX.Y.Z
 ```
 
-The tag runs the `publish` job: `verify`, `flutter` and `visual` again, then `npm publish` through
-npm Trusted Publishing (OIDC, with a provenance attestation). No token exists and none should be
-created. If the version is already on the registry the job skips, so re-running a tag is safe.
+If a tag can't be pushed from where you are, create it in GitHub's release form instead (step 10):
+choose a new tag `vX.Y.Z` on the merge commit and publish the release. Either way the tag runs the
+`publish` job: `verify`, `flutter` and `visual` again, then `npm publish` through npm Trusted
+Publishing (OIDC, with a provenance attestation). No token exists and none should be created. If the
+version is already on the registry the job skips, so re-running a tag is safe.
 
 Check it landed: `npm view @omkarux/vela version`, and `npm run figma:build:pages -- --check-npm`
 (exits 1 if the registry and `scripts/figma/pages/published.json` disagree).
 
-## 9. GitHub release
+## 9. Figma: publish the library
+
+Only after step 8's checks pass. Publish the library from Figma. The publish description starts with
+the version and copies the changelog entry: `X.Y.Z — <entry>`. Publishing the library is
+approval-gated: the maintainer clicks it, not a script. Then record the date: a set whose state is
+`built` in `scripts/sync-figma-descriptions.mjs` moves to `published`, and `npm run figma:map`
+regenerates `guidelines/figma-map.json`.
+
+## 10. GitHub release
 
 Create a release from the tag. Title `X.Y.Z`, body copied from the changelog entry unchanged.
 Link the Figma library and the docs site. This is the third place a breaking change is announced
 (`GOVERNANCE.md`).
 
-## 10. Afterwards
+## 11. Afterwards
 
 - Install the published version into a scratch app and render one component. The pack gate
   already did this against the tarball; this is against the registry.
