@@ -459,17 +459,20 @@ describe('Popover, Tooltip and Dialog, as the builders draw them', () => {
 describe('Dropdown List, as the builder draws it', () => {
   const d = dump('dropdown-list')
   const p = dump('dropdown-list', 'Dropdown List')
-  const by = (h: string, c: string, x: string) => d.variants.find((v: any) => v.n === `Highlighted=${h}, Current=${c}, Disabled=${x}`)
+  const by = (h: string, c: string, x: string) => d.variants.find((v: any) => v.n === `Highlighted=${h}, Current=${c}, Locked=${x}`)
   const B = ['false', 'true']
+  // The name row: the lock's slot when Locked, then the Label.
+  const nameOf = (v: any) => v.ch[1]
+  const labelOf = (v: any) => nameOf(v).ch[nameOf(v).ch.length - 1]
 
-  it('Highlighted × Current × Disabled, a Meta boolean and two TEXT properties, each written the same in every variant', () => {
+  it('Highlighted × Current × Locked, a Meta boolean and two TEXT properties, each written the same in every variant', () => {
     expect(d.set).toBe('Dropdown List item')
     expect(d.variants).toHaveLength(8)
     for (const h of B) for (const c of B) for (const x of B) expect(by(h, c, x), `${h} ${c} ${x}`).toBeTruthy()
-    expect(Object.keys(d.defs).map((k) => k.replace(/#.*$/, '')).sort()).toEqual(['Current', 'Disabled', 'Highlighted', 'Label', 'Meta', 'Meta text'])
+    expect(Object.keys(d.defs).map((k) => k.replace(/#.*$/, '')).sort()).toEqual(['Current', 'Highlighted', 'Label', 'Locked', 'Meta', 'Meta text'])
     for (const v of d.variants) {
-      expect(v.ch.map((c: any) => c.n), v.n).toEqual(['Check', 'Label', 'Meta'])
-      expect([v.ch[1].chars, v.ch[2].chars], v.n).toEqual(['Firewall', '1 new'])
+      expect(v.ch.map((c: any) => c.n), v.n).toEqual(['Check', 'Name', 'Meta'])
+      expect([labelOf(v).n, labelOf(v).chars, v.ch[2].chars], v.n).toEqual(['Label', 'Firewall', '1 new'])
       expect(v.ch[2].hidden, v.n).toBe(true)
     }
   })
@@ -480,17 +483,30 @@ describe('Dropdown List, as the builder draws it', () => {
       expect(v.pad.map((x: any) => x[1]), v.n).toEqual(['space/5', 'space/15', 'space/5', 'space/10'])
       expect(v.gap[1], v.n).toBe('space/10')
       expect(v.ch[0].wh.slice(2), v.n).toEqual(['icon/size', 'line-height/body'])
-      expect([v.ch[1].style, v.ch[2].style], v.n).toEqual(['Body/Default', 'Body/Strong'])
+      expect([labelOf(v).style, v.ch[2].style], v.n).toEqual(['Body/Default', 'Body/Strong'])
+      // The name row fills the rest of the row, with space/5 between the lock and the name.
+      expect([nameOf(v).lm, nameOf(v).ls, nameOf(v).gap[1]], v.n).toEqual(['HORIZONTAL', 'FILL/HUG', 'space/5'])
     }
   })
 
-  it('Highlighted is surface/raised-hover, disabled or not; only Current draws the check, in text/link; Disabled greys the name, never the meta', () => {
+  it('Highlighted is surface/raised-hover, locked or not; only Current draws the check, in text/link; Locked greys the name, never the meta', () => {
     for (const h of B) for (const c of B) for (const x of B) {
       const v = by(h, c, x), n = v.n
       expect(v.fill[0], n).toBe(h === 'true' ? 'surface/raised-hover' : 'surface/raised')
       expect(v.ch[0].ch.map((g: any) => [g.n, g.fill[0]]), n).toEqual(c === 'true' ? [['Glyph / check', 'text/link']] : [])
-      expect(v.ch[1].fill[0], n).toBe(x === 'true' ? 'text/inactive' : 'text/default')
+      expect(labelOf(v).fill[0], n).toBe(x === 'true' ? 'text/inactive' : 'text/default')
       expect(v.ch[2].fill[0], n).toBe('text/default')
+    }
+  })
+
+  it('Locked puts an instance of Icon\'s lock before the name, in a slot one body line tall; no other variant has one', () => {
+    for (const v of d.variants) {
+      const locked = v.n.endsWith('Locked=true')
+      expect(nameOf(v).ch.map((c: any) => c.n), v.n).toEqual(locked ? ['Lock', 'Label'] : ['Label'])
+      if (!locked) continue
+      const slot = nameOf(v).ch[0]
+      expect([slot.wh.slice(2), slot.ax], v.n).toEqual([['icon/size', 'line-height/body'], 'CENTER/CENTER'])
+      expect(slot.ch.map((i: any) => [i.t, i.main, i.props.Glyph, i.wh[2]]), v.n).toEqual([['INSTANCE', 'Glyph=lock', 'lock', 'icon/size']])
     }
   })
 
@@ -508,10 +524,10 @@ describe('Dropdown List, as the builder draws it', () => {
       ['INSTANCE', 'Item / Reports', 'FILL/HUG'],
     ])
     expect(c.ch.map((i: any) => [i.main, i.props.Label, i.props.Meta, i.props.Meta ? i.props['Meta text'] : null])).toEqual([
-      ['Highlighted=false, Current=false, Disabled=false', 'Alerts', false, null],
-      ['Highlighted=false, Current=true, Disabled=false', 'Firewall', true, '1 new'],
-      ['Highlighted=false, Current=false, Disabled=true', 'Archive', true, 'No access'],
-      ['Highlighted=true, Current=false, Disabled=false', 'Reports', true, '3 open'],
+      ['Highlighted=false, Current=false, Locked=false', 'Alerts', false, null],
+      ['Highlighted=false, Current=true, Locked=false', 'Firewall', true, '1 new'],
+      ['Highlighted=false, Current=false, Locked=true', 'Archive', true, 'Needs retention on'],
+      ['Highlighted=true, Current=false, Locked=false', 'Reports', true, '3 open'],
     ])
   })
 })

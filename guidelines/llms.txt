@@ -4,7 +4,7 @@
 > deliberately separate status taxonomies, full light and dark theming, zero runtime dependencies
 > in the core entry (the `/headless` entry needs one optional peer, Base UI, and is where Checkbox,
 > Radio Group, Popover, Tooltip, Dialog, Toast and Dropdown List ship from).
-> 69 of the 178 design rules are enforced by the TypeScript types; the rest are checked at runtime, in a
+> 69 of the 182 design rules are enforced by the TypeScript types; the rest are checked at runtime, in a
 > real browser, or by review. Each rule in the component guidelines is tagged with its level.
 >
 > THESE SPECS ARE FRAMEWORK-AGNOSTIC. The published package is a React implementation of them, and

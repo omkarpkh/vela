@@ -20,14 +20,23 @@ describe('the contract facts', () => {
 
   it('agrees with the rule checker on every spec: the per-spec counts sum to its total', () => {
     let total = 0
+    let compiler = 0
     for (const f of readdirSync(dir).filter((f) => f.endsWith('.md'))) {
       const r = rulesOf(spec(f))
       expect(r.byLevel.reduce((n, l) => n + l.count, 0), f).toBe(r.total)
       total += r.total
+      compiler += r.byLevel.find((l) => l.level === 'compiler')?.count ?? 0
     }
-    // The same number `npm run rules:check` prints ("N rules across 17 specs").
-    const readme = readFileSync(resolve(process.cwd(), 'README.md'), 'utf8')
-    expect(readme).toContain(`of the ${total} by the TypeScript compiler`)
+    // The same numbers `npm run rules:check` prints ("N rules across 17 specs"), in every place
+    // that states them: the README, the npm description and the agents' summary.
+    const read = (f: string) => readFileSync(resolve(process.cwd(), f), 'utf8')
+    expect(read('README.md')).toContain(`${compiler} of the ${total} by the TypeScript compiler`)
+    expect(JSON.parse(read('package.json')).description).toContain(`${compiler} of ${total} by the TypeScript compiler`)
+    expect(read('guidelines/llms.txt')).toContain(`${compiler} of the ${total} design rules are enforced by the TypeScript types`)
+    // And the check counts, in both places the README states them, from demo/checks.json.
+    const checks = JSON.parse(read('demo/checks.json'))
+    expect(read('README.md')).toContain(`${checks.total} automated checks — ${checks.unit} unit and contract`)
+    expect(read('README.md')).toContain(`# ${checks.unit} unit and contract tests, of ${checks.total} checks in all`)
   })
 
   it('counts a proposal\'s planned rules from its Hard constraints, and agrees with the total it states', () => {
@@ -51,8 +60,8 @@ describe('the contract facts', () => {
 
   it('links a Figma set only when the library has one with a node', () => {
     expect(figmaSetFor('button.md')?.url).toMatch(/node-id=7-122$/)
-    // Built in the library, not yet published: the file is public, so the link opens it.
-    expect(figmaSetFor('dropdown-list.md')).toMatchObject({ state: 'built', url: expect.stringMatching(/node-id=164-85$/) })
+    // Published with the library on 31 Oct 2026 (R21).
+    expect(figmaSetFor('dropdown-list.md')).toMatchObject({ state: 'published', url: expect.stringMatching(/node-id=164-85$/) })
     expect(figmaSetFor('no-such.md')).toBeUndefined()
   })
 

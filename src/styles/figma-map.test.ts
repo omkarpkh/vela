@@ -92,10 +92,11 @@ describe('Figma → code map', () => {
     const all = map.sets.flatMap((s: any) => [s, ...(s.also ?? [])])
     expect(all).toHaveLength(19)
     const pub = all.filter((s: any) => s.state === 'published').map((s: any) => s.set).sort()
-    expect(pub).toEqual(['Button', 'Checkbox', 'Contextual Alert', 'Dialog', 'Icon', 'Input', 'Popover', 'Radio', 'Risk Pill', 'Status Indicator', 'Tab', 'Table Cell', 'Table Header Cell', 'Table Row', 'Text Area', 'Toast', 'Toggle', 'Tooltip'])
+    expect(pub).toEqual(['Button', 'Checkbox', 'Contextual Alert', 'Dialog', 'Dropdown List item', 'Icon', 'Input', 'Popover', 'Radio', 'Risk Pill', 'Status Indicator', 'Tab', 'Table Cell', 'Table Header Cell', 'Table Row', 'Text Area', 'Toast', 'Toggle', 'Tooltip'])
     expect(map.sets.find((s: any) => s.set === 'Risk Pill')).toMatchObject({ state: 'published', node: '127:14' })
-    // Built for 0.14.0 by the Figma thread (R20), not yet published.
-    expect(all.filter((s: any) => s.state === 'built').map((s: any) => [s.set, s.node])).toEqual([['Dropdown List item', '164:85']])
+    // Dropdown List, built for 0.14.0 (R20), was published on 31 Oct 2026 (R21): no set is built-only.
+    expect(map.sets.find((s: any) => s.set === 'Dropdown List item')).toMatchObject({ state: 'published', node: '164:85' })
+    expect(all.filter((s: any) => s.state === 'built')).toEqual([])
     expect(all.filter((s: any) => s.state === 'none')).toEqual([])
   })
 

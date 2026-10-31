@@ -300,7 +300,7 @@ test.describe('the page header', () => {
     await expect(page.locator('.pg-install-command')).toHaveCount(1)
   })
 
-  test('a set built but not yet published still links to the library file', async ({ page }) => {
+  test('Dropdown List links to its set in the library, published with 0.14.0', async ({ page }) => {
     await page.goto('/#/components/dropdown-list')
     const use = page.getByRole('region', { name: 'Use Dropdown List' })
     await expect(use.getByRole('link', { name: 'Figma' })).toHaveAttribute('href', /node-id=164-85$/)
