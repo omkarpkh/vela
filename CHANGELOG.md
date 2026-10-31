@@ -18,6 +18,14 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   component defines, a level that disagrees with the spec, and totals that don't add up; a
   component that is only specified is printed as not built yet. Five unit tests prove it fails
   when a pattern drifts (`src/styles/patterns.test.ts`).
+- **Proposal: Override & Teach Panel** (`guidelines/proposals/override-and-teach-panel.md`).
+  Turns one person's override into a lesson the agent keeps, only on purpose: the panel shows the
+  person's words beside the agent's version, which cases the lesson covers, and whether it makes the
+  agent stricter or more lenient, as meant and as a replay over already-reviewed verdicts shows. A
+  lenient lesson needs an exact match on a value an outsider cannot set, may not overrule settled
+  cases, and goes to a second person through the Approval Queue. Every lesson expires. 26 rules, 23
+  with proofs planned; its six review answers were confirmed by Omkar on 31 October. Specced, not
+  built.
 
 ### Changed
 - **Figma: Dropdown List says a locked item always shows its reason.** The guideline's *Figma
@@ -26,6 +34,13 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   frame beside the popup: a locked item with its reason in Meta, captioned. The set itself can't
   default Meta on for locked variants alone, because a Figma property has one default per set (the
   Figma thread tested it on a copy). No key or property changes.
+- **Proposals: the Evidence Locker and the Verdict Card gain the Override & Teach Panel's two
+  additive amendments.** The Locker's `memory` item may carry a `lesson`, which must be
+  agent-written (`locker-lesson-is-agent-output` · compiler), so a claim resting only on a lesson is
+  weak: 20 rules, 17 with proofs. The Verdict Card gains an optional `onTeach`, offered only after an
+  override or an agreement with the lean, and names each lesson the agent says it applied
+  (`verdict-lesson-named` · runtime): 29 rules, 23 with proofs. The nine proposals now plan 216
+  rules, 174 with proofs.
 
 ## [0.15.0] — 2026-10-31
 

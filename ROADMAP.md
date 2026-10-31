@@ -64,7 +64,7 @@ the set, synthetic data only, rendered to text without loss.
 The specs are published as they pass review, before any code: see
 [`guidelines/proposals/`](guidelines/proposals/README.md). Verdict Card, Action Impact Card,
 Autonomy Ladder, Approval Queue, Calibrated Confidence Gate, Evidence Locker, Agent Provenance
-Badge and Awareness Clock are pressure-tested and published.
+Badge, Awareness Clock and Override & Teach Panel are pressure-tested and published.
 
 ## Phase 2b — Console data and policy patterns
 
