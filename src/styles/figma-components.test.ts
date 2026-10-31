@@ -510,6 +510,20 @@ describe('Dropdown List, as the builder draws it', () => {
     }
   })
 
+  it('draws a Usage / Locked frame beside the popup: a locked item with its reason in Meta, and a caption', () => {
+    // The frame is not a set, so --dump can't reach it: build in the mock and read the page.
+    const src = `import { build } from './scripts/figma/check-components.mjs'
+const { figma } = await build('dropdown-list')
+const page = figma.root.children.find((p) => p.name === 'Dropdown List')
+const u = page.children.find((n) => n.name === 'Usage / Locked')
+console.log(JSON.stringify({ type: u.type, kids: u.children.map((n) => ({ type: n.type, main: n.mainComponent && n.mainComponent.name, chars: n.characters })) }))`
+    const u = JSON.parse(execFileSync('node', ['--input-type=module', '-e', src], { cwd: root, encoding: 'utf8' }).trim().split('\n').pop()!)
+    expect(u.type).toBe('FRAME')
+    const [item, caption] = u.kids
+    expect([item.type, item.main]).toEqual(['INSTANCE', 'Highlighted=false, Current=false, Locked=true'])
+    expect(caption.chars).toBe('Locked: always with its reason in Meta. The lock never appears without it.')
+  })
+
   it('draws the popup as one component on Popover\'s surface, holding four item instances', () => {
     expect(p.set).toBe('Dropdown List')
     expect(p.count).toBe(1)
