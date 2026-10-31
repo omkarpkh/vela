@@ -227,14 +227,14 @@ function ToastStage({ v }: { v: Values }) {
 /**
  * The Dropdown List stage: a host that owns the current view, as the spec's controlled example
  * does, and shows it on the page. One name is long enough to wrap, one is a single unbroken string
- * whose meta drops under it, three items have meta, and one is disabled with its reason in meta.
+ * whose meta drops under it, three items have meta, and one is locked, with the setting that rules it out as its reason.
  */
 const VIEWS: [DropdownListItem, ...DropdownListItem[]] = [
   { value: 'alerts', label: 'All alerts' },
   { value: 'firewall', label: 'Firewall', meta: '1 new' },
   { value: 'dlp', label: 'Data loss prevention — policy violations across every connected SaaS tenant' },
   { value: 'pipeline', label: 'customer-ingest-pipeline-eu-west-2', meta: '2 new' },
-  { value: 'archive', label: 'Archive', disabled: true, meta: 'No access' },
+  { value: 'archive', label: 'Archive', locked: { reason: 'Needs retention on' } },
   { value: 'reports', label: 'Reports', meta: '3 open' },
 ]
 

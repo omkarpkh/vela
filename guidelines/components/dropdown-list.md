@@ -4,9 +4,8 @@ A short list that opens from a button. One option is current, and choosing anoth
 it opens that tab or that view, and the list closes. Its first use is the Tabs overflow control
 ("6 more"), which lists every tab in the row.
 
-**Status:** Experimental — built, not in Figma. It is born in `@omkarux/vela/headless` (Base UI
-1.9 `Menu`) with no core implementation, and its Figma set is not built yet (its builder,
-`scripts/figma/components/dropdown-list.figma.js`, is ready). It is Approved once the API has
+**Status:** Experimental — built; its Figma set is built, not yet published. It is born in
+`@omkarux/vela/headless` (Base UI 1.9 `Menu`) with no core implementation. It is Approved once the API has
 settled, the set is published and the manual screen-reader check in Accessibility is done; see
 `GOVERNANCE.md`.
 **Dependencies:** @base-ui/react (optional peer, via /headless)
@@ -43,7 +42,7 @@ The items are one radio group inside the menu. The group needs no name of its ow
   items={[
     { value: 'alerts', label: 'Alerts' },
     { value: 'firewall', label: 'Firewall', meta: '1 new' },
-    { value: 'archive', label: 'Archive', disabled: true, meta: 'No access' },
+    { value: 'archive', label: 'Archive', locked: { reason: 'Needs retention on' } },
   ]}
   value={tab}
   onValueChange={setTab}
@@ -63,8 +62,14 @@ The items are one radio group inside the menu. The group needs no name of its ow
 | `onOpenChange` | `(open: boolean) => void` | — | |
 | `align` | `"start" \| "end"` | `"start"` | **These two only.** Which edge of the trigger the list lines up with. Tabs uses `end`. |
 
-`DropdownListItem` is `{ value: string; label: string; meta?: string; disabled?: boolean }`, **these
-four only.** There is no icon, no description line, no group, no divider and no submenu.
+`DropdownListItem` is `{ value: string; label: string; meta?: string; locked?: { reason: string } }`,
+**these four only**, and `meta` and `locked` are exclusive: they share the slot at the end of the
+row, which can't hold a count and a reason at once. There is no icon, no description line, no
+group, no divider and no submenu.
+
+**Changed in Unreleased:** `locked: { reason }` replaces 0.14.0's `disabled?: boolean`, so a
+locked item can't be written without its reason, and the field has Segmented Control's name and
+shape. `{ disabled: true, meta: 'Why' }` becomes `{ locked: { reason: 'Why' } }`.
 
 ## Hard constraints
 
@@ -77,9 +82,10 @@ four only.** There is no icon, no description line, no group, no divider and no 
   [[rule: dropdown-list-controlled-exclusive | compiler]]
 - **Two alignments.** `start` and `end`; there is no `center`, `left` or `right`. The list always
   opens below and flips above on its own when there is no room. [[rule: dropdown-list-align-closed | compiler]]
-- **An item has four fields.** `value`, `label`, `meta`, `disabled`. An `icon`, `description`,
-  `children` or `onClick` doesn't compile: choosing calls `onValueChange`, nothing else.
-  [[rule: dropdown-list-item-closed | compiler]]
+- **An item has four fields.** `value`, `label`, `meta`, `locked`. An `icon`, `description`,
+  `children` or `onClick` doesn't compile: choosing calls `onValueChange`, nothing else. A
+  `locked` item has a `reason` string, and `meta` and `locked` together don't compile; nor does
+  0.14.0's `disabled`. [[rule: dropdown-list-item-closed | compiler]]
 - **The current value must exist.** A `value` or `defaultValue` that matches no item throws a
   named error, rather than opening a list with nothing marked. [[rule: dropdown-list-value-exists | runtime]]
 - **It is a menu of radio items, opened from a button.** The popup is `role="menu"` named by
@@ -95,7 +101,7 @@ four only.** There is no icon, no description line, no group, no divider and no 
 - **Opening lands on the current item, however it opens.** A click, Enter, Space, Arrow Down and
   Arrow Up all put focus on the current item, not the first or the last, so a keyboard user starts
   where they are. The next arrow key moves on from the current item, and the loop wraps from it
-  when it is the last. A disabled current item still takes focus.
+  when it is the last. A locked current item still takes focus.
   [[rule: dropdown-list-focus-current | runtime]]
 - **Escape, Tab and a press outside close it.** Escape returns focus to the trigger; Tab closes it
   and moves on through the page. [[rule: dropdown-list-dismiss | runtime]]
@@ -105,16 +111,24 @@ four only.** There is no icon, no description line, no group, no divider and no 
 - **A keyboard open is instant.** When the list opens or closes from the keyboard, the trigger
   carries `data-vela-instant` for that change, and loses it on the next pointer interaction.
   [[rule: dropdown-list-trigger-instant-from-keyboard | runtime]]
-- **A disabled item can be reached but not chosen.** It stays in the arrow-key order, so it can be
-  read and its `meta` can say why. It has `aria-disabled="true"`, and choosing it does nothing.
-  [[rule: dropdown-list-disabled-not-chosen | runtime]]
+- **A locked item can be reached but not chosen** (DESIGN.md, *States*, Locked). It stays in the
+  arrow-key order, so it can be read, and its reason shows where `meta` would and is heard with its
+  name ("Archive, Needs retention on"). It has `aria-disabled="true"`, and choosing it does nothing.
+  Icon's `lock` comes before its name, hidden from assistive technology, because the reason is
+  already in the row (`icon.md`, *Glyphs*). [[rule: dropdown-list-locked-not-chosen | runtime]]
+- **A locked item names a setting or a policy that rules it out; a value the person's role may
+  never have is not listed.** A permission is about who the person is; a setting or a policy is
+  about the state of things, applies to everyone and can change. A plan limit or a fault isn't
+  listed either. "Needs retention on." for a setting; "Set by the Data Retention policy." for a
+  policy. The reason never says "Locked". The twin of Segmented Control's
+  `segmented-locked-has-a-cause`. [[rule: dropdown-list-locked-has-a-cause | convention]]
 - **Names wrap in full, never truncated.** The list is where a long name is read in full, on touch
   too, even a name with no spaces (`customer-ingest-pipeline-eu-west-2`). When the name and its
   meta don't fit side by side, the meta drops under the name. [[rule: dropdown-list-names-wrap | browser]]
 - **It holds up in forced colours.** The highlighted item is the system's `Highlight` /
   `HighlightText` pair, and the check is drawn in `currentColor`, so it follows the row's text.
   [[rule: dropdown-list-forced-colours | browser]]
-- **`meta` is words, never a colour.** "1 new", "No access", "3 open". Never a dot alone, never a
+- **`meta` is words, never a colour.** "1 new", "2 new", "3 open". Never a dot alone, never a
   coloured word. [[rule: dropdown-list-meta-is-words | convention]]
 - **`meta` is never a taxonomy label.** Never "Critical", "High", "Degraded" or "Malicious". In
   development, a `meta` equal (ignoring case) to a Severity, Risk, Status or Verdict value or label
@@ -130,9 +144,10 @@ four only.** There is no icon, no description line, no group, no divider and no 
 | item, current: the check | — | — | `--vela-text-link` (a 3:1 mark) |
 | item, current: the name | — | — | `--vela-text-default` |
 | item `meta` | — | — | `--vela-text-default`, `--vela-font-weight-semibold` |
-| item, disabled: the name | — | — | `--vela-text-inactive` |
-| item, disabled: the `meta` | — | — | `--vela-text-default`, so the reason stays readable |
-| item, disabled, keyboard focus | `--vela-bg-raised-hover` | — | the name stays `--vela-text-inactive` |
+| item, locked: the name | — | — | `--vela-text-inactive` |
+| item, locked: the lock | — | — | `--vela-icon-strong` (Icon's `default` tone, `regular` size) |
+| item, locked: the reason | — | — | `--vela-text-default`, so the reason stays readable |
+| item, locked, keyboard focus | `--vela-bg-raised-hover` | — | the name stays `--vela-text-inactive` |
 
 **The surface is Popover's:** radius `--vela-radius-4`, a 1px `--vela-border-default` edge and
 no shadow (there is no elevation token). Popup padding `--vela-space-5` on every side: the inline
@@ -198,8 +213,10 @@ with `--vela-space-10` in place of the row padding under `(pointer: coarse)`.
   with no transition.
 - **Current:** the check is shown (`aria-checked="true"`). Every item keeps the check's slot, so
   nothing shifts.
-- **Disabled:** the name is `--vela-text-inactive`; the meta stays `--vela-text-default`, because it
-  says why. It can't be chosen. Keyboard focus on it still shows the `--vela-bg-raised-hover`
+- **Locked:** Icon's `lock`, then the name in `--vela-text-inactive`; the reason, in the meta slot,
+  stays `--vela-text-default`, because it says why. The faded name helps the eye skip a row it
+  can't choose in a column; a locked segment's label stays `--vela-text-default`, because a row of
+  segments is read whole. DESIGN.md requires only that the reason is never faded, so both comply. It can't be chosen. Keyboard focus on it still shows the `--vela-bg-raised-hover`
   surface, so a keyboard user can see where they are (WCAG 2.4.7); the name stays inactive. Pointer
   hover on it changes nothing.
 - **With meta:** the meta text at the end of the row, or under the name when the two don't fit
@@ -241,7 +258,7 @@ Under `prefers-reduced-motion` the global collapse applies.
   Space and Arrow Down; Arrow Up also opens it.
 - **Popup:** `role="menu"`, `aria-label` from `label`.
 - **Items:** `role="menuitemradio"`, with `aria-checked` on the current one and `aria-disabled` on
-  disabled ones. The name includes `meta`.
+  locked ones. The name includes `meta`, or a locked item's reason.
 - **Keys:**
   - Arrow Up and Arrow Down move the highlight.
   - Home and End go to the first and last item.
@@ -252,8 +269,8 @@ Under `prefers-reduced-motion` the global collapse applies.
 - **Announcing news is the owner's job:** a Dropdown List is closed most of the time. The Tabs
   overflow control announces "1 with new items" once, politely, itself.
 - **Forced colours:** the highlighted row is `Highlight` / `HighlightText`, with
-  `forced-color-adjust: none` on that row only; the check is `currentColor`; a disabled name is
-  `GrayText`. The focus ring is an outline, so it survives.
+  `forced-color-adjust: none` on that row only; the check is `currentColor`; a locked name and its
+  lock are `GrayText`. The focus ring is an outline, so it survives.
 - **Before Approved, a manual screen-reader check** that `aria-checked` is announced on the current
   item and that the meta is read with the name: NVDA with Firefox, JAWS with Chrome, VoiceOver on
   macOS and on iOS. No automated test hears a screen reader.
@@ -314,9 +331,9 @@ planned.
 - **Keyboard and motion:** a list opened or closed from the keyboard carries `data-vela-instant`,
   and the stylesheet skips the transition, as on Popover. The trigger carries it too, for its
   owner's own styles, until the next pointer interaction with the trigger or the list.
-- **The pointer and a disabled item:** Base UI highlights an item under the pointer whether or not
-  it is disabled. The popup carries `data-vela-pointer` while the pointer was the last input in it,
-  and the stylesheet shows a disabled item's highlight only without it, so hover on a disabled item
+- **The pointer and a locked item:** a locked item is Base UI's `disabled`, and Base UI highlights
+  it under the pointer all the same. The popup carries `data-vela-pointer` while the pointer was
+  the last input in it, and the stylesheet shows a locked item's highlight only without it, so hover on a locked item
   changes nothing and keyboard focus on it still shows.
 - **Extra attributes:** Base UI adds `data-highlighted`, `data-checked`, `data-side`, `data-align`,
   `role="group"` around the items, focus guards and `data-base-ui-*` markers; ids are Base UI's.
@@ -325,9 +342,10 @@ planned.
 ## Figma mapping
 
 Library file: **Vela Design System** → page `Dropdown List`.
-- **Not built yet.** The builder, `scripts/figma/components/dropdown-list.figma.js`, is ready and
-  passes `components:figma:lint`. Building and publishing it in Figma is the Figma thread's job,
-  with the maintainer's approval.
+- **Built, not yet published** (node `164:85`), from `scripts/figma/components/dropdown-list.figma.js`.
+  Publishing it is the maintainer's step.
+- **Not drawn in the set yet:** a locked item's `lock` glyph, and the `Locked` name for the
+  `Disabled` axis. Both are for the Figma thread, with the next library update.
 - **The set the builder draws:** "Dropdown List item", one row of the list. Its variant axes mirror
   the markup, one per state the item carries:
   - `Highlighted` (false / true): `data-highlighted`;
@@ -342,7 +360,7 @@ Library file: **Vela Design System** → page `Dropdown List`.
 | Figma property | Code prop |
 |---|---|
 | `Current` | `value` equals the item's `value` |
-| `Disabled` | item `disabled` |
+| `Disabled` | item `locked` (the set's axis keeps its 0.14.0 name until the next library update) |
 | `Meta` / `Meta text` | item `meta` |
 | `Label` | item `label` |
 
@@ -356,6 +374,7 @@ expression: they exist only in code.**
 - ❌ A list of commands (Edit / Delete) in a Dropdown List → an Actions Dropdown, not in this kit; flag the gap.
 - ❌ A Dropdown List as a form field → a Select List, not in this kit; flag the gap.
 - ❌ Hiding two or three options behind a Dropdown List when they fit → Tabs or Radio Group.
+- ❌ A locked item for a permission ("No access", "Your role can't") → don't list the value; locked is for a setting or a policy.
 - ❌ `meta="Critical"` or a coloured dot in `meta` → meta is words, never a severity, risk, status or verdict.
 - ❌ Truncating long names with an ellipsis → names wrap in full; the list is where they are read.
 - ❌ Turning the trigger's chevron 180° on open → the chevron stays still until the Icon work's chevron lands.
