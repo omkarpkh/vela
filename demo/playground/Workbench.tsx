@@ -167,7 +167,7 @@ export function CodeBar({ id, snippet, changedProps, settle, children }: { id: s
           )
         })}
       </ScrollRegion>
-      <CopyStatus state={state} className="pg-codebar__status" />
+      <CopyStatus state={state} what="snippet" className="pg-codebar__status" />
       {children}
     </section>
   )

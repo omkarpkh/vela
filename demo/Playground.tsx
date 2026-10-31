@@ -128,7 +128,7 @@ function UseStep({ n, title, hint, text, what, className, note }: { n: number; t
         <CopyButton what={what} onCopy={copy} />
       </div>
       {note && <p className="pg-install-note">{note}</p>}
-      <CopyStatus state={state} />
+      <CopyStatus state={state} what={what} />
     </li>
   )
 }

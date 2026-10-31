@@ -1,6 +1,6 @@
 {
   "version": "0.14.0",
-  "unit": 861,
+  "unit": 865,
   "browser": {
     "visual": 68,
     "e2e": 112,
@@ -8,5 +8,5 @@
     "total": 182
   },
   "flutter": 3,
-  "total": 1046
+  "total": 1050
 }
