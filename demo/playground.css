@@ -209,3 +209,35 @@
 .pg-toolbar__label { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-de-emphasized); }
 /* "Open proof" lands here: the rule it names, focused, with the focus ring (spec v1.2, section 8). */
 .pg-rule--target:focus-visible, .pg-rule--target:focus { outline: var(--vela-focus-ring-width) solid var(--vela-focus-ring-color); outline-offset: var(--vela-focus-ring-offset); }
+
+/* ------------------------------------------------- the phone stage strip -- */
+/* Section 6 (A8, A12): on a phone the stage pins under the header as a strip while the controls
+   scroll, so a change is seen as it is made. Only on a screen tall enough to hold the strip and
+   some controls; it lets go while a text control has focus (the on-screen keyboard halves the
+   height) or while the reader has expanded it. scroll-padding-top grows by the strip, so a focused
+   control is never scrolled under it (WCAG 2.4.11). The workbench becomes one flex column here:
+   a sticky element in a grid is held inside its own row, and the strip must outlast the controls. */
+.pg-expand { display: none; }
+@media (max-width: 600px) and (min-height: 640px) {   /* vela-allow: the phone width and the strip's height threshold; literal until breakpoint tokens exist */
+  /* The strip's stage height, 200px, sized on the visual suite's phone (390 × 844). */
+  :root { --pg-strip-height: calc(5 * var(--vela-space-40)); }
+  .pg:not(.is-unpinned) { display: flex; flex-direction: column; align-items: stretch; }
+  .pg:not(.is-unpinned) > .pg-main > * { min-width: 0; }
+  .pg:not(.is-unpinned) .pg-props { position: static; }
+  .pg:not(.is-unpinned) .pg-main { display: contents; }
+  .pg:not(.is-unpinned) .pg-stage-region {
+    position: sticky; top: var(--site-topbar-height); z-index: 5;
+    padding: var(--vela-space-5) 0 var(--vela-space-10);
+    background: var(--vela-bg-global); border-bottom: 1px solid var(--vela-border-subtle);
+  }
+  .pg:not(.is-unpinned) .pg-stage { max-height: var(--pg-strip-height); overflow-y: auto; grid-template-columns: 1fr; }
+  .pg:not(.is-unpinned) .pg-frame { min-height: 0; padding-top: var(--vela-space-40); }
+  html:has(.pg:not(.is-unpinned)) { scroll-padding-top: calc(var(--site-topbar-height) + var(--pg-strip-height) + 3 * var(--vela-space-20)); }
+  .pg-expand {
+    display: inline-flex; align-items: center; min-height: var(--vela-control-height-24); margin-bottom: var(--vela-space-5);
+    padding: 0 var(--vela-space-10); border: 1px solid var(--vela-border-default); border-radius: var(--vela-radius-4);
+    background: transparent; color: var(--vela-text-default); font: inherit; cursor: pointer;
+  }
+  .pg-expand[aria-expanded="true"] { background: var(--vela-bg-selected); border-color: var(--vela-border-active); }
+}
+@media (forced-colors: active) { .pg-expand { border-color: ButtonText; } }

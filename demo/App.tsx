@@ -1,29 +1,26 @@
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { cn } from '../src'
 import pkg from '../package.json'
 import './demo.css'
 import { useRoute, href, sameRoute, type Route } from './router'
 import { FOUNDATIONS, COMPONENTS, PROPOSALS } from './nav'
 import { LINKS, figmaUrl } from './links'
-import { Overview } from './pages/Overview'
-import { Foundation } from './pages/Foundation'
 import { Doc, DOCS } from './pages/Doc'
-import { Status } from './pages/Status'
-import { Adopt } from './Adopt'
-import { Playground } from './Playground'
-import { How } from './pages/How'
-import { Motion } from './pages/Motion'
-import { Proposal } from './pages/Proposal'
-import { Segments } from './shell/Segments'
+import { Appearance, type Theme } from './shell/Appearance'
 import { Search } from './shell/Search'
-import { GROUPS } from './playground/registry'
+import { GROUPS } from './playground/catalog'
 
-type Theme = 'system' | 'light' | 'dark'
-const THEMES = [
-  { value: 'system', label: 'System' },
-  { value: 'light', label: 'Light' },
-  { value: 'dark', label: 'Dark' },
-] as const
+// One chunk per page, loaded when it is opened (playground spec, B8). The shell — header, nav,
+// search — stays in the first chunk; a page's components, its spec and its stage code do not.
+const Overview = lazy(() => import('./pages/Overview').then((m) => ({ default: m.Overview })))
+const Foundation = lazy(() => import('./pages/Foundation').then((m) => ({ default: m.Foundation })))
+const Status = lazy(() => import('./pages/Status').then((m) => ({ default: m.Status })))
+const Adopt = lazy(() => import('./Adopt').then((m) => ({ default: m.Adopt })))
+const Playground = lazy(() => import('./Playground').then((m) => ({ default: m.Playground })))
+const How = lazy(() => import('./pages/How').then((m) => ({ default: m.How })))
+const Motion = lazy(() => import('./pages/Motion').then((m) => ({ default: m.Motion })))
+const Proposal = lazy(() => import('./pages/Proposal').then((m) => ({ default: m.Proposal })))
+
 
 function NavLink({ to, current, tag, children }: { to: Route; current: Route; tag?: string; children: React.ReactNode }) {
   const active = sameRoute(to, current)
@@ -72,6 +69,17 @@ function MenuIcon() {
     <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
       <path d="M2 4h12M2 8h12M2 12h12" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
     </svg>
+  )
+}
+
+/** GitHub, npm and Figma, written as words. Each says where it goes, so no mark or tooltip is needed. */
+function SiteLinks({ className }: { className: string }) {
+  return (
+    <>
+      <a className={className} href={LINKS.github}>GitHub</a>
+      <a className={className} href={LINKS.npm}>npm</a>
+      <a className={className} href={figmaUrl()}>Figma</a>
+    </>
   )
 }
 
@@ -132,10 +140,11 @@ export function App() {
         </a>
         <Search compact={phone} />
         <div className="topbar__right">
-          <Segments label="Theme" value={theme} options={THEMES} onChange={setTheme} />
-          <a className="topbar__link vela-meta" href={LINKS.github}>GitHub</a>
-          <a className="topbar__link vela-meta" href={LINKS.npm}>npm</a>
-          <a className="topbar__link vela-meta" href={figmaUrl()}>Figma</a>
+          {/* Only the Appearance panel sets the page's theme and brand (section 9). */}
+          <Appearance theme={theme} onTheme={setTheme} compact={phone} />
+          {/* Written links until BrandMark's three marks can ship together (section 3); on a phone
+              they move into the menu, after the nav. */}
+          {!phone && <SiteLinks className="topbar__link vela-meta" />}
         </div>
       </header>
 
@@ -178,10 +187,17 @@ export function App() {
             <NavLink to={{ kind: 'adopt' }} current={route}>Adopt without rewrite</NavLink>
             <NavLink to={{ kind: 'motion' }} current={route}>Motion review</NavLink>
           </NavGroup>
+          {phone && (
+            <div className="sitenav__group sitenav__elsewhere">
+              <h3>Elsewhere</h3>
+              <SiteLinks className="sitenav__link" />
+            </div>
+          )}
           <p className="vela-meta sitenav__foot">Pages and controls are generated from <code>guidelines/</code> and the token file.</p>
         </nav>
 
         <main id="main" className="content">
+          <Suspense fallback={<p className="vela-meta site-loading">Loading this page…</p>}>
           {route.kind === 'overview' && <Overview />}
           {route.kind === 'component' && <Playground key={route.id} id={route.id} tab={route.tab} />}
           {route.kind === 'proposal' && <Proposal key={route.id} id={route.id} />}
@@ -191,6 +207,7 @@ export function App() {
           {route.kind === 'how' && <How />}
           {route.kind === 'status' && <Status />}
           {route.kind === 'doc' && <Doc key={route.id} id={route.id} />}
+          </Suspense>
           <footer className="demo-footer vela-meta">
             Zero runtime dependencies · ESM · light + dark · WCAG 2.1 AA asserted in CI
           </footer>

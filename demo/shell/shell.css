@@ -122,3 +122,42 @@
   .shell-search__option[aria-selected='true'] .site-tag { border-color: HighlightText; color: HighlightText; }
   .shell-search__field:focus-within { outline: var(--vela-focus-ring-width) solid Highlight; outline-offset: calc(-1 * var(--vela-focus-ring-width)); }
 }
+
+/* ------------------------------------------------------------ appearance -- */
+/* Appearance (playground spec, sections 3 and 9): a header button and a side panel that is not a
+   dialog. The panel sits under the button, at the right edge, on the raised surface with a default
+   edge and no shadow, because no elevation token exists (as Popover). */
+.shell-segment__swatch {
+  display: inline-block; flex: none; width: var(--vela-icon-size-small); height: var(--vela-icon-size-small);
+  margin-inline-end: var(--vela-space-5); border-radius: var(--vela-radius-3); border: 1px solid var(--vela-border-default);
+}
+.shell-appearance { position: relative; display: inline-flex; }
+.shell-appearance__button {
+  display: inline-flex; align-items: center; gap: var(--vela-space-10);
+  height: var(--vela-control-height-35); min-width: var(--vela-control-height-35); padding: 0 var(--vela-space-10);
+  border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4);
+  background: transparent; color: var(--vela-text-default);
+  font: inherit; font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height); cursor: pointer;
+  transition: background-color var(--vela-duration-base) var(--vela-ease-standard);
+}
+.shell-appearance__button.is-compact { justify-content: center; padding: 0; }
+.shell-appearance__button svg { flex: none; color: var(--vela-icon-default); }
+.shell-appearance__button[aria-expanded="true"] { background: var(--vela-bg-selected); border-color: var(--vela-border-active); }
+@media (hover: hover) { .shell-appearance__button:hover { background: var(--vela-bg-hover); transition-duration: var(--vela-duration-fast); } }
+.shell-appearance__panel {
+  position: absolute; top: calc(100% + var(--vela-space-10)); right: 0; z-index: 40;
+  width: var(--vela-popover-width); max-width: calc(100vw - 2 * var(--vela-space-15)); box-sizing: border-box;
+  display: flex; flex-direction: column; gap: var(--vela-space-15);
+  padding: var(--vela-space-15);
+  border: 1px solid var(--vela-border-default); border-radius: var(--vela-radius-4);
+  background: var(--vela-bg-raised); color: var(--vela-text-default);
+}
+.shell-appearance__panel[hidden] { display: none; }
+.shell-appearance__title { margin: 0; }
+.shell-appearance__group { display: flex; flex-direction: column; gap: var(--vela-space-5); }
+.shell-appearance__label { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); font-weight: var(--vela-font-weight-semibold); }
+.shell-appearance__note { margin: 0; font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
+@media (forced-colors: active) {
+  .shell-appearance__button[aria-expanded="true"] { border-color: Highlight; }
+  .shell-segment__swatch { forced-color-adjust: none; }
+}

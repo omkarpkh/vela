@@ -30,6 +30,8 @@ export interface SegmentOption<T extends string> {
   label: string
   /** Can't be chosen with the other settings as they are; the reason is one sentence a person can act on. */
   locked?: { reason: string }
+  /** A swatch before the label, filled with this semantic token (the Appearance panel's brands). */
+  swatch?: string
 }
 
 export interface SegmentsProps<T extends string> {
@@ -62,6 +64,7 @@ export function Segments<T extends string>({ label, value, options, onChange, on
           }}
         >
           {o.locked && <Icon name="lock" size="small" className="shell-segment__lock" />}
+          {o.swatch && <span className="shell-segment__swatch" style={{ background: `var(${o.swatch})` }} aria-hidden="true" />}
           {o.label}
         </button>
         {/* The reason sits beside the button, not in it, so it is the description and never the name. */}

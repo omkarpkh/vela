@@ -15,7 +15,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { cn } from '../../src'
 import { buildIndex, search, MISSING, type Hit } from '../playground/search'
-import { REGISTRY } from '../playground/registry'
+import { CATALOG as REGISTRY } from '../playground/catalog'
 import './shell.css'
 
 const MISSING_STANDS: Record<string, string> = Object.fromEntries(MISSING.map((m) => [m.id, m.stands]))

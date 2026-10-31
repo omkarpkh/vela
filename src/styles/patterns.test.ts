@@ -24,7 +24,7 @@ describe('pattern-cites-real-rules', () => {
     const out = execFileSync('node', ['scripts/check-rules.mjs'], { encoding: 'utf8' })
     expect(out).toContain('pattern(s) checked (pattern-cites-real-rules)')
     expect(out).toMatch(/copy-button-fails-honestly \(runtime\) — copy-button is not built yet/)
-  })
+  }, 30_000)   // the whole rule checker runs in a child process; under a loaded runner it passes 5 s
 
   it('passes a pattern that cites a built rule at its own level, with true totals', () => {
     const r = run(`- Dropdown List: 19 rules, 17 with proofs;\n\n**19 rules, 17 with proofs**\n\n` +

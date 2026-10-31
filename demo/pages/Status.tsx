@@ -1,4 +1,4 @@
-import { REGISTRY } from '../playground/registry'
+import { CATALOG as REGISTRY } from '../playground/catalog'
 import { href } from '../router'
 import { figmaUrl } from '../links'
 import { version } from '../../package.json'

@@ -25,6 +25,13 @@ vi.mock('../../demo/playground/registry', async (importOriginal) => {
   return { ...actual, REGISTRY: [...actual.REGISTRY, boom] }
 })
 
+// The nav and the router read the catalog (B8), so Boom is listed there too.
+vi.mock('../../demo/playground/catalog', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../demo/playground/catalog')>()
+  const button = actual.CATALOG.find((e) => e.id === 'button')!
+  return { ...actual, CATALOG: [...actual.CATALOG, { ...button, id: 'boom', name: 'Boom' }] }
+})
+
 vi.mock('../../demo/pages/Overview', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../demo/pages/Overview')>()
   return {
@@ -56,7 +63,8 @@ describe('the stage error boundary', () => {
     render(<SiteBoundary><App /></SiteBoundary>)
 
     // The stage's own copy, not the site's.
-    const alert = await screen.findByRole('alert')
+    // The page loads in its own chunk (B8), so the first render waits for it.
+    const alert = await screen.findByRole('alert', {}, { timeout: 10000 })
     expect(alert).toHaveTextContent("This component stopped working with these settings. That's a fault in Vela, not in what you chose.")
     expect(screen.queryByText('The playground stopped working.')).toBeNull()
     expect(within(alert).getByText('Show details')).toBeInTheDocument()

@@ -222,15 +222,13 @@ export function lifecycleTable(md = read('GOVERNANCE.md')) {
   return out
 }
 
-/** The playground registry's order — id, spec file, source folder, name — read from demo/playground/registry.tsx. */
+/** The playground catalog's order — id, spec file, source folder, name — read from demo/playground/catalog.ts. */
 export function registryOrder() {
-  const src = read('demo/playground/registry.tsx')
-  const body = src.slice(src.indexOf('export const REGISTRY'))
-  const ids = [...body.matchAll(/^\s*id: '([^']+)',/gm)]
-  return ids.map((m, i) => {
-    const chunk = body.slice(m.index, ids[i + 1]?.index ?? body.length)
-    const f = (k) => (chunk.match(new RegExp(`^\\s*${k}: '([^']+)'`, 'm')) || [])[1]
-    return { id: m[1], file: f('file') ?? `${m[1]}.md`, src: f('src'), name: f('name') }
+  const src = read('demo/playground/catalog.ts')
+  const body = src.slice(src.indexOf('export const CATALOG'))
+  return [...body.matchAll(/^\s*\{ (id: '[^']+'.*) \},?$/gm)].map((m) => {
+    const f = (k) => (m[1].match(new RegExp(`\\b${k}: '([^']+)'`)) || [])[1]
+    return { id: f('id'), file: f('file') ?? `${f('id')}.md`, src: f('src'), name: f('name') }
   })
 }
 
@@ -278,7 +276,7 @@ export function statusData() {
   const order = registryOrder()
   const registered = new Set(order.map((o) => o.file))
   const stray = readdirSync(dir).filter((f) => f.endsWith('.md') && !registered.has(f))
-  if (stray.length) throw new Error(`guidelines/components: ${stray.join(', ')} not in demo/playground/registry.tsx — register the component first`)
+  if (stray.length) throw new Error(`guidelines/components: ${stray.join(', ')} not in demo/playground/catalog.ts — register the component first`)
   const entries = changelog()
   const table = lifecycleTable()
   const s = stampParts()
