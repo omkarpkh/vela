@@ -28,6 +28,13 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   built.
 
 ### Changed
+- **Site: the first download drops from 512 kB to 308 kB, under the build's 500 kB warning** (B8).
+  The nav, search and Status page read each spec cut to its facts (its title, first paragraph,
+  Status line, "When to use" and rule tags), made at build time by a small Vite plugin,
+  `scripts/vite-spec-facts.mjs` (`import facts from '…/button.md?facts'`), instead of all 17 specs
+  whole. A component page loads its full spec with its own chunk. The cut is still markdown, so the
+  same parsers read it, and a test checks it gives the same status, rules, title and "When to use"
+  as the whole spec, for every spec. The build no longer warns about chunk size.
 - **Site, slice 6b: the Copy page's second half** (`#/patterns/copy`, sections 5 to 13; playground
   spec, section 12). The page now carries all of `guidelines/patterns/copy.md`, and the note that
   sent readers to GitHub for the rest is gone. Each section leads with a live example:

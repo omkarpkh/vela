@@ -28,7 +28,7 @@ describe('the site loads each page when it is opened', () => {
   it('the nav and search read the catalog, never the stage registry', () => {
     for (const f of ['demo/App.tsx', 'demo/nav.ts', 'demo/playground/search.ts', 'demo/shell/Search.tsx'])
       expect(staticImports(read(f)).some((i) => /playground\/registry$|\.\/registry$/.test(i)), f).toBe(false)
-    // The catalog imports specs and nothing that renders.
-    expect(staticImports(read('demo/playground/catalog.ts')).every((i) => i.endsWith('.md?raw')), 'catalog.ts').toBe(true)
+    // The catalog imports specs cut to their facts (B8), and nothing that renders.
+    expect(staticImports(read('demo/playground/catalog.ts')).every((i) => i.endsWith('.md?facts')), 'catalog.ts').toBe(true)
   })
 })

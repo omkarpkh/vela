@@ -1,25 +1,27 @@
 /**
  * What every page needs to know about a built component, without its stage: its name, group,
- * search aliases and spec. The nav, search and status pages read this, in the first chunk; the
- * stage code (registry.tsx) loads with the component's page (playground spec, B8).
+ * search aliases and the facts of its spec. The nav, search and status pages read this, in the first
+ * chunk; the stage code and the full spec (registry.tsx) load with the component's page (playground
+ * spec, B8). `spec` here is the spec cut to its title, first paragraph, Status line, "When to use"
+ * and rule tags by scripts/vite-spec-facts.mjs: the same markdown, so the same parsers read it.
  */
-import buttonMd from '../../guidelines/components/button.md?raw'
-import toggleMd from '../../guidelines/components/toggle.md?raw'
-import inputMd from '../../guidelines/components/input.md?raw'
-import textAreaMd from '../../guidelines/components/text-area.md?raw'
-import alertMd from '../../guidelines/components/contextual-alert.md?raw'
-import statusMd from '../../guidelines/components/status-indicator.md?raw'
-import riskMd from '../../guidelines/components/risk-pill.md?raw'
-import tabsMd from '../../guidelines/components/tabs.md?raw'
-import iconMd from '../../guidelines/components/icon.md?raw'
-import checkboxMd from '../../guidelines/components/checkbox.md?raw'
-import radioGroupMd from '../../guidelines/components/radio-group.md?raw'
-import tableMd from '../../guidelines/components/table.md?raw'
-import popoverMd from '../../guidelines/components/popover.md?raw'
-import tooltipMd from '../../guidelines/components/tooltip.md?raw'
-import dialogMd from '../../guidelines/components/dialog.md?raw'
-import toastMd from '../../guidelines/components/toast.md?raw'
-import dropdownListMd from '../../guidelines/components/dropdown-list.md?raw'
+import buttonMd from '../../guidelines/components/button.md?facts'
+import toggleMd from '../../guidelines/components/toggle.md?facts'
+import inputMd from '../../guidelines/components/input.md?facts'
+import textAreaMd from '../../guidelines/components/text-area.md?facts'
+import alertMd from '../../guidelines/components/contextual-alert.md?facts'
+import statusMd from '../../guidelines/components/status-indicator.md?facts'
+import riskMd from '../../guidelines/components/risk-pill.md?facts'
+import tabsMd from '../../guidelines/components/tabs.md?facts'
+import iconMd from '../../guidelines/components/icon.md?facts'
+import checkboxMd from '../../guidelines/components/checkbox.md?facts'
+import radioGroupMd from '../../guidelines/components/radio-group.md?facts'
+import tableMd from '../../guidelines/components/table.md?facts'
+import popoverMd from '../../guidelines/components/popover.md?facts'
+import tooltipMd from '../../guidelines/components/tooltip.md?facts'
+import dialogMd from '../../guidelines/components/dialog.md?facts'
+import toastMd from '../../guidelines/components/toast.md?facts'
+import dropdownListMd from '../../guidelines/components/dropdown-list.md?facts'
 
 export type Group = 'Actions' | 'Inputs' | 'Feedback' | 'Overlays' | 'Data'
 export const GROUPS: Group[] = ['Actions', 'Inputs', 'Feedback', 'Overlays', 'Data']
@@ -35,6 +37,7 @@ export interface CatalogEntry {
    * Vela has nothing for goes in search.ts's MISSING, with the nearest component, instead.
    */
   aliases: string[]
+  /** The spec's facts: title, first paragraph, Status, "When to use" and rule tags (?facts). */
   spec: string
   /** Spec file and source folder, for the page's links. */
   file: string
