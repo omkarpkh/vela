@@ -369,6 +369,11 @@ Library file: **Vela Design System** → page `Dropdown List`.
 
 `Highlighted` has no prop: it is the pointer or the keys resting on the item.
 
+**Locked: always show Meta with the reason; the lock never appears without it. The code requires
+`locked: { reason }`.** A Figma property has one default for the whole set, so the set can't turn
+Meta on for locked variants alone (the Figma thread tested it on a copy, 31 Oct 2026). The page's
+"Usage / Locked" frame, drawn by the builder beside the popup, shows a locked item with its reason.
+
 **Placement and flipping, focus, typeahead and the highlight following the keys have no Figma
 expression: they exist only in code.**
 

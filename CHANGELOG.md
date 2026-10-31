@@ -19,6 +19,14 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   component that is only specified is printed as not built yet. Five unit tests prove it fails
   when a pattern drifts (`src/styles/patterns.test.ts`).
 
+### Changed
+- **Figma: Dropdown List says a locked item always shows its reason.** The guideline's *Figma
+  mapping* gains the line "Locked: always show Meta with the reason; the lock never appears without
+  it", which the sync carries into the set's description, and the builder draws a "Usage / Locked"
+  frame beside the popup: a locked item with its reason in Meta, captioned. The set itself can't
+  default Meta on for locked variants alone, because a Figma property has one default per set (the
+  Figma thread tested it on a copy). No key or property changes.
+
 ## [0.15.0] — 2026-10-31
 
 ### Changed
