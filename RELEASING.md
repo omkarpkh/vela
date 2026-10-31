@@ -93,6 +93,11 @@ approval-gated: the maintainer clicks it, not a script. Then record the date: a 
 `built` in `scripts/sync-figma-descriptions.mjs` moves to `published`, and `npm run figma:map`
 regenerates `guidelines/figma-map.json`.
 
+The Figma Community listing does not follow the library on its own, and copies people have already
+duplicated never change. After the library is published, the maintainer also publishes the
+listing's update from the file (Share → Publish to Community → Publish update), and refreshes any
+number in the listing's description that changed (components, sets, variables, checks, pairs, rules).
+
 ## 10. GitHub release
 
 Create a release from the tag. Title `X.Y.Z`, body copied from the changelog entry unchanged.

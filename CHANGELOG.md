@@ -28,6 +28,10 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   built.
 
 ### Changed
+- **The Figma library is on Figma Community** ([Vela Design System](https://www.figma.com/community/file/1698367695704645041/vela-design-system), listed by Omkar on 31
+  October 2026, shown as "Licensed under CC BY 4.0"). `LICENSE-DESIGN.md` and the README no longer
+  say the listing is planned, and `RELEASING.md` step 9 adds the listing's own update after each
+  library publish, because a listing doesn't follow the library by itself.
 - **Figma: Dropdown List says a locked item always shows its reason.** The guideline's *Figma
   mapping* gains the line "Locked: always show Meta with the reason; the lock never appears without
   it", which the sync carries into the set's description, and the builder draws a "Usage / Locked"
