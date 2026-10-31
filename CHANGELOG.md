@@ -28,6 +28,31 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   built.
 
 ### Changed
+- **Figma: a published set is extended in place, and the code holds it to that** (R18).
+  Builders create and never update, because a rebuilt set detaches its instances, but until now a
+  change to a published set had no route except by hand. It is now an extension,
+  `scripts/figma/components/<builder>.<id>.extend.figma.js`, declaring `// @extends <builder>` and
+  one `// @adds <node name>` per node it creates. `npm run figma:build <builder>` runs the builder
+  and then its extensions in file-name order, so a fresh build and an extended file make the same
+  tree and the drift diff still holds. `-- --extend` prints a script for a file that already has the
+  sets: it says "Build <page> first" if they are missing, skips an extension whose nodes are all
+  there, refuses one that is half there, and snapshots every node in the sets before and after,
+  stopping with a list if any was removed, renamed, re-parented or moved among its siblings, if a
+  property or option went away or changed type, or if the default variant changed. New variants go
+  in free space with `appendVariant`; nothing that was there moves. The lint runs each extension
+  twice in the mock (the first run extends with the snapshot unchanged, the second skips), refuses
+  `.remove(`, `combineAsVariants(` and renaming a node it did not make, and applies the reviewer
+  rules to what it adds. Three fixtures in `scripts/figma/__fixtures__/` prove the stop: a renamed
+  variant, a removed layer, a moved default. The first extension is Dropdown List's Usage / Locked
+  frame, moved out of the builder unchanged; the rebuilt tree is the same.
+- **Figma lint: an alpha mask may carry an unbound gradient.** `raw-colour` allows a paint that is
+  not bound to a variable only on a node with `isMask` whose paint is a gradient with every stop
+  black; the stops' alpha may vary, because a mask draws only its alpha. A coloured stop on a mask,
+  or the same black gradient on a node that is not a mask, still fails.
+- **Figma: `opacity/*` variables are written as percents** (`opacity/scrim` 50, `opacity/preview`
+  55). Figma's layer-opacity field runs 0 to 100, so a bound 0.5 reads as 0.5%, not 50%. The sync
+  writes each OPACITY-scoped number ×100, its description says "percent in Figma, a fraction in
+  CSS", and `tokens:figma:check` reads it back the same way. The CSS is unchanged (0.5 and 0.55).
 - **The Figma library is on Figma Community** ([Vela Design System](https://www.figma.com/community/file/1698367695704645041/vela-design-system), listed by Omkar on 31
   October 2026, shown as "Licensed under CC BY 4.0"). `LICENSE-DESIGN.md` and the README no longer
   say the listing is planned, and `RELEASING.md` step 9 adds the listing's own update after each

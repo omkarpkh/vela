@@ -147,8 +147,23 @@ describe('Figma sync: variable scopes match the property each token is for', () 
 
   // The Figma thread asked for the Seed's strength by this name, beside opacity/scrim.
   it('the hover preview tokens reach Figma under the names the library expects', () => {
-    expect(byCss['opacity-preview']).toMatchObject({ collection: 'Sizing', name: 'opacity/preview', type: 'FLOAT', light: 0.55 })
+    expect(byCss['opacity-preview']).toMatchObject({ collection: 'Sizing', name: 'opacity/preview', type: 'FLOAT', light: 55 })
     expect(byCss['tab-preview-width-min']).toMatchObject({ collection: 'Sizing', name: 'tab/preview-width-min', type: 'FLOAT', light: 24 })
     expect(byCss['delay-preview']).toMatchObject({ collection: 'Motion', name: 'delay/preview', type: 'TIMING', light: 0.08, scopes: null })
+  })
+})
+
+// Figma's layer-opacity field is a percent and CSS opacity a fraction (R18-2, 31 Oct 2026): bound as
+// 0.5, the scrim would read as 0.5% in Figma. The sync writes every opacity/* variable ×100; the CSS keeps it.
+describe('Figma sync: an opacity is a percent in Figma, a fraction in CSS', () => {
+  it('writes opacity/scrim as 50 and opacity/preview as 55, and says so in each description', () => {
+    const opacity = entries.filter((e) => e.name.startsWith('opacity/'))
+    expect(opacity.map((e) => [e.name, e.light])).toEqual([['opacity/scrim', 50], ['opacity/preview', 55]])
+    for (const e of opacity) {
+      expect(e.scopes, e.name).toEqual(['OPACITY'])
+      expect(e.description, e.name).toContain('percent in Figma, a fraction in CSS')
+    }
+    expect(doc.sizing['opacity-scrim'].$value).toBe(0.5)
+    expect(readFileSync(resolve(root, 'src/styles/tokens.light.css'), 'utf8')).toMatch(/--vela-opacity-scrim:\s*0\.5;/)
   })
 })

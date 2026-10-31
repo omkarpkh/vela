@@ -19,8 +19,8 @@
 // border/default edge, radius/4, space/5 on every side and no shadow, because no elevation token
 // exists — holding four item instances: a plain one, the current one with meta, a locked one with
 // its reason in meta, and a highlighted one.
-// Usage / Locked — a documentation frame beside the popup: one locked item with its reason in Meta,
-// captioned. The set's Meta default is set-wide and off, so the canvas shows the rule instead.
+// Usage / Locked, the documentation frame beside the popup, came after the set was published, so it
+// is an extension: dropdown-list.usage-locked.extend.figma.js. Create mode runs it after this file.
 // Placement, flipping, focus, typeahead and the highlight following the keys exist only in code.
 
 const BOOL = ['false', 'true'];
@@ -128,25 +128,4 @@ for (const row of ROWS) {
   inst.layoutSizingHorizontal = 'FILL'; inst.layoutSizingVertical = 'HUG';
 }
 
-// Usage, beside the popup: a locked item always carries its reason in Meta. A Figma property has one
-// default for the whole set, so the set can't make Meta default on for locked variants alone (tested
-// by the Figma thread on a copy, 31 Oct 2026); this frame shows the rule on the canvas instead. It is
-// documentation, not part of the set: no key or property changes.
-const usage = figma.createFrame(); usage.name = 'Usage / Locked';
-usage.layoutMode = 'VERTICAL'; usage.layoutSizingHorizontal = 'FIXED'; usage.layoutSizingVertical = 'HUG';
-usage.setBoundVariable('width', num('popover/width'));
-usage.setBoundVariable('itemSpacing', num('space/5'));
-for (const p of ['paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft']) usage.setBoundVariable(p, num('space/5'));
-usage.fills = [];
-page.appendChild(usage);
-usage.x = popup.x; usage.y = popup.y + popup.height + 48;
-const usageItem = set.children.find(v => v.name === 'Highlighted=false, Current=false, Locked=true').createInstance();
-usageItem.name = 'Item / Archive, locked';
-usage.appendChild(usageItem);
-usageItem.setProperties({ [labelProp]: 'Archive', [metaProp]: true, [metaTextProp]: 'Needs retention on' });
-usageItem.layoutSizingHorizontal = 'FILL'; usageItem.layoutSizingVertical = 'HUG';
-const caption = figma.createText(); caption.name = 'Caption'; caption.characters = 'Locked: always with its reason in Meta. The lock never appears without it.';
-await caption.setTextStyleIdAsync(style('Body/Default').id); caption.fills = [paint('text/default')];
-usage.appendChild(caption); caption.textAutoResize = 'HEIGHT'; caption.layoutSizingHorizontal = 'FILL';
-
-return { created: SET, variants: variants.length, setId: set.id, popup: popup.id, usage: usage.id, items: ROWS.length };
+return { created: SET, variants: variants.length, setId: set.id, popup: popup.id, items: ROWS.length };

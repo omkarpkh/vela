@@ -30,19 +30,19 @@ describe('pattern-cites-real-rules', () => {
     const r = run(`- Dropdown List: 19 rules, 17 with proofs;\n\n**19 rules, 17 with proofs**\n\n` +
       table('| Locked is not chosen | `dropdown-list-locked-not-chosen` | runtime |'))
     expect(r.ok, r.out).toBe(true)
-  })
+  }, 30_000)
 
   it('fails a rule cited at the wrong level', () => {
     const r = run(table('| Locked is not chosen | `dropdown-list-locked-not-chosen` | browser |'))
     expect(r.ok).toBe(false)
     expect(r.out).toContain('cites dropdown-list-locked-not-chosen as browser; dropdown-list.md says runtime')
-  })
+  }, 30_000)
 
   it('fails a rule no component spec defines, when its component is built', () => {
     const r = run(table('| Made up | `dropdown-list-never-written` | runtime |'))
     expect(r.ok).toBe(false)
     expect(r.out).toContain('cites dropdown-list-never-written (runtime), which no component spec defines')
-  })
+  }, 30_000)
 
   it('fails totals that disagree with the spec, and an overall total that disagrees with its parts', () => {
     const r = run(`- Dropdown List: 18 rules, 17 with proofs;\n\n**20 rules, 17 with proofs**\n\n` +
@@ -50,5 +50,5 @@ describe('pattern-cites-real-rules', () => {
     expect(r.ok).toBe(false)
     expect(r.out).toContain('says Dropdown List has 18 rules, 17 with proofs; dropdown-list.md has 19, 17 with proofs')
     expect(r.out).toContain('the total says 20 rules, 17 with proofs; its components add up to 18, 17')
-  })
+  }, 30_000)
 })

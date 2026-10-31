@@ -9,6 +9,8 @@
  *   --lint [name|path]         build every builder (or one, or a builder file at a path ending in
  *                              .figma.js — a test fixture) in the mock Plugin API and apply the
  *                              rules below; exit 1 on an unwaived violation. Runs in `npm test`.
+ *                              Every extension (<builder>.<id>.extend.figma.js, or one at a path)
+ *                              is linted too: see "extensions" below.
  *   --dump <name>              the tree a rebuild would create, as JSON (what the test asserts on)
  *   --read <name> [a:b]        print a read-only Plugin API script that dumps the LIVE set in the
  *                              same shape — variants a..b, because the MCP caps a return at 20 KB
@@ -32,13 +34,23 @@
  *   component-on-doc-page  (doc pages, check-pages.mjs) a component, set or instance on a doc page
  * A builder may waive a rule with `// @allow <rule> <why>`; the waiver is printed, never silent.
  * Glyph geometry inside a BOOLEAN_OPERATION and a main component's own canvas width are exempt.
+ * raw-colour allows one unbound paint: an alpha mask, a node with isMask whose paint is a gradient
+ * with every stop black ({r:0,g:0,b:0}, any alpha). Only the alpha of a mask is drawn.
+ *
+ * Extensions — a change to a published set (build-components.mjs). For each one the lint
+ *   - reads its body: no `.remove(`, no `combineAsVariants(`, and `.name =` only on a node it made
+ *     (extend-forbidden);
+ *   - builds the base in the mock, runs the --extend script, and runs it again: the first run must
+ *     extend with the snapshot unchanged, the second must skip everything (extend-run, extend-twice);
+ *   - applies the rules above to each node its // @adds names.
+ * None of the extend-* rules can be waived.
  */
 import { readFileSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { execFileSync } from 'node:child_process'
 import { createMockFigma } from './mock-figma.mjs'
-import { available, meta, generate, metaFromFile, generateFrom } from './build-components.mjs'
+import { available, meta, generate, metaFromFile, generateFrom, extensionMeta, extensionsOf, allExtensions } from './build-components.mjs'
 import { textStyles } from './text-styles.mjs'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
@@ -128,16 +140,25 @@ export function mockStyles() {
   }))
 }
 let VARS
-/** Build a builder in the mock: by name (components/<name>.figma.js), or by a path ending in .figma.js (a fixture). */
-export async function build(which) {
+/** A fresh mock with the pages and the sets a builder and its extensions `// @use` already built. */
+async function mockFor(m, uses) {
   VARS ??= loadVariables()
-  const isFile = /\.figma\.js$/.test(which)
-  const m = isFile ? metaFromFile(which) : meta(which)
   // A builder that places another set's instances (`// @uses icon`) needs that set in the file:
   // build it first, on its own page, in the same mock.
-  const deps = (m.uses || []).map((u) => ({ name: u, meta: meta(u) }))
+  const deps = [...new Set(uses)].map((u) => ({ name: u, meta: meta(u) }))
   const figma = createMockFigma({ variables: VARS, styles: mockStyles(), pages: [...deps.map((d) => d.meta.page), m.page] })
   for (const d of deps) await new AsyncFunction('figma', generate(d.name))(figma)
+  return figma
+}
+/**
+ * Build a builder in the mock, in create mode — the builder, then its extensions: by name
+ * (components/<name>.figma.js), or by a path ending in .figma.js (a fixture, with no extensions).
+ */
+export async function build(which) {
+  const isFile = /\.figma\.js$/.test(which)
+  const m = isFile ? metaFromFile(which) : meta(which)
+  const exts = isFile ? [] : extensionsOf(which)
+  const figma = await mockFor(m, [...(m.uses || []), ...exts.flatMap((e) => e.uses)])
   const result = await new AsyncFunction('figma', isFile ? generateFrom(m, which) : generate(which))(figma)
   const page = figma.root.children.find((p) => p.name === m.page)
   const sets = m.sets.map((name) => {
@@ -148,6 +169,62 @@ export async function build(which) {
   })
   return { figma, set: sets[0], sets, meta: m }
 }
+/**
+ * Extend in the mock: build the base alone, then run the --extend script for `exts` twice. Returns both
+ * results, or the error a run threw (`first.error`, `second.error`), and the page after the first run.
+ */
+export async function extendInMock(builder, exts) {
+  const m = meta(builder)
+  const figma = await mockFor(m, [...(m.uses || []), ...exts.flatMap((e) => e.uses)])
+  await new AsyncFunction('figma', generateFrom(m, `components/${builder}.figma.js`))(figma)
+  const script = generateFrom(m, exts.map((e) => e.file).join(', '), { extensions: exts, extend: true, which: builder })
+  const run = async () => { try { return await new AsyncFunction('figma', script)(figma) } catch (e) { return { error: e.message } } }
+  const first = await run()
+  const page = figma.root.children.find((p) => p.name === m.page)
+  // what the first run added, before the second can touch anything
+  const added = first.error ? [] : exts.flatMap((e) => e.adds.flatMap((a) => page.findAll((n) => n.name === a)))
+  const second = first.error ? null : await run()
+  return { figma, first, second, page, added, meta: m }
+}
+
+/** An extension's body may not remove, recombine, or rename a node it did not make. */
+export function forbidden(body) {
+  const code = body.split('\n').filter((l) => !/^\s*\/\//.test(l)).join('\n')
+  const out = []
+  if (/\.remove\(/.test(code)) out.push('calls .remove(: an extension never removes a node')
+  if (/combineAsVariants\(/.test(code)) out.push('calls combineAsVariants(: an extension appends to a set, it never makes one')
+  const made = new Set()
+  for (const [, name, init] of code.matchAll(/\b(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*([^;\n]*)/g)) {
+    if (/^(?:await\s+)?figma\.(?:create\w*|union|subtract|intersect|exclude|flatten|group)\(|\.(?:createInstance|clone)\(\)\s*$|^(?:await\s+)?instanceOf\(/.test(init.trim())) made.add(name)
+  }
+  for (const [, , head, chain] of code.matchAll(/(^|[^\w$.\])])([A-Za-z_$][\w$]*)((?:\s*(?:\.[\w$]+|\[[^\]]*\]|\([^()]*\)))*)\.name\s*\+?=(?!=)/gm)) {
+    if (chain || !made.has(head)) out.push(`sets .name on ${head}${chain}, a node it did not make: an extension never renames what the set has`)
+  }
+  return out
+}
+
+/** The lint for one extension: its body, two runs in the mock, and the reviewer rules on what it adds. */
+export async function lintExtension(ext) {
+  const problems = []
+  const hit = (rule, node, what) => problems.push({ rule, node, what, waived: false })
+  if (!available().includes(ext.builder)) { hit('extend-orphan', ext.file, `extends "${ext.builder}", which is not a builder`); return { problems, allow: ext.allow } }
+  for (const f of forbidden(ext.body)) hit('extend-forbidden', ext.file, f)
+  const { figma, first, second, added } = await extendInMock(ext.builder, [ext])
+  if (first.error) hit('extend-run', ext.file, first.error)
+  else {
+    if (JSON.stringify(first.extended) !== JSON.stringify([ext.id]) || first.snapshot !== 'unchanged') hit('extend-run', ext.file, `the first run should extend ${ext.id} with the snapshot unchanged; it returned ${JSON.stringify(first)}`)
+    if (second.error) hit('extend-twice', ext.file, second.error)
+    else if (second.extended.length || JSON.stringify(second.skipped) !== JSON.stringify([ext.id])) hit('extend-twice', ext.file, `a second run should skip ${ext.id} and change nothing; it returned ${JSON.stringify(second)}`)
+  }
+  const vars = await figma.variables.getLocalVariablesAsync()
+  const nameOf = Object.fromEntries(vars.map((v) => [v.id, v.name]))
+  for (const node of new Set(added)) {
+    node._figma_varname = (id) => nameOf[id]
+    problems.push(...lint(node, ext.allow).map((p) => ({ ...p, node: `${node.name} › ${p.node}` })))
+  }
+  return { problems, allow: ext.allow, extend: { first, second } }
+}
+
 /** `--set=<name>` picks one of a multi-set builder's sets for --dump, --read and the diff; default the first. */
 const pickSet = (m, argv) => {
   const flag = argv.find((a) => a.startsWith('--set='))
@@ -160,6 +237,9 @@ export async function dumpTree(figma, set, a, b) {
 }
 
 // ---------- the rules ----------
+// A mask draws only its alpha: a gradient on an isMask node whose stops are all black is a fade, not a colour.
+const alphaMask = (n, p) => n.isMask === true && /^GRADIENT_/.test(p.type) && Array.isArray(p.gradientStops) && p.gradientStops.length > 0 &&
+  p.gradientStops.every((g) => g.color && g.color.r === 0 && g.color.g === 0 && g.color.b === 0)
 const DEFAULT_NAMES = /^(Frame|Component|Text|Rectangle|Ellipse|Polygon|Union|Vector|Group|Line|Star|Instance)( \d+)?$/
 /**
  * @param set    the component set — or, for a doc page, its page frame
@@ -178,7 +258,7 @@ export function lint(set, allow = [], { docPage = false } = {}) {
       if (/placeholder/i.test(n.name) || DEFAULT_NAMES.test(n.name)) hit('bad-name', n, `"${n.name}"`)
       // An instance must say which variant it is; the main component's own tree is linted on the set.
       if (n.type === 'INSTANCE' && !(n.mainComponent && n.mainComponent.parent)) hit('bad-name', n, 'an instance with no main component')
-      for (const p of [...(n.fills || []), ...(n.strokes || [])]) if (!(p.boundVariables && p.boundVariables.color)) hit('raw-colour', n, p.type)
+      for (const p of [...(n.fills || []), ...(n.strokes || [])]) if (!(p.boundVariables && p.boundVariables.color) && !alphaMask(n, p)) hit('raw-colour', n, p.type)
       if (!inBool && 'topLeftRadius' in n) for (const f of ['topLeftRadius', 'topRightRadius', 'bottomLeftRadius', 'bottomRightRadius']) if (n[f] && !bound(f)) hit('raw-radius', n, `${f}=${n[f]}`)
       if ('layoutMode' in n && n.layoutMode !== 'NONE') {
         for (const f of ['itemSpacing', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft']) {
@@ -279,7 +359,11 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const argv = args.filter((a) => a !== '--json')
   const run = async () => {
     if (argv[0] === '--lint') {
-      const names = argv[1] ? [argv[1]] : available()
+      const one = argv[1]
+      const isExt = one && one.endsWith('.extend.figma.js')
+      const names = isExt ? [] : one ? [one] : available()
+      // Extensions are reported under their file's stem, `<builder>.<id>`, after the builders.
+      const exts = isExt ? [extensionMeta(one)] : one ? (/\.figma\.js$/.test(one) ? [] : extensionsOf(one)) : allExtensions()
       const report = {}
       let failed = false
       for (const which of names) {
@@ -296,11 +380,17 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
         report[which] = { problems, allow: m.allow }
         if (problems.some((p) => !p.waived)) failed = true
       }
+      for (const ext of exts) {
+        const key = isExt ? one : `${ext.builder}.${ext.id}`
+        report[key] = await lintExtension(ext)
+        if (report[key].problems.some((p) => !p.waived)) failed = true
+      }
       if (json) { console.log(JSON.stringify(report)); process.exit(failed ? 1 : 0) }
       for (const [which, r] of Object.entries(report)) {
         const bad = r.problems.filter((p) => !p.waived), ok = r.problems.filter((p) => p.waived)
         console.log(`${which}: ${bad.length ? bad.length + ' violation(s)' : 'clean'}${ok.length ? `, ${ok.length} waived` : ''}`)
         for (const p of bad) console.log(`  ✗ ${p.rule}  ${p.node}: ${p.what}`)
+        if (r.extend && !r.extend.first.error) console.log(`  · --extend, run twice: ${JSON.stringify(r.extend.first)}, then ${JSON.stringify(r.extend.second)}`)
         for (const a of r.allow) console.log(`  · waived ${a.rule} — ${a.reason}`)
       }
       process.exit(failed ? 1 : 0)

@@ -20,7 +20,7 @@
 import { readFileSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { loadTokenSet, hexOf, pxOf, msOf, cubicBezierOf } from './tokens-core.mjs'
+import { loadTokenSet, hexOf, pxOf, msOf, cubicBezierOf, isFigmaPercent, toFigmaPercent } from './tokens-core.mjs'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const set = loadTokenSet(root)
@@ -39,7 +39,8 @@ for (const name of set.order) {
   const key = collectionOf[t.group] + '|' + figma
   if (t.$type === 'color') expected[key] = { css: name, light: resolveColor(name, 'light'), dark: resolveColor(name, 'dark') }
   else if (t.$type === 'dimension') expected[key] = { css: name, value: pxOf(t.$value, name) }
-  else if (t.$type === 'number') expected[key] = { css: name, value: t.$value }
+  // an opacity is a percent in Figma, as sync-figma.mjs writes it: opacity/scrim 0.5 reads back 50
+  else if (t.$type === 'number') expected[key] = { css: name, value: isFigmaPercent(t, figma) ? toFigmaPercent(t.$value) : t.$value }
   // Figma keeps timing in seconds and an easing as a bezier object (see sync-figma.mjs)
   else if (t.$type === 'duration') expected[key] = { css: name, value: msOf(t.$value, name) / 1000 }
   // A spring's $value aliases its fallback curve; the sync writes the resolved curve (sync-figma.mjs).

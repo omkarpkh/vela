@@ -19,10 +19,17 @@ const lintReport: Record<string, { problems: { rule: string; node: string; what:
 const dump = (name: string, set?: string) => JSON.parse(set ? cli('--dump', name, `--set=${set}`) : cli('--dump', name))
 const styles: any[] = JSON.parse(execFileSync('node', ['scripts/figma/text-styles.mjs', '--json'], { cwd: root, encoding: 'utf8' }))
 const BUILDERS = ['button', 'checkbox', 'contextual-alert', 'dialog', 'dropdown-list', 'icon', 'input', 'popover', 'radio-group', 'risk-pill', 'status-indicator', 'table', 'tabs', 'text-area', 'toast', 'toggle', 'tooltip']
+// Extensions (<builder>.<id>.extend.figma.js) are reported under `<builder>.<id>`.
+const EXTENSIONS = ['dropdown-list.usage-locked']
+const tmp = () => mkdtempSync(join(tmpdir(), 'vela-figma-'))
+const fixture = (name: string, body: string) => { const file = join(tmp(), name); writeFileSync(file, body); return file }
+// Runs an ES module in the repo and returns the JSON it prints last.
+const runModule = (src: string) => JSON.parse(execFileSync('node', ['--input-type=module', '-e', src], { cwd: root, encoding: 'utf8' }).trim().split('\n').pop()!)
 
 describe('Figma builders, built in the mock Plugin API', () => {
-  it('runs every builder', () => {
-    expect(Object.keys(lintReport).sort()).toEqual(BUILDERS)
+  it('runs every builder, then every extension', () => {
+    expect(Object.keys(lintReport).filter((k) => !k.includes('.')).sort()).toEqual(BUILDERS)
+    expect(Object.keys(lintReport).filter((k) => k.includes('.')).sort()).toEqual(EXTENSIONS)
   })
 
   it.each(BUILDERS)('%s passes the reviewer rules', (name) => {
@@ -63,6 +70,42 @@ return { created: SET };
     // and the mock shows what the live file showed: every variant says the last word
     const d = dump(file)
     expect(d.variants.map((v: any) => v.ch[0].chars)).toEqual(['High', 'High', 'High'])
+  })
+
+  it('allows an unbound gradient on an alpha mask: isMask, every stop black, any alpha (R18-1)', () => {
+    const file = fixture('mask.figma.js', `// @page Fixture
+// @set  Fixture
+const c = figma.createComponent(); c.name = 'Fade=on'; c.layoutMode = 'HORIZONTAL'; c.fills = [];
+const m = figma.createRectangle(); m.name = 'Fade mask'; m.isMask = true;
+m.setBoundVariable('width', num('icon/size')); m.setBoundVariable('height', num('icon/size'));
+m.fills = [{ type: 'GRADIENT_LINEAR', gradientTransform: [[1, 0, 0], [0, 1, 0]], gradientStops: [{ position: 0, color: { r: 0, g: 0, b: 0, a: 1 } }, { position: 1, color: { r: 0, g: 0, b: 0, a: 0 } }] }];
+c.appendChild(m);
+const set = figma.combineAsVariants([c], page); set.name = SET;
+return { created: SET };
+`)
+    expect(JSON.parse(cli('--lint', file))[file].problems).toEqual([])
+  })
+
+  it('still fails a mask with a coloured stop, and a black gradient on a node that is not a mask (R18-1)', () => {
+    const file = fixture('not-a-mask.figma.js', `// @page Fixture
+// @set  Fixture
+const c = figma.createComponent(); c.name = 'Fade=on'; c.layoutMode = 'HORIZONTAL'; c.fills = [];
+const fade = (name, isMask, stop) => {
+  const r = figma.createRectangle(); r.name = name; r.isMask = isMask;
+  r.setBoundVariable('width', num('icon/size')); r.setBoundVariable('height', num('icon/size'));
+  r.fills = [{ type: 'GRADIENT_LINEAR', gradientTransform: [[1, 0, 0], [0, 1, 0]], gradientStops: [{ position: 0, color: { ...stop, a: 1 } }, { position: 1, color: { r: 0, g: 0, b: 0, a: 0 } }] }];
+  c.appendChild(r);
+};
+fade('Tinted mask', true, { r: 1, g: 0, b: 0 });
+fade('Black fade', false, { r: 0, g: 0, b: 0 });
+const set = figma.combineAsVariants([c], page); set.name = SET;
+return { created: SET };
+`)
+    const r = JSON.parse(cli('--lint', file))[file]
+    expect(r.problems.map((p: any) => [p.rule, p.node, p.what, p.waived])).toEqual([
+      ['raw-colour', 'Tinted mask', 'GRADIENT_LINEAR', false],
+      ['raw-colour', 'Black fade', 'GRADIENT_LINEAR', false],
+    ])
   })
 
   it('only the builders with recorded literal geometry carry waivers', () => {
@@ -386,7 +429,7 @@ describe('text styles have a source', () => {
 
   it('every style a builder applies exists in the source', () => {
     const names = new Set(styles.map((s) => s.name))
-    for (const f of BUILDERS) {
+    for (const f of [...BUILDERS, ...EXTENSIONS.map((e) => e + '.extend')]) {
       const src = readFileSync(resolve(root, `scripts/figma/components/${f}.figma.js`), 'utf8')
       for (const m of src.matchAll(/'((?:Heading|Body|Button|Tab)\/[^']+)'/g)) expect(names.has(m[1]), `${f} applies ${m[1]}`).toBe(true)
     }
@@ -511,14 +554,17 @@ describe('Dropdown List, as the builder draws it', () => {
   })
 
   it('draws a Usage / Locked frame beside the popup: a locked item with its reason in Meta, and a caption', () => {
-    // The frame is not a set, so --dump can't reach it: build in the mock and read the page.
-    const src = `import { build } from './scripts/figma/check-components.mjs'
+    // The frame is not a set, so --dump can't reach it: build in the mock and read the page. Since
+    // R18 the frame comes from an extension (dropdown-list.usage-locked.extend.figma.js), which create
+    // mode runs after the builder: the page holds the same three nodes in the same order.
+    const u = runModule(`import { build } from './scripts/figma/check-components.mjs'
 const { figma } = await build('dropdown-list')
 const page = figma.root.children.find((p) => p.name === 'Dropdown List')
 const u = page.children.find((n) => n.name === 'Usage / Locked')
-console.log(JSON.stringify({ type: u.type, kids: u.children.map((n) => ({ type: n.type, main: n.mainComponent && n.mainComponent.name, chars: n.characters })) }))`
-    const u = JSON.parse(execFileSync('node', ['--input-type=module', '-e', src], { cwd: root, encoding: 'utf8' }).trim().split('\n').pop()!)
+console.log(JSON.stringify({ order: page.children.map((n) => n.name), type: u.type, kids: u.children.map((n) => ({ type: n.type, main: n.mainComponent && n.mainComponent.name, chars: n.characters, props: n.componentProperties && Object.fromEntries(Object.entries(n.componentProperties).map(([k, p]) => [k.replace(/#.*$/, ''), p.value])) })) }))`)
+    expect(u.order).toEqual(['Dropdown List item', 'Dropdown List', 'Usage / Locked'])
     expect(u.type).toBe('FRAME')
+    expect(u.kids[0].props).toMatchObject({ Label: 'Archive', Meta: true, 'Meta text': 'Needs retention on', Locked: 'true' })
     const [item, caption] = u.kids
     expect([item.type, item.main]).toEqual(['INSTANCE', 'Highlighted=false, Current=false, Locked=true'])
     expect(caption.chars).toBe('Locked: always with its reason in Meta. The lock never appears without it.')
@@ -577,5 +623,151 @@ describe('Toast, as the builder draws it', () => {
       expect(close.wh.slice(2)).toEqual(['control-height/24', 'control-height/24'])
       expect(close.ch[0].fill).toEqual(['icon/strong'])
     }
+  })
+})
+
+// R18: a change to a published set is an extension, run in place by --extend. Create mode runs the
+// builder and then its extensions, so a fresh build and an extended file make the same tree.
+describe('Figma extensions: a published set is extended in place, never rebuilt', () => {
+  const fixtures = 'scripts/figma/__fixtures__'
+  const extLint = (file: string) => JSON.parse(cli('--lint', file))[file]
+  const failure = (file: string) => extLint(file).problems.find((p: any) => p.rule === 'extend-run').what as string
+  const builder = (...args: string[]) => {
+    try { return { out: execFileSync('node', ['scripts/figma/build-components.mjs', ...args], { cwd: root, encoding: 'utf8', stdio: 'pipe' }), code: 0 } }
+    catch (e: any) { return { out: String(e.stderr), code: e.status as number } }
+  }
+
+  it('extension files are not builders; the builder lists its extensions in file-name order', async () => {
+    const { available, extensionsOf } = await import('../../scripts/figma/build-components.mjs')
+    expect(available().sort()).toEqual(BUILDERS)
+    expect(extensionsOf('dropdown-list').map((e: any) => [e.id, e.adds])).toEqual([['usage-locked', ['Usage / Locked']]])
+    expect(builder('--list').out.split('\n').filter(Boolean).sort()).toEqual(BUILDERS)
+  })
+
+  it('moved Usage / Locked out of the Dropdown List builder into its first extension', () => {
+    const base = readFileSync(resolve(root, 'scripts/figma/components/dropdown-list.figma.js'), 'utf8')
+    const ext = readFileSync(resolve(root, 'scripts/figma/components/dropdown-list.usage-locked.extend.figma.js'), 'utf8')
+    expect(base).not.toMatch(/createFrame\(\); usage\.name/)
+    expect(ext).toMatch(/^\/\/ @extends dropdown-list$/m)
+    expect(ext).toMatch(/^\/\/ @adds Usage \/ Locked$/m)
+    const create = builder('dropdown-list').out
+    expect(create).toContain('from components/dropdown-list.figma.js, components/dropdown-list.usage-locked.extend.figma.js')
+    expect(create).toContain('return { ...built, extensions };')
+  })
+
+  it('--extend on Dropdown List, run twice in the mock: the first extends with the snapshot unchanged, the second skips', () => {
+    const r = lintReport['dropdown-list.usage-locked'] as any
+    expect(r.problems).toEqual([])
+    expect(r.extend.first).toEqual({ extended: ['usage-locked'], skipped: [], snapshot: 'unchanged' })
+    expect(r.extend.second).toEqual({ extended: [], skipped: ['usage-locked'], snapshot: 'unchanged' })
+  })
+
+  it('--extend needs the sets first, and a builder with no extensions has nothing to extend', () => {
+    const r = runModule(`import { createMockFigma } from './scripts/figma/mock-figma.mjs'
+import { generate } from './scripts/figma/build-components.mjs'
+const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor
+const figma = createMockFigma({ variables: [], styles: [], pages: ['Dropdown List'] })
+try { await new AsyncFunction('figma', generate('dropdown-list', { extend: true }))(figma); console.log('null') } catch (e) { console.log(JSON.stringify(e.message)) }`)
+    expect(r).toMatch(/^Build Dropdown List first: Dropdown List item, Dropdown List are not on the Dropdown List page/)
+    const none = builder('tabs', '--extend')
+    expect([none.code, none.out.trim()]).toEqual([1, 'tabs has no extensions (components/tabs.<id>.extend.figma.js); there is nothing to extend'])
+  })
+
+  it('refuses to run when an extension is half there, and names what is and is not', () => {
+    const r = runModule(`import { build } from './scripts/figma/check-components.mjs'
+import { extensionsOf, generateFrom, meta } from './scripts/figma/build-components.mjs'
+const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor
+const { figma } = await build('dropdown-list')
+const two = { ...extensionsOf('dropdown-list')[0], adds: ['Usage / Locked', 'Usage / Current'] }
+try { await new AsyncFunction('figma', generateFrom(meta('dropdown-list'), 'x', { extensions: [two], extend: true, which: 'dropdown-list' }))(figma); console.log('null') } catch (e) { console.log(JSON.stringify(e.message)) }`)
+    expect(r).toBe('Nothing was run: usage-locked is half there (Usage / Locked on the page; Usage / Current not). Finish or remove those nodes by hand, then run --extend again.')
+  })
+
+  it('appendVariant puts a new variant below the others and grows the set; nothing that was there moves', () => {
+    const file = fixture('tabs.loading.extend.figma.js', `// @extends tabs
+// @adds State=loading, Size=default
+const t = figma.createComponent();
+t.name = 'State=loading, Size=default';
+t.layoutMode = 'HORIZONTAL'; t.counterAxisAlignItems = 'CENTER'; t.fills = [];
+t.setBoundVariable('itemSpacing', num('space/5'));
+const label = figma.createText(); label.name = 'Label'; label.characters = 'Alerts';
+await label.setTextStyleIdAsync(style('Tab/Default').id); label.fills = [paint('text/inactive')];
+t.appendChild(label); label.layoutSizingHorizontal = 'HUG';
+appendVariant(set, t);
+return {};
+`)
+    const r = extLint(file)
+    expect(r.problems).toEqual([])
+    expect(r.extend.first).toEqual({ extended: ['loading'], skipped: [], snapshot: 'unchanged' })
+    expect(r.extend.second).toEqual({ extended: [], skipped: ['loading'], snapshot: 'unchanged' })
+    const at = runModule(`import { build, extendInMock } from './scripts/figma/check-components.mjs'
+import { extensionMeta } from './scripts/figma/build-components.mjs'
+const box = (s) => ({ w: s.width, h: s.height, dflt: s.defaultVariant.name, opts: s.componentPropertyDefinitions.State.variantOptions, kids: Object.fromEntries(s.children.map((v) => [v.name, [v.x, v.y, v.height]])) })
+const fresh = box((await build('tabs')).set)
+const { page } = await extendInMock('tabs', [extensionMeta(${JSON.stringify(file)})])
+console.log(JSON.stringify({ fresh, extended: box(page.children.find((n) => n.name === 'Tab')) }))`)
+    const { fresh, extended } = at
+    const added = extended.kids['State=loading, Size=default']
+    for (const [name, xy] of Object.entries(fresh.kids)) expect(extended.kids[name], name).toEqual(xy)
+    const bottom = Math.max(...Object.values<number[]>(fresh.kids).map(([, y, h]) => y + h))
+    expect([added[0], added[1]]).toEqual([32, bottom + 32])
+    expect(extended.h).toBeGreaterThan(fresh.h)
+    expect(extended.w).toBe(fresh.w)
+    expect(extended.dflt).toBe(fresh.dflt)
+    expect(extended.opts).toEqual([...fresh.opts, 'loading'])
+  })
+
+  it('fails an extension that makes a node its // @adds does not list', () => {
+    const file = fixture('tabs.stray.extend.figma.js', `// @extends tabs
+// @adds Note / listed
+const a = figma.createFrame(); a.name = 'Note / listed'; a.fills = []; page.appendChild(a);
+const b = figma.createFrame(); b.name = 'Note / stray'; b.fills = []; page.appendChild(b);
+return {};
+`)
+    expect(failure(file)).toBe('Extension stray made "Note / stray", not in its // @adds.')
+  })
+
+  it('fails the fixture that renames a variant: the snapshot names it, and the body is refused too', () => {
+    const file = `${fixtures}/tabs.rename-variant.extend.figma.js`
+    expect(failure(file)).toContain('Tab › State=disabled, Size=large: renamed to "State=inactive, Size=large"')
+    expect(failure(file)).toContain("Figma can't undo a partial run")
+    expect(extLint(file).problems.map((p: any) => p.rule).sort()).toEqual(['extend-forbidden', 'extend-run'])
+  })
+
+  it('fails the fixture that removes a node', () => {
+    const file = `${fixtures}/tabs.remove-node.extend.figma.js`
+    expect(failure(file)).toContain('Tab › State=selected, Size=default › Count: removed')
+    expect(extLint(file).problems.find((p: any) => p.rule === 'extend-forbidden').what).toContain('.remove(')
+  })
+
+  it('fails the fixture that changes the default variant', () => {
+    const file = `${fixtures}/tabs.move-default.extend.figma.js`
+    expect(failure(file)).toContain('Tab: default variant changed from "State=default, Size=default" to "State=loading, Size=default"')
+    // nothing in its body is refused: only the run shows the harm
+    expect(extLint(file).problems.map((p: any) => p.rule)).toEqual(['extend-run'])
+  })
+
+  it('refuses .remove(, combineAsVariants( and .name on a node the extension did not make', () => {
+    // check-components.mjs runs in node, as the CLI does (vite can't load it in-process).
+    const forbidden = (body: string) => runModule(`import { forbidden } from './scripts/figma/check-components.mjs'
+console.log(JSON.stringify(forbidden(${JSON.stringify(body)})))`)
+    expect(forbidden(`const f = figma.createFrame(); f.name = 'Mine';
+const i = set.children[0].createInstance(); i.name = 'Mine too';
+// set.name = 'a comment is not code'
+if (set.name === 'Tab') {}`)).toEqual([])
+    expect(forbidden(`set.name = 'Tabs';
+for (const v of set.children) v.name += ' old';
+set.children[0].name = 'x';
+figma.combineAsVariants([], page);
+set.children[0].remove();`)).toEqual([
+      'calls .remove(: an extension never removes a node',
+      'calls combineAsVariants(: an extension appends to a set, it never makes one',
+      'sets .name on set, a node it did not make: an extension never renames what the set has',
+      'sets .name on v, a node it did not make: an extension never renames what the set has',
+      'sets .name on set.children[0], a node it did not make: an extension never renames what the set has',
+    ])
+    // an // @allow does not waive them
+    const file = fixture('tabs.waive.extend.figma.js', readFileSync(resolve(root, `${fixtures}/tabs.remove-node.extend.figma.js`), 'utf8').replace('// @extends tabs', '// @extends tabs\n// @allow extend-forbidden trying'))
+    expect(extLint(file).problems.filter((p: any) => p.waived)).toEqual([])
   })
 })

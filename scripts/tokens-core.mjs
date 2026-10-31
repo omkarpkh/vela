@@ -233,3 +233,12 @@ export function springOf(set, name) {
 
 /** `/* deprecated *\/`-style note for a token, or '' — one wording for every generator. */
 export const deprecationNote = (t) => (t.deprecated === true ? 'deprecated' : typeof t.deprecated === 'string' ? `deprecated: ${t.deprecated}` : '')
+
+/**
+ * Figma's layer-opacity field is a percent (0–100); CSS opacity is a fraction (0–1). An `opacity/*`
+ * number, the OPACITY-scoped variables, is written to Figma ×100 so binding it gives the opacity
+ * the CSS draws: opacity/scrim 0.5 is 50 in Figma. The sync writes it and the drift check reads it
+ * back the same way; the CSS keeps the fraction.
+ */
+export const isFigmaPercent = (t, figmaName) => t.$type === 'number' && figmaName.split('/')[0] === 'opacity'
+export const toFigmaPercent = (v) => Math.round(v * 100 * 1e6) / 1e6
