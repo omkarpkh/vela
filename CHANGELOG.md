@@ -28,6 +28,9 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   built.
 
 ### Changed
+- **Site: the header and every page title say "Vela Design System"**, the full name the Figma
+  thread's naming rule asks for once per page (Omkar kept the name on 1 Nov 2026). A phone's header
+  shows "Vela"; its page title keeps the full name. The package stays `@omkarux/vela`.
 - **Site: the first download drops from 512 kB to 308 kB, under the build's 500 kB warning** (B8).
   The nav, search and Status page read each spec cut to its facts (its title, first paragraph,
   Status line, "When to use" and rule tags), made at build time by a small Vite plugin,

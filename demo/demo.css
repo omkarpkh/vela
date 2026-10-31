@@ -30,6 +30,9 @@ body { margin: 0; background: var(--vela-bg-global); }
 @media (hover: hover) { .topbar__menu:hover { background: var(--vela-bg-hover); transition-duration: var(--vela-duration-fast); } }
 .brand { display: flex; align-items: baseline; gap: var(--vela-space-10); text-decoration: none; color: var(--vela-text-heading); }
 .brand__name { font-size: var(--vela-text-h4-size); line-height: var(--vela-text-h4-line-height); font-weight: var(--vela-font-weight-semibold); }
+/* The full name in the header (the naming rule, 1 Nov 2026); a phone shows "Vela", and the page title keeps the full name. */
+.brand__rest { font-weight: var(--vela-font-weight-regular); }
+@media (max-width: 600px) { .brand__rest { display: none; } }
 .brand__meta { color: var(--vela-text-de-emphasized); }
 .topbar__right { margin-left: auto; display: flex; align-items: center; gap: var(--vela-space-20); }
 .topbar__link { color: var(--vela-text-default); text-decoration: none; }

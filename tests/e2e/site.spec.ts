@@ -57,7 +57,7 @@ test.describe('Proposal pages', () => {
     await expect(page.locator('.pg-install-command')).toHaveCount(0)
     await expect(main).not.toContainText('npm i')
     await expect(main).not.toContainText('import {')
-    await expect(page).toHaveTitle('Evidence Locker · Vela')
+    await expect(page).toHaveTitle('Evidence Locker · Vela Design System')
   })
 })
 
@@ -760,6 +760,9 @@ test.describe('slice 5 · phone and Appearance', () => {
     await page.goto('/#/components/button')
     const banner = page.getByRole('banner')
     for (const name of ['GitHub', 'npm', 'Figma']) await expect(banner.getByRole('link', { name, exact: true })).toBeVisible()
+    // The full name, once per page (the naming rule, 1 Nov 2026): in the header, and in the title.
+    await expect(banner.locator('.brand__name')).toHaveText('Vela Design System')
+    await expect(page).toHaveTitle('Button · Vela Design System')
     await page.setViewportSize({ width: 390, height: 844 })
     await page.reload()
     for (const name of ['GitHub', 'npm', 'Figma']) await expect(banner.getByRole('link', { name, exact: true })).toHaveCount(0)
@@ -938,7 +941,7 @@ test.describe('slice 6a · Copy page', () => {
     await nav.getByRole('link', { name: 'Copy', exact: true }).click()
     await expect(page).toHaveURL(/#\/patterns\/copy$/)
     await expect(page.getByRole('heading', { level: 1, name: 'Copy' })).toBeVisible()
-    await expect(page).toHaveTitle('Copy · Vela')
+    await expect(page).toHaveTitle('Copy · Vela Design System')
     await page.goto('/#/patterns/copy')
     await page.reload()
     await expect(page.getByRole('heading', { level: 2, name: '1 · When to offer copy, and when not' })).toBeVisible()
