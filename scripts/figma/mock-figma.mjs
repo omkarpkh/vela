@@ -30,6 +30,12 @@
  * an option; its `defaultVariant` is the top-left-most variant on the canvas (Figma's documented
  * rule), and each VARIANT definition's default is that variant's value. `getNodeByIdAsync` finds a
  * node until it is removed. A node has `isMask`, and a gradient paint keeps its stops.
+ *
+ * The Seed (1 Nov 2026, tabs.seed-hover.extend.figma.js): a node has `opacity`, `constraints`,
+ * `layoutPositioning` ('AUTO' or 'ABSOLUTE': an absolute child of an auto-layout frame is placed by
+ * x and y and takes no part in the layout), and `minWidth` / `maxWidth` (null until set, bindable).
+ * `set.editComponentProperty(key, { name?, defaultValue? })` edits a TEXT or BOOLEAN property and
+ * returns its key, a new one if it was renamed, as Figma does.
  */
 const MIXED = Symbol('figma.mixed')
 let seq = 0
@@ -45,6 +51,8 @@ class SceneNode {
   constructor(type, figma) {
     Object.defineProperty(this, '_figma', { value: figma, enumerable: false })
     this.id = nid(type); this.type = type; this.name = DEFAULT_NAME[type]; this.visible = true; this.isMask = false
+    this.opacity = 1; this.layoutPositioning = 'AUTO'; this.minWidth = null; this.maxWidth = null
+    if (!this.constraints) this.constraints = { horizontal: 'MIN', vertical: 'MIN' }
     figma._nodes.set(this.id, this)
     this.parent = null; this.x = 0; this.y = 0; this.width = 100; this.height = 100
     this.fills = []; this.strokes = []; this.strokeAlign = 'INSIDE'
@@ -191,6 +199,16 @@ class ComponentSetNode extends FrameNode {
     const key = type === 'VARIANT' ? name : `${name}#${this.id}`
     this._defs[key] = { type, defaultValue }
     return key
+  }
+  editComponentProperty(key, { name, defaultValue } = {}) {
+    const d = this._defs[key]
+    if (!d) throw new Error(`editComponentProperty on "${this.name}": no property ${key}`)
+    if (defaultValue !== undefined) d.defaultValue = defaultValue
+    if (name === undefined || name === key.replace(/#.*$/, '')) return key
+    const next = `${name}#${this.id}`
+    delete this._defs[key]; this._defs[next] = d
+    for (const n of this.findAll((x) => x._cpr && Object.values(x._cpr).includes(key))) for (const [f, v] of Object.entries(n._cpr)) if (v === key) n._cpr[f] = next
+    return next
   }
   // The top-left-most variant, spatially: the one dragged in from the library. Ties keep layer order.
   get defaultVariant() {

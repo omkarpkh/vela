@@ -249,20 +249,24 @@ This is the reason Tabs is more than a styled list:
 ## Figma mapping
 
 Library file: **Vela Design System** → page `Tabs`. The component set is a single **Tab**, not the
-whole tablist: six variants, `State` (3) x `Size` (2), plus a `Count` boolean. Compose a tablist
-by placing Tab instances in a row.
+whole tablist: eight variants, `State` default, selected and disabled at both sizes and
+`State=hover` at both sizes, plus a `Count` boolean. Compose a tablist by placing Tab instances in
+a row.
 
 | Figma property | Code equivalent |
 |---|---|
 | `State=selected` | the active `value` on `<Tabs>` |
 | `State=disabled` | `disabled` on `<Tabs.Trigger>` |
+| `State=hover` | the pointer resting on an enabled, unselected tab, not a prop |
 | `Size` | `size` on `<Tabs>` |
 | `Count` (boolean) | `count` on `<Tabs.Trigger>` |
 
-**The hover preview has no Figma variant.** It is a moment, not a state the markup carries, so the
-set gains no `State=hover`; its three tokens reach the library through the token sync as
-`opacity/preview`, `delay/preview` and `tab/preview-width-min`, beside `opacity/scrim` and
-`delay/tooltip`.
+**The hover preview is the `State=hover` variant: the label in text/default, the Seed under it.**
+It shows where the moment ends: the Seed at `opacity/preview`, `stroke/2` tall on the tab's bottom
+edge, a third of the tab and never under `tab/preview-width-min`, soft-ended by an alpha mask. Its
+width is measured when the variant is built and scales with the tab after that. The rest before it
+appears (`delay/preview`), the fade and the press exist only in code. The variants were added to the
+published set in place, by `scripts/figma/components/tabs.seed-hover.extend.figma.js`.
 
 **The keyboard behaviour has no Figma expression.** Roving tabindex, arrow navigation, Home/End,
 and skipping disabled tabs exist only in code — which is exactly why the Figma library is not the

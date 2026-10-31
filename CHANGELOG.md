@@ -35,6 +35,26 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   whole. A component page loads its full spec with its own chunk. The cut is still markdown, so the
   same parsers read it, and a test checks it gives the same status, rules, title and "When to use"
   as the whole spec, for every spec. The build no longer warns about chunk size.
+- **Figma: the Tabs hover preview, the Seed, has a variant** (R33). `State=hover` at both sizes
+  is added to the published Tab set in place by the second extension,
+  `scripts/figma/components/tabs.seed-hover.extend.figma.js`; the six variants that were there do
+  not move. A hover tab is the default tab with its label and count in `text/default`, as
+  `Tabs.css` draws a hovered trigger, and no underline. On its bottom edge is the Seed: an absolute
+  frame `stroke/2` tall at the `opacity/preview` layer opacity, a third of the tab wide, never under
+  `tab/preview-width-min` (bound as its minimum width) and never wider than the tab, centred. Its
+  width is measured when the script runs, because no variable can hold a third of a width; the lint
+  waiver says so. Inside it a "Soft ends" alpha mask, black and solid from 30% to 70% as the CSS
+  mask is, softens a "Bar" in `border/active`. The Tabs spec's Figma mapping now says the hover
+  preview is the `State=hover` variant, and the Tab description follows. The three Seed tokens were
+  already in the token sync; nothing was held out.
+- **Figma `--extend` also stops on a changed default** of a TEXT or BOOLEAN property (for example
+  `Tab: default of "Count" changed from true to false`): instances that never set the property
+  would change with it. A fourth fixture proves it. Each run, create and extend, now reports the
+  nodes it added with their count (`Usage / Locked (3 nodes)`, an instance counting as one), so the
+  library can be checked against the mock after a pass. A builder's own lint leaves the nodes its
+  extensions add to each extension's lint, under that extension's waivers. The component dump
+  records an absolute child's constraints, a mask, a bound opacity and a minimum width; a live dump
+  saved before this needs reading again before it is diffed.
 - **Site, slice 6b: the Copy page's second half** (`#/patterns/copy`, sections 5 to 13; playground
   spec, section 12). The page now carries all of `guidelines/patterns/copy.md`, and the note that
   sent readers to GitHub for the rest is gone. Each section leads with a live example:

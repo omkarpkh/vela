@@ -135,11 +135,11 @@ ${helpers}
 ${EXTEND_RUN(list)}
 ${extensions.map((e) => `if (todo.includes(${JSON.stringify(e.id)})) {
   const before = snapshot();
-  ${call(e)};
+  added.push(...(${call(e)}).added);
   await stopIfChanged(${JSON.stringify(e.id)}, before, snapshot());
   extended.push(${JSON.stringify(e.id)});
 }`).join('\n')}
-return { extended, skipped, snapshot: 'unchanged' };
+return { extended, skipped, added, snapshot: 'unchanged' };
 `
   }
   if (!extensions.length) return `${head}${guard}
@@ -153,7 +153,7 @@ ${strip(body)}
 })();
 const extensions = [];
 ${extensions.map((e) => `extensions.push({ id: ${JSON.stringify(e.id)}, ...(${call(e)}) });`).join('\n')}
-return { ...built, extensions };
+return { ...built, extensions, added: extensions.flatMap(e => e.added) };
 `
 }
 
@@ -214,17 +214,21 @@ const appendVariant = (set, component, where = 'below') => {
   set.resize(Math.max(set.width, component.x + component.width + pad), Math.max(set.height, component.y + component.height + pad));
   return component;
 };
+// The nodes a top node adds: itself and everything inside it, an instance counting as one (its
+// sublayers come from its main component, so the mock and the file count the same).
+const count = n => 1 + (n.type === 'INSTANCE' || !('children' in n) ? 0 : n.children.reduce((s, c) => s + count(c), 0));
 // Runs one extension and holds it to its list: every node it leaves on the page (or in a set) must be
 // named in its // @adds, and every name there must be one it made.
 const runExtension = async (id, adds, fn) => {
   const had = new Set(page.findAll(() => true).map(n => n.id));
   const setsByName = setsOf();
   const value = await fn(setsByName, setsByName[SETS[0]]);
-  const made = page.findAll(n => !had.has(n.id) && (n.parent === page || had.has(n.parent.id))).map(n => n.name);
+  const tops = page.findAll(n => !had.has(n.id) && (n.parent === page || had.has(n.parent.id)));
+  const made = tops.map(n => n.name);
   const unlisted = [...new Set(made.filter(n => !adds.includes(n)))], missing = adds.filter(a => !made.includes(a));
   if (unlisted.length || missing.length)
     throw new Error('Extension ' + id + ' made ' + (unlisted.length ? unlisted.map(n => '"' + n + '"').join(', ') + ', not in its // @adds' : '') + (unlisted.length && missing.length ? '; and ' : '') + (missing.length ? 'nothing named ' + missing.map(n => '"' + n + '"').join(', ') + ', which its // @adds lists' : '') + '.');
-  return value && typeof value === 'object' ? value : {};
+  return { ...(value && typeof value === 'object' ? value : {}), added: tops.map(n => n.name + ' (' + count(n) + ' node' + (count(n) === 1 ? '' : 's') + ')') };
 };
 `
 
@@ -237,9 +241,10 @@ if (half.length)
   throw new Error('Nothing was run: ' + half.map(e => e.id + ' is half there (' + e.have.join(', ') + ' on the page; ' + e.adds.filter(a => !e.have.includes(a)).join(', ') + ' not)').join('; ') + '. Finish or remove those nodes by hand, then run --extend again.');
 const skipped = EXTENSIONS.filter(e => e.adds.every(onPage)).map(e => e.id);
 const todo = EXTENSIONS.filter(e => !skipped.includes(e.id)).map(e => e.id);
-const extended = [];
+const extended = [], added = [];
 // Every node in the builder's sets and components: id, name, parent and place among its siblings;
-// each set's properties (name, type, a variant's options), its default variant and its size.
+// each set's properties (name, type, a variant's options, a TEXT or BOOLEAN default), its default
+// variant and its size.
 // x and y are left out: placing a new variant may move nothing else, and the description is
 // rewritten by guidelines:figma anyway.
 const snapshot = () => {
@@ -251,7 +256,7 @@ const snapshot = () => {
   for (const [name, s] of Object.entries(setsOf())) {
     walk(s, name);
     const defs = {};
-    for (const [k, d] of Object.entries(s.componentPropertyDefinitions || {})) defs[k] = { type: d.type, options: d.type === 'VARIANT' ? (d.variantOptions || []).slice() : null };
+    for (const [k, d] of Object.entries(s.componentPropertyDefinitions || {})) defs[k] = { type: d.type, options: d.type === 'VARIANT' ? (d.variantOptions || []).slice() : null, dflt: d.type === 'TEXT' || d.type === 'BOOLEAN' ? d.defaultValue : undefined };
     sets[name] = { id: s.id, defs, dflt: s.type === 'COMPONENT_SET' && s.defaultVariant ? { id: s.defaultVariant.id, name: s.defaultVariant.name } : null, w: s.width, h: s.height };
   }
   return { nodes, sets };
@@ -273,6 +278,7 @@ const stopIfChanged = async (id, before, after) => {
       const e = a.defs[k];
       if (!e) { out.push(name + ': property "' + base(k) + '" removed or renamed'); continue; }
       if (e.type !== d.type) out.push(name + ': property "' + base(k) + '" changed type, ' + d.type + ' to ' + e.type);
+      if (e.type === d.type && (d.type === 'TEXT' || d.type === 'BOOLEAN') && e.dflt !== d.dflt) out.push(name + ': default of "' + base(k) + '" changed from ' + JSON.stringify(d.dflt) + ' to ' + JSON.stringify(e.dflt));
       for (const o of d.options || []) if (!(e.options || []).includes(o)) out.push(name + ': option "' + o + '" of "' + base(k) + '" removed or renamed');
     }
     if (b.dflt && (!a.dflt || a.dflt.id !== b.dflt.id)) out.push(name + ': default variant changed from "' + b.dflt.name + '" to ' + (a.dflt ? '"' + a.dflt.name + '"' : 'none'));

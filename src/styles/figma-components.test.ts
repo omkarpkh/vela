@@ -20,7 +20,7 @@ const dump = (name: string, set?: string) => JSON.parse(set ? cli('--dump', name
 const styles: any[] = JSON.parse(execFileSync('node', ['scripts/figma/text-styles.mjs', '--json'], { cwd: root, encoding: 'utf8' }))
 const BUILDERS = ['button', 'checkbox', 'contextual-alert', 'dialog', 'dropdown-list', 'icon', 'input', 'popover', 'radio-group', 'risk-pill', 'status-indicator', 'table', 'tabs', 'text-area', 'toast', 'toggle', 'tooltip']
 // Extensions (<builder>.<id>.extend.figma.js) are reported under `<builder>.<id>`.
-const EXTENSIONS = ['dropdown-list.usage-locked']
+const EXTENSIONS = ['dropdown-list.usage-locked', 'tabs.seed-hover']
 const tmp = () => mkdtempSync(join(tmpdir(), 'vela-figma-'))
 const fixture = (name: string, body: string) => { const file = join(tmp(), name); writeFileSync(file, body); return file }
 // Runs an ES module in the repo and returns the JSON it prints last.
@@ -112,7 +112,11 @@ return { created: SET };
     // status-indicator and toggle: diameters with no token. icon (29 Oct 2026): the glyph is drawn
     // geometry on Lucide's 24-unit grid inside a box bound to icon/size — not a layout.
     const waiving = Object.entries(lintReport).filter(([, r]) => r.allow.length).map(([n]) => n).sort()
-    expect(waiving).toEqual(['icon', 'status-indicator', 'toggle'])
+    // tabs.seed-hover (R33): the Seed is a third of its tab, measured, which no variable can hold.
+    expect(waiving).toEqual(['icon', 'status-indicator', 'tabs.seed-hover', 'toggle'])
+    expect(lintReport['tabs.seed-hover'].allow.map((a) => a.rule)).toEqual(['raw-size'])
+    expect(lintReport['tabs.seed-hover'].problems.map((p) => p.node).sort()).toEqual(['Seed', 'Seed', 'Soft ends', 'Soft ends'].map((n, i) => `State=hover, Size=${i % 2 ? 'large' : 'default'} › ${n}`).sort())
+    expect(lintReport.tabs.allow).toEqual([])
     expect(lintReport.icon.allow.map((a) => a.rule).sort()).toEqual(['absolute-children', 'raw-size'])
   })
 })
@@ -386,7 +390,8 @@ describe('Tab count', () => {
   const tab = dump('tabs')
 
   it('uses the Tab/Count styles, never a weight override that would detach the style', () => {
-    expect(tab.variants).toHaveLength(6)
+    // six from the builder, two State=hover from tabs.seed-hover.extend.figma.js
+    expect(tab.variants).toHaveLength(8)
     for (const v of tab.variants) {
       const count = v.ch.find((c: any) => c.n === 'Count')
       expect(count.style).toBe(v.n.includes('Size=large') ? 'Tab/Count Large' : 'Tab/Count')
@@ -652,14 +657,16 @@ describe('Figma extensions: a published set is extended in place, never rebuilt'
     expect(ext).toMatch(/^\/\/ @adds Usage \/ Locked$/m)
     const create = builder('dropdown-list').out
     expect(create).toContain('from components/dropdown-list.figma.js, components/dropdown-list.usage-locked.extend.figma.js')
-    expect(create).toContain('return { ...built, extensions };')
+    expect(create).toContain('return { ...built, extensions, added: extensions.flatMap(e => e.added) };')
   })
 
   it('--extend on Dropdown List, run twice in the mock: the first extends with the snapshot unchanged, the second skips', () => {
     const r = lintReport['dropdown-list.usage-locked'] as any
     expect(r.problems).toEqual([])
-    expect(r.extend.first).toEqual({ extended: ['usage-locked'], skipped: [], snapshot: 'unchanged' })
-    expect(r.extend.second).toEqual({ extended: [], skipped: ['usage-locked'], snapshot: 'unchanged' })
+    // Each added top node with its node count, so the Figma thread can compare after its pass: the
+    // frame, the item instance (one node: its sublayers are its main component's) and the caption.
+    expect(r.extend.first).toEqual({ extended: ['usage-locked'], skipped: [], added: ['Usage / Locked (3 nodes)'], snapshot: 'unchanged' })
+    expect(r.extend.second).toEqual({ extended: [], skipped: ['usage-locked'], added: [], snapshot: 'unchanged' })
   })
 
   it('--extend needs the sets first, and a builder with no extensions has nothing to extend', () => {
@@ -669,8 +676,8 @@ const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor
 const figma = createMockFigma({ variables: [], styles: [], pages: ['Dropdown List'] })
 try { await new AsyncFunction('figma', generate('dropdown-list', { extend: true }))(figma); console.log('null') } catch (e) { console.log(JSON.stringify(e.message)) }`)
     expect(r).toMatch(/^Build Dropdown List first: Dropdown List item, Dropdown List are not on the Dropdown List page/)
-    const none = builder('tabs', '--extend')
-    expect([none.code, none.out.trim()]).toEqual([1, 'tabs has no extensions (components/tabs.<id>.extend.figma.js); there is nothing to extend'])
+    const none = builder('button', '--extend')
+    expect([none.code, none.out.trim()]).toEqual([1, 'button has no extensions (components/button.<id>.extend.figma.js); there is nothing to extend'])
   })
 
   it('refuses to run when an extension is half there, and names what is and is not', () => {
@@ -698,12 +705,12 @@ return {};
 `)
     const r = extLint(file)
     expect(r.problems).toEqual([])
-    expect(r.extend.first).toEqual({ extended: ['loading'], skipped: [], snapshot: 'unchanged' })
-    expect(r.extend.second).toEqual({ extended: [], skipped: ['loading'], snapshot: 'unchanged' })
-    const at = runModule(`import { build, extendInMock } from './scripts/figma/check-components.mjs'
+    expect(r.extend.first).toEqual({ extended: ['loading'], skipped: [], added: ['State=loading, Size=default (2 nodes)'], snapshot: 'unchanged' })
+    expect(r.extend.second).toEqual({ extended: [], skipped: ['loading'], added: [], snapshot: 'unchanged' })
+    const at = runModule(`import { buildBase, extendInMock } from './scripts/figma/check-components.mjs'
 import { extensionMeta } from './scripts/figma/build-components.mjs'
 const box = (s) => ({ w: s.width, h: s.height, dflt: s.defaultVariant.name, opts: s.componentPropertyDefinitions.State.variantOptions, kids: Object.fromEntries(s.children.map((v) => [v.name, [v.x, v.y, v.height]])) })
-const fresh = box((await build('tabs')).set)
+const fresh = box((await buildBase('tabs')).page.children.find((n) => n.name === 'Tab'))
 const { page } = await extendInMock('tabs', [extensionMeta(${JSON.stringify(file)})])
 console.log(JSON.stringify({ fresh, extended: box(page.children.find((n) => n.name === 'Tab')) }))`)
     const { fresh, extended } = at
@@ -769,5 +776,121 @@ set.children[0].remove();`)).toEqual([
     // an // @allow does not waive them
     const file = fixture('tabs.waive.extend.figma.js', readFileSync(resolve(root, `${fixtures}/tabs.remove-node.extend.figma.js`), 'utf8').replace('// @extends tabs', '// @extends tabs\n// @allow extend-forbidden trying'))
     expect(extLint(file).problems.filter((p: any) => p.waived)).toEqual([])
+  })
+})
+
+// R33: what --extend also stops, and what it reports.
+describe('Figma extensions: defaults and counts', () => {
+  const file = 'scripts/figma/__fixtures__/tabs.count-default.extend.figma.js'
+
+  it('fails the fixture that turns a BOOLEAN default off: one line per changed default', () => {
+    const r = JSON.parse(cli('--lint', file))[file]
+    expect(r.problems.map((p: any) => p.rule)).toEqual(['extend-run'])
+    expect(r.problems[0].what.split('\n').filter((l: string) => l.startsWith('  - '))).toEqual(['  - Tab: default of "Count" changed from true to false'])
+  })
+
+  it('stops a changed TEXT default too: writing a bound layer rewrites the property for the whole set', () => {
+    const text = fixture('dropdown-list.label-word.extend.figma.js', `// @extends dropdown-list
+// @adds Note / word
+const note = figma.createFrame(); note.name = 'Note / word'; note.fills = []; page.appendChild(note);
+set.children[0].findOne(n => n.name === 'Label').characters = 'Firewalls';
+return {};
+`)
+    expect(JSON.parse(cli('--lint', text))[text].problems.find((p: any) => p.rule === 'extend-run').what)
+      .toContain('Dropdown List item: default of "Label" changed from "Firewall" to "Firewalls"')
+  })
+
+  it('create mode reports each added top node with its node count, as extend mode does', () => {
+    const r = runModule(`import { build } from './scripts/figma/check-components.mjs'
+const d = await build('dropdown-list'), t = await build('tabs')
+console.log(JSON.stringify({ d: d.result.added, t: t.result.added, e: t.result.extensions.map((e) => [e.id, e.added]) }))`)
+    expect(r.d).toEqual(['Usage / Locked (3 nodes)'])
+    // a hover tab: the component, its Label and Count, the Seed, its Soft ends and its Bar
+    expect(r.t).toEqual(['State=hover, Size=default (6 nodes)', 'State=hover, Size=large (6 nodes)'])
+    expect(r.e).toEqual([['seed-hover', r.t]])
+    expect((lintReport['tabs.seed-hover'] as any).extend.first.added).toEqual(r.t)
+  })
+})
+
+// R33: the Seed, the Tabs hover preview, as two State=hover variants added to the published Tab set
+// (tabs.seed-hover.extend.figma.js). The spec is guidelines/components/tabs.md; the CSS Tabs.css.
+describe('Tab, State=hover: the Seed, added in place', () => {
+  const tab = dump('tabs')
+  const hover = tab.variants.filter((v: any) => v.n.startsWith('State=hover'))
+  const SIZE: Record<string, [string, string]> = { default: ['Tab/Default', 'Tab/Count'], large: ['Tab/Large', 'Tab/Count Large'] }
+
+  it('adds State=hover at both sizes after the six, and State gains the option', () => {
+    expect(tab.variants.map((v: any) => v.n)).toEqual([
+      ...['default', 'selected', 'disabled'].flatMap((s) => ['default', 'large'].map((z) => `State=${s}, Size=${z}`)),
+      'State=hover, Size=default', 'State=hover, Size=large',
+    ])
+  })
+
+  it('a hover tab is the default tab in text/default, the colour Tabs.css gives a hovered trigger, with no underline', () => {
+    for (const v of hover) {
+      const size = v.n.split('Size=')[1]
+      const [label, count] = v.ch
+      expect([label.n, label.style, label.fill, label.chars], v.n).toEqual(['Label', SIZE[size][0], ['text/default'], 'Alerts'])
+      expect([count.n, count.style, count.fill, Object.keys(count.ref)], v.n).toEqual(['Count', SIZE[size][1], ['text/default'], ['visible']])
+      expect([v.stroke, v.fill, v.gap[1], v.pad.map((p: any) => p[1])], v.n).toEqual([[], [], 'space/5', ['space/10', null, 'space/10', null]])
+    }
+    expect(readFileSync(resolve(root, 'src/components/Tabs/Tabs.css'), 'utf8')).toMatch(/\.vela-tabs__trigger:hover:not\(:disabled\):not\(\[aria-selected='true'\]\) \{ color: var\(--vela-text-default\); \}/)
+  })
+
+  it('the Seed: absolute on the bottom edge, stroke/2 tall, at opacity/preview, floored by tab/preview-width-min; soft ends over a border/active bar', () => {
+    for (const v of hover) {
+      const seed = v.ch[2]
+      expect([seed.t, seed.n, seed.abs, seed.con, seed.opa, seed.minw, seed.wh[3], seed.fill], v.n).toEqual(['FRAME', 'Seed', true, 'SCALE/MAX', 'opacity/preview', [24, 'tab/preview-width-min'], 'stroke/2', []])
+      const [ends, bar] = seed.ch
+      expect([ends.t, ends.n, ends.mask, ends.abs, ends.con, ends.wh[3], ends.fill], v.n).toEqual(['RECTANGLE', 'Soft ends', true, true, 'STRETCH/STRETCH', 'stroke/2', ['GRADIENT_LINEAR']])
+      expect([bar.t, bar.n, bar.ls, bar.wh[3], bar.fill], v.n).toEqual(['RECTANGLE', 'Bar', 'FILL/FIXED', 'stroke/2', ['border/active']])
+    }
+  })
+
+  it('sizes the Seed by its rule — a third of the tab, never under the floor, never wider — centred; the mask is black, solid from 30% to 70%', () => {
+    const r = runModule(`import { build } from './scripts/figma/check-components.mjs'
+const { set } = await build('tabs')
+console.log(JSON.stringify(set.children.filter((v) => v.name.startsWith('State=hover')).map((t) => {
+  const s = t.findOne((n) => n.name === 'Seed'), m = s.findOne((n) => n.name === 'Soft ends')
+  return { tw: t.width, th: t.height, w: s.width, h: s.height, x: s.x, y: s.y, mw: m.width, stops: m.fills[0].gradientStops.map((g) => [g.position, g.color.r + g.color.g + g.color.b, g.color.a]) }
+})))`)
+    for (const s of r) {
+      expect(s.w).toBeCloseTo(Math.min(s.tw, Math.max(s.tw / 3, 24)), 6)
+      expect([s.h, s.mw]).toEqual([2, s.w])
+      expect(s.x).toBeCloseTo((s.tw - s.w) / 2, 6)
+      expect(s.y).toBe(s.th - 2)
+      expect(s.stops).toEqual([[0, 0, 0], [0.3, 0, 1], [0.7, 0, 1], [1, 0, 0]])
+    }
+    // the same stops as the CSS mask
+    expect(readFileSync(resolve(root, 'src/components/Tabs/Tabs.css'), 'utf8')).toContain('mask-image: linear-gradient(90deg, transparent, currentColor 30%, currentColor 70%, transparent);')
+  })
+
+  it('moves none of the six: each keeps its place, and the default variant stays State=default, Size=default', () => {
+    const r = runModule(`import { build, buildBase } from './scripts/figma/check-components.mjs'
+const at = (s) => ({ dflt: s.defaultVariant.name, w: s.width, h: s.height, kids: Object.fromEntries(s.children.map((v) => [v.name, [v.x, v.y]])) })
+const base = at((await buildBase('tabs')).page.children.find((n) => n.name === 'Tab'))
+const full = at((await build('tabs')).set)
+console.log(JSON.stringify({ base, full }))`)
+    expect(Object.keys(r.base.kids)).toHaveLength(6)
+    for (const [name, xy] of Object.entries(r.base.kids)) expect(r.full.kids[name], name).toEqual(xy)
+    expect([r.full.dflt, r.base.dflt]).toEqual(['State=default, Size=default', 'State=default, Size=default'])
+    expect(r.full.h).toBeGreaterThan(r.base.h)
+    const lowest = Math.max(...Object.values<number[]>(r.base.kids).map(([, y]) => y))
+    for (const n of ['State=hover, Size=default', 'State=hover, Size=large']) expect(r.full.kids[n][1], n).toBeGreaterThan(lowest)
+  })
+
+  it('--extend on Tabs, run twice in the mock: extends with the snapshot unchanged, then skips; the reviewer rules pass', () => {
+    const r = lintReport['tabs.seed-hover'] as any
+    expect(r.problems.filter((p: any) => !p.waived)).toEqual([])
+    expect(r.extend.first).toEqual({ extended: ['seed-hover'], skipped: [], added: ['State=hover, Size=default (6 nodes)', 'State=hover, Size=large (6 nodes)'], snapshot: 'unchanged' })
+    expect(r.extend.second).toEqual({ extended: [], skipped: ['seed-hover'], added: [], snapshot: 'unchanged' })
+  })
+
+  it('the Tab description says the hover variant exists, no longer that it has none', () => {
+    const entries: any[] = JSON.parse(execFileSync('node', ['scripts/sync-figma-descriptions.mjs', '--json'], { cwd: root, encoding: 'utf8' }))
+    const d = entries.find((e) => e.set === 'Tab').description
+    expect(d).toContain('The hover preview is the State=hover variant: the label in text/default, the Seed under it.')
+    expect(d).toContain('State=hover → the pointer resting on an enabled, unselected tab, not a prop')
+    expect(d).not.toContain('The hover preview has no Figma variant')
   })
 })

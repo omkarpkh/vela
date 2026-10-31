@@ -3,6 +3,8 @@
 // Tab — a single tab, 6 variants (State × Size) + Count boolean. The tablist is
 // composed from instances. The selected indicator is a 2px bottom stroke, never a fill.
 // Keyboard behaviour (roving tabindex, arrows, Home/End) has no Figma expression.
+// State=hover, the hover preview (the Seed), came after the set was published, so it is an
+// extension: tabs.seed-hover.extend.figma.js. Create mode runs it after this file: 8 variants.
 
 const STATES = { default: { text: 'text/de-emphasized', border: null }, selected: { text: 'text/link', border: 'border/active' }, disabled: { text: 'text/inactive', border: null } };
 const SIZES = { default: 'Tab/Default', large: 'Tab/Large' };
