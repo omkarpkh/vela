@@ -1060,7 +1060,7 @@ test('the Dropdown List lands on the current item however it opens, in a real br
 // The global focus ring is an outline outside the item; the popup scrolls, so its padding is what
 // keeps the ring from being clipped — at the sides, and at the bottom with the last item focused
 // in a list that has scrolled. A disabled item shows the highlight under keyboard focus only.
-test('the Dropdown List never clips the focus ring, and a disabled item highlights from the keyboard only', async ({ page }) => {
+test('the Dropdown List never clips the focus ring, and a locked item highlights from the keyboard only', async ({ page }) => {
   // Short enough that the list can't fit above or below its trigger, so it scrolls. At 420 the
   // playground's stage (anchored top-left since slice 0) leaves room for the whole list above.
   await page.setViewportSize({ width: 1440, height: 320 })
@@ -1116,9 +1116,11 @@ test('the Dropdown List never clips the focus ring, and a disabled item highligh
   // Under the pointer it changes nothing.
   await archive.hover()
   await page.mouse.move((await archive.boundingBox())!.x + 40, (await archive.boundingBox())!.y + 10)
-  const hovered = await look()
-  expect(hovered.bg).not.toBe(tokens.hover)
-  expect(hovered.name).toBe(tokens.inactive)
+  // The pointer mark is React state, set on the move: wait for it, then for the highlight to drop,
+  // rather than read the frame the move lands in (it failed that way on a loaded CI runner).
+  await expect(menu).toHaveAttribute('data-vela-pointer')
+  await expect.poll(async () => (await look()).bg).not.toBe(tokens.hover)
+  expect((await look()).name).toBe(tokens.inactive)
   await page.keyboard.press('Escape')
 })
 
