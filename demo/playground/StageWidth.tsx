@@ -23,13 +23,15 @@ export const FLOOR = 320
 
 export const clampWidth = (w: number, min: number, max: number) => Math.min(max, Math.max(min, Math.round(w)))
 
-export function StageWidth({ min, max, width, onChange, phone }: {
+export function StageWidth({ min, max, width, onChange, phone, marks }: {
   min: number
   max: number
   /** The chosen width, or undefined for the full width. */
   width: number | undefined
   onChange: (w: number | undefined) => void
   phone: boolean
+  /** Widths worth stopping at, drawn as ticks on the slider (the Copy page's 160px and 280px). */
+  marks?: number[]
 }) {
   const id = useId()
   const value = width ?? max
@@ -71,6 +73,7 @@ export function StageWidth({ min, max, width, onChange, phone }: {
           // Step 1, so the ends are exactly the range's ends (a step of 10 would stop short of a
           // stage 718px wide); the keys move 10 and 50 themselves.
           step={1}
+          list={marks ? `${id}-marks` : undefined}
           value={value}
           onChange={(e) => set(e.target.valueAsNumber)}
           onKeyDown={(e) => {
@@ -78,6 +81,9 @@ export function StageWidth({ min, max, width, onChange, phone }: {
             if (by !== undefined) { e.preventDefault(); set(value + by) }
           }}
         />
+      )}
+      {!phone && marks && (
+        <datalist id={`${id}-marks`}>{marks.map((m) => <option key={m} value={m} label={`${m}px`} />)}</datalist>
       )}
     </span>
   )

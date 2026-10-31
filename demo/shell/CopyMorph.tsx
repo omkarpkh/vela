@@ -74,7 +74,10 @@ export interface CopyMorphProps {
   pose?: MorphPose
   /** The Copy page's simulated refusals. They replace this copy's own calls, never the browser's settings. */
   simulate?: CopySimulation
-  onResult?: (result: CopyResult) => void
+  /** What happened, with the text that was written when it was copied (a fetched secret included, for its receipt). */
+  onResult?: (result: CopyResult, written?: string) => void
+  /** The Copy page's Keyboard switch: every press is treated as one from the keyboard, so nothing animates. */
+  keyboard?: boolean
   /** The tick has handed back: the host may now show its "Copied" mark. */
   onHandBack?: () => void
   /** Ids of the host's words that describe the control (a failure, "Copied here earlier"). */
@@ -82,7 +85,7 @@ export interface CopyMorphProps {
   className?: string
 }
 
-export function CopyMorph({ what, text, shownId, box = 'small', pose, simulate, onResult, onHandBack, describedBy, className }: CopyMorphProps) {
+export function CopyMorph({ what, text, shownId, box = 'small', pose, simulate, onResult, onHandBack, describedBy, keyboard, className }: CopyMorphProps) {
   const [state, setState] = useState<MorphState>(pose?.state ?? 'idle')
   const [press, setPress] = useState(!!pose?.press)
   const [ret, setRet] = useState(!!pose?.ret)
@@ -153,11 +156,11 @@ export function CopyMorph({ what, text, shownId, box = 'small', pose, simulate, 
     setInstant(!!pose.instant)
   }, [pose])
 
-  const succeed = useCallback(() => {
+  const succeed = useCallback((written?: string) => {
     setInstant(kbd.current)
     setState('copied')
     runHold(HOLD_MS)
-    results.current?.('copied')
+    results.current?.('copied', written)
   }, [runHold])
 
   // After a failure, the person may copy the selection themselves: the page sees it, and the alert
@@ -169,7 +172,7 @@ export function CopyMorph({ what, text, shownId, box = 'small', pose, simulate, 
       const sel = window.getSelection()
       if (shown && sel && sel.rangeCount && shown.contains(sel.getRangeAt(0).commonAncestorContainer) && sel.toString()) {
         kbd.current = true
-        succeed()
+        succeed(sel.toString())
       }
     }
     document.addEventListener('copy', onCopy)
@@ -178,7 +181,7 @@ export function CopyMorph({ what, text, shownId, box = 'small', pose, simulate, 
 
   const onClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
     if (stateRef.current === 'busy') return
-    kbd.current = e.detail === 0
+    kbd.current = keyboard || e.detail === 0
     setRet(false)
     window.clearTimeout(retTimer.current)
     let value: string
@@ -189,7 +192,7 @@ export function CopyMorph({ what, text, shownId, box = 'small', pose, simulate, 
     }
     const result = await copyText(value, shownId ? document.getElementById(shownId) : null, simulate)
     setPress(false)
-    if (result === 'copied') { succeed(); return }
+    if (result === 'copied') { succeed(value); return }
     clearHold()
     setInstant(true)
     setState('failed')
@@ -220,7 +223,7 @@ export function CopyMorph({ what, text, shownId, box = 'small', pose, simulate, 
         setPress(false)
         if (stateRef.current === 'hover') setState('idle')
       }}
-      onPointerDown={() => { setInstant(false); setPress(true) }}
+      onPointerDown={() => { if (!keyboard) { setInstant(false); setPress(true) } }}
       onPointerCancel={() => setPress(false)}
       onPointerUp={(e) => { if (e.pointerType === 'touch') window.setTimeout(() => { if (stateRef.current !== 'copied') setPress(false) }, 400) }}
       onClick={onClick}

@@ -9,15 +9,21 @@ import { ScrollRegion } from '../shell/ScrollRegion'
 // literally here — this renderer has no HTML pass, on purpose.)
 export const RULE_TAG = /\s*\[\[rule:[^\]]*\]\]/g
 
-export function inline(text: string, key: number): ReactNode {
+/**
+ * Inline markdown: code, bold (with code inside it), and links as their words. `em` also reads
+ * single-asterisk emphasis; only pages that ask for it get it, because a lone `*` in a spec (a glob,
+ * a footnote) is not emphasis.
+ */
+export function inline(text: string, key: number, em = false): ReactNode {
   // The tag's id stays as data on the text it closes, so "Open proof" can land on that rule.
   const ids = [...text.matchAll(/\[\[rule:\s*([^|\]]+?)\s*\|/g)].map((m) => m[1])
-  const parts = text.replace(RULE_TAG, '').split(/(`[^`]+`|\*\*[^*]+\*\*)/g).filter(Boolean)
+  const parts = text.replace(RULE_TAG, '').split(em ? /(`[^`]+`|\*\*[^*]+\*\*|\*[^*\s][^*]*\*)/g : /(`[^`]+`|\*\*[^*]+\*\*)/g).filter(Boolean)
   return (
     <span key={key} data-rule={ids.length ? ids.join(' ') : undefined}>
       {parts.map((p, i) =>
         p.startsWith('`') ? <code key={i}>{p.slice(1, -1)}</code>
-        : p.startsWith('**') ? <strong key={i}>{p.slice(2, -2)}</strong>
+        : p.startsWith('**') ? <strong key={i}>{p.slice(2, -2).split(/(`[^`]+`)/g).map((q, j) => (q.startsWith('`') ? <code key={j}>{q.slice(1, -1)}</code> : q))}</strong>
+        : em && /^\*[^*]/.test(p) && p.endsWith('*') && p.length > 2 ? <em key={i}>{p.slice(1, -1)}</em>
         : p.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1'),
       )}
     </span>

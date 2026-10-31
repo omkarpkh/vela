@@ -236,3 +236,6 @@
 .shell-cm-reduced .shell-cm .vela-icon * { transition-duration: 0s !important; transition-delay: 0s !important; }
 .shell-cm-reduced .shell-cm[data-state="hover"] .vela-icon .turn { transform: none; }
 @media (forced-colors: active) { .shell-cm { color: ButtonText; } }
+/* A still frame of the morph (the Copy page's keyframe strip): not a control, so no pointer or hover. */
+.shell-cm--still { cursor: default; }
+@media (hover: hover) { .shell-cm--still:hover { background: transparent; } }

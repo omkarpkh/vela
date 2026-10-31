@@ -1,12 +1,17 @@
-import { useCallback, useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Button, Table, Toggle } from '../../src'
-import copyMd from '../../guidelines/patterns/copy.md?raw'
-import { inline, Markdown } from '../playground/Markdown'
+import { inline } from '../playground/Markdown'
 import { CopyMorph, type MorphPose, type MorphState } from '../shell/CopyMorph'
-import { COPY_WORDS, PLATFORM, type CopyResult, type Platform } from '../shell/Copy'
+import { COPY_WORDS, PLATFORM, type Platform } from '../shell/Copy'
+import { CopyGroupProvider } from '../shell/CopyGroup'
 import { Segments } from '../shell/Segments'
 import { LINKS } from '../links'
-import { readPattern, splitParagraph, tableOf, visible, type PatternSection } from './copy-read'
+import {
+  SECTIONS, section, Words, Example, Drawing, CopyValue, MarkSlot, useAnnouncer, failureWords, fetchSecret, escapeHidden,
+  ZWSP, NBSP, LQ, RQ, PLATFORMS, platformWord, wordsRows, wordsFor, type WordsRow,
+} from './copy-parts'
+import { MoreSections, SHOWN_MORE } from './copy-more'
+import { visible } from './copy-read'
 import '../playground.css'
 
 // The Copy pattern page (playground spec, section 12): guidelines/patterns/copy.md, told with live
@@ -16,146 +21,8 @@ import '../playground.css'
 // a shell part (demo/shell/CopyMorph.tsx), labelled "Experimental, not yet in the kit". Switches
 // simulate a browser's refusals and say so; they never touch the browser's settings or permissions.
 
-const SECTIONS = readPattern(copyMd)
-const section = (n: number) => SECTIONS.find((s) => s.n === n)!
-/** The sections this slice shows. */
-export const SHOWN = [0, 1, 2, 3, 4]
-
-// ---------------------------------------------------------------------------- the words --
-
-/**
- * The section's words: paragraphs (split between sentences when one is longer than the playground
- * allows), lists with their nested items, numbered lists, and tables, which Markdown renders.
- * `skip` leaves out blocks the page shows another way (the §2 list is the scrubber's caption).
- */
-function Words({ body, skip }: { body: string; skip?: (block: string) => boolean }) {
-  const blocks = body.split(/\n\s*\n/).map((b) => b.replace(/\s+$/, '')).filter(Boolean)
-  const out: ReactNode[] = []
-  blocks.forEach((b, k) => {
-    if (skip?.(b)) return
-    const lines = b.split('\n')
-    if (lines[0].startsWith('|')) { out.push(<Markdown key={k} source={b} />); return }
-    if (/^\*[^*].*\*$/.test(b)) { out.push(<p key={k} className="pg-p copy-page__aside"><em>{b.slice(1, -1)}</em></p>); return }
-    // A paragraph, then any list that follows it with no blank line between ("The page:" then "- …").
-    const lead: string[] = []
-    while (lines.length && !/^(- |\d+\. )/.test(lines[0])) lead.push(lines.shift()!)
-    if (lead.length) splitParagraph(lead.join(' ')).forEach((p, i) => out.push(<p key={`${k}-${i}`} className="pg-p">{inline(p, i)}</p>))
-    if (lines.length) out.push(<List key={`${k}-l`} lines={lines} />)
-  })
-  return <div className="copy-page__words">{out}</div>
-}
-
-/** A list, numbered or not, with items nested by indent. */
-function List({ lines }: { lines: string[] }) {
-  type Item = { text: string; sub: string[] }
-  const items: Item[] = []
-  const ordered = /^\d+\. /.test(lines[0])
-  for (const l of lines) {
-    if (/^(- |\d+\. )/.test(l)) items.push({ text: l.replace(/^(- |\d+\. )/, ''), sub: [] })
-    else if (/^\s+- /.test(l)) items[items.length - 1]?.sub.push(l.replace(/^\s+- /, ''))
-    else if (items.length) {
-      const it = items[items.length - 1]
-      if (it.sub.length) it.sub[it.sub.length - 1] += ' ' + l.trim()
-      else it.text += ' ' + l.trim()
-    }
-  }
-  const L = ordered ? 'ol' : 'ul'
-  return (
-    <L className="pg-list copy-page__list">
-      {items.map((it, i) => (
-        <li key={i}>
-          {inline(it.text, 0)}
-          {it.sub.length > 0 && <ul className="pg-list">{it.sub.map((s, j) => <li key={j}>{inline(s, j)}</li>)}</ul>}
-        </li>
-      ))}
-    </L>
-  )
-}
-
-// --------------------------------------------------------------------- shared example parts --
-
-/** One polite region for the page: each outcome is announced once, and focus never moves. */
-function useAnnouncer() {
-  const [text, setText] = useState('')
-  const frame = useRef(0)
-  const announce = useCallback((msg: string) => {
-    // Cleared first, so the same words said again (a second copy) are announced again.
-    setText('')
-    cancelAnimationFrame(frame.current)
-    frame.current = requestAnimationFrame(() => setText(msg))
-  }, [])
-  useEffect(() => () => cancelAnimationFrame(frame.current), [])
-  const region = <p role="status" className="vela-sr-only copy-page__announcer">{text}</p>
-  return { announce, region }
-}
-
-/** The frame every live example sits in, with its label and, while a switch is on, what it simulates. */
-function Example({ label, simulated, children }: { label: string; simulated?: string[]; children: ReactNode }) {
-  const id = useId()
-  return (
-    <div className="copy-example" role="group" aria-labelledby={id}>
-      <p id={id} className="vela-meta copy-example__label">
-        <span className="site-tag">Experimental, not yet in the kit</span> {label}
-      </p>
-      {simulated && simulated.length > 0 && (
-        <p className="vela-meta copy-example__simulated">Simulated: {simulated.join(' ')}</p>
-      )}
-      {children}
-    </div>
-  )
-}
-
-/** A "don't" drawing: a picture, not a control. It never takes focus and holds nothing that does. */
-function Drawing({ alt, children }: { alt: string; children: ReactNode }) {
-  return <div className="copy-drawing" role="img" aria-label={alt}>{children}</div>
-}
-
-const failureWords = (r: CopyResult, platform: Platform) =>
-  r === 'selected' ? COPY_WORDS.selected[platform] : r === 'none' ? COPY_WORDS.none : ''
-
-/**
- * A value with its copy control, its "Copied" mark and its failure words, which are also the
- * control's description. `marked` is the group's: one clipboard governs the page, so only one value
- * carries the mark.
- */
-function CopyValue({ id, what, text, shown, marked, onMarked, announce, platform = PLATFORM, simulate, box, pose, extra, mono = true }: {
-  id: string; what: string; text: string | (() => Promise<string>); shown?: ReactNode
-  marked?: boolean; onMarked?: (on: boolean) => void; announce: (m: string) => void
-  platform?: Platform; simulate?: { api?: boolean; fallback?: boolean }; box?: 'small' | 'regular'
-  pose?: MorphPose; extra?: ReactNode; mono?: boolean
-}) {
-  const [failure, setFailure] = useState('')
-  const valueId = `${id}-value`
-  const msgId = `${id}-msg`
-  return (
-    <span className="copy-value">
-      <span className="copy-value__row">
-        <span id={valueId} className={mono ? 'copy-value__text' : undefined}>{shown ?? (typeof text === 'string' ? text : '')}</span>
-        <CopyMorph
-          what={what}
-          text={text}
-          shownId={typeof text === 'string' && !shown ? valueId : undefined}
-          box={box}
-          pose={pose}
-          simulate={simulate}
-          describedBy={failure ? msgId : undefined}
-          onResult={(r) => {
-            if (r === 'copied') { setFailure(''); onMarked?.(false); announce(`Copied ${what}`); return }
-            const words = failureWords(r, platform)
-            setFailure(words)
-            announce(words)
-          }}
-          onHandBack={() => onMarked?.(true)}
-        />
-        {/* The mark is a word, never a colour. Its place is kept while it is hidden, so a table
-            column does not change width when the word arrives. */}
-        {onMarked && <span className={`copy-value__mark ${marked && !failure ? 'is-on' : 'is-off'}`}>Copied</span>}
-        {extra}
-      </span>
-      {failure && <span id={msgId} className="copy-value__msg">{failure}</span>}
-    </span>
-  )
-}
+/** The sections the page shows: all of copy.md's, the opening and 1 to 13. */
+export const SHOWN = [0, 1, 2, 3, 4, ...SHOWN_MORE]
 
 // ------------------------------------------------------------------------------ opening --
 
@@ -166,7 +33,6 @@ const HOSTS = [
 ]
 
 function Opening({ announce }: { announce: (m: string) => void }) {
-  const [mark, setMark] = useState<string | null>(null)
   const s = section(0)
   const aside = s.body.split(/\n\s*\n/).map((b) => b.trim()).find((b) => /^\*[^*].*\*$/.test(b))
   return (
@@ -188,8 +54,7 @@ function Opening({ announce }: { announce: (m: string) => void }) {
                     id={`host-${h.host}`}
                     what={`${h.host} IP address`}
                     text={h.ip}
-                    marked={mark === h.host}
-                    onMarked={(on) => setMark((m) => (on ? h.host : m === h.host ? null : m))}
+                    copyId={`host-${h.host}`}
                     announce={announce}
                   />
                 </Table.Cell>
@@ -206,15 +71,6 @@ function Opening({ announce }: { announce: (m: string) => void }) {
 
 // ---------------------------------------------------------------------------- section 1 --
 
-/** A sample secret in an invented format, made when it is fetched, never kept in the page. */
-const sampleSecret = (tail: string) => {
-  const abc = 'abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789'
-  let s = 'vela_sample_'
-  for (let i = 0; i < 6; i++) s += abc[Math.floor(Math.random() * abc.length)]
-  return s + tail
-}
-const fetchSecret = (tail: string) => () => new Promise<string>((ok) => window.setTimeout(() => ok(sampleSecret(tail)), 400))
-
 function exportCsv() {
   const csv = ['host,ip', ...HOSTS.map((h) => `${h.host},${h.ip}`)].join('\n') + '\n'
   const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }))
@@ -226,8 +82,7 @@ function exportCsv() {
 }
 
 function WhenToOffer({ announce }: { announce: (m: string) => void }) {
-  const [mark, setMark] = useState<string | null>(null)
-  const marker = (id: string) => ({ marked: mark === id, onMarked: (on: boolean) => setMark((m) => (on ? id : m === id ? null : m)) })
+  const marker = (id: string) => ({ copyId: `do-${id}` })
   const s = section(1)
   const pairs: { title: string; doCopy: string; dont: string; alt: string; live: ReactNode; drawing: ReactNode }[] = [
     {
@@ -250,9 +105,9 @@ function WhenToOffer({ announce }: { announce: (m: string) => void }) {
     },
     {
       title: 'A secret is fetched', doCopy: 'Dots until it is copied; the key is fetched at the press. [sample]', dont: 'The secret sits in the page, masked by CSS.',
-      alt: 'Don\'t: a masked key whose real value, vela_sample_ and the rest, is in the page\'s markup.',
+      alt: 'Don\'t: a masked key whose full value is in the page\'s markup, hidden only by CSS.',
       live: <CopyValue id="do-secret" what="API key [sample]" text={fetchSecret('a9F2')} shown="•••••••• a9F2" announce={announce} {...marker('secret')} />,
-      drawing: <span className="copy-drawing__row"><span className="copy-value__text">•••••••• a9F2</span><span className="copy-drawing__note">vela_sample_… in the markup</span></span>,
+      drawing: <span className="copy-drawing__row"><span className="copy-value__text">•••••••• a9F2</span><span className="copy-drawing__note">the full key, in the markup</span></span>,
     },
     {
       title: 'Many rows are an export', doCopy: 'Export the hosts as a file.', dont: 'A "Copy table" button: hundreds of rows pasted as one block of text.',
@@ -315,7 +170,6 @@ function HowItWorks({ announce }: { announce: (m: string) => void }) {
   const [step, setStep] = useState<Step>('rest')
   const [speed, setSpeed] = useState<'1' | 'slow'>('1')
   const [pose, setPose] = useState<MorphPose>(POSE.rest)
-  const [mark, setMark] = useState(false)
   const stage = useRef<HTMLDivElement>(null)
   const timers = useRef<number[]>([])
 
@@ -354,7 +208,7 @@ function HowItWorks({ announce }: { announce: (m: string) => void }) {
         <div className="copy-stage" ref={stage}>
           <CopyMorph what="request id, large preview" text="req_8f2a91c4e7" box="preview" pose={pose} onResult={(r) => announce(r === 'copied' ? 'Copied request id' : failureWords(r, PLATFORM))} />
           <div className="copy-stage__side" aria-hidden="true">
-            {step === 'marked' && <span className="copy-value__mark">Copied</span>}
+            <MarkSlot word={step === 'marked' ? 'Copied' : null} />
             {step === 'away' && <span className="vela-meta">The page is hidden: the hold waits.</span>}
             {step === 'failed' && <span className="copy-value__msg">{COPY_WORDS.selected[PLATFORM]}</span>}
           </div>
@@ -371,7 +225,7 @@ function HowItWorks({ announce }: { announce: (m: string) => void }) {
         <h3 className="vela-h6 copy-try__title">At real size, to try</h3>
         <p className="copy-try">
           <span className="copy-pair__key">Request id</span>{' '}
-          <CopyValue id="try-request" what="request id" text="req_8f2a91c4e7" marked={mark} onMarked={setMark} announce={announce} />
+          <CopyValue id="try-request" what="request id" text="req_8f2a91c4e7" copyId="try-request" announce={announce} />
         </p>
       </Example>
       <Words body={s.body} skip={(b) => b === list} />
@@ -385,12 +239,6 @@ type Kind = 'request' | 'invite' | 'key' | 'command' | 'multiline' | 'hidden' | 
 type Spot = 'name' | 'tooltip' | 'announced' | 'description' | 'beside' | 'under'
 interface Specimen { kind: Kind; state: MorphState; spots: Spot[]; mark?: string; select?: boolean }
 
-const ch = String.fromCharCode
-// Hidden characters are made here, at runtime, and never typed into the source.
-const ZWSP = ch(0x200b)
-const NBSP = ch(0x00a0)
-const LQ = ch(0x201c)
-const RQ = ch(0x201d)
 const KINDS: Record<Kind, { label: string; what: string; value: string; shown?: string }> = {
   request: { label: 'Request id', what: 'request id', value: 'req_8f2a91c4e7' },
   invite: { label: 'Invite link', what: 'invite link', value: 'https://vela.example/invite/7Q2f9xLm' },
@@ -400,10 +248,6 @@ const KINDS: Record<Kind, { label: string; what: string; value: string; shown?: 
   hidden: { label: 'Command', what: 'command', value: `vela scan --host${ZWSP} 10.42.7.19` },
   curly: { label: 'Command', what: 'command', value: `vela scan --tag ${LQ}prod${RQ} --host${NBSP}10.42.7.19` },
 }
-/** Hidden characters shown as escapes, the way Copyable Value shows them (copy.md, section 6). */
-const HIDDEN = new RegExp(`[${[[0x200b, 0x200f], [0x202a, 0x202e], [0x2060, 0x2060], [0x2066, 0x2069], [0xfeff, 0xfeff]].map(([a, b]) => `${ch(a)}-${ch(b)}`).join('')}]`, 'g')
-const escapeHidden = (s: string) => s.replace(HIDDEN, (c) => `\\u${c.charCodeAt(0).toString(16).toUpperCase().padStart(4, '0')}`)
-
 /** Each row of the words table, keyed by its moment and its words, and how the specimen shows it. */
 const SPECIMENS: Record<string, Specimen> = {
   'At rest': { kind: 'request', state: 'idle', spots: ['name', 'tooltip'] },
@@ -427,24 +271,6 @@ const SPECIMENS: Record<string, Specimen> = {
   'A fetch failed': { kind: 'invite', state: 'failed', spots: ['announced', 'description'] },
 }
 const SPOT_LABEL: Record<Spot, string> = { name: 'Name', tooltip: 'Tooltip', announced: 'Announced', description: 'Description', beside: 'Beside the value', under: 'Under the value' }
-
-export interface WordsRow { moment: string; words: string; where: string; key: string }
-/** The §3 table's rows. A moment that appears twice is told apart by its words. */
-export function wordsRows(): WordsRow[] {
-  const [, ...rows] = tableOf(section(3).body.split(/\n\s*\n/).find((b) => b.startsWith('| Moment')) ?? '')
-  const twice = (m: string) => rows.filter((r) => r[0] === m).length > 1
-  return rows.map(([moment, words, where]) => ({ moment, words, where, key: twice(moment) ? `${moment} · ${visible(words)}` : moment }))
-}
-
-/** The words a row shows, for this platform: the four failure strings are the Copy Button spec's own. */
-function wordsFor(row: WordsRow, platform: Platform): string {
-  if (row.moment === 'Blocked, text selected') return COPY_WORDS.selected[platform]
-  if (row.moment === 'Blocked, nothing selected') return COPY_WORDS.none
-  const w = visible(row.words).replace(/\s*\((?:per platform|⌘C;[^)]*)\)\s*$/, '')
-  if (row.moment === 'A secret shown to copy')
-    return platform === 'touch' ? 'Selected. Tap and hold it, then choose Copy.' : platform === 'apple' ? w : w.replace('⌘C', 'Ctrl+C')
-  return w
-}
 
 function WordsSection({ announce }: { announce: (m: string) => void }) {
   const s = section(3)
@@ -488,7 +314,9 @@ function WordsSection({ announce }: { announce: (m: string) => void }) {
           <span className="copy-value__row">
             <span ref={valueRef} className="copy-value__text copy-specimen__value">{shown}</span>
             <CopyMorph what={kind.what} text={kind.value} box="regular" pose={pose} onResult={(r) => announce(r === 'copied' ? `Copied ${kind.what}` : failureWords(r, PLATFORM))} />
-            {beside && <span className="copy-value__mark">{beside}</span>}
+            <span className="copy-mark">
+              <span className={`copy-value__mark ${beside ? 'is-on' : 'is-off'}`}>{beside || 'Copied'}</span>
+            </span>
           </span>
           {spots.get('under') && <span className="copy-value__msg">{spots.get('under')}</span>}
           <dl className="copy-specimen__where">
@@ -533,13 +361,6 @@ function WordsSection({ announce }: { announce: (m: string) => void }) {
 }
 
 // ---------------------------------------------------------------------------- section 4 --
-
-const PLATFORMS = [
-  { value: 'other', label: 'Ctrl+C' },
-  { value: 'apple', label: '⌘C' },
-  { value: 'touch', label: 'Touch' },
-] as const
-const platformWord = (p: Platform) => PLATFORMS.find((x) => x.value === p)!.label
 
 function WhenItFails({ announce }: { announce: (m: string) => void }) {
   const s = section(4)
@@ -586,27 +407,28 @@ export function CopyPattern() {
   const { announce, region } = useAnnouncer()
   const [reduced, setReduced] = useState(false)
   return (
-    <article className={`doc copy-page ${reduced ? 'shell-cm-reduced' : ''}`}>
-      <header className="page-head">
-        <p className="vela-meta page-head__eyebrow">Pattern</p>
-        <h1 className="vela-h2">Copy</h1>
-        <p className="vela-meta">
-          A scenario pattern, read from <code>guidelines/patterns/copy.md</code>. This page has the opening and sections 1 to 4;
-          sections 5 to 13 are in the <a href={`${LINKS.github}/blob/main/guidelines/patterns/copy.md`}>pattern on GitHub</a> until
-          they come here.
-        </p>
-        <div className="pg-toolbar copy-toolbar copy-page__settings">
-          <Toggle label="Reduced motion" size="tiny" checked={reduced} onChange={setReduced} />
-        </div>
-      </header>
-      <Opening announce={announce} />
-      <WhenToOffer announce={announce} />
-      <HowItWorks announce={announce} />
-      <WordsSection announce={announce} />
-      <WhenItFails announce={announce} />
-      {region}
-    </article>
+    <CopyGroupProvider>
+      <article className={`doc copy-page ${reduced ? 'shell-cm-reduced' : ''}`}>
+        <header className="page-head">
+          <p className="vela-meta page-head__eyebrow">Pattern</p>
+          <h1 className="vela-h2">Copy</h1>
+          <p className="vela-meta">
+            A scenario pattern, read from <code>guidelines/patterns/copy.md</code> (<a href={`${LINKS.github}/blob/main/guidelines/patterns/copy.md`}>on GitHub</a>).
+          </p>
+          <div className="pg-toolbar copy-toolbar copy-page__settings">
+            <Toggle label="Reduced motion" size="tiny" checked={reduced} onChange={setReduced} />
+          </div>
+        </header>
+        <Opening announce={announce} />
+        <WhenToOffer announce={announce} />
+        <HowItWorks announce={announce} />
+        <WordsSection announce={announce} />
+        <WhenItFails announce={announce} />
+        <MoreSections announce={announce} reduced={reduced} />
+        {region}
+      </article>
+    </CopyGroupProvider>
   )
 }
 
-export { SECTIONS, SPECIMENS, type PatternSection }
+export { SECTIONS, SPECIMENS, wordsRows }
