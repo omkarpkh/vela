@@ -16,8 +16,13 @@ describe('Proposal pages', () => {
     const files = readdirSync(dir).filter((f) => f.endsWith('.md') && f !== 'README.md').sort()
     expect(PROPOSALS.map((p) => p.file).sort()).toEqual(files)
     for (const p of PROPOSALS) expect(BUILT, p.name).not.toContain(p.name)
-    // No Figma set exists for any of them yet, and no discussion is linked: the page says so.
-    expect(PROPOSALS.filter((p) => p.figma || p.discuss)).toEqual([])
+    // No Figma set exists for any of them yet: the page says so. The two proposed in PR #21 link to
+    // it as their discussion (playground spec section 7); no other has one.
+    expect(PROPOSALS.filter((p) => p.figma)).toEqual([])
+    expect(PROPOSALS.filter((p) => p.discuss).map((p) => [p.id, p.discuss])).toEqual([
+      ['evidence-locker', 'https://github.com/omkarpkh/vela/pull/21'],
+      ['agent-provenance-badge', 'https://github.com/omkarpkh/vela/pull/21'],
+    ].filter(([id]) => PROPOSALS.some((p) => p.id === id)))
   })
 
   it.each(PROPOSALS.map((p) => p.id))('%s reads into a summary, a responsive table or line, and read-only Props tables', (id) => {
