@@ -300,13 +300,12 @@ test.describe('the page header', () => {
     await expect(page.locator('.pg-install-command')).toHaveCount(1)
   })
 
-  test('a component with no Figma set has no Figma link and no Figma tab', async ({ page }) => {
+  test('a set built but not yet published still links to the library file', async ({ page }) => {
     await page.goto('/#/components/dropdown-list')
     const use = page.getByRole('region', { name: 'Use Dropdown List' })
-    await expect(use.getByRole('link', { name: 'Spec on GitHub' })).toBeVisible()
-    await expect(use.getByRole('link', { name: 'Figma' })).toHaveCount(0)
+    await expect(use.getByRole('link', { name: 'Figma' })).toHaveAttribute('href', /node-id=164-85$/)
     const tabs = page.getByRole('tablist', { name: 'Dropdown List page' }).getByRole('tab')
-    await expect(tabs).toHaveText(['Playground', 'Rules', /^Tokens\s*\d+$/])
+    await expect(tabs).toHaveText(['Playground', 'Rules', /^Tokens\s*\d+$/, 'Figma'])
   })
 
   test('the facts grid reads the spec, the package and the build', async ({ page }) => {
@@ -356,7 +355,7 @@ test.describe('the page header', () => {
     await expect(page).toHaveURL(/#\/components\/button$/)
     await expect(page.getByRole('complementary', { name: 'Controls' })).toBeVisible()
     // A link to a tab that has no data, or no such tab, opens the Playground tab.
-    await page.goto('/#/components/dropdown-list/figma')
+    await page.goto('/#/components/dropdown-list/changelog')
     await expect(page.getByRole('tablist', { name: 'Dropdown List page' }).getByRole('tab', { name: 'Playground' })).toHaveAttribute('aria-selected', 'true')
     await page.goto('/#/components/button/changelog')
     await expect(page.getByRole('tablist', { name: 'Button page' }).getByRole('tab', { name: 'Playground' })).toHaveAttribute('aria-selected', 'true')

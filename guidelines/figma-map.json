@@ -113,9 +113,9 @@
     {
       "set": "Dropdown List item",
       "page": "Dropdown List",
-      "state": "none",
-      "node": null,
-      "url": null,
+      "state": "built",
+      "node": "164:85",
+      "url": "https://www.figma.com/design/XO2rmeCcgOjyKe4oipgF4j/Vela-Design-System?node-id=164-85",
       "import": "import { DropdownList } from '@omkarux/vela/headless'",
       "write": "DropdownList",
       "figmaToProp": [

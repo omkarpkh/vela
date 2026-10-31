@@ -213,10 +213,10 @@ describe('the Status page', () => {
     const [, bset, bexp, bsince, bspec] = cells('Table')
     expect([bset.chars, bexp.chars, bsince.chars, bspec.chars]).toEqual(['Table Header Cell · page Table', 'Table · @omkarux/vela', '0.13.0', 'table.md'])
     for (const n of ['Popover', 'Tooltip', 'Dialog', 'Toast']) expect(cells(n)[1].chars, n).toBe(`${n} · page ${n}`)
-    // Dropdown List has a builder and no set yet; it was first released in 0.14.0. Its spec reads
-    // "(branch)" until it is on main.
+    // Dropdown List's set was built in the library for 0.14.0 (R20, node 164:85) and is not published
+    // yet; it was first released in 0.14.0. Its spec reads "(branch)" until it is on main.
     const [, dset, dexp, dsince, dspec] = cells('Dropdown List')
-    expect([dset.chars, dexp.chars, dsince.chars]).toEqual(['None yet — the builder is ready (dropdown-list.figma.js)', 'DropdownList · @omkarux/vela/headless', '0.14.0'])
+    expect([dset.chars, dexp.chars, dsince.chars]).toEqual(['Built, not published', 'DropdownList · @omkarux/vela/headless', '0.14.0'])
     expect(dspec.chars).toBe(onMain('guidelines/components/dropdown-list.md') ? 'dropdown-list.md' : 'dropdown-list.md (branch)')
     // No other set is left built-but-unpublished.
     for (const r of rows.filter((x) => x.n !== 'Dropdown List')) expect(cells(r.n)[1].chars, r.n).not.toBe('Built, not published')
