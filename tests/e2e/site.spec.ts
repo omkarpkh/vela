@@ -1,4 +1,5 @@
 import { test, expect, type Locator, type Page } from '@playwright/test'
+import { setTheme } from '../theme'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
@@ -82,13 +83,15 @@ test.describe('the install command', () => {
 test.describe('segments', () => {
   test('the theme, stage and implementation choices are segments: aria-current, Tab reaches each, arrows do nothing', async ({ page }) => {
     await page.goto('/#/components/tabs')
-    for (const name of ['Theme', 'Stage', 'Implementation']) {
+    // The theme's segments live in the Appearance panel (section 9), the only control that sets it.
+    await page.getByRole('button', { name: /^Appearance/ }).click()
+    for (const name of ['Mode', 'Stage', 'Implementation']) {
       const group = page.getByRole('group', { name })
       await expect(group.locator('[aria-current="true"]')).toHaveCount(1)
       // No primary filled Button stands for "selected".
       await expect(group.locator('.vela-btn')).toHaveCount(0)
     }
-    const theme = page.getByRole('group', { name: 'Theme' })
+    const theme = page.getByRole('group', { name: 'Mode' })
     const light = theme.getByRole('button', { name: 'Light', exact: true })
     await light.focus()
     await page.keyboard.press('ArrowRight')
@@ -234,7 +237,9 @@ test.describe('scroll regions', () => {
   // Every component in the kit wraps or scrolls itself at phone width, so the overflow is made
   // here: content with a fixed width wider than the stage, added to the light frame.
   test('content wider than the stage scrolls inside the stage, never the page, and only then takes focus', async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 844 })
+    // A phone too short for the pinned strip (slice 5), whose height cap would make the stage
+    // scroll down as well; this test is about sideways overflow alone.
+    await page.setViewportSize({ width: 390, height: 600 })
     await page.goto('/#/components/radio-group')
     const stage = page.locator('.pg-stage')
     await expect(page.locator('.pg-frame[data-theme="light"] .pg-frame-body').getByRole('radiogroup')).toBeVisible()
@@ -269,7 +274,7 @@ test.describe('no sideways page scroll', () => {
         await page.setViewportSize({ width, height: 900 })
         for (const id of ['button', 'table', 'popover', 'toast']) {
           await page.goto(`/#/components/${id}`)
-          await page.getByRole('group', { name: 'Theme' }).getByRole('button', { name: theme === 'light' ? 'Light' : 'Dark', exact: true }).click()
+          await setTheme(page, theme)
           await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
           expect(await noSidewaysScroll(page), id).toBe(true)
         }
@@ -563,7 +568,7 @@ test.describe('the workbench', () => {
     await page.goto('/#/components/toggle')
     await expect(page.locator('.pg-frame')).toHaveCount(1)
     await expect(page.locator('.pg-frame-label')).toHaveText('light · follows the page theme')
-    await page.getByRole('group', { name: 'Theme' }).getByRole('button', { name: 'Dark', exact: true }).click()
+    await setTheme(page, 'Dark')
     await expect(page.locator('.pg-frame')).toHaveAttribute('data-theme', 'dark')
     await compareThemes(page)
     await expect(page.locator('.pg-frame-label')).toHaveText(['light', 'dark'])
@@ -724,6 +729,83 @@ test.describe('review of slices 1 to 3', () => {
 
 // Accessibility (playground spec, section 13; B10): axe on representative pages in both themes,
 // with the experimental Label in Name rule switched on, since it is the one the review found.
+test.describe('slice 5 · phone and Appearance', () => {
+  test('Appearance names its state, sets the theme, and Escape closes it back onto its button', async ({ page }) => {
+    await page.goto('/#/components/button')
+    const button = page.getByRole('button', { name: 'Appearance: theme System, brand Default' })
+    await expect(button).toHaveAttribute('aria-expanded', 'false')
+    // Only the panel sets the theme: there is no theme control in the header itself.
+    await expect(page.getByRole('banner').getByRole('group', { name: 'Theme' })).toHaveCount(0)
+    await button.click()
+    const panel = page.getByRole('region', { name: 'Appearance' })
+    await expect(panel).toBeVisible()
+    await panel.getByRole('group', { name: 'Mode' }).getByRole('button', { name: 'Dark', exact: true }).click()
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+    await expect(page.getByRole('button', { name: 'Appearance: theme Dark, brand Default' })).toBeVisible()
+    // Custom is unavailable, its reason in view and read with it; the word "locked" is never shown.
+    const custom = panel.getByRole('group', { name: 'Brand' }).getByRole('button', { name: 'Custom' })
+    await expect(custom).toHaveAttribute('aria-disabled', 'true')
+    await expect(custom).toHaveAccessibleDescription('Custom is coming with createBrand.')
+    await expect(panel.getByText('Custom is coming with createBrand.', { exact: true }).last()).toBeVisible()
+    await expect(panel).not.toContainText(/locked/i)
+    await page.keyboard.press('Escape')
+    await expect(panel).toBeHidden()
+    await expect(page.getByRole('button', { name: /^Appearance/ })).toBeFocused()
+  })
+
+  test('the header links are written words with their names; on a phone they move into the menu', async ({ page }) => {
+    await page.goto('/#/components/button')
+    const banner = page.getByRole('banner')
+    for (const name of ['GitHub', 'npm', 'Figma']) await expect(banner.getByRole('link', { name, exact: true })).toBeVisible()
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.reload()
+    for (const name of ['GitHub', 'npm', 'Figma']) await expect(banner.getByRole('link', { name, exact: true })).toHaveCount(0)
+    await expect(banner.getByRole('button', { name: 'Search' })).toBeVisible()
+    await expect(banner.getByRole('button', { name: 'Appearance', exact: true })).toBeVisible()
+    await banner.getByRole('button', { name: 'Show navigation' }).click()
+    const nav = page.getByRole('navigation', { name: 'Site' })
+    for (const name of ['GitHub', 'npm', 'Figma']) await expect(nav.getByRole('link', { name, exact: true })).toHaveCount(1)
+  })
+
+  test('on a phone the stage pins as a strip, and no focused control sits under it', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.goto('/#/components/button')
+    const region = page.getByRole('region', { name: 'Stage', exact: true })
+    const header = await page.getByRole('banner').boundingBox()
+    // Tab through every control; each focused one is in view below the strip, never under it.
+    await page.getByRole('complementary', { name: 'Controls' }).getByRole('link', { name: 'Skip to code' }).focus()
+    for (let i = 0; i < 12; i++) {
+      await page.keyboard.press('Tab')
+      const focused = page.locator(':focus')
+      if (!(await focused.evaluate((el) => !!el.closest('[aria-label="Controls"]')))) break
+      if (await focused.evaluate((el) => el instanceof HTMLInputElement && el.type === 'text')) continue
+      const strip = await region.boundingBox()
+      const box = await focused.boundingBox()
+      expect(box!.y, await focused.evaluate((el) => el.outerHTML.slice(0, 80))).toBeGreaterThanOrEqual(strip!.y + strip!.height - 1)
+    }
+    // By the last controls the page has scrolled, and the strip is held under the header.
+    expect((await region.boundingBox())!.y).toBeCloseTo(header!.y + header!.height, 0)
+  })
+
+  test('the strip lets go while a text control has focus, and Expand stage opens it at full height', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.goto('/#/components/button')
+    const region = page.getByRole('region', { name: 'Stage', exact: true })
+    await expect(region).toHaveCSS('position', 'sticky')
+    await page.getByRole('textbox', { name: 'children' }).focus()
+    await expect(region).toHaveCSS('position', 'static')
+    await page.getByRole('textbox', { name: 'children' }).blur()
+    await expect(region).toHaveCSS('position', 'sticky')
+    const expand = region.getByRole('button', { name: 'Expand stage' })
+    await expand.click()
+    await expect(expand).toHaveAttribute('aria-expanded', 'true')
+    await expect(region).toHaveCSS('position', 'static')
+    // Not on a wide screen, and not on a phone too short to hold a strip and some controls.
+    await page.setViewportSize({ width: 390, height: 600 })
+    await expect(expand).toBeHidden()
+  })
+})
+
 test.describe('axe', () => {
   for (const path of ['/#/components/button', '/#/components/tabs', '/#/components/dropdown-list', '/#/proposals/evidence-locker'])
     for (const theme of ['Light', 'Dark'] as const)
@@ -731,7 +813,7 @@ test.describe('axe', () => {
         const { default: AxeBuilder } = await import('@axe-core/playwright')
         await page.goto(path)
         await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
-        await page.getByRole('group', { name: 'Theme' }).getByRole('button', { name: theme, exact: true }).click()
+        await setTheme(page, theme)
         const results = await new AxeBuilder({ page })
           .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
           .options({ rules: { 'label-content-name-mismatch': { enabled: true } } })

@@ -89,6 +89,10 @@ function Rendered({ entry, v }: { entry: (typeof REGISTRY)[number]; v: Values })
   return <>{entry.render(v)}</>
 }
 
+/** A field the on-screen keyboard opens for: a text input or a text area, not a switch or a select. */
+const isTextControl = (el: EventTarget | null) =>
+  el instanceof HTMLTextAreaElement || (el instanceof HTMLInputElement && !['checkbox', 'radio', 'range', 'button', 'submit'].includes(el.type))
+
 export function Playground({ id, tab }: { id: string; tab?: PageTab }) {
   const entry = REGISTRY.find((e) => e.id === id)
   if (!entry) return <Unknown name={id} />
@@ -179,6 +183,11 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
   const [announce, setAnnounce] = useState('')
   // Bumped by "Reset settings" in the stage's error state, so a reset to the same values still retries.
   const [attempt, setAttempt] = useState(0)
+  // The phone stage strip (section 6, A8 and A12): pinned while the controls scroll, on a tall enough
+  // phone screen (the media query in playground.css). It lets go while a text control has focus,
+  // because the on-screen keyboard halves the height, and while the reader has expanded it.
+  const [typing, setTyping] = useState(false)
+  const [expanded, setExpanded] = useState(false)
   const pageTheme = usePageTheme()
   const codeId = useId().replace(/:/g, '')
   const lockOpener = useRef<HTMLElement | null>(null)
@@ -311,7 +320,7 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
           </Tabs.List>
 
           <Tabs.Panel value="playground">
-            <div className={cn('pg', stage === 'full' && 'pg--full')}>
+            <div className={cn('pg', stage === 'full' && 'pg--full', (typing || expanded) && 'is-unpinned')}>
               <div className="pg-main">
                 <div className="pg-toolbar">
                   <span className="pg-toolbar__group"><span className="pg-toolbar__label" aria-hidden="true">Stage</span>
@@ -329,6 +338,9 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
                 </div>
                 {/* A landmark of its own (spec section 13): header, nav, main, Stage, Controls and Code. */}
                 <section aria-label="Stage" className="pg-stage-region">
+                <button type="button" className="pg-expand vela-meta" aria-expanded={expanded} onClick={() => setExpanded((x) => !x)}>
+                  Expand stage
+                </button>
                 <StageBoundary
                   key={`${entry.id}|${stage}|${compare}|${JSON.stringify(v)}|${attempt}`}
                   component={entry.id}
@@ -355,7 +367,12 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
                 )}
               </div>
 
-              <aside className="pg-panel pg-props" aria-label="Controls">
+              <aside
+                className="pg-panel pg-props"
+                aria-label="Controls"
+                onFocus={(e) => setTyping(isTextControl(e.target))}
+                onBlur={(e) => { if (!isTextControl(e.relatedTarget)) setTyping(false) }}
+              >
                 {/* D4: about one Tab stop per value, so the first thing here skips past them all. */}
                 <a
                   className="pg-skip vela-sr-only"

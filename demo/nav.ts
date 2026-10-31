@@ -1,4 +1,4 @@
-import { REGISTRY } from './playground/registry'
+import { CATALOG as REGISTRY } from './playground/catalog'
 import { statusOf } from './playground/status'
 import { PROPOSALS as SPECS } from './playground/proposals'
 import colorMd from '../guidelines/foundations/color.md?raw'

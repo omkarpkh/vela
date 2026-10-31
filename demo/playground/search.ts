@@ -6,7 +6,7 @@
  * Never indexed: Start, Project and Demos pages. A component query should find components, not the
  * nine unrelated links the audit counted.
  */
-import { REGISTRY } from './registry'
+import { CATALOG as REGISTRY } from './catalog'
 import { PROPOSALS } from './proposals'
 import { statusOf } from './status'
 import { href } from '../router'
