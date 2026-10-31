@@ -128,6 +128,7 @@ describe('Figma sync: variable scopes match the property each token is for', () 
     // Overlay tokens (Popover, Tooltip, Dialog): widths are width/height, the scrim opacity is a
     // layer opacity, the z-index layer has no Figma property, the scrim is a fill, tooltip text a text fill.
     ['popover-width', ['WIDTH_HEIGHT']],
+    ['dropdown-list-width-min', ['WIDTH_HEIGHT']],
     ['dialog-width-wide', ['WIDTH_HEIGHT']],
     ['opacity-scrim', ['OPACITY']],
     ['layer-overlay', []],
@@ -135,8 +136,19 @@ describe('Figma sync: variable scopes match the property each token is for', () 
     ['text-tooltip', ['TEXT_FILL']],
     // Toast: its width is a width.
     ['toast-width', ['WIDTH_HEIGHT']],
+    // The Tabs hover preview (the Seed): its strength is a layer opacity, like the scrim's, and
+    // the Figma thread asked for it as opacity/preview; its floor is a width.
+    ['opacity-preview', ['OPACITY']],
+    ['tab-preview-width-min', ['WIDTH_HEIGHT']],
   ])('%s → %j', (css, scopes) => {
     expect(byCss[css], css).toBeDefined()
     expect(byCss[css].scopes).toEqual(scopes)
+  })
+
+  // The Figma thread asked for the Seed's strength by this name, beside opacity/scrim.
+  it('the hover preview tokens reach Figma under the names the library expects', () => {
+    expect(byCss['opacity-preview']).toMatchObject({ collection: 'Sizing', name: 'opacity/preview', type: 'FLOAT', light: 0.55 })
+    expect(byCss['tab-preview-width-min']).toMatchObject({ collection: 'Sizing', name: 'tab/preview-width-min', type: 'FLOAT', light: 24 })
+    expect(byCss['delay-preview']).toMatchObject({ collection: 'Motion', name: 'delay/preview', type: 'TIMING', light: 0.08, scopes: null })
   })
 })

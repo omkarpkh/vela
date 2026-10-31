@@ -6,11 +6,12 @@ import tokensJson from '../../tokens/vela.tokens.json'
 import { springAt, springLinear } from '../../scripts/spring.mjs'
 import '../playground.css'
 
-// The motion pass, parts 1 and 2, for the owner's review: the Tabs indicator in both
-// implementations, the Toast stack, the overlays growing from their triggers, the state and press
-// motion of Checkbox, Radio Group and Toggle — each in both themes — with a slow-motion switch that
-// reaches all of them, and every motion token with its value and its reason, read from
-// tokens/vela.tokens.json so this page cannot disagree with the file the CSS is generated from.
+// The motion pass, for the owner's review: the Tabs underline and its hover preview (the Seed) in
+// both implementations, the Toast stack, the overlays growing from their triggers, the state and
+// press motion of Checkbox, Radio Group and Toggle — each in both themes — with a Replay that
+// presses the tabs the way a pointer does, a slow-motion switch that reaches all of them, and every
+// motion token with its value and its reason, read from tokens/vela.tokens.json so this page cannot
+// disagree with the file the CSS is generated from.
 const VENDOR = 'com.omkarux.vela'
 type Spring = { stiffness: number; damping: number; mass: number; duration: string }
 type MotionToken = { $type: string; $value: unknown; $description?: string; $extensions?: { [VENDOR]?: { figma?: string; spring?: Spring } } }
@@ -196,7 +197,7 @@ export function Motion() {
 
   useEffect(() => () => timers.current.forEach(clearTimeout), [])
 
-  // Replay: from the first tab to the far end, back one, then home — a long slide, a short one and a
+  // Replay: from the first tab to the far end, back one, then home — a far press, a near one and a
   // return, in every list on the stage at once. The pause between presses scales with slow motion.
   const replay = useCallback(() => {
     timers.current.forEach(clearTimeout)
@@ -227,11 +228,14 @@ export function Motion() {
       </header>
 
       <section className="motion-section" aria-labelledby="motion-tabs">
-        <h2 id="motion-tabs" className="vela-h3">Tabs: the selected indicator</h2>
+        <h2 id="motion-tabs" className="vela-h3">Tabs: the hover preview and the press</h2>
         <p className="vela-body motion-copy">
-          Press a tab with the pointer: the underline slides to it on the spring over <code>--vela-duration-travel</code>.
-          Focus a tab and use the arrow keys: the underline moves at once, because from the keyboard nothing animates.
-          Press again while it is moving and it turns towards the new tab from wherever it is.
+          Rest the pointer on a tab that is not selected: after <code>--vela-delay-preview</code> a short, soft-ended bar, the
+          Seed, fades in under it at <code>--vela-opacity-preview</code>, in the underline&apos;s colour. Press the tab: the Seed
+          grows into the underline where it is, on the spring over <code>--vela-duration-travel</code>, while the old underline
+          shrinks away under the old tab; nothing travels across the row. Focus a tab and use the arrow keys: the underline
+          moves at once and no Seed appears, because from the keyboard nothing animates. Press again while it is growing and
+          every part turns towards its new end from wherever it is.
         </p>
         <div className="pg-toolbar motion-toolbar">
           <Button size="tiny" variant="standard" appearance="hollow" onClick={replay} aria-describedby="motion-replay-note">Replay</Button>

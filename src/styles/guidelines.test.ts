@@ -85,7 +85,7 @@ describe('the agent-facing contract is complete', () => {
     // Icon is matched as a word not followed by "Button": Icon Button is genuinely not in the kit.
     const named = (list: string, c: string) => new RegExp(`\\b${c}\\b(?! Button)`).test(list)
     expect(named(' Icon Button, Modal', 'Icon')).toBe(false)
-    for (const shipped of ['Text Area', 'Input', 'Tabs', 'Icon', 'Checkbox', 'Radio Group', 'Table', 'Popover', 'Tooltip', 'Dialog'])
+    for (const shipped of ['Text Area', 'Input', 'Tabs', 'Icon', 'Checkbox', 'Radio Group', 'Table', 'Popover', 'Tooltip', 'Dialog', 'Dropdown List'])
       for (const [name, md] of [['overview.md', overview], ['DESIGN.md', design]] as const)
         expect(named(notYet(md), shipped), `${shipped} is listed as missing in ${name}`).toBe(false)
   })

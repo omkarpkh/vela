@@ -8,7 +8,7 @@ npm install @omkarux/vela
 
 `react` and `react-dom` (v18.3 or v19) are peer dependencies — the consuming app supplies
 them. The core entry has **zero runtime dependencies** of its own. The `@omkarux/vela/headless`
-entry (Experimental: Tabs, and Checkbox, Radio Group, Popover, Tooltip, Dialog and Toast, which
+entry (Experimental: Tabs, and Checkbox, Radio Group, Popover, Tooltip, Dialog, Toast and Dropdown List, which
 ship from it only) needs one optional peer, `@base-ui/react` 1.9.x — install it only if you import from
 `/headless`.
 
@@ -51,7 +51,7 @@ Three states, handled for you:
 document.documentElement.setAttribute('data-theme', 'dark')
 ```
 
-**Overlays and `data-theme` subtrees.** Popover, Tooltip and Dialog portal their popup to `<body>`,
+**Overlays and `data-theme` subtrees.** Popover, Tooltip, Dialog and Dropdown List portal their popup to `<body>`,
 outside the subtree that rendered them. The portal element carries `vela-root` (so the font, the
 focus ring and the reduced-motion collapse still apply) and copies the `data-theme` of the trigger's
 nearest themed ancestor — a popover opened from a dark sidebar in a light app is dark, with nothing

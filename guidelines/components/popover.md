@@ -5,9 +5,8 @@ detail behind a count, a short form that edits one thing — dismissed by Escape
 outside, or by the trigger again, with the rest of the page still usable.
 
 **Status:** Experimental — born in `@omkarux/vela/headless` (Base UI 1.9) with Tooltip and Dialog;
-there is no core implementation, and its Figma set is built in the library file (from
-`scripts/figma/components/popover.figma.js`) but not published yet. Approved once the API has settled and the set is
-published; see `GOVERNANCE.md`.
+there is no core implementation, and its Figma set is published in the library (built from
+`scripts/figma/components/popover.figma.js`). Approved once the API has settled; see `GOVERNANCE.md`.
 **Dependencies:** @base-ui/react (optional peer, via /headless)
 
 ## When to use Popover (vs. Tooltip, vs. Dialog)
@@ -198,7 +197,7 @@ difference is recorded here:
 
 Library file: **Vela Design System** → page `Popover`. Two variants, `Size` (regular / wide), plus
 a `Title text` text property. The set is created by `scripts/figma/components/popover.figma.js`;
-until that builder has been run in the file, the library has no Popover set. Place an instance
+it is published in the library. Place an instance
 beside the Button it belongs to; the anchoring is code.
 
 | Figma property | Code prop |

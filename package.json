@@ -1,7 +1,7 @@
 {
   "name": "@omkarux/vela",
-  "version": "0.13.0",
-  "description": "A token-first design system: framework-agnostic tokens and component specs with a React implementation. Tokens compile to CSS, a Figma library, a Flutter theme and a Material UI theme from one source. Two-layer colour architecture, separate severity, risk and status taxonomies, light and dark theming, WCAG AA asserted in CI, zero runtime dependencies (a second entry point, @omkarux/vela/headless, builds on Base UI as an optional peer). Every design rule is tagged with how it is enforced: 64 of 182 by the TypeScript compiler, the rest at runtime, in a browser, or by review.",
+  "version": "0.14.0",
+  "description": "A token-first design system: framework-agnostic tokens and component specs with a React implementation. Tokens compile to CSS, a Figma library, a Flutter theme and a Material UI theme from one source. Two-layer colour architecture, separate severity, risk and status taxonomies, light and dark theming, WCAG AA asserted in CI, zero runtime dependencies (a second entry point, @omkarux/vela/headless, builds on Base UI as an optional peer). Every design rule is tagged with how it is enforced: 69 of 170 by the TypeScript compiler, the rest at runtime, in a browser, or by review.",
   "type": "module",
   "license": "MIT",
   "author": "Omkar Khadamkar",
@@ -106,6 +106,7 @@
     }
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.10.2",
     "@base-ui/react": "1.9.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",

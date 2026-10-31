@@ -5,9 +5,8 @@ A box that **records intent** — on its own ("accept the terms") or as one of s
 commits the form.
 
 **Status:** Experimental — the first component born in `@omkarux/vela/headless` (Base UI 1.9);
-there is no core implementation, and its Figma set is built in the library file (from
-`scripts/figma/components/checkbox.figma.js`) but not published yet. Approved once the API has settled and the set is
-published; see `GOVERNANCE.md`.
+there is no core implementation, and its Figma set is published in the library (built from
+`scripts/figma/components/checkbox.figma.js`). Approved once the API has settled; see `GOVERNANCE.md`.
 **Dependencies:** @base-ui/react (optional peer, via /headless)
 
 ## When to use Checkbox (vs. Toggle, vs. Radio Group)
@@ -232,8 +231,8 @@ difference is recorded here:
 Library file: **Vela Design System** → page `Checkbox`. Six variants, `State`
 (unchecked / checked / indeterminate) x `Size` (regular / tiny), plus a `Label text` text
 property and a `Description` boolean. The set is created by
-`scripts/figma/components/checkbox.figma.js`; until that builder has been run in the file, the
-library has no Checkbox set. There is no `Checkbox.Group` set: compose a group by stacking
+`scripts/figma/components/checkbox.figma.js`; it is published in the
+library. There is no `Checkbox.Group` set: compose a group by stacking
 Checkbox instances, as Tabs composes a tablist from Tab instances.
 
 | Figma property | Code prop |

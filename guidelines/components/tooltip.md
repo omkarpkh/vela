@@ -5,9 +5,8 @@ full text of a truncated value — shown on hover after a short rest and at once
 dismissed by Escape. **Text only.** A user who never sees it misses nothing they need.
 
 **Status:** Experimental — born in `@omkarux/vela/headless` (Base UI 1.9) with Popover and Dialog;
-there is no core implementation, and its Figma set is built in the library file (from
-`scripts/figma/components/tooltip.figma.js`) but not published yet. Approved once the API has settled and the set is
-published; see `GOVERNANCE.md`.
+there is no core implementation, and its Figma set is published in the library (built from
+`scripts/figma/components/tooltip.figma.js`). Approved once the API has settled; see `GOVERNANCE.md`.
 **Dependencies:** @base-ui/react (optional peer, via /headless)
 
 ## When to use Tooltip (vs. Popover, vs. inline text)
@@ -65,6 +64,8 @@ published; see `GOVERNANCE.md`.
   `<span tabIndex={0}>` with its own name and put the tooltip on that, and say so in review. [[rule: tooltip-not-on-disabled | convention]]
 - **Supplementary only.** Touch users never see a tooltip (Base UI disables them on touch), so it
   never carries the only copy of anything. [[rule: tooltip-supplementary-only | convention]]
+- **In forced colours it keeps an edge.** The fill is replaced by `Canvas`, so the popup takes a
+  1px `CanvasText` border. [[rule: tooltip-forced-colours | browser]]
 - **It grows from its trigger, by transform and opacity alone.** Opened by a resting pointer it
   scales from 0.96 to full size as it fades in, pivoting on Base UI's `--transform-origin` — the
   edge nearest the trigger. [[rule: tooltip-grows-from-its-trigger | browser]]
@@ -171,8 +172,8 @@ text property holds one default for the whole set, so it cannot carry a differen
 variant. `Lines` is not a prop: a one-line tooltip hugs its text and a two-line one
 is `tooltip/width-max` wide and wraps, which is the only place the cap is visible in the file. There
 is no placement axis: without an arrow — Vela overlays carry none — the four placements look the
-same. The set is created by `scripts/figma/components/tooltip.figma.js`; until that builder has
-been run in the file, the library has no Tooltip set.
+same. The set is created by `scripts/figma/components/tooltip.figma.js`; it is published in
+the library.
 
 | Figma property | Code prop |
 |---|---|

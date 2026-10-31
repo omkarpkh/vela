@@ -5,9 +5,8 @@ started" — raised by the app, announced politely, and gone on its own or when 
 the only record of what it says, never the only place an Undo lives, and never carries a decision.
 
 **Status:** Experimental — born in `@omkarux/vela/headless` (Base UI 1.9); there is no core
-implementation, and its Figma set is built in the library file (from
-`scripts/figma/components/toast.figma.js`) but not published yet.
-Approved once the API has settled and the set is published; see `GOVERNANCE.md`.
+implementation, and its Figma set is published in the library (built from
+`scripts/figma/components/toast.figma.js`). Approved once the API has settled; see `GOVERNANCE.md`.
 **Dependencies:** @base-ui/react (optional peer, via /headless)
 
 ## When to use Toast (vs. Contextual Alert, vs. Dialog)
@@ -335,8 +334,8 @@ Library file: **Vela Design System** → page `Toast`. Three variants, `Severity
 warning), plus `Description` and `Action` booleans. There is no `Title text` property: a Figma text
 property holds one default for the whole set, and each severity's example is titled differently, so
 each variant keeps its title in a layer named `Title`, overridden on the instance. The set is
-created by `scripts/figma/components/toast.figma.js`; until that builder has been run in the file,
-the library has no Toast set. The region, the placement and the stack are not part of the set: place
+created by `scripts/figma/components/toast.figma.js`; it is published in the
+library. The region, the placement and the stack are not part of the set: place
 instances `space/10` apart, `space/20` from the frame's edge.
 
 | Figma property | Code prop |

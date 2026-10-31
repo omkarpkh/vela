@@ -78,6 +78,7 @@
   --vela-bg-global: var(--vela-white);
   --vela-bg-container: var(--vela-grey-100);
   --vela-bg-raised: var(--vela-white);
+  --vela-bg-raised-hover: var(--vela-grey-100);   /* a highlighted Dropdown List item — see dropdown-list.md */
   --vela-bg-hover: var(--vela-grey-100);
   --vela-bg-tooltip: var(--vela-grey-800);
   --vela-bg-scrim: var(--vela-black);
@@ -323,6 +324,7 @@
   /* ---- Overlays: Popover, Tooltip, Dialog (headless) ---- */
   --vela-popover-width: 280px;
   --vela-popover-width-wide: 400px;
+  --vela-dropdown-list-width-min: 200px;   /* the Dropdown List's minimum width — see dropdown-list.md, Sizes */
   --vela-dialog-width: 480px;
   --vela-dialog-width-wide: 720px;
   --vela-tooltip-width-max: 240px;
@@ -332,12 +334,17 @@
   /* ---- Toast (headless) ---- */
   --vela-toast-width: 360px;
 
+  /* ---- Tabs: the hover preview (the Seed) ---- */
+  --vela-tab-preview-width-min: 24px;
+  --vela-opacity-preview: 0.55;
+
   /* ---- Motion (respects reduced-motion in components.css) ---- */
   --vela-duration-instant: 70ms;
   --vela-duration-fast: 120ms;
   --vela-duration-base: 180ms;
   --vela-duration-travel: 240ms;
   --vela-delay-tooltip: 600ms;
+  --vela-delay-preview: 80ms;
   --vela-duration-toast: 6000ms;
   --vela-ease-standard: cubic-bezier(0.2, 0, 0.2, 1);
   --vela-ease-out: cubic-bezier(0.25, 1, 0.5, 1);

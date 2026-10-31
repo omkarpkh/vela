@@ -2,29 +2,8 @@ import { REGISTRY } from '../playground/registry'
 import { href } from '../router'
 import { figmaUrl } from '../links'
 import { version } from '../../package.json'
-
-// Component lifecycle, read from the specs. GOVERNANCE.md: Approved is the default and is not
-// written down; any other label is a `**Status:**` line under the intent paragraph. This page
-// shows the label the spec carries, so the site and the spec cannot disagree.
-type Label = 'Approved' | 'Known bugs' | 'Experimental' | 'Retired'
-const LABELS: Label[] = ['Approved', 'Known bugs', 'Experimental', 'Retired']
-
-function statusOf(spec: string): { label: Label; note: string } {
-  const m = spec.match(/^\*\*Status:\*\*\s*([^\n]+?)(?:\s+[—-]\s+([\s\S]*?))?\n\n/m)
-  if (!m) return { label: 'Approved', note: '' }
-  const word = LABELS.find((l) => m[1].trim().toLowerCase().startsWith(l.toLowerCase()))
-  // A `**Dependencies:**` line may sit directly under the Status line; it is not part of the note.
-  const note = (m[2] ?? '').replace(/^\*\*Dependencies:\*\*[^\n]*$/m, '')
-  return { label: word ?? 'Approved', note: note.replace(/`/g, '').replace(/\s+/g, ' ').trim() }
-}
-
-// What a consumer installs besides React to render this component, read from the spec the same
-// way the status is: one `**Dependencies:**` line directly under `**Status:**` (or under the intent
-// paragraph when there is no Status line). Absent means "none", which is every core component.
-export function dependenciesOf(spec: string): string {
-  const m = spec.match(/^\*\*Dependencies:\*\*\s*([^\n]+)/m)
-  return m ? m[1].replace(/`/g, '').trim() : 'none'
-}
+import { ScrollRegion } from '../shell/ScrollRegion'
+import { LABELS, statusOf, type Label } from '../playground/status'
 
 const PROMISE: Record<Label, string> = {
   Approved: 'Semver applies in full; breaking changes follow VERSIONING.md.',
@@ -46,6 +25,7 @@ export function Status() {
         </p>
       </header>
       <div className="doc__body">
+        <ScrollRegion label="Component status, scrollable" className="status-scroll">
         <table className="status-table">
           <thead>
             <tr><th scope="col">Component</th><th scope="col">Status</th><th scope="col">What it promises</th><th scope="col">Where</th></tr>
@@ -54,13 +34,14 @@ export function Status() {
             {rows.map((r) => (
               <tr key={r.id}>
                 <th scope="row"><a href={href({ kind: 'component', id: r.id })}>{r.name}</a></th>
-                <td><span className={`status-label status-label--${r.label.toLowerCase().replace(/\s+/g, '-')}`}>{r.label}</span>{r.note && <span className="vela-meta status-note">{r.note}</span>}</td>
+                <td><span className="site-tag">{r.label}</span>{r.note && <span className="vela-meta status-note">{r.note}</span>}</td>
                 <td className="vela-meta">{PROMISE[r.label]}</td>
                 <td className="vela-meta"><a href={`https://github.com/omkarpkh/vela/blob/main/guidelines/components/${r.id}.md`}>spec</a> · <a href={figmaUrl()}>Figma</a></td>
               </tr>
             ))}
           </tbody>
         </table>
+        </ScrollRegion>
         <p className="vela-meta">
           Approved means specced, built, tested, in the Figma library, every rule tagged and proved. The first component to leave Approved
           carries its label in the spec, in the Figma set's description and here, from the same line.

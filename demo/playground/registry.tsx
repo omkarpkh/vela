@@ -1,8 +1,8 @@
 import { useState, type ReactNode } from 'react'
 import { Button, Toggle, Input, TextArea, ContextualAlert, StatusIndicator, RiskPill, Tabs, Icon, ICON_NAMES, Table } from '../../src'
 import type { Severity, Status, Risk, IconName, IconSize, IconTone, TableSortDirection } from '../../src'
-import { Tabs as HeadlessTabs, Checkbox, RadioGroup, Popover, Tooltip, Dialog, ToastProvider, useToast } from '../../src/headless'
-import type { ToastLimit, ToastPlacement, ToastSeverity } from '../../src/headless'
+import { Tabs as HeadlessTabs, Checkbox, RadioGroup, Popover, Tooltip, Dialog, ToastProvider, useToast, DropdownList } from '../../src/headless'
+import type { ToastLimit, ToastPlacement, ToastSeverity, DropdownListAlign, DropdownListItem } from '../../src/headless'
 import { PlusIcon } from '../../src/lib/icons'
 import { printJsx, type Control, type Spec } from './spec'
 import buttonMd from '../../guidelines/components/button.md?raw'
@@ -21,6 +21,7 @@ import popoverMd from '../../guidelines/components/popover.md?raw'
 import tooltipMd from '../../guidelines/components/tooltip.md?raw'
 import dialogMd from '../../guidelines/components/dialog.md?raw'
 import toastMd from '../../guidelines/components/toast.md?raw'
+import dropdownListMd from '../../guidelines/components/dropdown-list.md?raw'
 
 export type Values = Record<string, string | boolean | undefined>
 
@@ -31,18 +32,43 @@ export type Values = Record<string, string | boolean | undefined>
  */
 export interface Implementation {
   id: string
-  /** Where a consumer imports it from. */
+  /** Where a consumer imports it from; the install command follows (demo/playground/install.ts). */
   entry: '@omkarux/vela' | '@omkarux/vela/headless'
-  /**
-   * Shown as "Dependencies: …". Omitted, it is read from the spec's `**Dependencies:**` line — what a
-   * component with a single implementation (Checkbox, Radio Group: headless only) does.
-   */
-  dependencies?: string
+}
+
+/**
+ * The nav group, by job (playground spec, section 2). It lives here, never in a spec field (A23, C4).
+ * Inputs: a value a form keeps and submits. Overlays: opens over the page from a trigger and closes
+ * again. The rest follow the approved canvas.
+ */
+export type Group = 'Actions' | 'Inputs' | 'Feedback' | 'Overlays' | 'Data'
+export const GROUPS: Group[] = ['Actions', 'Inputs', 'Feedback', 'Overlays', 'Data']
+
+/** Why a value can't be chosen now, and what would let it be. "Locked" is never shown or spoken. */
+export interface Lock {
+  /** The panel's heading: the value and the setting, e.g. "text-link needs primary". */
+  heading: string
+  /** One sentence a person can act on, e.g. "text-link is primary only." */
+  reason: string
+  /** The spec rule that forbids it. */
+  rule: string
+  /** Legal moves: each sets every prop it names, together, so the result is always legal. */
+  moves: { label: string; patch: Values }[]
+  /** The way out that changes nothing, naming what stays: "Keep the icon" (spec v1.2, section 5). */
+  keep: string
 }
 
 export interface Entry {
   id: string
   name: string
+  group: Group
+  /**
+   * Other names people search for (playground spec, section 10): first the names the spec's own
+   * "When to use" gives, then the common names in other systems. Search only; never shown as a title.
+   * An alias points only to a component whose own "When to use" covers that job (spec v1.2): a name
+   * Vela has nothing for goes in search.ts's MISSING, with the nearest component, instead.
+   */
+  aliases: string[]
   spec: string
   /** Spec file and source folder, for the page's links. */
   file: string
@@ -68,8 +94,14 @@ export interface Entry {
   implementations?: Implementation[]
   /** Mirrors the type-level rules: invalid combinations do not exist, so they cannot be picked. */
   constrain?: (v: Values) => Values
-  /** Which control options are unavailable for the current values (shown, never selectable). */
-  unavailable?: (v: Values) => Record<string, string[]>
+  /**
+   * The values the spec's rules lock with the current settings (playground spec, section 5,
+   * "Locked values"; specs/segmented-control.md). By prop, then by value (`'true'` for a switch).
+   * A locked value stays in view and reachable, says its rule, and offers the legal moves.
+   */
+  locks?: (v: Values) => Record<string, Record<string, Lock>>
+  /** Plain words for a prop under "Also in the API", where the spec's Notes are too terse to stand alone. */
+  explain?: Record<string, string>
   render: (v: Values) => ReactNode
   code: (v: Values, spec: Spec) => string
   /** The Token bindings row that applies to the current values, if the spec has one. */
@@ -192,25 +224,90 @@ function ToastStage({ v }: { v: Values }) {
   )
 }
 
+/**
+ * The Dropdown List stage: a host that owns the current view, as the spec's controlled example
+ * does, and shows it on the page. One name is long enough to wrap, one is a single unbroken string
+ * whose meta drops under it, three items have meta, and one is disabled with its reason in meta.
+ */
+const VIEWS: [DropdownListItem, ...DropdownListItem[]] = [
+  { value: 'alerts', label: 'All alerts' },
+  { value: 'firewall', label: 'Firewall', meta: '1 new' },
+  { value: 'dlp', label: 'Data loss prevention — policy violations across every connected SaaS tenant' },
+  { value: 'pipeline', label: 'customer-ingest-pipeline-eu-west-2', meta: '2 new' },
+  { value: 'archive', label: 'Archive', disabled: true, meta: 'No access' },
+  { value: 'reports', label: 'Reports', meta: '3 open' },
+]
+
+function DropdownListStage({ v }: { v: Values }) {
+  const [view, setView] = useState('firewall')
+  const current = VIEWS.find((i) => i.value === view)!
+  return (
+    <div className="pg-dropdown-stage">
+      <DropdownList
+        label={str(v.label) || 'Views'}
+        trigger={<Button>Switch View</Button>}
+        items={VIEWS}
+        value={view}
+        onValueChange={setView}
+        align={(str(v.align) || 'start') as DropdownListAlign}
+      />
+      <p className="vela-body pg-overlay-copy">Showing {current.label}</p>
+    </div>
+  )
+}
+
 export const REGISTRY: Entry[] = [
   {
     id: 'button',
     file: 'button.md',
     src: 'Button',
     name: 'Button',
+    group: 'Actions',
+    aliases: ['action', 'call to action', 'cta'],
     spec: buttonMd,
     seed: { children: 'Save Changes', variant: 'primary', icon: true },
     // type changes nothing on the stage: "submit" only means anything inside a <form>, and the
     // spec says so ("submit only for a form's commit button"). Documented, not demonstrated.
     noControl: ['type'],
-    constrain: (v) =>
-      v.appearance === 'text-link'
-        ? { ...v, variant: 'primary', icon: false, size: v.size === 'tiny' ? 'tiny' : 'regular' }
-        : v,
-    unavailable: (v): Record<string, string[]> =>
-      v.appearance === 'text-link'
-        ? { variant: ['standard', 'destructive'], size: ['large', 'huge'], icon: ['true'] }
-        : {},
+    explain: {
+      type: '`type` sets what a click does when the button sits inside a form. With "submit", clicking it sends the form. With "button" (the default), clicking it only runs your own code. It is not the label.',
+    },
+    // The spec's two text-link rules, as locks rather than silent corrections: text-link is primary
+    // only (button-text-link-requires-primary), and tiny or regular with no icon
+    // (button-text-link-size-and-icon). Each locked value says which rule, and how to get there.
+    locks: (v) => {
+      const out: Record<string, Record<string, Lock>> = {}
+      const PRIMARY = { reason: 'text-link is primary only.', rule: 'button-text-link-requires-primary' }
+      const SIZE = { reason: 'text-link is tiny or regular only.', rule: 'button-text-link-size-and-icon' }
+      const ICON = { reason: 'text-link never carries an icon.', rule: 'button-text-link-size-and-icon' }
+      if (v.appearance === 'text-link') {
+        out.variant = Object.fromEntries((['standard', 'destructive'] as const).map((x) => [x, {
+          heading: `${x} needs filled or hollow`, ...PRIMARY, keep: 'Keep text-link',
+          moves: [{ label: `Use ${x}, filled`, patch: { variant: x, appearance: 'filled' } }, { label: `Use ${x}, hollow`, patch: { variant: x, appearance: 'hollow' } }],
+        }]))
+        out.size = Object.fromEntries((['large', 'huge'] as const).map((x) => [x, {
+          heading: `${x} needs filled or hollow`, ...SIZE, keep: 'Keep text-link',
+          moves: [{ label: `Use ${x}, filled`, patch: { size: x, appearance: 'filled' } }, { label: `Use ${x}, hollow`, patch: { size: x, appearance: 'hollow' } }],
+        }]))
+        out.icon = { true: { heading: 'An icon needs filled or hollow', ...ICON, keep: 'Keep text-link', moves: [{ label: 'Add the icon, filled', patch: { icon: true, appearance: 'filled' } }] } }
+        return out
+      }
+      // text-link from here: everything it needs, named, and one move that sets it all at once.
+      const needs: { what: string; stays: string; reason: string; rule: string; patch: Values }[] = []
+      if (v.variant !== 'primary') needs.push({ what: 'primary', stays: String(v.variant), ...PRIMARY, patch: { variant: 'primary' } })
+      if (v.size === 'large' || v.size === 'huge') needs.push({ what: 'regular size', stays: String(v.size), ...SIZE, patch: { size: 'regular' } })
+      if (v.icon === true) needs.push({ what: 'no icon', stays: 'the icon', ...ICON, patch: { icon: false } })
+      if (needs.length > 0) {
+        const patch = Object.assign({ appearance: 'text-link' }, ...needs.map((n) => n.patch)) as Values
+        out.appearance = { 'text-link': {
+          heading: `text-link needs ${needs.map((n) => n.what).join(' and ')}`,
+          reason: needs.map((n) => n.reason).join(' '), rule: needs[0].rule,
+          keep: `Keep ${needs.map((n) => n.stays).join(' and ')}`,
+          moves: [{ label: `Switch to ${needs.map((n) => n.what).join(', ')}, text-link`, patch }],
+        } }
+      }
+      return out
+    },
     render: (v) => (
       <Button
         variant={(str(v.variant) || 'standard') as 'primary' | 'standard' | 'destructive'}
@@ -238,6 +335,8 @@ export const REGISTRY: Entry[] = [
     file: 'toggle.md',
     src: 'Toggle',
     name: 'Toggle',
+    group: 'Inputs',
+    aliases: ['switch', 'on/off', 'toggle switch'],
     spec: toggleMd,
     seed: { label: 'Email alerts', defaultChecked: true },
     render: (v) => (
@@ -258,6 +357,8 @@ export const REGISTRY: Entry[] = [
     file: 'input.md',
     src: 'Input',
     name: 'Input',
+    group: 'Inputs',
+    aliases: ['text field', 'textbox', 'text input', 'field'],
     spec: inputMd,
     seed: { label: 'Tenant name', hint: 'Lowercase letters only', error: '' },
     render: (v) => (
@@ -277,6 +378,8 @@ export const REGISTRY: Entry[] = [
     file: 'text-area.md',
     src: 'TextArea',
     name: 'Text Area',
+    group: 'Inputs',
+    aliases: ['textarea', 'multiline', 'comment box'],
     spec: textAreaMd,
     seed: { label: 'Justification', hint: 'Shown to the approver', error: '', defaultValue: 'Blocking the transfer: the destination bucket is public.' },
     // `value` is the controlled arm: on this stage it would freeze the field, so the page drives
@@ -319,6 +422,8 @@ export const REGISTRY: Entry[] = [
     file: 'contextual-alert.md',
     src: 'ContextualAlert',
     name: 'Contextual Alert',
+    group: 'Feedback',
+    aliases: ['banner', 'callout', 'inline alert', 'inline message', 'severity'],
     spec: alertMd,
     seed: { severity: 'warning', title: 'Scan incomplete', children: 'The scan could not reach 3 of 12 hosts.', onDismiss: true },
     extra: [{ prop: 'onDismiss', kind: 'boolean', type: '() => void', default: false, notes: 'Present → the alert can be dismissed.' }],
@@ -341,6 +446,8 @@ export const REGISTRY: Entry[] = [
     file: 'status-indicator.md',
     src: 'StatusIndicator',
     name: 'Status Indicator',
+    group: 'Feedback',
+    aliases: ['status', 'status dot', 'health'],
     spec: statusMd,
     seed: { status: 'healthy', label: 'api-gateway-01' },
     highlight: (v) => (t) => t.includes(`-status-${str(v.status) || 'unknown'}`),
@@ -352,6 +459,8 @@ export const REGISTRY: Entry[] = [
     file: 'risk-pill.md',
     src: 'RiskPill',
     name: 'Risk Pill',
+    group: 'Feedback',
+    aliases: ['risk', 'risk badge', 'risk level'],
     spec: riskMd,
     // An empty label is the default on purpose: the pill then renders the level word, which is
     // what the spec says happens, and the printed code carries no label prop.
@@ -365,15 +474,18 @@ export const REGISTRY: Entry[] = [
     file: 'tabs.md',
     src: 'Tabs',
     name: 'Tabs',
+    group: 'Data',
+    aliases: ['tab', 'tab bar', 'tab list'],
     spec: tabsMd,
-    seed: { implementation: 'core' },
+    // The spec's Props table gives size no default; the code's is regular. Seeded so a current value
+    // shows (a segment row with nothing current is not a legal state); the gap goes to the spec thread.
+    seed: { implementation: 'core', size: 'regular' },
     hide: ['defaultValue'],
     // The Phase 1 proving case: the same props through either implementation, against the same
-    // spec and the same stylesheet. The values here are the ones tabs.md states under
-    // "Implementations"; the spec's own `**Dependencies:**` line is the core's.
+    // spec and the same stylesheet. The entries are the ones tabs.md states under "Implementations".
     implementations: [
-      { id: 'core', entry: '@omkarux/vela', dependencies: 'none' },
-      { id: 'headless', entry: '@omkarux/vela/headless', dependencies: '@base-ui/react (optional peer, via /headless)' },
+      { id: 'core', entry: '@omkarux/vela' },
+      { id: 'headless', entry: '@omkarux/vela/headless' },
     ],
     render: (v) => {
       const T = v.implementation === 'headless' ? HeadlessTabs : Tabs
@@ -405,6 +517,8 @@ export const REGISTRY: Entry[] = [
     file: 'icon.md',
     src: 'Icon',
     name: 'Icon',
+    group: 'Data',
+    aliases: ['glyph', 'symbol', 'icons'],
     spec: iconMd,
     seed: { name: 'shield-x', label: '' },
     // `name` is the IconName union — fifty literals the Props table names by type rather than
@@ -443,13 +557,15 @@ export const REGISTRY: Entry[] = [
     file: 'checkbox.md',
     src: 'Checkbox',
     name: 'Checkbox',
+    group: 'Inputs',
+    aliases: ['check box', 'tick box'],
     spec: checkboxMd,
     seed: { label: 'Accept the data-processing terms', defaultChecked: true, description: '', error: '' },
     // `checked` is the controlled arm: on this stage it would freeze the box, so the page drives
     // defaultChecked instead. name and value only mean anything inside a <form> or a Group.
     hide: ['checked'],
     noControl: ['name', 'value'],
-    // Headless-born: one implementation, so no Implementation control; the Dependencies line is the spec's.
+    // Headless-born: one implementation, so no Implementation control; the install names Base UI.
     implementations: [{ id: 'headless', entry: '@omkarux/vela/headless' }],
     render: (v) => (
       <Checkbox
@@ -476,6 +592,8 @@ export const REGISTRY: Entry[] = [
     file: 'radio-group.md',
     src: 'RadioGroup',
     name: 'Radio Group',
+    group: 'Inputs',
+    aliases: ['radio', 'radio button', 'option buttons'],
     spec: radioGroupMd,
     seed: { label: 'Enforcement', defaultValue: 'block', error: '' },
     // `value` is the controlled arm (it would freeze the stage); `defaultValue` becomes a select of
@@ -512,6 +630,8 @@ export const REGISTRY: Entry[] = [
     file: 'table.md',
     src: 'Table',
     name: 'Table',
+    group: 'Data',
+    aliases: ['data table', 'grid', 'data grid'],
     spec: tableMd,
     seed: { caption: 'Assets' },
     // children is the composition below, not a value a control can hold.
@@ -550,6 +670,8 @@ export const REGISTRY: Entry[] = [
     file: 'popover.md',
     src: 'Popover',
     name: 'Popover',
+    group: 'Overlays',
+    aliases: ['flyout', 'popup', 'pop-up'],
     spec: popoverMd,
     seed: { title: 'Filter alerts', children: 'Show alerts from the last 24 hours, critical and major only.' },
     hide: ['open'],
@@ -578,6 +700,8 @@ export const REGISTRY: Entry[] = [
     file: 'tooltip.md',
     src: 'Tooltip',
     name: 'Tooltip',
+    group: 'Overlays',
+    aliases: ['hint', 'tip', 'hover text'],
     spec: tooltipMd,
     seed: { content: 'Download the last 24 hours as CSV' },
     implementations: [{ id: 'headless', entry: '@omkarux/vela/headless' }],
@@ -600,6 +724,8 @@ export const REGISTRY: Entry[] = [
     file: 'dialog.md',
     src: 'Dialog',
     name: 'Dialog',
+    group: 'Overlays',
+    aliases: ['modal', 'confirm', 'alert dialog', 'confirmation'],
     spec: dialogMd,
     seed: {
       variant: 'standard',
@@ -672,6 +798,8 @@ export const REGISTRY: Entry[] = [
     src: 'Toast',
     imports: 'ToastProvider, useToast',
     name: 'Toast',
+    group: 'Feedback',
+    aliases: ['snackbar', 'notification', 'flash message', 'severity'],
     spec: toastMd,
     seed: { severity: 'success', title: 'Policy saved', description: 'Block legacy TLS now applies to 14 tenants.', action: false },
     extra: [
@@ -709,5 +837,30 @@ export const REGISTRY: Entry[] = [
 const toast = useToast()
 toast.add({ ${opts} })`
     },
+  },
+  // Dropdown List is headless-born, on Base UI's Menu. The stage is a host that owns the current
+  // view, so `value` is the controlled arm the stage uses; `defaultValue` and `defaultOpen` would
+  // seed one list per frame and `open` would pin it — documented, not demonstrated.
+  {
+    id: 'dropdown-list',
+    file: 'dropdown-list.md',
+    src: 'DropdownList',
+    name: 'Dropdown List',
+    group: 'Overlays',
+    aliases: ['dropdown', 'menu', 'overflow menu', 'view switcher'],
+    spec: dropdownListMd,
+    seed: { label: 'Views' },
+    hide: ['value', 'open'],
+    noControl: ['defaultValue', 'defaultOpen'],
+    implementations: [{ id: 'headless', entry: '@omkarux/vela/headless' }],
+    highlight: () => (t) => /--vela-(bg-raised|border-default|text-(default|link|inactive)|popover-width|dropdown-list-width-min)/.test(t),
+    render: (v) => <DropdownListStage v={v} />,
+    code: (v, spec) =>
+      printJsx('DropdownList', { label: v.label, align: v.align }, defaultsOf(spec), undefined, {
+        trigger: '<Button>Switch View</Button>',
+        items: 'views',
+        value: 'view',
+        onValueChange: 'setView',
+      }),
   },
 ]

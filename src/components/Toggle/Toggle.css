@@ -57,3 +57,17 @@
 
 .vela-toggle__label { font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height); color: var(--vela-text-default); }
 .vela-toggle--disabled .vela-toggle__label { color: var(--vela-text-inactive); }
+
+/* Forced colours (Windows contrast themes) replace every background, so the track and knob drew
+   nothing and the switch vanished. The track takes a CanvasText edge and the knob a solid fill;
+   on is the system's Highlight pair, disabled is GrayText. The border sits outside the track's
+   padding box, so the knob's inset and travel are unchanged. */
+@media (forced-colors: active) {
+  .vela-toggle__track { forced-color-adjust: none; background: Canvas; border: 1px solid CanvasText; }
+  .vela-toggle__knob { background: CanvasText; }
+  .vela-toggle__track[aria-checked='true'] { background: Highlight; border-color: Highlight; }
+  .vela-toggle__track[aria-checked='true'] .vela-toggle__knob { background: HighlightText; }
+  .vela-toggle__track:disabled { background: Canvas; border-color: GrayText; }
+  .vela-toggle__track:disabled .vela-toggle__knob { background: GrayText; }
+  .vela-root .vela-toggle__track:focus-visible { outline-color: Highlight; }
+}

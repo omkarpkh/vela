@@ -1,36 +1,97 @@
 /* ---------------------------------------------------------------- playground -- */
-.pg-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--vela-space-15) var(--vela-space-30); padding-bottom: var(--vela-space-20); border-bottom: 1px solid var(--vela-border-subtle); }
-.pg-head__text { min-width: 0; max-width: 64ch; }
+.pg-head { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: var(--vela-space-20) var(--vela-space-30); padding-bottom: var(--vela-space-20); border-bottom: 1px solid var(--vela-border-subtle); }
+.pg-head__text { flex: 1 1 var(--site-head-col-min); min-width: 0; max-width: 64ch; }
 .pg-head__eyebrow { margin: 0 0 var(--vela-space-5); color: var(--vela-text-de-emphasized); }
 .pg-head h1 { margin: 0 0 var(--vela-space-10); }
 .pg-intro .pg-p { margin: 0; font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height); color: var(--vela-text-de-emphasized); }
-.pg-head__links { display: flex; gap: var(--vela-space-15); white-space: nowrap; }
 
-.pg { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: var(--vela-space-20); align-items: start; margin-top: var(--vela-space-20); }
+/* The Use panel (playground spec, section 4): beside the title while both fit, below it otherwise,
+   where its two steps sit side by side. On the page surface, so its hints keep 4.90:1 in light. */
+.pg-use { flex: 1 1 var(--site-head-col-min); min-width: 0; container-type: inline-size; display: flex; flex-direction: column; gap: var(--vela-space-15); padding: var(--vela-space-15) var(--vela-space-20); border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4); background: var(--vela-bg-global); }
+.pg-use__heading { margin: 0; font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height); font-weight: var(--vela-font-weight-semibold); color: var(--vela-text-default); }
+.pg-use__steps { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--vela-space-15); }
+@container (min-width: 600px) { .pg-use__steps { grid-template-columns: 1fr 1fr; } }
+.pg-use__step { display: flex; flex-direction: column; gap: var(--vela-space-5); min-width: 0; }
+.pg-use__label { margin: 0; font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); }
+.pg-use__title { font-weight: var(--vela-font-weight-semibold); color: var(--vela-text-default); }
+.pg-use__hint { color: var(--vela-text-de-emphasized); }
+.pg-use__line { display: flex; align-items: center; gap: var(--vela-space-10); min-width: 0; }
+.pg-use__line code { flex: 1; min-width: 0; padding: var(--vela-space-5) var(--vela-space-10); border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); overflow-wrap: anywhere; }
+.pg-use__line .shell-copy { flex: none; }
+.pg-install-note { margin: 0; font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
+.pg-use__links { display: flex; flex-wrap: wrap; gap: var(--vela-space-15); margin: 0; }
+
+/* Contract facts (section 4): five cells, then Rules across the bottom. Hairlines are the grid's own
+   cells' own 1px shadows, right and below; the frame's border and overflow clip those at the edge. Below 860px of container, three columns with the fifth cell
+   spanning two; on a phone, two; at the narrowest, one. */
+.pg-facts-wrap { container-type: inline-size; margin-top: var(--vela-space-20); }
+.pg-facts { margin: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4); overflow: hidden; }
+.pg-fact { box-shadow: 1px 0 0 var(--vela-border-subtle), 0 1px 0 var(--vela-border-subtle); padding: var(--vela-space-10) var(--vela-space-15); min-width: 0; }
+.pg-fact dt { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-de-emphasized); }
+.pg-fact dd { margin: var(--vela-space-5) 0 0; font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); overflow-wrap: anywhere; }
+.pg-fact dd code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: var(--site-code-size); }
+.pg-fact--rules { grid-column: 1 / -1; }
+.pg-facts--proposal { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.pg-fact--rules dd { display: flex; flex-wrap: wrap; align-items: center; gap: var(--vela-space-5) var(--vela-space-10); }
+.pg-fact__total { font-weight: var(--vela-font-weight-semibold); }
+@container (max-width: 860px) {
+  .pg-facts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .pg-fact:nth-child(5) { grid-column: span 2; }
+}
+@container (max-width: 480px) {
+  .pg-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pg-fact:nth-child(5) { grid-column: 1 / -1; }
+}
+@container (max-width: 300px) {
+  .pg-facts { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Page tabs (section 4): the selected tab's panel follows. */
+.pg-tabs { margin-top: var(--vela-space-20); }
+.pg-tabs > .vela-tabs > .vela-tabs__panel { padding-top: var(--vela-space-20); }
+
+.pg { display: grid; grid-template-columns: minmax(0, 1fr) var(--site-props-width); gap: var(--vela-space-20); align-items: start; }
+/* Full width (section 5): the stage takes the row; the controls become a grid below it, then the code. */
+.pg--full { grid-template-columns: minmax(0, 1fr); }
+.pg--full .pg-props { position: static; }
+.pg--full .pg-controls { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--site-props-width), 1fr)); gap: var(--vela-space-15) var(--vela-space-20); }
+.pg--full .pg-codebar { margin-top: 0; }
 @media (max-width: 960px) { .pg { grid-template-columns: 1fr; } }
 
 .pg-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: var(--vela-space-15); margin: 0 0 var(--vela-space-15); min-height: var(--vela-control-height-35); }
-.pg-toolbar__group { display: flex; gap: var(--vela-space-5); }
 .pg-toolbar__spacer { flex: 1; }
 
 /* The stage column is a container: the two frames stack whenever the column itself is narrow,
-   whether that is a small viewport or the nav and props panel eating a wide one. */
+   whether that is a small viewport or the nav and props panel eating a wide one.
+   Content wider than the stage scrolls sideways inside the stage, never the page, and there is no
+   edge fade: a frame's column grows to its content's minimum width, and the stage scrolls. While it
+   scrolls it is a named, focusable region (ScrollRegion, "Stage, scrollable"). */
 .pg-main { container-type: inline-size; min-width: 0; }
-.pg-stage { display: grid; grid-template-columns: 1fr 1fr; gap: var(--vela-space-15); }
+.pg-stage { display: grid; grid-template-columns: 1fr 1fr; gap: var(--vela-space-15); overflow-x: auto; overflow-y: hidden; }
 .pg-stage--single { grid-template-columns: 1fr; }
 @container (max-width: 640px) { .pg-stage { grid-template-columns: 1fr; } }
-.pg-frame { position: relative; border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4); padding: var(--vela-space-60) var(--vela-space-30) var(--vela-space-40); min-height: 280px; display: flex; align-items: center; justify-content: center; }
+.pg-frame { position: relative; border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4); padding: var(--vela-space-60) var(--vela-space-30) var(--vela-space-40); min-height: var(--site-stage-min); }
 .pg-frame-label { position: absolute; top: var(--vela-space-10); left: var(--vela-space-15); color: var(--vela-text-de-emphasized); }
-.pg-frame-body { max-width: 100%; min-width: 0; }
+/* Anchored to the top-left: the body is the frame's width and starts at its top, so nothing
+   re-centres when a prop changes and only what the prop changed moves. This replaces the
+   per-component :has() exceptions (Table, and Tabs from #25): a Table gets its host's width, and a
+   Tabs list holds still, because every component now sits where a page column would put it. */
+.pg-frame-body { inline-size: 100%; }
+/* An inline-level component (a Button, a pill) sits on a line box, and a baseline-aligned box moves
+   up or down as its own size changes. Aligned to the top, its top-left corner is the body's. */
+.pg-frame-body > * { vertical-align: top; }
 /* Copy inside a playground overlay (Popover, Dialog): the overlay is portalled out of the frame. */
 .pg-overlay-copy { margin: 0 0 var(--vela-space-10); }
 /* The Toast stage: the Save button, and the page's own record of what was saved. */
 .pg-toast-stage { display: flex; flex-direction: column; align-items: flex-start; gap: var(--vela-space-10); }
 .pg-toast-stage .pg-overlay-copy { margin: 0; }
+/* The Dropdown List stage: the trigger, and the page's own line saying which view is current. */
+.pg-dropdown-stage { display: flex; flex-direction: column; align-items: flex-start; gap: var(--vela-space-10); }
+.pg-dropdown-stage .pg-overlay-copy { margin: 0; }
 .pg-reduced *, .pg-reduced *::before, .pg-reduced *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
 
 .pg-panel { border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4); background: var(--vela-bg-container); min-width: 0; }
-.pg-props { padding: var(--vela-space-15) var(--vela-space-20) var(--vela-space-20); display: flex; flex-direction: column; gap: var(--vela-space-15); position: sticky; top: calc(56px + var(--vela-space-20)); }
+.pg-props { padding: var(--vela-space-15) var(--vela-space-20) var(--vela-space-20); display: flex; flex-direction: column; gap: var(--vela-space-15); position: sticky; top: calc(var(--site-topbar-height) + var(--vela-space-20)); }
 .pg-props__head { display: flex; align-items: center; justify-content: space-between; gap: var(--vela-space-10); }
 .pg-props__head h2 { margin: 0; }
 .pg-field { display: flex; flex-direction: column; gap: var(--vela-space-5); }
@@ -44,25 +105,39 @@
 .pg-select:focus-visible { outline: var(--vela-focus-ring-width) solid var(--vela-focus-ring-color); outline-offset: var(--vela-focus-ring-offset); }
 .pg-booleans { display: flex; flex-direction: column; gap: var(--vela-space-10); padding-top: var(--vela-space-5); }
 .pg-uncontrolled { border-top: 1px solid var(--vela-border-subtle); padding-top: var(--vela-space-15); }
-.pg-uncontrolled h3 { margin: 0 0 var(--vela-space-10); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); font-weight: var(--vela-font-weight-semibold); color: var(--vela-text-de-emphasized); text-transform: uppercase; letter-spacing: 0.06em; }
+/* The props panel is --vela-bg-container: de-emphasized text there is 4.35:1 in light (a negative
+   case in PAIRS), so the panel's secondary text is text-default and is told apart by size and case. */
+.pg-uncontrolled h3 { margin: 0 0 var(--vela-space-10); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); font-weight: var(--vela-font-weight-semibold); color: var(--vela-text-default); text-transform: uppercase; letter-spacing: var(--vela-text-meta-tracking); }
 .pg-uncontrolled dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: var(--vela-space-5) var(--vela-space-10); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); }
 .pg-uncontrolled dt { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--vela-text-default); }
-.pg-uncontrolled dd { margin: 0; color: var(--vela-text-de-emphasized); }
+.pg-uncontrolled dd { margin: 0; color: var(--vela-text-default); }
 .pg-uncontrolled code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
-.pg-hint { margin: 0; color: var(--vela-text-de-emphasized); }
+.pg-hint { margin: 0; color: var(--vela-text-default); }
 
-.pg-contract { margin-top: var(--vela-space-20); padding: var(--vela-space-15) var(--vela-space-20) var(--vela-space-20); }
-.pg-contract .vela-tabs__panel { padding-top: var(--vela-space-20); }
-.pg-code-wrap { position: relative; }
-.pg-code-copy { position: absolute; top: var(--vela-space-10); right: var(--vela-space-10); }
-.pg-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; line-height: 1.6; white-space: pre; overflow-x: auto; background: var(--vela-bg-global); border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4); padding: var(--vela-space-15) var(--vela-space-20); margin: 0 0 var(--vela-space-10); color: var(--vela-text-default); }
+/* The code bar (section 5): its label, then Copy above the code, never on top of it. On the page
+   surface. It copies the import line and the JSX; install is only in the Use panel. */
+.pg-codebar { background: var(--vela-bg-global); margin-top: var(--vela-space-20); padding: var(--vela-space-15) var(--vela-space-20) var(--vela-space-20); }
+.pg-codebar__head { display: flex; align-items: center; justify-content: space-between; gap: var(--vela-space-10); margin: 0 0 var(--vela-space-10); }
+.pg-codebar__title { margin: 0; font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height); font-weight: var(--vela-font-weight-semibold); color: var(--vela-text-default); }
+.pg-codebar__status:not(:empty) { margin: 0 0 var(--vela-space-10); }
+.pg-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: var(--vela-text-meta-size); line-height: 1.6; white-space: pre; overflow-x: auto; background: var(--vela-bg-global); border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4); padding: var(--vela-space-15) var(--vela-space-20); margin: 0 0 var(--vela-space-10); color: var(--vela-text-default); }
 .pg-tablewrap { overflow-x: auto; margin: 0 0 var(--vela-space-15); }
 .pg-table { border-collapse: collapse; width: 100%; font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); }
 .pg-table th, .pg-table td { text-align: left; vertical-align: top; padding: var(--vela-space-10) var(--vela-space-15) var(--vela-space-10) 0; border-bottom: 1px solid var(--vela-border-subtle); }
 .pg-table th { color: var(--vela-text-de-emphasized); font-weight: var(--vela-font-weight-semibold); white-space: nowrap; }
-.pg-table code, .pg-p code, .pg-list code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.92em; }
+.pg-table code, .pg-p code, .pg-list code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: var(--site-code-size); }
 .pg-table tr.is-bound td { background: var(--vela-bg-selected); }
-.pg-chip { display: inline-block; width: 14px; height: 14px; border-radius: 3px; border: 1px solid var(--vela-border-subtle); vertical-align: -2px; margin-right: var(--vela-space-5); }
+/* A bound row is a change mark: it follows the current props. The tint is not the only signal; the
+   start edge carries the active border, as a selected Table row does. Under forced colours the tint
+   and the inset are dropped, so the mark is drawn as a real border. */
+.pg-table--tokens tr > :first-child { padding-inline-start: var(--vela-space-10); }
+.pg-table tr.is-bound td:first-child { box-shadow: inset var(--vela-stroke-2) 0 0 var(--vela-border-active); }
+@media (forced-colors: active) {
+  .pg-table tr.is-bound td:first-child { border-inline-start: var(--vela-stroke-2) solid Highlight; }
+}
+.pg-chip { display: inline-block; border-radius: var(--vela-radius-3); border: 1px solid var(--vela-border-subtle); margin-right: var(--vela-space-5);
+  width: 14px; height: 14px; vertical-align: -2px;   /* vela-allow: a colour swatch has no size token; it sits on the code's baseline */
+}
 .pg-h { margin: var(--vela-space-20) 0 var(--vela-space-5); font-size: var(--vela-text-body-size); font-weight: var(--vela-font-weight-semibold); }
 .pg-h1, .pg-h2 { margin: var(--vela-space-20) 0 var(--vela-space-10); }
 .pg-h:first-child, .pg-h1:first-child, .pg-h2:first-child { margin-top: 0; }
@@ -74,18 +149,63 @@
 /* Icon page: the chosen glyph beside its name, then every glyph at the same size and tone. */
 .pg-icon { display: flex; flex-direction: column; gap: var(--vela-space-15); min-width: 0; }
 .pg-icon__lead { display: inline-flex; align-items: center; gap: var(--vela-space-5); margin: 0; color: var(--vela-text-default); }
-.pg-icon__grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: var(--vela-space-5) var(--vela-space-10); }
+.pg-icon__grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));   /* vela-allow: the glyph grid's column minimum; literal until a layout token exists */
+  gap: var(--vela-space-5) var(--vela-space-10); }
 .pg-icon__cell { display: flex; align-items: center; gap: var(--vela-space-5); min-width: 0; color: var(--vela-text-de-emphasized); }
 .pg-icon__name { overflow-wrap: anywhere; }
 
-/* Table (Phase 1). The frame body hugs its content, and a Table's width never comes from its
-   content — it is an inline-size container, so a wide table cannot widen its host. Here the host
-   gives it the frame's width, as a page column would. The bounded height is the host's half of
-   stickyHeader: the region fills it and scrolls, and the header pins to its top. */
-.pg-frame-body:has(> .vela-table) { width: 100%; }
-/* Tabs: the frame centres a body that hugs its content, and each panel's text is a different
-   length and height, so switching tabs moved the whole tab list sideways and up or down. Give
-   the body the frame's width and hold it at the top, so the list stays put and only the panel
-   below it changes, as on a real page. */
-.pg-frame-body:has(> .vela-tabs) { width: 100%; align-self: flex-start; }
-.pg-table-bounded { max-block-size: 220px; }
+/* Table (Phase 1): the bounded height is the host's half of stickyHeader; the region fills it and
+   scrolls, and the header pins to its top. */
+.pg-table-bounded { max-block-size: 220px; }   /* vela-allow: the stage's bounded host for stickyHeader; any height shorter than the rows will do */
+
+/* ----------------------------------------------------- workbench (slice 2) -- */
+.pg-reset { display: inline-flex; align-items: center; gap: var(--vela-space-5); }
+.pg-reset__why { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-de-emphasized); }
+/* "Skip to code": the controls' first stop, seen only when it has focus (D4). */
+.pg-skip.vela-sr-only:focus-visible { position: static; width: auto; height: auto; margin: 0; overflow: visible; clip: auto; white-space: normal; align-self: flex-start; color: var(--vela-text-link); }
+.pg-props__lead { margin: var(--vela-space-5) 0 0; font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
+.pg-props__head { flex-direction: column; align-items: flex-start; }
+/* A link's notice (section 11): read in order with the controls, not announced as an alert. */
+.pg-notice { border: 1px solid var(--vela-border-default); border-radius: var(--vela-radius-4); padding: var(--vela-space-10) var(--vela-space-15); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
+.pg-notice p { margin: 0; }
+.pg-notice p + p { margin-top: var(--vela-space-5); }
+.pg-controls { display: flex; flex-direction: column; gap: var(--vela-space-15); }
+.pg-control { display: flex; flex-direction: column; gap: var(--vela-space-10); min-width: 0; }
+.pg-field__note { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
+/* A change mark (design change 3): a 2px start edge while the value differs from the page's
+   default. A border, so it survives forced colours; the colour is not the only signal, the edge is. */
+.pg-field { padding-inline-start: var(--vela-space-10); }
+/* The mark is an inset shadow, so an unchanged control carries nothing at all: a transparent
+   border would be painted by forced colours and every control would look changed (review, fix 2). */
+.pg-field.is-changed { box-shadow: inset var(--vela-stroke-2) 0 0 var(--vela-border-active); }
+.pg-field--switch { gap: var(--vela-space-5); }
+/* The lock panel: on the raised surface, the rule in words, its id and enforcement, the moves. */
+.pg-lock { border: 1px solid var(--vela-border-default); border-radius: var(--vela-radius-4); background: var(--vela-bg-raised); padding: var(--vela-space-10) var(--vela-space-15); display: flex; flex-direction: column; gap: var(--vela-space-10); color: var(--vela-text-default); }
+.pg-lock:focus-visible { outline: var(--vela-focus-ring-width) solid var(--vela-focus-ring-color); outline-offset: var(--vela-focus-ring-offset); }
+.pg-lock__heading { margin: 0; font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height); font-weight: var(--vela-font-weight-semibold); }
+.pg-lock__reason { margin: 0; font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); }
+.pg-lock__rule { margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: var(--vela-space-5) var(--vela-space-10); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); }
+.pg-lock a { color: var(--vela-text-default); text-decoration: underline; }   /* text-link on the dark raised surface is 4.35:1 (PAIRS), so the link is default text, underlined */
+.pg-lock__rule code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; overflow-wrap: anywhere; }
+.pg-lock__moves { display: flex; flex-wrap: wrap; align-items: center; gap: var(--vela-space-10); }
+/* A changed code line: the same start edge, and a tint that settles once (not under reduced motion). */
+.pg-code__line { display: inline-block; min-width: 100%; box-sizing: border-box; padding-inline-start: var(--vela-space-10); }
+.pg-code__line.is-changed { box-shadow: inset var(--vela-stroke-2) 0 0 var(--vela-border-active); position: relative; z-index: 0; }
+/* The settle is a tint under the text that fades once: opacity only, as Vela's motion rule asks. */
+.pg-code__line.is-changed::before { content: ''; position: absolute; inset: 0; z-index: -1; background: var(--vela-bg-selected); opacity: 0; pointer-events: none; animation: pg-settle var(--vela-duration-slow) var(--vela-ease-standard); }
+@keyframes pg-settle { from { opacity: 1; } to { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .pg-code__line.is-changed::before { animation: none; } }
+.pg-uncontrolled__lead { margin: 0 0 var(--vela-space-10); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
+.pg-uncontrolled dl { display: flex; flex-direction: column; gap: var(--vela-space-10); }
+.pg-uncontrolled__row dd .pg-p { margin: var(--vela-space-5) 0 0; }
+.pg-uncontrolled__type { color: var(--vela-text-default); }
+@media (forced-colors: active) {
+  /* Forced colours drop shadows: here, and only on a changed control, the mark is a real border,
+     taken out of the padding so nothing moves. */
+  .pg-field.is-changed, .pg-code__line.is-changed { border-inline-start: var(--vela-stroke-2) solid Highlight; padding-inline-start: calc(var(--vela-space-10) - var(--vela-stroke-2)); }
+}
+/* The toolbar's two segment groups carry a visible word, as the canvas shows; the group is named the same. */
+.pg-toolbar__group { display: inline-flex; align-items: center; gap: var(--vela-space-10); }
+.pg-toolbar__label { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-de-emphasized); }
+/* "Open proof" lands here: the rule it names, focused, with the focus ring (spec v1.2, section 8). */
+.pg-rule--target:focus-visible, .pg-rule--target:focus { outline: var(--vela-focus-ring-width) solid var(--vela-focus-ring-color); outline-offset: var(--vela-focus-ring-offset); }

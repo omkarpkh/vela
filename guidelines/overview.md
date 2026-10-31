@@ -23,10 +23,11 @@ below, then open the per-component file for props, tokens, and anti-patterns.
 | Tooltip | A short text-only label on hover and focus; supplementary, never the only copy (headless entry only) | `components/tooltip.md` |
 | Dialog | A modal decision that blocks the task; `variant="alert"` confirms a destructive action (headless entry only) | `components/dialog.md` |
 | Toast | A floating, polite confirmation that something already happened — never the only record, never the only Undo (headless entry only) | `components/toast.md` |
+| Dropdown List | One of a set where one is current, from a button, acting at once — a hidden tab, another saved view (headless entry only) | `components/dropdown-list.md` |
 
-Checkbox, Radio Group, Popover, Tooltip, Dialog and Toast ship from `@omkarux/vela/headless` (Base
-UI as an optional peer) and are Experimental; the other ten ship from `@omkarux/vela` with no
-dependencies (Risk Pill, Icon, Text Area and Table are Experimental there).
+Checkbox, Radio Group, Popover, Tooltip, Dialog, Toast and Dropdown List ship from
+`@omkarux/vela/headless` (Base UI as an optional peer) and are Experimental; the other ten ship from `@omkarux/vela` with no
+dependencies (Icon, Text Area and Table are Experimental there).
 
 ## Disambiguations (where AI usually picks wrong)
 
@@ -46,6 +47,12 @@ dependencies (Risk Pill, Icon, Text Area and Table are Experimental there).
   opening it). A decision that must be answered before anything else → **Dialog**; a destructive
   or irreversible one → **Dialog `variant="alert"`**. A list of commands from a button is an
   Actions Dropdown, not in this kit — not a Popover.
+- **Dropdown List vs Select List vs Actions Dropdown** — one of a set where one is **current**, and
+  the choice **acts at once** (go to a hidden tab, switch to a saved view) → **Dropdown List**. A
+  form value chosen now and submitted later, with a label and validation → Select List, not in this
+  kit. A list of commands (Edit / Duplicate / Delete), none of them current → Actions Dropdown, not
+  in this kit. Two to five options that fit → **Tabs** or **Radio Group**; don't hide what fits.
+  More than about 50, or options that need searching → a combobox, not in this kit.
 - **Toast vs Contextual Alert vs Dialog** — something the user just did **has completed** and the
   page already shows it → **Toast** (`success`, `info` or `warning` only), a notice that leaves.
   An event the user must read and that stays until resolved, or **any failure** → **Contextual
@@ -76,7 +83,7 @@ dependencies (Risk Pill, Icon, Text Area and Table are Experimental there).
 ## If no component fits
 
 Do not invent one silently. State that the kit has no component for the need and pick the
-closest match while flagging the gap. Not yet specced: Dropdown List, Select List, Token Pill,
+closest match while flagging the gap. Not yet specced: Select List, Token Pill,
 Number Stepper, Icon Button, Actions Dropdown, View Switcher, Data Grid, Card List.
 Flag rather than guess.
 

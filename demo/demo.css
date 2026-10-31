@@ -1,37 +1,59 @@
-/* ---------------------------------------------------------------- shell -- */
-body { margin: 0; background: var(--vela-bg-global); }
-.shell { min-height: 100vh; display: flex; flex-direction: column; }
-.skip { position: absolute; left: -999px; top: var(--vela-space-10); z-index: 100; padding: var(--vela-space-10) var(--vela-space-15); background: var(--vela-bg-raised); color: var(--vela-text-link); border: 1px solid var(--vela-border-default); border-radius: var(--vela-radius-4); }
-.skip:focus { left: var(--vela-space-10); }
+/* ------------------------------------------------------- site geometry -- */
+/* The site follows DESIGN.md like the kit does, and scripts/check-css.mjs holds it to that. The
+   few layout lengths below have no token yet: they wait for the breakpoint and layout tokens
+   (DESIGN.md, "Responsive and density"), so each is declared once, here, with its waiver, and the
+   rules bind the custom property. --site-* is the site's own; it is never a kit token. */
+:root {
+  --site-topbar-height: 56px;   /* vela-allow: top bar height; literal until a layout token exists */
+  --site-nav-width: 240px;      /* vela-allow: navigation column width; literal until a layout token exists */
+  --site-content-max: 1180px;   /* vela-allow: content column cap (1100 inner, what the visual baselines were taken at); literal until a breakpoint token exists */
+  --site-props-width: 300px;    /* vela-allow: playground props column width; literal until a layout token exists */
+  --site-head-col-min: 340px;   /* vela-allow: a component page header's columns (title, Use panel) at their narrowest before the panel wraps below; literal until a layout token exists */
+  --site-stage-min: 280px;      /* vela-allow: playground stage minimum height; literal until a layout token exists */
+  --site-code-size: 0.92em;     /* vela-allow: inline code is set a step down from the text around it; a ratio, not a length */
+}
 
-.topbar { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: var(--vela-space-15); height: 56px; padding: 0 var(--vela-space-20); background: var(--vela-bg-global); border-bottom: 1px solid var(--vela-border-subtle); }
+/* ---------------------------------------------------------------- shell -- */
+/* The top bar is sticky, so anything scrolled into view (a link's target, a focused field, a
+   screenshot's section) stops below it, never under it (WCAG 2.4.11, Focus Not Obscured). */
+html { scroll-padding-top: var(--site-topbar-height); }
+body { margin: 0; background: var(--vela-bg-global); }
+/* index.html's first paint and its <noscript> line: body text, before React renders. */
+.boot { margin: 0; padding: var(--vela-space-30) var(--vela-space-20); font-family: var(--vela-font-family-primary); font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height); color: var(--vela-text-default); }
+.boot a { color: var(--vela-text-link); }
+.shell { min-height: 100vh; display: flex; flex-direction: column; }
+.skip { position: absolute; left: var(--vela-space-10); top: var(--vela-space-10); transform: translateY(-200%); z-index: 100; padding: var(--vela-space-10) var(--vela-space-15); background: var(--vela-bg-raised); color: var(--vela-text-link); border: 1px solid var(--vela-border-default); border-radius: var(--vela-radius-4); }
+.skip:focus { transform: none; }
+
+.topbar { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: var(--vela-space-15); height: var(--site-topbar-height); padding: 0 var(--vela-space-20); background: var(--vela-bg-global); border-bottom: 1px solid var(--vela-border-subtle); }
 .topbar__menu { display: inline-flex; align-items: center; justify-content: center; width: var(--vela-control-height-35); height: var(--vela-control-height-35); border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4); background: transparent; color: var(--vela-text-default); cursor: pointer; padding: 0; transition: background-color var(--vela-duration-base) var(--vela-ease-standard); }
 @media (hover: hover) { .topbar__menu:hover { background: var(--vela-bg-hover); transition-duration: var(--vela-duration-fast); } }
 .brand { display: flex; align-items: baseline; gap: var(--vela-space-10); text-decoration: none; color: var(--vela-text-heading); }
-.brand__name { font-size: var(--vela-text-h4-size); line-height: var(--vela-text-h4-line-height); font-weight: var(--vela-font-weight-semibold); letter-spacing: 0.01em; }
+.brand__name { font-size: var(--vela-text-h4-size); line-height: var(--vela-text-h4-line-height); font-weight: var(--vela-font-weight-semibold); }
 .brand__meta { color: var(--vela-text-de-emphasized); }
 .topbar__right { margin-left: auto; display: flex; align-items: center; gap: var(--vela-space-20); }
 .topbar__link { color: var(--vela-text-default); text-decoration: none; }
 .topbar__link:hover { color: var(--vela-text-link); }
-.demo-themes { display: flex; gap: var(--vela-space-5); }
 @media (max-width: 600px) { .brand__meta, .topbar__link { display: none; } }
 
 .shell__body { display: flex; flex: 1; align-items: flex-start; }
-.sitenav { width: 240px; flex: none; position: sticky; top: 56px; height: calc(100vh - 56px); overflow-y: auto; box-sizing: border-box; display: flex; flex-direction: column; gap: var(--vela-space-20); padding: var(--vela-space-20) var(--vela-space-15); background: var(--vela-bg-container); border-right: 1px solid var(--vela-border-subtle); }
+.sitenav { width: var(--site-nav-width); flex: none; position: sticky; top: var(--site-topbar-height); height: calc(100vh - var(--site-topbar-height)); overflow-y: auto; box-sizing: border-box; display: flex; flex-direction: column; gap: var(--vela-space-20); padding: var(--vela-space-20) var(--vela-space-15); background: var(--vela-bg-container); border-right: 1px solid var(--vela-border-subtle); }
 .shell--nav-closed .sitenav { display: none; }
-.sitenav__group { display: flex; flex-direction: column; gap: 2px; }
-.sitenav__group h3 { margin: 0 0 var(--vela-space-5); padding: 0 var(--vela-space-10); font-size: 11px; line-height: 16px; letter-spacing: 0.06em; text-transform: uppercase; font-weight: var(--vela-font-weight-semibold); color: var(--vela-text-de-emphasized); }
-.sitenav__link { display: block; padding: 6px var(--vela-space-10); border-radius: var(--vela-radius-4); color: var(--vela-text-default); text-decoration: none; font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height); transition: background-color var(--vela-duration-base) var(--vela-ease-standard); }
+.sitenav__group { display: flex; flex-direction: column; }
+.sitenav__group h3 { margin: 0 0 var(--vela-space-5); padding: 0 var(--vela-space-10); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); letter-spacing: var(--vela-text-meta-tracking); text-transform: uppercase; font-weight: var(--vela-font-weight-semibold); color: var(--vela-text-default); }
+.sitenav__link { display: flex; align-items: center; min-height: var(--vela-control-height-35); box-sizing: border-box; padding: 0 var(--vela-space-10); border-radius: var(--vela-radius-4); color: var(--vela-text-default); text-decoration: none; font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height); transition: background-color var(--vela-duration-base) var(--vela-ease-standard); }
 @media (hover: hover) { .sitenav__link:hover { background: var(--vela-bg-hover); transition-duration: var(--vela-duration-fast); } }
 .sitenav__link.is-active { background: var(--vela-bg-selected); color: var(--vela-text-link); font-weight: var(--vela-font-weight-semibold); }
-.sitenav__foot { margin: auto 0 0; padding: var(--vela-space-10); color: var(--vela-text-de-emphasized); }
+/* The navigation sits on --vela-bg-container, where de-emphasized text is 4.35:1 in light: a
+   negative case in PAIRS. Everything on the container is text-default. */
+.sitenav__foot { margin: auto 0 0; padding: var(--vela-space-10); color: var(--vela-text-default); }
 .sitenav__foot code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 @media (max-width: 900px) {
-  .sitenav { position: fixed; left: 0; top: 56px; z-index: 30; width: min(280px, 85vw); }
+  .sitenav { position: fixed; left: 0; top: var(--site-topbar-height); z-index: 30; width: min(280px, 85vw); }   /* vela-allow: the drawer's width on a narrow screen; literal until a layout token exists */
 }
 
 /* Content column keeps the 1100px inner width the visual baselines were taken at (1180 border-box). */
-.content { flex: 1; min-width: 0; max-width: 1180px; box-sizing: border-box; padding: var(--vela-space-30) var(--vela-space-40) var(--vela-space-60); }
+.content { flex: 1; min-width: 0; max-width: var(--site-content-max); box-sizing: border-box; padding: var(--vela-space-30) var(--vela-space-40) var(--vela-space-60); }
 @media (max-width: 900px) { .content { padding: var(--vela-space-20) var(--vela-space-20) var(--vela-space-40); } }
 
 .page-head { padding-bottom: var(--vela-space-20); border-bottom: 1px solid var(--vela-border-subtle); }
@@ -46,11 +68,23 @@ body { margin: 0; background: var(--vela-bg-global); }
 .demo-row { display: flex; flex-wrap: wrap; gap: var(--vela-space-15); align-items: center; }
 .demo-stack { display: flex; flex-direction: column; gap: var(--vela-space-10); align-items: flex-start; }
 .demo-stack > .vela-alert { align-self: stretch; }
-.demo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--vela-space-20); }
-.demo-swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: var(--vela-space-10); }
+.demo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));   /* vela-allow: the Overview's column minimum; literal until a layout token exists */
+  gap: var(--vela-space-20); }
+.demo-swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));   /* vela-allow: the swatch column minimum; literal until a layout token exists */
+  gap: var(--vela-space-10); }
 .demo-swatch { display: flex; align-items: center; gap: var(--vela-space-10); }
-.demo-chip { width: 26px; height: 26px; border-radius: var(--vela-radius-4); border: 1px solid var(--vela-border-subtle); flex: none; }
+.demo-chip { width: 26px; height: 26px;   /* vela-allow: a colour swatch has no size token; the Tokens baseline is taken at this size */
+  border-radius: var(--vela-radius-4); border: 1px solid var(--vela-border-subtle); flex: none; }
 .demo-footer { padding: var(--vela-space-30) 0 0; }
+
+/* ------------------------------------------------------------ proposals -- */
+/* A Proposal page: a heading first, then one outlined line saying it is a written spec. Text on the
+   container is text-default (PAIRS: "Site tag text on container"). */
+.proposal__head h1 { margin: 0 0 var(--vela-space-15); }
+.proposal__banner { margin: 0 0 var(--vela-space-10); padding: var(--vela-space-10) var(--vela-space-15); max-width: 72ch; border: 1px solid var(--vela-border-default); border-radius: var(--vela-radius-4); background: var(--vela-bg-container); color: var(--vela-text-default); }
+.proposal__links { display: flex; flex-wrap: wrap; gap: var(--vela-space-5) var(--vela-space-20); margin: 0; padding: 0; list-style: none; }
+.proposal__waits { margin-top: var(--vela-space-30); }
+.proposal__links a { color: var(--vela-text-link); }
 
 /* ---------------------------------------------------------------- docs -- */
 .doc__body { max-width: 72ch; padding-top: var(--vela-space-20); }
@@ -60,22 +94,23 @@ body { margin: 0; background: var(--vela-bg-global); }
 .doc__body .pg-table { font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height); }
 
 /* ---------------------------------------------------------------- adopt -- */
-.adopt-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: var(--vela-space-20); margin-top: var(--vela-space-20); }
+.adopt-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));   /* vela-allow: the two adopt columns' minimum; literal until a layout token exists */
+  gap: var(--vela-space-20); margin-top: var(--vela-space-20); }
 .adopt-caption { margin: 0 0 var(--vela-space-10); }
 .adopt-frame { border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4); overflow: hidden; }
 .adopt-limit { margin-top: var(--vela-space-20); max-width: 72ch; }
 
 /* How it is made */
 .how-figure { margin: var(--vela-space-30) 0 0; }
-.how-figure svg { display: block; width: 100%; height: auto; max-width: 720px; }
+.how-figure svg { display: block; width: 100%; height: auto; max-width: 720px; }   /* vela-allow: the diagram's reading width; literal until a layout token exists */
 .how-figure figcaption { margin: var(--vela-space-10) 0 0; }
 .how-scroll { overflow-x: auto; }
 .how-table { width: 100%; border-collapse: collapse; font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); }
 .how-table th, .how-table td { text-align: left; vertical-align: top; padding: var(--vela-space-10) var(--vela-space-10) var(--vela-space-10) 0; border-bottom: 1px solid var(--vela-border-subtle); }
-.how-table thead th { color: var(--vela-text-de-emphasized); font-weight: 500; }
-.how-table th[scope="row"] { white-space: nowrap; font-weight: 600; }
-.how-table code, .how-list code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.92em; }
-.how-list { margin: 0 0 var(--vela-space-20); padding-left: 1.2em; }
+.how-table thead th { color: var(--vela-text-de-emphasized); font-weight: var(--vela-font-weight-regular); }
+.how-table th[scope="row"] { white-space: nowrap; font-weight: var(--vela-font-weight-semibold); }
+.how-table code, .how-list code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: var(--site-code-size); }
+.how-list { margin: 0 0 var(--vela-space-20); padding-left: var(--vela-space-20); }
 .how-list li { margin: 0 0 var(--vela-space-10); }
 
 /* ---------------------------------------------------------- Status page -- */
@@ -83,25 +118,25 @@ body { margin: 0; background: var(--vela-bg-global); }
 .status-table th, .status-table td { text-align: left; vertical-align: top; padding: var(--vela-space-10) var(--vela-space-10) var(--vela-space-10) 0; border-bottom: 1px solid var(--vela-border-default); }
 .status-table thead th { font-size: var(--vela-text-meta-size); font-weight: var(--vela-font-weight-semibold); color: var(--vela-text-de-emphasized); letter-spacing: var(--vela-text-meta-tracking); text-transform: uppercase; }
 .status-table tbody th { font-weight: var(--vela-font-weight-semibold); white-space: nowrap; }
-.status-label { display: inline-block; padding: 0 var(--vela-space-5); border: 1px solid var(--vela-border-default); border-radius: var(--vela-radius-4); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); }
-.status-label--experimental { border-color: var(--vela-border-severity-warning); color: var(--vela-text-severity-warning); background: var(--vela-bg-severity-warning); }
-.status-label--known-bugs { border-color: var(--vela-border-severity-minor); color: var(--vela-text-severity-minor); background: var(--vela-bg-severity-minor); }
-.status-label--retired { color: var(--vela-text-inactive); }
+/* A lifecycle label is a neutral outlined tag: text-default, the default border, no fill. It is not
+   a severity, so it never borrows a severity colour (DESIGN.md, the three taxonomies); the word is
+   the signal. The same tag marks a Proposal page. */
+.site-tag { display: inline-block; padding: 0 var(--vela-space-5); border: 1px solid var(--vela-border-default); border-radius: var(--vela-radius-4); background: transparent; color: var(--vela-text-default); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); font-weight: var(--vela-font-weight-regular); }
 .status-note { display: block; margin-top: var(--vela-space-5); max-width: 42ch; }
-@media (max-width: 900px) { .status-table { display: block; overflow-x: auto; } }
+.status-scroll { overflow-x: auto; }
 
 /* --------------------------------------------------------- motion review -- */
 .motion-section { padding: var(--vela-space-30) 0; border-bottom: 1px solid var(--vela-border-subtle); }
 .motion-section h2 { margin: 0 0 var(--vela-space-10); }
 .motion-copy { max-width: 72ch; margin: 0 0 var(--vela-space-20); }
-.motion-copy code, .motion-tokens code { font-family: var(--vela-font-family-mono); font-size: 0.92em; overflow-wrap: anywhere; }
+.motion-copy code, .motion-tokens code { font-family: var(--vela-font-family-mono); font-size: var(--site-code-size); overflow-wrap: anywhere; }
 .motion-status { color: var(--vela-text-de-emphasized); }
 .motion-section { container-type: inline-size; }   /* so the stage drops to one column in a narrow column (playground.css) */
-.motion-frame { background: var(--vela-bg-global); color: var(--vela-text-default); min-height: 0; justify-content: flex-start; }
+.motion-frame { background: var(--vela-bg-global); color: var(--vela-text-default); min-height: 0; }
 .motion-frame__body { width: 100%; display: flex; flex-direction: column; gap: var(--vela-space-30); }
 .motion-sample__label { margin: 0 0 var(--vela-space-5); color: var(--vela-text-de-emphasized); }
 .motion-sample__panel { margin: 0; color: var(--vela-text-de-emphasized); }
-.motion-curves { margin: 0; max-width: 480px; }
+.motion-curves { margin: 0; max-width: 480px; }   /* vela-allow: the curve plot's reading width; literal until a layout token exists */
 .motion-curves svg { display: block; width: 100%; height: auto; }
 .motion-curves figcaption { display: flex; flex-wrap: wrap; gap: var(--vela-space-5) var(--vela-space-15); margin-top: var(--vela-space-10); color: var(--vela-text-de-emphasized); }
 .motion-curve { fill: none; stroke-width: 2; }
@@ -115,3 +150,21 @@ body { margin: 0; background: var(--vela-bg-global); }
 .motion-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--vela-space-10); }
 .motion-controls { display: flex; flex-direction: column; align-items: flex-start; gap: var(--vela-space-20); }
 .motion-new { color: var(--vela-text-link); font-weight: var(--vela-font-weight-semibold); }
+
+/* Nav groups by job (playground spec, section 2). A component group is a sub-heading under
+   Components; any group can be collapsed, except the one holding the current page. A lifecycle tag
+   sits at the link's end, in words. */
+.sitenav__group--sub { margin-top: var(--vela-space-5); }
+.sitenav__group h4 { margin: 0; }
+.sitenav__heading { display: block; padding: 0 var(--vela-space-10); font: inherit; }
+.sitenav__group--sub .sitenav__heading { padding-top: var(--vela-space-5); padding-bottom: var(--vela-space-5); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); font-weight: var(--vela-font-weight-semibold); color: var(--vela-text-default); }
+.sitenav__toggle { display: flex; align-items: center; gap: var(--vela-space-5); width: 100%; min-height: var(--vela-control-height-24); border: none; border-radius: var(--vela-radius-4); background: transparent; color: inherit; text-align: left; text-transform: inherit; letter-spacing: inherit; font-weight: inherit; cursor: pointer; }
+.sitenav__toggle::after { content: ''; width: var(--vela-icon-16); height: var(--vela-icon-16); margin-left: auto; background: currentColor; transition: transform var(--vela-duration-base) var(--vela-ease-standard);
+  -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M4 6l4 4 4-4' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/></svg>") center / contain no-repeat;
+  mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M4 6l4 4 4-4' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/></svg>") center / contain no-repeat; }
+.sitenav__toggle[aria-expanded='false']::after { transform: rotate(-90deg); }
+@media (hover: hover) { .sitenav__toggle:hover { background: var(--vela-bg-hover); } }
+.sitenav__tag { margin-left: auto; }
+.sitenav__link { gap: var(--vela-space-10); }
+/* A top-level heading already carries the nav's inset; its toggle adds none of its own. */
+.sitenav__group h3 .sitenav__heading { padding: 0; }

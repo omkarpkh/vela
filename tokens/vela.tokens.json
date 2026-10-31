@@ -1039,6 +1039,16 @@
         }
       }
     },
+    "bg-raised-hover": {
+      "$type": "color",
+      "$value": "{primitives.grey-100}",
+      "$description": "A highlighted row on a raised surface — a Dropdown List item under the pointer or keyboard focus. Not bg-hover: in dark that IS the raised surface (grey-850), so a highlight on it would show nothing (1.00:1).",
+      "$extensions": {
+        "com.omkarux.vela": {
+          "figma": "surface/raised-hover"
+        }
+      }
+    },
     "bg-hover": {
       "$type": "color",
       "$value": "{primitives.grey-100}",
@@ -2750,6 +2760,19 @@
         }
       }
     },
+    "dropdown-list-width-min": {
+      "$type": "dimension",
+      "$value": {
+        "value": 200,
+        "unit": "px"
+      },
+      "$description": "Dropdown List: the narrowest the list gets, unless its trigger is wider. Never wider than the space beside its trigger (--available-width), which wins.",
+      "$extensions": {
+        "com.omkarux.vela": {
+          "figma": "dropdown-list/width-min"
+        }
+      }
+    },
     "popover-width-wide": {
       "$type": "dimension",
       "$value": {
@@ -2802,6 +2825,19 @@
         }
       }
     },
+    "tab-preview-width-min": {
+      "$type": "dimension",
+      "$value": {
+        "value": 24,
+        "unit": "px"
+      },
+      "$description": "Tabs: the shortest the hover preview (the Seed) is drawn. It is a third of its tab, never under this and never wider than the tab: a third of a two-letter tab would be about 4px.",
+      "$extensions": {
+        "com.omkarux.vela": {
+          "figma": "tab/preview-width-min"
+        }
+      }
+    },
     "opacity-scrim": {
       "$type": "number",
       "$value": 0.5,
@@ -2809,6 +2845,16 @@
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "opacity/scrim"
+        }
+      }
+    },
+    "opacity-preview": {
+      "$type": "number",
+      "$value": 0.55,
+      "$description": "The strength a hover preview is drawn at: the Tabs Seed, in the selected underline's colour at this opacity (2.46:1 on the page in light, 2.59:1 in dark). A supplementary mark, not a state indicator; the label's hover colour carries the hover. A number, not a colour alpha, like opacity-scrim.",
+      "$extensions": {
+        "com.omkarux.vela": {
+          "figma": "opacity/preview"
         }
       }
     },
@@ -3368,7 +3414,7 @@
           "figma": "duration/travel"
         }
       },
-      "$description": "Travel across a distance: the Tabs indicator sliding to the tab that was pressed. The one step above duration-base, still under 300ms. The spring curve is drawn over this duration, so the two are used together."
+      "$description": "The one step above duration-base, still under 300ms, for a change that crosses a distance: the Tabs underline growing in place under the tab that was pressed, and the Tabs hover preview fading in. The spring curve is drawn over this duration, so the two are used together."
     },
     "delay-tooltip": {
       "$type": "duration",
@@ -3380,6 +3426,19 @@
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "delay/tooltip"
+        }
+      }
+    },
+    "delay-preview": {
+      "$type": "duration",
+      "$value": {
+        "value": 80,
+        "unit": "ms"
+      },
+      "$description": "How long the pointer rests on an unselected tab before its hover preview (the Tabs Seed) starts to appear. A delay on the way in only, not an animation: a pointer sweeping across a row of tabs shows nothing, and the reduced-motion collapse never shortens it.",
+      "$extensions": {
+        "com.omkarux.vela": {
+          "figma": "delay/preview"
         }
       }
     },
@@ -3440,7 +3499,7 @@
           }
         }
       },
-      "$description": "A spring for the few moments a spec names, such as the Tabs indicator after a pointer press: it arrives quickly and settles with a slight overshoot. The stiffness, damping and mass in the extension are the source; CSS receives them as a linear() easing drawn over duration-travel. Where linear() is not supported, and in any tool that does not read the spring, the value is ease-out."
+      "$description": "A spring for the few moments a spec names, such as the Tabs underline growing under a pressed tab: it arrives quickly and settles with a slight overshoot. The stiffness, damping and mass in the extension are the source; CSS receives them as a linear() easing drawn over duration-travel. Where linear() is not supported, and in any tool that does not read the spring, the value is ease-out."
     },
     "blur-materialize": {
       "$type": "dimension",

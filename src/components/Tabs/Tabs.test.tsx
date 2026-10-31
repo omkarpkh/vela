@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { describe, it, expect, vi } from 'vitest'
 import { Tabs as CoreTabs } from './Tabs'
 import { Tabs as HeadlessTabs } from '../../headless/Tabs'
+import { previewScale, PREVIEW_SCALE } from './motion'
 
 // The spec is the contract and these are its tests, so they run against both implementations:
 // the hand-rolled core (`@omkarux/vela`) and the Base UI-backed headless one
@@ -112,15 +113,32 @@ describe.each(IMPLEMENTATIONS)('Tabs (%s)', (_name, Tabs) => {
     expect(container.querySelector('.vela-tabs')).toHaveClass('vela-tabs--large')
   })
 
-  // The sliding indicator (tabs.md, Motion). Its movement needs layout and Web Animations, so the
-  // browser rules are proved in tests/e2e; what jsdom can prove is the markup and the modality.
-  it('renders the indicator inside the list as a decorative element, never as a tab', () => {
-    const { container } = render(<Fixture />)
-    const bar = container.querySelector('.vela-tabs__indicator')!
-    expect(bar).not.toBeNull()
-    expect(bar.closest('.vela-tabs__list')).toBe(screen.getByRole('tablist'))
-    expect(bar).toHaveAttribute('aria-hidden', 'true')
-    expect(screen.getAllByRole('tab')).toHaveLength(3)
+  // The hover preview and the press (tabs.md, Motion). Hover, layout and Web Animations need a
+  // browser, so the browser rules are proved in tests/e2e; what jsdom can prove is the markup and
+  // the modality.
+  // [[rule: tabs-preview-decorative]]
+  it('renders the Seed and the line inside each trigger as empty decorative layers that leave the name alone', () => {
+    render(<Fixture />)
+    const tabs = screen.getAllByRole('tab')
+    expect(tabs).toHaveLength(3)
+    for (const tab of tabs) {
+      const layers = [...tab.querySelectorAll('.vela-tabs__seed, .vela-tabs__line')]
+      expect(layers.map((l) => l.className)).toEqual(['vela-tabs__seed', 'vela-tabs__line'])
+      for (const l of layers) {
+        expect(l).toHaveAttribute('aria-hidden', 'true')
+        expect(l).toBeEmptyDOMElement()
+      }
+    }
+    expect(tabs[0]).toHaveAccessibleName('Alerts 12')
+    expect(tabs[1]).toHaveAccessibleName('Assets')
+    // Nothing in the list but the tabs: no row-level bar, no extra stop for roving focus.
+    expect([...screen.getByRole('tablist').children].every((c) => c.getAttribute('role') === 'tab')).toBe(true)
+  })
+
+  it('sets each trigger\'s preview scale, an internal custom property, never a prop', () => {
+    render(<Fixture />)
+    // jsdom lays nothing out, so every tab is 0px wide and gets the plain third.
+    for (const tab of screen.getAllByRole('tab')) expect(Number(tab.style.getPropertyValue(PREVIEW_SCALE))).toBeCloseTo(1 / 3, 6)
   })
 
   it('marks a keyboard switch instant and a pointer switch not', async () => {
@@ -145,5 +163,24 @@ describe.each(IMPLEMENTATIONS)('Tabs (%s)', (_name, Tabs) => {
       /must be rendered inside <Tabs>/,
     )
     spy.mockRestore()
+  })
+})
+
+// The Seed's size as a fraction of its tab: a third, floored at the token's 24px, never wider than
+// the tab (tabs.md, Hard constraints; the rendered width is proved in tests/e2e).
+// [[rule: tabs-preview-size]]
+describe('previewScale', () => {
+  it('is a third of a tab wide enough for a third to clear the floor', () => {
+    expect(previewScale(150, 24)).toBeCloseTo(1 / 3, 6)
+  })
+  it('is held at the floor on a short tab', () => {
+    expect(previewScale(48, 24)).toBe(0.5)
+  })
+  it('is never wider than a tab narrower than the floor', () => {
+    expect(previewScale(13, 24)).toBe(1)
+  })
+  it('falls back to a third when the tab has no width yet or no floor is known', () => {
+    expect(previewScale(0, 24)).toBeCloseTo(1 / 3, 6)
+    expect(previewScale(40, 0)).toBeCloseTo(1 / 3, 6)
   })
 })

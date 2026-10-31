@@ -31,6 +31,9 @@ export const available = () => readdirSync(dir).filter((f) => f.endsWith('.figma
  * The builder's `// @page`, `// @set` and `// @allow rule reason` annotations. A builder may
  * declare more than one `// @set` when the sets are one component's parts (Table: header cell,
  * cell, row); `set` is the first, `sets` all of them, and every one is linted, dumped and diffed.
+ * `// @component <name>` declares a one-size component that is not a set (the Dropdown List popup,
+ * made of item instances); it is listed in `sets` after the sets, and linted, dumped and diffed
+ * the same way.
  */
 export function meta(which) {
   return metaFromFile(join(dir, `${which}.figma.js`), which)
@@ -39,10 +42,11 @@ export function meta(which) {
 export function metaFromFile(path, which = path) {
   const body = readFileSync(path, 'utf8')
   const page = (body.match(/^\/\/ @page\s+(.+)$/m) || [])[1]?.trim()
-  const sets = [...body.matchAll(/^\/\/ @set\s+(.+)$/gm)].map((x) => x[1].trim())
-  if (!page || !sets.length) throw new Error(`${which.endsWith('.figma.js') ? which : which + '.figma.js'} must declare // @page and // @set`)
+  const variantSets = [...body.matchAll(/^\/\/ @set\s+(.+)$/gm)].map((x) => x[1].trim())
+  const components = [...body.matchAll(/^\/\/ @component\s+(.+)$/gm)].map((x) => x[1].trim())
+  if (!page || !variantSets.length) throw new Error(`${which.endsWith('.figma.js') ? which : which + '.figma.js'} must declare // @page and // @set`)
   const allow = [...body.matchAll(/^\/\/ @allow\s+(\S+)\s+(.+)$/gm)].map((x) => ({ rule: x[1], reason: x[2].trim() }))
-  return { page, set: sets[0], sets, allow, body }
+  return { page, set: variantSets[0], sets: [...variantSets, ...components], components, allow, body }
 }
 
 export function generate(which) {
@@ -58,7 +62,7 @@ const page = figma.root.children.find(p => p.name === PAGE);
 if (!page) throw new Error('No page named ' + PAGE + ' — create the page skeleton first.');
 await page.loadAsync();
 await figma.setCurrentPageAsync(page);
-const existing = SETS.filter(s => page.findOne(n => n.type === 'COMPONENT_SET' && n.name === s));
+const existing = SETS.filter(s => page.findOne(n => (n.type === 'COMPONENT_SET' || (n.type === 'COMPONENT' && n.parent === page)) && n.name === s));
 if (existing.length)
   return { skipped: true, reason: existing.join(', ') + ' already exists on ' + PAGE + '. Builders create; they do not update. Edit the set in place, or remove it (instances elsewhere will detach) and re-run.' };
 

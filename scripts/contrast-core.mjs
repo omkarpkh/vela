@@ -56,7 +56,15 @@ export function contrast(fgHex, bgHex) {
   return (hi + 0.05) / (lo + 0.05)
 }
 
-/** [foreground, background, label, kind]  kind: 'text' (4.5) | 'ui' (3.0) */
+/**
+ * [foreground, background, label, kind, expect?]  kind: 'text' (4.5) | 'ui' (3.0)
+ *
+ * `expect` is for a negative case: `{ failsIn: ['light'] }` asserts that the pair is BELOW the
+ * minimum in those themes, so a pairing that must never ship is written down and measured rather
+ * than remembered. If the tokens move and it starts to pass, the test says so and the entry goes.
+ *
+ * @type {[string, string, string, 'text' | 'ui', { failsIn: ('light' | 'dark')[] }?][]}
+ */
 export const PAIRS = [
   ['--vela-text-default',        '--vela-bg-global',    'Body text on page',            'text'],
   ['--vela-text-default',        '--vela-bg-container', 'Body text on container',       'text'],
@@ -169,13 +177,61 @@ export const PAIRS = [
     ]
   }),
   ['--vela-icon-default', '--vela-bg-global', 'Table sort glyph, unsorted column', 'ui'],
+
+  // The site (demo/), which follows DESIGN.md like the kit. A tag (the Status page's lifecycle
+  // labels, the Proposal tag) is neutral and outlined: text-default, the default border, no fill,
+  // never a severity colour. It sits on the page (body text on page, above) or on a container. A
+  // locked value keeps text-default on the raised surface of the panel that explains the lock; it
+  // is not dimmed to text-inactive, which is 2.27:1 there. The outlines are the default border on
+  // the page and on a container, already asserted above.
+  ['--vela-text-default', '--vela-bg-container', 'Site tag text on container',             'text'],
+  ['--vela-text-default', '--vela-bg-raised',    'Site locked value text on raised surface', 'text'],
+  // A segment of the site's Segmented Control stand-in (demo/shell/Segments.tsx), hovered. At
+  // rest it is body text on the page or the container; selected, body text on bg-selected with the
+  // active border on it (both above).
+  ['--vela-text-default', '--vela-bg-hover',     'Site segment label, hovered',             'text'],
+  // Negative case: de-emphasized text on a container is 4.35:1 in light and fails. The site's
+  // navigation and props panel used it; they now use text-default. Asserted below the minimum in
+  // light so nobody reaches for it again; in dark it is 4.65:1.
+  ['--vela-text-de-emphasized', '--vela-bg-container', 'De-emphasized text on container (negative case: must not ship)', 'text', { failsIn: ['light'] }],
+  // Dropdown List (Phase 1, headless). The popup is Popover's surface, so its body text and edge are
+  // asserted above. What is new is the highlighted item, on --vela-bg-raised-hover: not bg-hover,
+  // which in dark IS the raised surface (grey-850) and would show nothing. The current item's check
+  // is text-link as a 3:1 mark; the name stays text-default, because text-link on the dark raised
+  // surface is 4.35:1 and fails as text.
+  ['--vela-text-default', '--vela-bg-raised-hover', 'Dropdown List item text, highlighted',          'text'],
+  ['--vela-text-link',    '--vela-bg-raised',       'Dropdown List current-item check',              'ui'],
+  ['--vela-text-link',    '--vela-bg-raised-hover', 'Dropdown List current-item check, highlighted', 'ui'],
+  // The site's search (demo/shell/Search.tsx, playground slice 3). The header button reads as a
+  // field: placeholder text and the search glyph on the control surface. The dialog is the raised
+  // surface: its glyph, and the active result, which is the Dropdown List's highlight (above) plus a
+  // 2px active edge so the choice is not told by a tint alone.
+  ['--vela-control-placeholder', '--vela-control-bg', 'Site search button text', 'text'],
+  ['--vela-icon-default', '--vela-control-bg', 'Site search button glyph', 'ui'],
+  ['--vela-icon-default', '--vela-bg-raised', 'Site search dialog glyph', 'ui'],
+  ['--vela-border-active', '--vela-bg-raised-hover', 'Site search active result edge', 'ui'],
+  // The Tabs hover preview (the Seed, guidelines/components/tabs.md) is deliberately NOT a pair, like
+  // the Tooltip's edge above. It is --vela-border-active drawn at --vela-opacity-preview (0.55) over
+  // the surface: 2.46:1 on the page and 2.34:1 on a container in light, 2.59:1 and 2.48:1 in dark,
+  // under the 3:1 a 'ui' pair needs, and a composite no token holds, so this resolver could not
+  // assert it anyway. It is a supplementary hint, never the only sign of anything: the hover is the
+  // label's own colour change (text-de-emphasized to text-default, asserted as text), the selection
+  // is the full-strength underline ('Focus ring' and 'Active border on container' above, the same
+  // token), and touch and keyboard users, who never see the Seed, lose nothing. Reaching 3:1 would
+  // take a strength of 0.64 to 0.70 depending on theme and surface; the decided strength is 0.55.
 ]
 
 export const THRESHOLD = { text: 4.5, ui: 3.0 }
 
-export function auditTheme(map) {
-  return PAIRS.map(([fg, bg, label, kind]) => {
+/**
+ * Measure every pair in one theme. `pass` is whether the pair did what it is listed for: met the
+ * minimum, or, for a negative case in this theme, stayed below it (`negative: true`).
+ */
+export function auditTheme(map, theme) {
+  return PAIRS.map(([fg, bg, label, kind, expect]) => {
     const ratio = contrast(resolve(map, fg), resolve(map, bg))
-    return { label, kind, ratio, min: THRESHOLD[kind], pass: ratio >= THRESHOLD[kind], fg, bg }
+    const min = THRESHOLD[kind]
+    const negative = !!theme && !!expect?.failsIn?.includes(theme)
+    return { label, kind, ratio, min, negative, pass: negative ? ratio < min : ratio >= min, fg, bg }
   })
 }

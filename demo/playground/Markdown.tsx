@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { cells } from './spec'
+import { ScrollRegion } from '../shell/ScrollRegion'
 
 // Just enough markdown for the specs: headings, paragraphs, lists, tables, fenced code,
 // inline code and bold. No dependency, no HTML injection.
@@ -9,9 +10,11 @@ import { cells } from './spec'
 export const RULE_TAG = /\s*\[\[rule:[^\]]*\]\]/g
 
 function inline(text: string, key: number): ReactNode {
+  // The tag's id stays as data on the text it closes, so "Open proof" can land on that rule.
+  const ids = [...text.matchAll(/\[\[rule:\s*([^|\]]+?)\s*\|/g)].map((m) => m[1])
   const parts = text.replace(RULE_TAG, '').split(/(`[^`]+`|\*\*[^*]+\*\*)/g).filter(Boolean)
   return (
-    <span key={key}>
+    <span key={key} data-rule={ids.length ? ids.join(' ') : undefined}>
       {parts.map((p, i) =>
         p.startsWith('`') ? <code key={i}>{p.slice(1, -1)}</code>
         : p.startsWith('**') ? <strong key={i}>{p.slice(2, -2)}</strong>
@@ -33,18 +36,18 @@ export function Markdown({ source }: { source: string }) {
       i++
       while (i < lines.length && !lines[i].startsWith('```')) buf.push(lines[i++])
       i++
-      out.push(<pre key={k++} className="pg-code">{buf.join('\n')}</pre>)
+      out.push(<ScrollRegion key={k++} as="pre" label="Code, scrollable" className="pg-code">{buf.join('\n')}</ScrollRegion>)
     } else if (line.startsWith('|')) {
       const rows: string[][] = []
       while (i < lines.length && lines[i].startsWith('|')) rows.push(cells(lines[i++]))
       const [head, , ...body] = rows
       out.push(
-        <div key={k++} className="pg-tablewrap">
+        <ScrollRegion key={k++} label={`${head[0] ? head[0].replace(/[`*]/g, '') + ' table' : 'Table'}, scrollable`} className="pg-tablewrap">
           <table className="pg-table">
             <thead><tr>{head.map((h, j) => <th key={j}>{inline(h, j)}</th>)}</tr></thead>
             <tbody>{body.map((r, j) => <tr key={j}>{r.map((c, m) => <td key={m}>{inline(c, m)}</td>)}</tr>)}</tbody>
           </table>
-        </div>,
+        </ScrollRegion>,
       )
     } else if (/^- /.test(line)) {
       const items: string[] = []

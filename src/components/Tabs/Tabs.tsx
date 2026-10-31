@@ -1,12 +1,13 @@
 import * as React from 'react'
 import { cn } from '../../lib/cn'
-import { useIndicatorMotion, measureIndicator, indicatorVars, type IndicatorMotion } from './motion'
+import { useTabsMotion, usePreviewScale, type TabsMotion } from './motion'
+import { TabLayers } from './layers'
 
 interface TabsContextValue {
   value: string
   setValue: (v: string) => void
   idPrefix: string
-  motion: IndicatorMotion
+  motion: TabsMotion
 }
 
 const TabsContext = React.createContext<TabsContextValue | null>(null)
@@ -55,12 +56,12 @@ export function Tabs({
   const [internal, setInternal] = React.useState(defaultValue ?? '')
   const active = isControlled ? value : internal
   const idPrefix = React.useId()
-  const motion = useIndicatorMotion()
+  const motion = useTabsMotion()
   const { onChange } = motion
 
   const setValue = React.useCallback(
     (next: string) => {
-      // Same event, same commit: the indicator's motion state changes with the selection.
+      // Same event, same commit: the underline's motion state changes with the selection.
       onChange()
       if (!isControlled) setInternal(next)
       onValueChange?.(next)
@@ -96,33 +97,15 @@ function TabList({ children, className, ...rest }: TabListProps) {
   const { value, motion } = useTabs('List')
   const { moving, changes, settle, listProps } = motion
   const listRef = React.useRef<HTMLDivElement>(null)
-  const indicatorRef = React.useRef<HTMLSpanElement>(null)
 
-  // The indicator follows the selected tab: measured after every change of selection (before
-  // paint, so the transition and the new selection land in the same frame) and whenever the list
-  // or a tab is resized — a web font arriving changes every trigger's width.
-  const place = React.useCallback(() => {
-    const list = listRef.current
-    const bar = indicatorRef.current
-    if (!list || !bar) return
-    const at = measureIndicator(list, list.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]'))
-    for (const [k, v] of Object.entries(at ? indicatorVars(`${at.x}px`, at.scale) : {})) bar.style.setProperty(k, v)
-    if (!at) for (const k of Object.keys(indicatorVars('', 0))) bar.style.removeProperty(k)
-  }, [])
-
+  // After the commit that changed the selection (before paint), end the flight once the layers'
+  // transitions finish. Nothing is measured here: the underline grows where it is.
   React.useLayoutEffect(() => {
-    place()
-    if (moving) settle(indicatorRef.current)
-  }, [value, moving, changes, place, settle])
+    if (moving) settle(listRef.current)
+  }, [value, moving, changes, settle])
 
-  React.useEffect(() => {
-    const list = listRef.current
-    if (!list || typeof ResizeObserver === 'undefined') return
-    const observer = new ResizeObserver(place)
-    observer.observe(list)
-    for (const tab of list.querySelectorAll('[role="tab"]')) observer.observe(tab)
-    return () => observer.disconnect()
-  }, [place, children])
+  // Each trigger's Seed is a third of its width with a floor, so it is measured per tab.
+  usePreviewScale(listRef, children)
 
   // Roving focus. Reading the tabs off the DOM avoids a child registry that
   // would silently desync whenever a tab is conditionally rendered.
@@ -159,8 +142,6 @@ function TabList({ children, className, ...rest }: TabListProps) {
       {...rest}
     >
       {children}
-      {/* Decorative: the selection is aria-selected on the tab. */}
-      <span ref={indicatorRef} className="vela-tabs__indicator" aria-hidden="true" />
     </div>
   )
 }
@@ -193,6 +174,7 @@ function TabTrigger({ value, children, count, disabled, className }: TabTriggerP
     >
       {children}
       {count !== undefined && <span className="vela-tabs__count">{count}</span>}
+      <TabLayers />
     </button>
   )
 }

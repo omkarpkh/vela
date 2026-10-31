@@ -18,8 +18,8 @@ The React package has two entry points (`decisions/002-agent-ready-direction`): 
 is hand-rolled and has zero runtime dependencies; `@omkarux/vela/headless` builds the same
 specs on Base UI (`@base-ui/react`, an optional peer) and is Experimental. The first headless
 component is Tabs, so the two can be compared against one spec, one stylesheet and one test
-file; Checkbox, Radio Group, the three overlays — Popover, Tooltip, Dialog — and Toast were born
-there and ship from `/headless` only. Choose the core entry unless you already carry Base UI or need a behaviour the core does
+file; Checkbox, Radio Group, the three overlays — Popover, Tooltip, Dialog — Toast and Dropdown
+List were born there and ship from `/headless` only. Choose the core entry unless you already carry Base UI or need a behaviour the core does
 not yet implement; a spec's "Implementations" section lists what each entry ships and where they
 differ.
 
@@ -146,6 +146,18 @@ markup already carries, not a new variant.
 - **Disabled** — the native attribute. CSS keys on `:disabled`. A disabled control leaves the
   tab order; explain why in adjacent helper text. A control that cannot act must not pretend to
   react, so disabled and busy controls do not animate.
+- **Locked** — a value in a set (a segment, a list item) that can't be chosen with the other
+  settings as they are, or under a policy that applies to everyone, while the control itself
+  still works. It stays reachable: in the tab or arrow-key order, marked `aria-disabled="true"`,
+  never the native attribute. It states its reason in words a person can act on, read with it:
+  as its accessible description, or as its `meta` in a Dropdown List. A value a person's role
+  may never have is not shown at all. The reason is never faded. Choosing it selects nothing, and it
+  never animates as a press. "Locked" is Vela's internal word. People meet the screen reader's
+  own word for `aria-disabled` and the reason, and never "Locked" as a status, because in a
+  console "locked" means locked accounts and policies. A whole control that can't act is
+  Disabled, above. Cited by Segmented Control (`locked`) and Dropdown List (disabled items).
+  A locked value may carry Icon's `lock` before its label, and then its reason is also visible
+  beside it (`icon.md`, *Glyphs*).
 - **Loading** — the label stays, a spinner appears, `aria-busy="true"` is set, the control stays
   focusable and ignores clicks. CSS keys on `[aria-busy="true"]`. Swapping the label for a
   spinner would strip the accessible name mid-request; disabling it would drop focus.
@@ -155,6 +167,10 @@ markup already carries, not a new variant.
   small controls — the Checkbox box, the Radio circle, the Toggle track — press the same way, from
   their centre on `:active`, to `scale(0.9)`: 3% of 16px is a quarter of a pixel, which is no
   feedback at all.
+  A control with its own press response sets `-webkit-tap-highlight-color: transparent` beside it,
+  in its own stylesheet (after any `all: unset`, which resets it), so a touch press does not also
+  get the browser's flash; `css:check` fails a stylesheet that styles `[data-vela-pressed]` without
+  it. Never on `.vela-root`: a host's links inside it would lose their only tap feedback.
 - **Selected / checked / invalid** — CSS keys on the ARIA state the markup already carries:
   `[aria-selected="true"]` (Tabs), `[aria-checked="true"]` (Toggle, Checkbox, Radio Group),
   `[aria-checked="mixed"]` (an indeterminate Checkbox), `[aria-invalid="true"]` (Input, Checkbox,
@@ -168,21 +184,23 @@ be named in one of those words does not ship. The frequency gate: something trig
 of times a day gets instant feedback under 200ms; from the keyboard, nothing animates.
 
 Four durations and three curves, and no component defines its own duration or curve
-(`--vela-delay-tooltip`, 600ms, is a wait before a Tooltip opens on hover, not an animation; see
-the overlays bullet below):
+(`--vela-delay-tooltip`, 600ms, is a wait before a Tooltip opens on hover, and `--vela-delay-preview`,
+80ms, the rest before the Tabs hover preview appears; neither is an animation, see the overlays
+bullet below and `guidelines/components/tabs.md#motion`):
 
 - `--vela-duration-instant` (70ms) — a press landing; press-in only.
 - `--vela-duration-fast` (120ms) — anything else that answers a pointer.
 - `--vela-duration-base` (180ms) — anything that settles or appears.
-- `--vela-duration-travel` (240ms) — travel across a distance (the Tabs indicator). Still under 300ms.
+- `--vela-duration-travel` (240ms) — a change that crosses a distance (the Tabs underline growing
+  under a pressed tab, the Tabs hover preview fading in). Still under 300ms.
 - `--vela-ease-standard` `cubic-bezier(0.2, 0, 0.2, 1)` — things that change or move while on
   screen: hover colours, a press, a knob. Never a bare `ease`.
 - `--vela-ease-out` `cubic-bezier(0.25, 1, 0.5, 1)` — things that enter: fast at the start, at
   rest at the end, no overshoot.
 - `--vela-ease-spring` — a spring (stiffness 1200, damping 56, mass 1), generated into a CSS
   `linear()` easing over `--vela-duration-travel` at token build time; `--vela-ease-out` where
-  `linear()` is not supported. Only for the moments a spec names (today: the Tabs indicator after
-  a pointer press, and the Toast stack moving back and spreading), always paired with
+  `linear()` is not supported. Only for the moments a spec names (today: the Tabs underline growing in
+  place after a pointer press, and the Toast stack moving back and spreading), always paired with
   `--vela-duration-travel`.
 
 The three new values (`duration-travel`, `ease-out`, `ease-spring`) are **provisional** until the
@@ -196,15 +214,18 @@ scale from 0.96 plus opacity, pivoting on Base UI's `--transform-origin` — the
 Tooltip at `fast` because it has already waited for the pointer to rest. Dialog appears at `base` on
 opacity plus a `--vela-space-5` step of rise. A Toast travels its own height in from the edge it sits
 on at `base` and leaves the same way, fading (the one overlay whose exit travels: it goes back where
-it came from); the stack behind it steps back and spreads on the spring (`toast.md`, Motion). A
-Tooltip waits `--vela-delay-tooltip` on hover and opens at once on focus.
+it came from); the stack behind it steps back and spreads on the spring (`toast.md`, Motion). The
+Dropdown List, built after this pass was written, still appears on `--vela-ease-standard` with a
+`--vela-space-5` step of travel (`dropdown-list.md`, Motion); bringing it in line is still to do.
+A Tooltip waits `--vela-delay-tooltip` on hover and opens at once on focus.
 A Toast stays `--vela-duration-toast` (6000ms) — a dwell, not an animation, paused on hover and
 focus, untouched by the reduced-motion collapse — and only when it is a `success` or `info` with no
 action; a warning or a toast with an action stays until dismissed.
 
 Only `transform`, `opacity` and `filter` animate (a colour may settle, as a hover does; layout
 never moves), and `scripts/check-css.mjs` fails a transition or keyframe that moves anything
-else. Pointer states enter faster than they leave
+else. The one exception is an icon glyph's own strokes, which may draw with `stroke-dashoffset`
+by transition inside a `.vela-icon`, under the guards in `foundations/motion.md` (decision 004). Pointer states enter faster than they leave
 (hover in at `fast`, out at `base`; press in at `instant`, out at `base`). Transitions, not
 keyframes, for anything a person can re-trigger. A state change moves only the part that shows the
 state — a Checkbox mark, a Radio dot — and the component that owns the state moves it, never an
@@ -336,6 +357,7 @@ Semantics and labels
 - A Toast as the only record of what happened, or the only place an Undo lives → the page carries both; a Toast that asks a question or offers two buttons → a Dialog; a `critical` or `major` toast, or a failure in a toast (will not compile for the severities) → a Contextual Alert where the work is.
 - A click handler, a hover state or a dismiss "×" on a Risk Pill → that is a Token Pill, not in this kit.
 - A Popover holding the only copy of something the task needs; a list of commands in a Popover → an Actions Dropdown, not in this kit.
+- A list of commands in a Dropdown List → an Actions Dropdown, not in this kit; a Dropdown List as a form field → a Select List, not in this kit; `meta="Critical"` or a dot in an item's meta → meta is words, never a taxonomy; an ellipsis on a long name → names wrap in full.
 - A link or a button in a Tooltip (will not compile) → a Popover; a Tooltip as the only name of an icon-only control → `aria-label` on the control; a Tooltip on a disabled control → adjacent text.
 - A destructive confirmation in a standard Dialog → `variant="alert"`, whose confirm is always destructive; a Dialog that only says "OK" → a Contextual Alert.
 - A shadow on an overlay → no elevation token exists; the border (Popover) or the scrim (Dialog) separates it.
@@ -350,14 +372,14 @@ Accessibility
 ## Not in the kit
 
 Do not invent one silently. State that the kit has no component for the need and pick the
-closest match while flagging the gap. Not yet specced: Dropdown List, Select List, Token Pill,
+closest match while flagging the gap. Not yet specced: Select List, Token Pill,
 Number Stepper, Icon Button, Actions Dropdown, View Switcher, Data Grid (arrow-key cell navigation,
 `role="grid"`), Card List. Flag rather than guess. Checkbox (with Checkbox.Group), Radio Group,
-Popover, Tooltip, Dialog (with its `alert` variant — the kit's modal) and Toast are specced and ship
-from `@omkarux/vela/headless` only (Experimental); Table ships from the core entry (Experimental)
+Popover, Tooltip, Dialog (with its `alert` variant — the kit's modal), Toast and Dropdown List are
+specced and ship from `@omkarux/vela/headless` only (Experimental); Table ships from the core entry (Experimental)
 and is read, not navigated cell by cell. The disambiguations agents most often get wrong
 — Toggle vs Checkbox, Radio Group vs Select List, Tabs vs View Switcher, Popover vs Tooltip vs
-Dialog, Toast vs Alert vs Dialog, Alert vs Status
+Dialog, Toast vs Alert vs Dialog, Dropdown List vs Select List vs Actions Dropdown, Alert vs Status
 Indicator vs Risk Pill — are in `guidelines/overview.md`.
 
 ## How to add a component
