@@ -379,7 +379,7 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
                   settings={closedSettings}
                   onReset={() => { setValues(initial); setAttempt((n) => n + 1) }}
                 >
-                  <ScrollRegion label="Stage, scrollable" className={cn('pg-stage', frames.length === 1 && 'pg-stage--single', reduced && 'pg-reduced')}>
+                  <ScrollRegion label="Stage, scrollable" className={cn('pg-stage', frames.length === 1 && 'pg-stage--single', entry.containerResponsive && 'pg-stage--responsive', reduced && 'pg-reduced')}>
                     {frames.map((m, i) => (
                       <div key={m} ref={i === 0 ? frameRef : undefined} className="vela-root pg-frame" data-theme={m}>
                         <span className="pg-frame-label vela-meta">

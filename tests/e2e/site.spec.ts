@@ -585,8 +585,9 @@ test.describe('the workbench', () => {
     await expect(controls.locator('.pg-notice')).toHaveText("This link asked for size `xl`, which Button doesn't have. Showing `regular`.")
     // The notice is read in order with the controls, not announced as an alert.
     await expect(page.getByRole('alert')).toHaveCount(0)
-    // A combination the types forbid: the stage keeps to the defaults, and says so.
-    await page.goto('/#/components/toggle')
+    // A combination the types forbid: the stage keeps to the defaults, and says so. Opened afresh,
+    // so the open page can't rewrite the address before the new link is read.
+    await page.goto('about:blank')
     await page.goto('/#/components/button?v=1&variant=destructive&appearance=text-link')
     await expect(page.getByRole('complementary', { name: 'Controls' }).locator('.pg-notice')).toContainText("doesn't allow, so the stage shows the defaults")
     await expect(page.getByRole('complementary', { name: 'Controls' }).getByRole('group', { name: 'appearance' }).getByRole('button', { name: 'filled' })).toHaveAttribute('aria-current', 'true')
@@ -866,12 +867,12 @@ test.describe('slice 2b · stage width', () => {
     await expect(page.locator('.pg-width__mark')).toHaveCount(0)
   })
 
-  test('core Tabs says where overflow lives; a component that does not respond to width has no control', async ({ page }) => {
+  test('Tabs says where overflow lives, and that the "more" control is not built; a component that does not respond to width has no control', async ({ page }) => {
     await page.goto('/#/components/tabs')
-    await expect(page.getByText('Core Tabs scrolls when the row is full. The "more" control is in the headless Tabs.')).toBeVisible()
+    await expect(page.getByText('Core Tabs scrolls the row sideways when it is full. The "more" control will be in the headless Tabs; it is designed but not built yet.')).toBeVisible()
     await page.goto('about:blank')
     await page.goto('/#/components/tabs?v=1&implementation=headless')
-    await expect(page.getByText('Core Tabs scrolls when the row is full.')).toHaveCount(0)
+    await expect(page.getByText('Tabs scrolls the row sideways when it is full. The "more" control for the headless Tabs is designed but not built yet.')).toBeVisible()
     await page.goto('/#/components/button')
     await expect(page.getByRole('spinbutton', { name: 'Container width' })).toHaveCount(0)
   })
