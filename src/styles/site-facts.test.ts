@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { readFileSync, readdirSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { rulesOf, dependenciesFor, figmaSetFor, dateWords, builtLine } from '../../demo/playground/facts'
+import { rulesOf, proposalRulesOf, dependenciesFor, figmaSetFor, dateWords, builtLine } from '../../demo/playground/facts'
 import { statusOf } from '../../demo/playground/status'
 import { parseHash, href, sameRoute } from '../../demo/router'
 
@@ -28,6 +28,20 @@ describe('the contract facts', () => {
     // The same number `npm run rules:check` prints ("N rules across 17 specs").
     const readme = readFileSync(resolve(process.cwd(), 'README.md'), 'utf8')
     expect(readme).toContain(`of the ${total} by the TypeScript compiler`)
+  })
+
+  it('counts a proposal\'s planned rules from its Hard constraints, and agrees with the total it states', () => {
+    const pdir = resolve(process.cwd(), 'guidelines/proposals')
+    for (const f of readdirSync(pdir).filter((f) => f.endsWith('.md') && f !== 'README.md')) {
+      const src = readFileSync(resolve(pdir, f), 'utf8')
+      const r = proposalRulesOf(src)
+      expect(r.total, f).toBeGreaterThan(0)
+      expect(r.byLevel.reduce((n, l) => n + l.count, 0), f).toBe(r.total)
+      // Where the proposal states its own total ("19 rules, 16 with proofs"), the count matches it.
+      const stated = src.match(/(\d+) rules, \d+ with proofs/)
+      if (stated) expect(r.total, f).toBe(Number(stated[1]))
+    }
+    expect(proposalRulesOf('# X\n\nNo constraints here.').total).toBe(0)
   })
 
   it('names the dependencies by entry: none for core, the optional peer for headless', () => {
