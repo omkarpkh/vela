@@ -111,7 +111,8 @@ export function App() {
   }, [theme])
 
   useEffect(() => {
-    document.title = `${titleFor(route) ?? 'Vela'} · Vela`
+    // The full name on every page (the naming rule, 1 Nov 2026): "Vela Design System" at least once.
+    document.title = `${titleFor(route) ?? 'Vela Design System'} · Vela Design System`
     // A narrow screen's drawer closes once a destination is chosen.
     if (!window.matchMedia('(min-width: 901px)').matches) setNavOpen(false)
   }, [route])
@@ -138,7 +139,7 @@ export function App() {
           <MenuIcon />
         </button>
         <a href="#/" className="brand">
-          <span className="brand__name">Vela</span>
+          <span className="brand__name">Vela<span className="brand__rest"> Design System</span></span>
           <span className="vela-meta brand__meta">@omkarux/vela {pkg.version}</span>
         </a>
         <Search compact={phone} />
