@@ -45,7 +45,7 @@ test('the Button page locks what the types forbid, says why, and offers the lega
   await destructive.click({ force: true })
   const second = props.getByRole('region', { name: 'destructive needs filled or hollow' })
   await expect(second).toBeFocused()
-  await second.getByRole('button', { name: 'Keep it as it is' }).click()
+  await second.getByRole('button', { name: 'Keep text-link' }).click()
   await expect(second).toHaveCount(0)
   await expect(destructive).toBeFocused()
   await expect(props.getByRole('group', { name: 'variant' }).getByRole('button', { name: 'primary' })).toHaveAttribute('aria-current', 'true')
@@ -1165,13 +1165,11 @@ test('the Dropdown List highlights with the system pair in forced colours, and t
   await page.keyboard.press('Escape')
 })
 
-test('the nav filter narrows the list and the menu button collapses it', async ({ page }) => {
+test('the menu button collapses the navigation, and there is no second find box beside Search', async ({ page }) => {
   await page.goto('/#/foundations/motion')
   await expect(page.getByRole('heading', { level: 1, name: 'Motion' })).toBeVisible()
   const nav = page.getByRole('navigation', { name: 'Site' })
-  await nav.getByLabel('Filter').fill('tog')
-  await expect(nav.getByRole('link', { name: 'Toggle' })).toBeVisible()
-  await expect(nav.getByRole('link', { name: 'Button' })).toHaveCount(0)
+  await expect(nav.getByRole('textbox')).toHaveCount(0)
   await page.getByRole('button', { name: 'Hide navigation' }).click()
   await expect(nav).toBeHidden()
 })

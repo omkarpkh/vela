@@ -55,6 +55,24 @@ describe('search', () => {
     expect(closest(index, 'buton')[0].title).toBe('Button')
   })
 
+  // Playground spec v1.2, section 10: Vela-less names answer "not in Vela yet" with the nearest
+  // component, and an alias points only where the component's own "When to use" covers the job.
+  it('answers names Vela has nothing for, rather than "Nothing matches"', () => {
+    for (const q of ['tag', 'chip', 'spinner', 'loading', 'sidebar']) {
+      const [first] = search(index, q)
+      expect(first?.item.kind, q).toBe('missing')
+    }
+  })
+
+  it('sends a form select to Radio Group, never to Dropdown List, which is never in a form', () => {
+    expect(MISSING.find((m) => m.id === 'select-list')!.closest).toBe('radio-group')
+  })
+
+  it('finds the components that carry a severity, and drops weak matches when a name matched', () => {
+    expect(top('severity', 2).sort()).toEqual(['Contextual Alert', 'Toast'])
+    expect(search(index, 'notification').map((h) => h.item.title)).not.toContain('Toggle')
+  })
+
   it('points every not-in-kit entry at a component that exists', () => {
     for (const m of MISSING) expect(REGISTRY.some((e) => e.id === m.closest), m.id).toBe(true)
   })

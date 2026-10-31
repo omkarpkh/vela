@@ -106,6 +106,7 @@
     }
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.10.2",
     "@base-ui/react": "1.9.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",

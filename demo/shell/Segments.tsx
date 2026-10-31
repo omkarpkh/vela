@@ -16,11 +16,13 @@
  *   forced-color-adjust: none on that element only (shell.css).
  * - Locked values (slice 2; specs/segmented-control.md, "Locked, the state"): a value the other
  *   settings rule out stays a tab stop with aria-disabled="true", its reason as its accessible
- *   description, default text with a dashed edge, never faded, and no glyph. Pressing it selects
- *   nothing and calls onLockedPress. The word "locked" is never on screen or in a name.
+ *   description, default text with a dashed edge, never faded, and Icon's lock before its label
+ *   (decorative; Omkar widened lock's meaning on 31 Oct, icon.md *Glyphs*), so its reason must also
+ *   be visible beside the group: the host shows that line. Pressing it selects nothing and calls
+ *   onLockedPress. The word "locked" is never on screen or in a name.
  */
 import { Fragment, useId } from 'react'
-import { cn } from '../../src'
+import { cn, Icon } from '../../src'
 import './shell.css'
 
 export interface SegmentOption<T extends string> {
@@ -59,6 +61,7 @@ export function Segments<T extends string>({ label, value, options, onChange, on
             else if (o.value !== value) onChange(o.value)
           }}
         >
+          {o.locked && <Icon name="lock" size="small" className="shell-segment__lock" />}
           {o.label}
         </button>
         {/* The reason sits beside the button, not in it, so it is the description and never the name. */}

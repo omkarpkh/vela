@@ -128,7 +128,7 @@ function UseStep({ n, title, hint, text, what, className, note }: { n: number; t
         <CopyButton what={what} onCopy={copy} />
       </div>
       {note && <p className="pg-install-note">{note}</p>}
-      <CopyStatus state={state} />
+      <CopyStatus state={state} what={what} />
     </li>
   )
 }
@@ -167,7 +167,12 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
   const defaultStage: Stage = 'beside'
   const [stage, setStageState] = useState<Stage>(() => link.stage ?? (stored.get(stageKey) === 'full' ? 'full' : stored.get(stageKey) === 'beside' ? 'beside' : defaultStage))
   const setStage = (st: Stage) => { setStageState(st); stored.set(stageKey, st) }
-  const [compare, setCompare] = useState<Compare>(link.compare ?? 'off')
+  // Compare is kept across every component (spec v1.2, call 10): someone who always wants both themes
+  // sets it once. Per viewer, safe when empty; a link's own choice wins.
+  const [compare, setCompareState] = useState<Compare>(() => link.compare ?? (stored.get('vela.playground.compare') === 'themes' ? 'themes' : 'off'))
+  const setCompare = (c: Compare) => { setCompareState(c); stored.set('vela.playground.compare', c) }
+  // "Open proof" from the lock panel: the Rules tab, then focus on that rule (spec v1.2, section 8).
+  const [proofRule, setProofRule] = useState<string | null>(null)
   const [lock, setLock] = useState<OpenLock | null>(null)
   // Bumped on every change, so a changed code line's tint runs once and settles to its mark.
   const [settle, setSettle] = useState(0)
@@ -214,6 +219,18 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
     ...(figmaSet ? [{ value: 'figma' as const, label: 'Figma' }] : []),
   ]
   const current = tabs.some((t) => t.value === tab) ? tab! : 'playground'
+  useEffect(() => {
+    if (current !== 'rules' || !proofRule) return
+    const tagged = document.querySelector<HTMLElement>(`.pg-rules [data-rule~="${CSS.escape(proofRule)}"]`)
+    const target = tagged?.closest<HTMLElement>('li, p') ?? tagged
+    if (target) {
+      target.tabIndex = -1
+      target.classList.add('pg-rule--target')
+      target.scrollIntoView({ block: 'center' })
+      target.focus({ preventScroll: true })
+    }
+    setProofRule(null)
+  }, [current, proofRule])
   const selects = controls.filter((c) => c.kind === 'select')
   const texts = controls.filter((c) => c.kind === 'text')
   const booleans = controls.filter((c) => c.kind === 'boolean')
@@ -310,6 +327,8 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
                     {!dirty && <span className="pg-reset__why">Nothing to reset</span>}
                   </span>
                 </div>
+                {/* A landmark of its own (spec section 13): header, nav, main, Stage, Controls and Code. */}
+                <section aria-label="Stage" className="pg-stage-region">
                 <StageBoundary
                   key={`${entry.id}|${stage}|${compare}|${JSON.stringify(v)}|${attempt}`}
                   component={entry.id}
@@ -327,6 +346,7 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
                     ))}
                   </ScrollRegion>
                 </StageBoundary>
+                </section>
                 <p className="vela-sr-only" role="status">{announce}</p>
                 {stage === 'beside' && (
                   <CodeBar id={codeId} snippet={snippet} changedProps={changedProps} settle={settle}>
@@ -378,6 +398,7 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
                             requestAnimationFrame(() => document.querySelector<HTMLElement>(`.pg-control [data-prop="${c.prop}"] [aria-current="true"]`)?.focus())
                           }}
                           onClose={() => { setLock(null); lockOpener.current?.focus() }}
+                          onOpenProof={(rule) => { setLock(null); setProofRule(rule); replaceRoute({ kind: 'component', id: entry.id, tab: 'rules' }) }}
                         />
                       )}
                     </div>

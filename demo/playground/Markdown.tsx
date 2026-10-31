@@ -10,9 +10,11 @@ import { ScrollRegion } from '../shell/ScrollRegion'
 export const RULE_TAG = /\s*\[\[rule:[^\]]*\]\]/g
 
 function inline(text: string, key: number): ReactNode {
+  // The tag's id stays as data on the text it closes, so "Open proof" can land on that rule.
+  const ids = [...text.matchAll(/\[\[rule:\s*([^|\]]+?)\s*\|/g)].map((m) => m[1])
   const parts = text.replace(RULE_TAG, '').split(/(`[^`]+`|\*\*[^*]+\*\*)/g).filter(Boolean)
   return (
-    <span key={key}>
+    <span key={key} data-rule={ids.length ? ids.join(' ') : undefined}>
       {parts.map((p, i) =>
         p.startsWith('`') ? <code key={i}>{p.slice(1, -1)}</code>
         : p.startsWith('**') ? <strong key={i}>{p.slice(2, -2)}</strong>

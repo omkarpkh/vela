@@ -31,7 +31,7 @@ Navigate between **different** content panels.
 |---|---|---|---|
 | `Tabs` | `defaultValue` | `string` | Uncontrolled mode. **Required unless `value` is passed.** |
 | | `value` / `onValueChange` | `string` / `(v) => void` | Controlled mode. `value` and `defaultValue` are exclusive. |
-| | `size` | `"regular" \| "large"` | **These two only.** |
+| | `size` | `"regular" \| "large"` | **These two only.** Default `regular`. |
 | `Tabs.List` | `aria-label` | `string` | **Required.** |
 | `Tabs.Trigger` | `value` | `string` | Must match a Panel. |
 | | `count` | `number` | Optional numeric badge. |

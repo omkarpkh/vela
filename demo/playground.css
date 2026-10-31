@@ -31,6 +31,7 @@
 .pg-fact dd { margin: var(--vela-space-5) 0 0; font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); overflow-wrap: anywhere; }
 .pg-fact dd code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: var(--site-code-size); }
 .pg-fact--rules { grid-column: 1 / -1; }
+.pg-facts--proposal { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .pg-fact--rules dd { display: flex; flex-wrap: wrap; align-items: center; gap: var(--vela-space-5) var(--vela-space-10); }
 .pg-fact__total { font-weight: var(--vela-font-weight-semibold); }
 @container (max-width: 860px) {
@@ -173,8 +174,10 @@
 .pg-field__note { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
 /* A change mark (design change 3): a 2px start edge while the value differs from the page's
    default. A border, so it survives forced colours; the colour is not the only signal, the edge is. */
-.pg-field { padding-inline-start: var(--vela-space-10); border-inline-start: var(--vela-stroke-2) solid transparent; }
-.pg-field.is-changed { border-inline-start-color: var(--vela-border-active); }
+.pg-field { padding-inline-start: var(--vela-space-10); }
+/* The mark is an inset shadow, so an unchanged control carries nothing at all: a transparent
+   border would be painted by forced colours and every control would look changed (review, fix 2). */
+.pg-field.is-changed { box-shadow: inset var(--vela-stroke-2) 0 0 var(--vela-border-active); }
 .pg-field--switch { gap: var(--vela-space-5); }
 /* The lock panel: on the raised surface, the rule in words, its id and enforcement, the moves. */
 .pg-lock { border: 1px solid var(--vela-border-default); border-radius: var(--vela-radius-4); background: var(--vela-bg-raised); padding: var(--vela-space-10) var(--vela-space-15); display: flex; flex-direction: column; gap: var(--vela-space-10); color: var(--vela-text-default); }
@@ -186,8 +189,8 @@
 .pg-lock__rule code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; overflow-wrap: anywhere; }
 .pg-lock__moves { display: flex; flex-wrap: wrap; align-items: center; gap: var(--vela-space-10); }
 /* A changed code line: the same start edge, and a tint that settles once (not under reduced motion). */
-.pg-code__line { display: inline-block; min-width: 100%; box-sizing: border-box; padding-inline-start: var(--vela-space-10); border-inline-start: var(--vela-stroke-2) solid transparent; }
-.pg-code__line.is-changed { border-inline-start-color: var(--vela-border-active); position: relative; z-index: 0; }
+.pg-code__line { display: inline-block; min-width: 100%; box-sizing: border-box; padding-inline-start: var(--vela-space-10); }
+.pg-code__line.is-changed { box-shadow: inset var(--vela-stroke-2) 0 0 var(--vela-border-active); position: relative; z-index: 0; }
 /* The settle is a tint under the text that fades once: opacity only, as Vela's motion rule asks. */
 .pg-code__line.is-changed::before { content: ''; position: absolute; inset: 0; z-index: -1; background: var(--vela-bg-selected); opacity: 0; pointer-events: none; animation: pg-settle var(--vela-duration-slow) var(--vela-ease-standard); }
 @keyframes pg-settle { from { opacity: 1; } to { opacity: 0; } }
@@ -197,8 +200,12 @@
 .pg-uncontrolled__row dd .pg-p { margin: var(--vela-space-5) 0 0; }
 .pg-uncontrolled__type { color: var(--vela-text-default); }
 @media (forced-colors: active) {
-  .pg-field.is-changed, .pg-code__line.is-changed { border-inline-start-color: Highlight; }
+  /* Forced colours drop shadows: here, and only on a changed control, the mark is a real border,
+     taken out of the padding so nothing moves. */
+  .pg-field.is-changed, .pg-code__line.is-changed { border-inline-start: var(--vela-stroke-2) solid Highlight; padding-inline-start: calc(var(--vela-space-10) - var(--vela-stroke-2)); }
 }
 /* The toolbar's two segment groups carry a visible word, as the canvas shows; the group is named the same. */
 .pg-toolbar__group { display: inline-flex; align-items: center; gap: var(--vela-space-10); }
 .pg-toolbar__label { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-de-emphasized); }
+/* "Open proof" lands here: the rule it names, focused, with the focus ring (spec v1.2, section 8). */
+.pg-rule--target:focus-visible, .pg-rule--target:focus { outline: var(--vela-focus-ring-width) solid var(--vela-focus-ring-color); outline-offset: var(--vela-focus-ring-offset); }

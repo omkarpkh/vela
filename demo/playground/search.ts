@@ -51,10 +51,15 @@ const summary = (spec: string) => plain(spec.replace(/^# [^\n]*\n+/, '').split(/
  * The phase is ROADMAP.md's; the closest component is a link.
  */
 export const MISSING: { id: string; title: string; aliases: string[]; stands: string; sign: string; closest: string }[] = [
-  { id: 'select-list', title: 'Select List', aliases: ['select', 'dropdown', 'picklist', 'form select'], stands: 'planned for Phase 1', sign: 'A form value, chosen from a list and submitted with the form.', closest: 'dropdown-list' },
-  { id: 'icon-button', title: 'Icon Button', aliases: ['icon-only button', 'icon button'], stands: 'planned for Phase 1', sign: 'An action with an icon and no visible label.', closest: 'button' },
+  // A form value: Dropdown List acts at once and is never in a form (its spec), so the nearest for a
+  // form is Radio Group, for a few options that fit on screen (playground spec v1.2, section 10).
+  { id: 'select-list', title: 'Select List', aliases: ['select', 'dropdown', 'picklist', 'form select'], stands: 'planned for Phase 1', sign: 'A form value, chosen from a list and submitted with the form.', closest: 'radio-group' },
+  { id: 'icon-button', title: 'Icon Button', aliases: ['icon-only button', 'icon button'], stands: 'specified, not built yet', sign: 'An action with an icon and no visible label.', closest: 'button' },
   { id: 'combobox', title: 'Combobox', aliases: ['autocomplete', 'typeahead', 'autosuggest'], stands: 'planned for Phase 1', sign: 'A text field that suggests values as you type.', closest: 'input' },
-  { id: 'segmented-control', title: 'Segmented Control', aliases: ['segmented', 'button group', 'toggle group'], stands: 'being specified', sign: 'One choice from a few, every option visible at once.', closest: 'radio-group' },
+  { id: 'segmented-control', title: 'Segmented Control', aliases: ['segmented', 'button group', 'toggle group'], stands: 'specified, not built yet', sign: 'One choice from a few, every option visible at once.', closest: 'radio-group' },
+  { id: 'tag', title: 'Tag', aliases: ['tag', 'chip', 'badge', 'label', 'lozenge'], stands: 'not planned yet', sign: 'A short label on an item. For an object\'s state Vela has Status Indicator; for a risk score, Risk Pill.', closest: 'status-indicator' },
+  { id: 'spinner', title: 'Loading state', aliases: ['spinner', 'loading', 'progress', 'busy'], stands: 'planned for Phase 1, as widget loading states', sign: 'Something in progress. Today a Button shows its own while its action runs.', closest: 'button' },
+  { id: 'side-navigation', title: 'Side Navigation', aliases: ['sidebar', 'side nav', 'navigation', 'nav'], stands: 'not specified yet', sign: 'The page-level list of places. Within a page, Tabs switch sections.', closest: 'tabs' },
 ]
 
 export function buildIndex(): Item[] {
@@ -97,7 +102,7 @@ const norm = (s: string) => s.toLowerCase().replace(/[-_]+/g, ' ').replace(/\s+/
  * scores lower than a title at every step but exact, so "alert" finds Contextual Alert before the
  * Dialog that is also called "alert dialog", and "tab" finds Tabs (an exact alias) before Table.
  */
-const TITLE = [100, 80, 65, 45], ALIAS = [90, 60, 50, 30]
+const TITLE = [100, 80, 65, 45], ALIAS = [90, 60, 50, 30], USES = 25
 function nameScore(name: string, q: string, scale = TITLE): number {
   const n = norm(name)
   if (n === q) return scale[0]
@@ -120,10 +125,14 @@ export function search(index: Item[], query: string, limit = 10): Hit[] {
       const s = nameScore(a, q, ALIAS)
       if (s > score) { score = s; alias = a }
     }
-    if (score === 0 && q.length >= 3 && item.uses.some((u) => norm(u).includes(q))) score = 25
+    if (score === 0 && q.length >= 3 && item.uses.some((u) => norm(u).includes(q))) score = USES
     if (item.kind === 'rule') score = Math.min(score, 20)
     if (score > 0) hits.push({ item, score, alias })
   }
+  // A "When to use" line is a weak match: it only shows when no name or alias matched. So
+  // "notification" finds Toast, and no longer Toggle ("Notifications on/off").
+  const strong = hits.some((h) => h.score > USES && h.item.kind !== 'rule')
+  if (strong) for (let i = hits.length - 1; i >= 0; i--) if (hits[i].score === USES) hits.splice(i, 1)
   hits.sort((a, b) => b.score - a.score || KIND_ORDER[a.item.kind] - KIND_ORDER[b.item.kind] || a.item.title.localeCompare(b.item.title))
   // At most three rule ids, so a word that starts many ids never pushes the components out.
   let rules = 0

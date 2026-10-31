@@ -36,6 +36,7 @@ test.describe('Proposal pages', () => {
     await expect(main.getByText("Proposal. This component is a written spec. It isn't built and can't be installed yet.")).toBeVisible()
     await expect(main.getByRole('link', { name: 'Read the spec on GitHub' })).toHaveAttribute('href', 'https://github.com/omkarpkh/vela/blob/main/guidelines/proposals/evidence-locker.md')
     await expect(main.getByText('There is no Figma set yet.')).toBeVisible()
+    await expect(main.getByRole('link', { name: 'Follow or discuss this proposal' })).toBeVisible()
     await expect(main.getByRole('link', { name: 'See the design in Figma' })).toHaveCount(0)
 
     // The spec, loaded when the page opens.
@@ -366,7 +367,7 @@ test.describe('the page header', () => {
     await page.goto('/#/components/button')
     const code = page.getByRole('region', { name: 'Import and usage' })
     await code.getByRole('button', { name: 'Copy snippet' }).click()
-    await expect(code.getByRole('status')).toHaveText('Copied.')
+    await expect(code.getByRole('status')).toHaveText('Copied snippet')
     const copied = await page.evaluate(() => navigator.clipboard.readText())
     expect(copied).toBe(await code.locator('.pg-code').textContent())
     expect(copied.startsWith("import { Button } from '@omkarux/vela'\n\n<Button")).toBe(true)
@@ -383,12 +384,13 @@ test.describe('the page header', () => {
     await page.goto('/#/components/popover')
     const use = page.getByRole('region', { name: 'Use Popover' })
     await use.getByRole('button', { name: 'Copy install command' }).click()
-    await expect(use.getByRole('status').first()).toHaveText("Couldn't copy. The text is selected: press Ctrl+C (⌘C on a Mac) to copy it.")
+    // The Copy Button spec's words; this desktop Chromium is neither Apple nor touch, so Ctrl+C.
+    await expect(use.getByRole('status').first()).toHaveText("Couldn't copy: your browser blocked the clipboard. The text is selected, so press Ctrl+C.")
     expect(await page.evaluate(() => window.getSelection()?.toString())).toBe('npm i @omkarux/vela @base-ui/react')
 
     const code = page.getByRole('region', { name: 'Import and usage' })
     await code.getByRole('button', { name: 'Copy snippet' }).click()
-    await expect(code.getByRole('status')).toHaveText(/^Couldn't copy\./)
+    await expect(code.getByRole('status')).toHaveText(/^Couldn't copy: your browser blocked the clipboard\. The text is selected/)
     expect(await page.evaluate(() => window.getSelection()?.toString())).toBe(await code.locator('.pg-code').textContent())
   })
 })
@@ -431,8 +433,9 @@ test.describe('find', () => {
 
   test('search opens from the button, from Ctrl K and from /, and Escape returns focus to the button', async ({ page }) => {
     await page.goto('/#/components/button')
-    const button = page.getByRole('button', { name: 'Search components, foundations and rules' })
-    await expect(button).toContainText('Search, or type a name you know')
+    // Label in Name (WCAG 2.5.3): the name is exactly the visible words; the shortcut is separate.
+    const button = page.getByRole('button', { name: 'Search, or type a name you know', exact: true })
+    await expect(button).toHaveAttribute('aria-keyshortcuts', 'Control+K Meta+K /')
     const dialog = page.getByRole('dialog', { name: 'Search' })
     await button.click()
     await expect(dialog).toBeVisible()
@@ -644,4 +647,88 @@ test.describe('the workbench', () => {
     expect(s.style).toBe('dashed')
     expect(s.color).toBe(s.gray)
   })
+})
+
+// The playground thread's review of slices 1 to 3 (requests/playground-thread-review-slices-1-2-3.md),
+// and the lock glyph Omkar chose on 31 Oct (requests/icon-thread-to-repo-lock-meaning.md).
+test.describe('review of slices 1 to 3', () => {
+  test('in forced colours only a changed control carries a mark', async ({ page }) => {
+    await page.emulateMedia({ forcedColors: 'active' })
+    await page.goto('/#/components/button')
+    const controls = page.getByRole('complementary', { name: 'Controls' })
+    const edge = (prop: string) => controls.locator(`.pg-field[data-prop="${prop}"]`).evaluate((el) => getComputedStyle(el).borderInlineStartStyle)
+    expect(await edge('variant')).toBe('none')
+    expect(await edge('size')).toBe('none')
+    await choose(controls, 'variant', 'destructive')
+    expect(await edge('variant')).toBe('solid')
+    expect(await edge('size')).toBe('none')
+  })
+
+  test('an unavailable value shows the padlock, its reason is in view, and the way out names what stays', async ({ page }) => {
+    await page.goto('/#/components/button')
+    const controls = page.getByRole('complementary', { name: 'Controls' })
+    const appearance = controls.locator('.pg-field[data-prop="appearance"]')
+    const textLink = appearance.getByRole('button', { name: 'text-link', exact: true })
+    await expect(textLink.locator('svg.vela-icon')).toHaveAttribute('aria-hidden', 'true')
+    await expect(appearance.locator('.pg-field__note')).toHaveText('1 unavailable: text-link. text-link never carries an icon.')
+    await textLink.focus()
+    await page.keyboard.press('Enter')
+    await expect(controls.getByRole('button', { name: 'Keep the icon' })).toBeVisible()
+    await expect(page.getByRole('main')).not.toContainText(/locked/i)
+  })
+
+  test('"Open proof" opens the Rules tab with focus on that rule', async ({ page }) => {
+    await page.goto('/#/components/button')
+    const controls = page.getByRole('complementary', { name: 'Controls' })
+    await controls.getByRole('group', { name: 'appearance' }).getByRole('button', { name: 'text-link', exact: true }).focus()
+    await page.keyboard.press('Enter')
+    await controls.getByRole('link', { name: 'Open proof' }).click()
+    await expect(page).toHaveURL(/#\/components\/button\/rules$/)
+    const focused = page.locator(':focus')
+    await expect(focused).toContainText('never carries an icon')
+    await expect(focused).toBeInViewport()
+  })
+
+  test('Compare is remembered across components', async ({ page }) => {
+    await page.goto('/#/components/button')
+    await compareThemes(page)
+    await page.goto('/#/components/toggle')
+    await expect(page.getByRole('group', { name: 'Compare' }).getByRole('button', { name: 'Themes' })).toHaveAttribute('aria-current', 'true')
+    await expect(page.locator('.pg-frame')).toHaveCount(2)
+  })
+
+  test('the stage is a named landmark beside Controls and the code', async ({ page }) => {
+    await page.goto('/#/components/button')
+    await expect(page.getByRole('region', { name: 'Stage' })).toBeVisible()
+    await expect(page.getByRole('complementary', { name: 'Controls' })).toBeVisible()
+    await expect(page.getByRole('region', { name: 'Import and usage' })).toBeVisible()
+  })
+
+  test('the Proposal page has its facts grid and its discussion link', async ({ page }) => {
+    await page.goto('/#/proposals/evidence-locker')
+    const facts = page.locator('dl[aria-label="Contract"]')
+    await expect(facts).toContainText('Planned entry')
+    await expect(facts).toContainText('@omkarux/vela/headless')
+    await expect(facts).toContainText('Not built')
+    await expect(facts.locator('.pg-fact--rules dt')).toHaveText('Rules planned')
+    await expect(page.getByRole('link', { name: 'Follow or discuss this proposal' })).toHaveAttribute('href', 'https://github.com/omkarpkh/vela/pull/21')
+  })
+})
+
+// Accessibility (playground spec, section 13; B10): axe on representative pages in both themes,
+// with the experimental Label in Name rule switched on, since it is the one the review found.
+test.describe('axe', () => {
+  for (const path of ['/#/components/button', '/#/components/tabs', '/#/components/dropdown-list', '/#/proposals/evidence-locker'])
+    for (const theme of ['Light', 'Dark'] as const)
+      test(`${path} in ${theme.toLowerCase()} has no WCAG A or AA violation`, async ({ page }) => {
+        const { default: AxeBuilder } = await import('@axe-core/playwright')
+        await page.goto(path)
+        await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+        await page.getByRole('group', { name: 'Theme' }).getByRole('button', { name: theme, exact: true }).click()
+        const results = await new AxeBuilder({ page })
+          .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
+          .options({ rules: { 'label-content-name-mismatch': { enabled: true } } })
+          .analyze()
+        expect(results.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`)).toEqual([])
+      })
 })

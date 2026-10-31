@@ -5,6 +5,7 @@
  * flagged rather than invented. Spec: the playground spec, sections 3 (the header button) and 10.
  *
  * - Opened by the header button, ⌘K or Ctrl K anywhere, or `/` when focus is not in a text field.
+ * - The button's name is its visible words; the shortcut is announced through aria-keyshortcuts.
  * - A modal dialog (the native <dialog>: Escape closes it, the page behind is inert) holding a
  *   combobox input and a listbox of results. Up and Down move, Enter opens, Escape closes and puts
  *   focus back on the button that opened it.
@@ -79,12 +80,21 @@ export function Search({ compact }: { compact: boolean }) {
     else if (e.key === 'Enter') { e.preventDefault(); go(hits[active]) }
   }
 
-  const label = compact ? 'Search' : 'Search components, foundations and rules'
   const q = query.trim()
 
   return (
     <>
-      <button ref={button} type="button" className={cn('shell-search-button', compact && 'is-compact')} aria-label={label} onClick={open}>
+      {/* WCAG 2.5.3, Label in Name: the name is the visible words, so a voice-control user can say
+          what they see (playground spec v1.2, section 3). The shortcut is aria-keyshortcuts, never
+          part of the name. On a phone the icon stands alone and is named "Search". */}
+      <button
+        ref={button}
+        type="button"
+        className={cn('shell-search-button', compact && 'is-compact')}
+        aria-label={compact ? 'Search' : undefined}
+        aria-keyshortcuts="Control+K Meta+K /"
+        onClick={open}
+      >
         <SearchIcon />
         {!compact && <span className="shell-search-button__text">Search, or type a name you know</span>}
         {!compact && <kbd className="shell-kbd" aria-hidden="true">{key}</kbd>}

@@ -15,18 +15,26 @@ export interface Proposal {
   file: string
   /** "What it is", from the README's table. */
   what: string
-  /** A pull request or discussion to follow, where one exists. None does yet. */
+  /** A pull request or discussion to follow, where one exists. */
   discuss?: string
   /** The Figma set's node id, where one exists. None does yet. */
   figma?: string
 }
 
 // | [Verdict Card](verdict-card.md) | One agent verdict on one case, … | 28 (22) | pressure-tested |
+// Where a proposal was argued in the open. PR #21 proposed Evidence Locker and the Agent Provenance
+// Badge (closed, not merged: the specs landed by another route); it is still where they were discussed.
+const DISCUSS: Record<string, string> = {
+  'evidence-locker': 'https://github.com/omkarpkh/vela/pull/21',
+  'agent-provenance-badge': 'https://github.com/omkarpkh/vela/pull/21',
+}
+
 export const PROPOSALS: Proposal[] = [...readme.matchAll(/^\|\s*\[([^\]]+)\]\(([\w-]+)\.md\)\s*\|\s*([^|]+?)\s*\|/gm)].map((m) => ({
   id: m[2],
   name: m[1],
   file: `${m[2]}.md`,
   what: m[3],
+  discuss: DISCUSS[m[2]],
 }))
 
 const LOADERS = import.meta.glob<string>(['../../guidelines/proposals/*.md', '!../../guidelines/proposals/README.md'], { query: '?raw', import: 'default' })
