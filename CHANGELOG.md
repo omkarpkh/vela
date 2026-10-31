@@ -6,6 +6,28 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Unreleased]
 
 ### Added
+- **Filter Grammar, the first contract: a new area, `guidelines/contracts/`, and `src/grammar/` in
+  the core entry** (`guidelines/contracts/filter-grammar.md`, approved by Omkar on 1 Nov 2026). One
+  way to say "these records, and not the others" for every surface that filters. A host declares
+  its fields once with `defineFields`, each with one of 8 types and who could have set its values;
+  `parseQuery` and `validateQuery` check the typed line, a link's `q=` and an agent's object
+  against it, with the same errors in plain words, and never guess; each query has one text form
+  (`queryToText`) and one readback sentence (`readback`). `evaluate` gives `unknown`, never "no",
+  when a record lacks a field, and `leftOutQuery` builds the query that counts those records.
+  Domains match on label boundaries, so `is-subdomain-of "northwind.example"` never matches
+  `evilnorthwind.example`, and `contains` and `ends-with` on a domain don't compile; hidden
+  characters are escaped wherever a value is shown, and ignored when matching an untrusted field.
+  Eight functions and their types, exported from the package root, with no dependencies and no
+  React, DOM or Node-only import; the pack gate runs them in plain Node from the installed package.
+  13 rules, 11 with proofs: 4 compiler rules with 16 fixtures, and 7 runtime rules proved by 50
+  unit tests in `src/grammar/`, among them a seeded property test of 400 queries over all 8 types
+  and a brute-force check of `leftOutQuery` over 12,000 generated records. Experimental. The
+  site shows the guideline under Foundations. The Override & Teach Panel's amendment follows in its
+  own pull request.
+- **`npm run rules:check` reads `guidelines/contracts/` as it reads `guidelines/components/`**, with
+  the same tags, proofs and proof map, and prints each contract's count. It also no longer stops a
+  Hard constraints section at its first capital Z: `\Z` is not an end-of-input anchor in JavaScript,
+  and the grammar's `timeZone` was cutting its rules short. No component spec's count changed.
 - **Patterns: a new area, `guidelines/patterns/`, and its first page, Copy** (`copy.md`, with nine
   figures in `copy/`). A pattern records the decisions a component can't make alone: who may read
   a secret, where the "last copied" mark lives, whether a row is clickable, whether the page copies

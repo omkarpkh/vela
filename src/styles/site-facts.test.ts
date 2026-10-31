@@ -21,8 +21,12 @@ describe('the contract facts', () => {
   it('agrees with the rule checker on every spec: the per-spec counts sum to its total', () => {
     let total = 0
     let compiler = 0
-    for (const f of readdirSync(dir).filter((f) => f.endsWith('.md'))) {
-      const r = rulesOf(spec(f))
+    // rules:check reads the contracts (guidelines/contracts/, the Filter Grammar) as well as the
+    // components, so the totals stated below count both.
+    const cdir = resolve(process.cwd(), 'guidelines/contracts')
+    const files = [...readdirSync(dir).filter((f) => f.endsWith('.md')).map((f) => resolve(dir, f)), ...readdirSync(cdir).filter((f) => f.endsWith('.md')).map((f) => resolve(cdir, f))]
+    for (const f of files) {
+      const r = rulesOf(readFileSync(f, 'utf8'))
       expect(r.byLevel.reduce((n, l) => n + l.count, 0), f).toBe(r.total)
       total += r.total
       compiler += r.byLevel.find((l) => l.level === 'compiler')?.count ?? 0
@@ -37,6 +41,11 @@ describe('the contract facts', () => {
     const checks = JSON.parse(read('demo/checks.json'))
     expect(read('README.md')).toContain(`${checks.total} automated checks — ${checks.unit} unit and contract`)
     expect(read('README.md')).toContain(`# ${checks.unit} unit and contract tests, of ${checks.total} checks in all`)
+  })
+
+  it('reads each contract\'s Status line as Experimental', () => {
+    const cdir = resolve(process.cwd(), 'guidelines/contracts')
+    for (const f of readdirSync(cdir).filter((f) => f.endsWith('.md'))) expect(statusOf(readFileSync(resolve(cdir, f), 'utf8')).label, f).toBe('Experimental')
   })
 
   it('counts a proposal\'s planned rules from its Hard constraints, and agrees with the total it states', () => {

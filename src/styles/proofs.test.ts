@@ -13,10 +13,12 @@ type ProofRule = { id: string; level: string; sentence: string; proof: { file: s
 describe('the proof map', () => {
   const dir = mkdtempSync(join(tmpdir(), 'vela-proofs-'))
   let maps: { file: string; rules: ProofRule[]; typescript: string }[] = []
-  it('is written for every component spec', () => {
+  // A contract (guidelines/contracts/, the Filter Grammar) states its rules as a component does, and
+  // rules:check reads it, so it gets a map too.
+  it('is written for every component and contract spec', () => {
     execFileSync('node', ['scripts/check-rules.mjs', '--write', dir], { cwd: root, encoding: 'utf8' })
     maps = readdirSync(dir).map((f) => ({ file: f, ...JSON.parse(readFileSync(join(dir, f), 'utf8')) }))
-    const specs = readdirSync(resolve(root, 'guidelines/components')).filter((f) => f.endsWith('.md'))
+    const specs = ['guidelines/components', 'guidelines/contracts'].flatMap((d) => readdirSync(resolve(root, d)).filter((f) => f.endsWith('.md')))
     expect(maps.map((m) => m.file).sort()).toEqual(specs.map((f) => f.replace(/\.md$/, '.json')).sort())
   }, 60_000)
 

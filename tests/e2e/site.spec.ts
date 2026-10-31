@@ -1196,8 +1196,21 @@ test.describe('slice 6b · Copy page', () => {
   })
 })
 
+test.describe('the Filter Grammar page', () => {
+  test('is listed under Foundations, says it is a contract, and renders the guideline without its rule tags', async ({ page }) => {
+    await page.goto('/#/foundations/filter-grammar')
+    await expect(page.getByRole('heading', { level: 1, name: 'Filter Grammar' })).toBeVisible()
+    await expect(page.locator('.page-head__eyebrow')).toHaveText('Contract')
+    await expect(page.getByRole('heading', { name: 'Hard constraints' })).toBeVisible()
+    await expect(page.getByRole('cell', { name: 'Too deep', exact: true })).toBeVisible()
+    await expect(page.getByText('[[rule:')).toHaveCount(0)
+    await expect(page.locator('a[href="#/foundations/filter-grammar"]').first()).toHaveAttribute('aria-current', 'page')
+    expect(await noSidewaysScroll(page)).toBe(true)
+  })
+})
+
 test.describe('axe', () => {
-  for (const path of ['/#/components/button', '/#/components/tabs', '/#/components/dropdown-list', '/#/proposals/evidence-locker', '/#/patterns/copy'])
+  for (const path of ['/#/components/button', '/#/components/tabs', '/#/components/dropdown-list', '/#/proposals/evidence-locker', '/#/patterns/copy', '/#/foundations/filter-grammar'])
     for (const theme of ['Light', 'Dark'] as const)
       test(`${path} in ${theme.toLowerCase()} has no WCAG A or AA violation`, async ({ page }) => {
         const { default: AxeBuilder } = await import('@axe-core/playwright')

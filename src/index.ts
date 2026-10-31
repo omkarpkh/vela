@@ -63,3 +63,50 @@ export type {
 } from './components/Table'
 
 export { cn } from './lib/cn'
+
+// Filter Grammar (guidelines/contracts/filter-grammar.md): one contract for "these records, and not
+// the others", with no UI. A host declares its fields once; every condition, typed, linked, saved or
+// emitted by an agent, is checked against that declaration, and each query has one text form and one
+// readback sentence. Plain functions with no dependencies, so a backend in Node imports the same ones.
+export {
+  defineFields,
+  parseQuery,
+  validateQuery,
+  normalise,
+  queryToText,
+  readback,
+  evaluate,
+  leftOutQuery,
+} from './grammar'
+export type {
+  Fields,
+  FieldName,
+  FieldSchema,
+  FieldSpec,
+  FieldTrust,
+  FieldType,
+  EnumValue,
+  Query,
+  Group,
+  Node,
+  Condition,
+  MatchFor,
+  PositiveCondition,
+  PositiveConjunction,
+  Operator,
+  PositiveOperator,
+  NegatedOperator,
+  Duration,
+  DurationUnit,
+  Range,
+  ValueList,
+  ParseError,
+  ParseResult,
+  FieldRecord,
+  Evaluation,
+  EvaluateOptions,
+  LeftOutOptions,
+  ReadbackOptions,
+  ReadbackStrings,
+  ReadbackStringsInput,
+} from './grammar'
