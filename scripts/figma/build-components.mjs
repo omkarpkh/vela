@@ -46,7 +46,10 @@ export function metaFromFile(path, which = path) {
   const components = [...body.matchAll(/^\/\/ @component\s+(.+)$/gm)].map((x) => x[1].trim())
   if (!page || !variantSets.length) throw new Error(`${which.endsWith('.figma.js') ? which : which + '.figma.js'} must declare // @page and // @set`)
   const allow = [...body.matchAll(/^\/\/ @allow\s+(\S+)\s+(.+)$/gm)].map((x) => ({ rule: x[1], reason: x[2].trim() }))
-  return { page, set: variantSets[0], sets: [...variantSets, ...components], components, allow, body }
+  // `// @uses <builder>`: this builder places instances of another builder's set (Dropdown List's
+  // lock is an Icon instance), so that set must exist in the file first. The mock builds it first.
+  const uses = [...body.matchAll(/^\/\/ @uses\s+(\S+)\s*$/gm)].map((x) => x[1])
+  return { page, set: variantSets[0], sets: [...variantSets, ...components], components, allow, uses, body }
 }
 
 export function generate(which) {
@@ -76,6 +79,19 @@ const num = n => need(F, n, 'number variable');
 const style = n => need(S, n, 'text style');
 const bindRadius = (node, token) => { for (const r of ['topLeftRadius', 'topRightRadius', 'bottomLeftRadius', 'bottomRightRadius']) node.setBoundVariable(r, num(token)); };
 const parse = n => Object.fromEntries(n.split(', ').map(p => p.split('=')));
+// An instance of a variant of a set on any page: Icon's lock in a Dropdown List row. It throws if the
+// set has not been built, as a missing variable does.
+const instanceOf = async (setName, variant) => {
+  for (const p of figma.root.children) {
+    await p.loadAsync();
+    const s = p.findOne(n => n.type === 'COMPONENT_SET' && n.name === setName);
+    if (!s) continue;
+    const v = s.children.find(c => c.name === variant);
+    if (!v) throw new Error('missing variant "' + variant + '" in "' + setName + '"');
+    return v.createInstance();
+  }
+  throw new Error('missing component set "' + setName + '" — build it first');
+};
 const grid = (set, order, colW, rowH, pad) => {
   for (const v of set.children) { const [c, r] = order(parse(v.name)); v.x = pad + c * colW; v.y = pad + r * rowH; }
 };

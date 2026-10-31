@@ -133,9 +133,13 @@ export async function build(which) {
   VARS ??= loadVariables()
   const isFile = /\.figma\.js$/.test(which)
   const m = isFile ? metaFromFile(which) : meta(which)
-  const figma = createMockFigma({ variables: VARS, styles: mockStyles(), pages: [m.page] })
+  // A builder that places another set's instances (`// @uses icon`) needs that set in the file:
+  // build it first, on its own page, in the same mock.
+  const deps = (m.uses || []).map((u) => ({ name: u, meta: meta(u) }))
+  const figma = createMockFigma({ variables: VARS, styles: mockStyles(), pages: [...deps.map((d) => d.meta.page), m.page] })
+  for (const d of deps) await new AsyncFunction('figma', generate(d.name))(figma)
   const result = await new AsyncFunction('figma', isFile ? generateFrom(m, which) : generate(which))(figma)
-  const page = figma.root.children[0]
+  const page = figma.root.children.find((p) => p.name === m.page)
   const sets = m.sets.map((name) => {
     const one = (m.components || []).includes(name)
     const set = one ? page.children.find((n) => n.type === 'COMPONENT' && n.name === name) : page.findOne((n) => n.type === 'COMPONENT_SET' && n.name === name)
