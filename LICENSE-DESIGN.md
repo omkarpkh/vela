@@ -13,8 +13,9 @@ the demo site and the decision records.
 
 The Figma library **Vela Design System** (file key `XO2rmeCcgOjyKe4oipgF4j`) is offered under the
 [Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/)
-licence, which is the licence Figma Community offers; the Community listing is not yet live, and
-this file says so until it is. Creative Commons does not recommend its licences for software, so
+licence, which is the licence Figma Community offers. It is published on Figma Community as
+[Vela Design System](https://www.figma.com/community/file/1698367695704645041/vela-design-system) (listed 31 October 2026), where the listing shows "Licensed under
+CC BY 4.0". Creative Commons does not recommend its licences for software, so
 the same file is **additionally** granted under the MIT License in `LICENSE`. Take it under
 either; you do not need both.
 
