@@ -382,6 +382,10 @@
           "prop": "disabled on <Tabs.Trigger>"
         },
         {
+          "figma": "State=hover",
+          "prop": "the pointer resting on an enabled, unselected tab, not a prop"
+        },
+        {
           "figma": "Size",
           "prop": "size on <Tabs>"
         },

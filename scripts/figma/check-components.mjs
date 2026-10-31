@@ -82,6 +82,12 @@ async function dump(n, depth) {
       o.pad = [[n.paddingTop, await bv(n, 'paddingTop')], [n.paddingRight, await bv(n, 'paddingRight')], [n.paddingBottom, await bv(n, 'paddingBottom')], [n.paddingLeft, await bv(n, 'paddingLeft')]];
     }
   }
+  // An absolute child of an auto-layout frame (the Tabs Seed) is placed by its constraints, not the layout.
+  if (n.layoutPositioning === 'ABSOLUTE') { o.abs = true; o.con = [n.constraints.horizontal, n.constraints.vertical].join('/'); }
+  if (n.isMask === true) o.mask = true;
+  // A bound opacity is its variable (Figma reads a percent variable back as a fraction); an unbound one, its value.
+  if ('opacity' in n) { const b = await bv(n, 'opacity'); if (b || n.opacity !== 1) o.opa = b ?? Math.round(n.opacity * 100) / 100; }
+  if ('minWidth' in n && n.minWidth != null) o.minw = [n.minWidth, await bv(n, 'minWidth')];
   if ('layoutSizingHorizontal' in n && n.parent && 'layoutMode' in n.parent && n.parent.layoutMode !== 'NONE') o.ls = [n.layoutSizingHorizontal, n.layoutSizingVertical].join('/');
   if ('width' in n) { const w = await bv(n, 'width'), h = await bv(n, 'height'); o.wh = [Math.round(n.width * 10) / 10, Math.round(n.height * 10) / 10, w, h]; }
   if ('fills' in n && n.fills !== figma.mixed) o.fill = await paintName(n.fills);${colours ? `
@@ -167,16 +173,21 @@ export async function build(which) {
     if (!set) throw new Error(`${which}: the builder did not create the ${one ? 'component' : 'set'} "${name}" (${JSON.stringify(result)})`)
     return set
   })
-  return { figma, set: sets[0], sets, meta: m }
+  return { figma, set: sets[0], sets, meta: m, result }
 }
 /**
  * Extend in the mock: build the base alone, then run the --extend script for `exts` twice. Returns both
  * results, or the error a run threw (`first.error`, `second.error`), and the page after the first run.
  */
-export async function extendInMock(builder, exts) {
+/** The builder alone, without its extensions: the file as it was before they were written. */
+export async function buildBase(builder, exts = []) {
   const m = meta(builder)
   const figma = await mockFor(m, [...(m.uses || []), ...exts.flatMap((e) => e.uses)])
   await new AsyncFunction('figma', generateFrom(m, `components/${builder}.figma.js`))(figma)
+  return { figma, page: figma.root.children.find((p) => p.name === m.page), meta: m }
+}
+export async function extendInMock(builder, exts) {
+  const { figma, meta: m } = await buildBase(builder, exts)
   const script = generateFrom(m, exts.map((e) => e.file).join(', '), { extensions: exts, extend: true, which: builder })
   const run = async () => { try { return await new AsyncFunction('figma', script)(figma) } catch (e) { return { error: e.message } } }
   const first = await run()
@@ -244,14 +255,17 @@ const DEFAULT_NAMES = /^(Frame|Component|Text|Rectangle|Ellipse|Polygon|Union|Ve
 /**
  * @param set    the component set — or, for a doc page, its page frame
  * @param allow  the builder's waivers
+ * @param skip   nodes left to another file's lint: an extension's nodes in its builder's set, linted
+ *               under the extension with the extension's waivers
  * @param docPage  true for a doc page: its frame's canvas width is exempt (as a set's variants' are),
  *                 and the `component-on-doc-page` rule applies — a doc page holds no components or instances
  */
-export function lint(set, allow = [], { docPage = false } = {}) {
+export function lint(set, allow = [], { docPage = false, skip = new Set() } = {}) {
   const problems = []
   const waived = new Set(allow.map((a) => a.rule))
   const hit = (rule, node, what) => problems.push({ rule, node: node.name, what, waived: waived.has(rule) })
   const walk = (n, inBool, isRoot) => {
+    if (skip.has(n)) return
     const bound = (f) => !!(n.boundVariables && n.boundVariables[f])
     if (docPage && /^(COMPONENT|COMPONENT_SET|INSTANCE)$/.test(n.type)) hit('component-on-doc-page', n, n.type)
     if (n.type !== 'COMPONENT_SET') {
@@ -302,7 +316,7 @@ export function diff(expected, live) {
     if (e.t !== l.t || e.n !== l.n) { out.push(`${path}: expected ${e.t} "${e.n}", live ${l.t} "${l.n}"`); return }
     const fixedH = (e.ls || '').startsWith('FIXED') || e.t === 'ELLIPSE' || e.t === 'POLYGON' || e.t === 'RECTANGLE' || e.t === 'BOOLEAN_OPERATION'
     const fixedV = (e.ls || '').endsWith('FIXED') || e.t === 'ELLIPSE' || e.t === 'POLYGON' || e.t === 'RECTANGLE' || e.t === 'BOOLEAN_OPERATION'
-    for (const k of ['hidden', 'lm', 'ax', 'sz', 'gap', 'pad', 'ls', 'fill', 'stroke', 'sw', 'swx', 'sa', 'rad', 'style', 'font', 'fs', 'lh', 'chars', 'tar', 'ta', 'pts', 'op', 'main', 'props']) {
+    for (const k of ['hidden', 'abs', 'con', 'mask', 'opa', 'minw', 'lm', 'ax', 'sz', 'gap', 'pad', 'ls', 'fill', 'stroke', 'sw', 'swx', 'sa', 'rad', 'style', 'font', 'fs', 'lh', 'chars', 'tar', 'ta', 'pts', 'op', 'main', 'props']) {
       if (k === 'ls' && root) continue
       const a = JSON.stringify(e[k] ?? null), b = JSON.stringify(l[k] ?? null)
       if (a !== b) out.push(`${path}: ${k} expected ${a}, live ${b}`)
@@ -372,10 +386,13 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
         const vars = await figma.variables.getLocalVariablesAsync()
         const nameOf = Object.fromEntries(vars.map((v) => [v.id, v.name]))
         const problems = []
+        // What the builder's extensions add is linted under each extension, with its own waivers.
+        const page = figma.root.children.find((p) => p.name === m.page)
+        const skip = new Set(extensionsOf(which).flatMap((e) => e.adds.flatMap((a) => page.findAll((n) => n.name === a))))
         for (const set of sets) {
           set._figma_varname = (id) => nameOf[id]
           // a multi-set builder's findings name their set, so a reader knows which one to open
-          problems.push(...lint(set, m.allow).map((p) => (sets.length > 1 ? { ...p, node: `${set.name} › ${p.node}` } : p)))
+          problems.push(...lint(set, m.allow, { skip }).map((p) => (sets.length > 1 ? { ...p, node: `${set.name} › ${p.node}` } : p)))
         }
         report[which] = { problems, allow: m.allow }
         if (problems.some((p) => !p.waived)) failed = true
