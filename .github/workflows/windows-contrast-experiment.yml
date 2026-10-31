@@ -1,0 +1,64 @@
+# An experiment (playground thread, "forced colours without Windows", step 2): can a GitHub-hosted
+# Windows runner switch on a real contrast theme, and does Edge then see forced colours without
+# emulation? It runs only on pushes to experiment/windows-contrast and commits what it saw back to
+# that branch under experiments/windows-contrast/. It gates nothing.
+name: Windows contrast experiment
+
+on:
+  push:
+    branches: [experiment/windows-contrast]
+    paths-ignore: ['experiments/**']
+
+permissions:
+  contents: write
+
+jobs:
+  contrast:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run demo:build
+      - name: List the contrast themes on this image
+        shell: pwsh
+        run: Get-ChildItem "C:\Windows\Resources\Ease of Access Themes" -ErrorAction Continue | Select-Object Name
+      - name: Switch on high contrast (SystemParametersInfo, then the theme file)
+        shell: pwsh
+        run: |
+          Add-Type -TypeDefinition @"
+          using System; using System.Runtime.InteropServices;
+          [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+          public struct HIGHCONTRAST { public int cbSize; public int dwFlags; public string lpszDefaultScheme; }
+          public static class HC {
+            [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+            public static extern bool SystemParametersInfo(int uiAction, int uiParam, ref HIGHCONTRAST pvParam, int fWinIni);
+          }
+          "@
+          $hc = New-Object HIGHCONTRAST
+          $hc.cbSize = [System.Runtime.InteropServices.Marshal]::SizeOf($hc)
+          $hc.dwFlags = 1   # HCF_HIGHCONTRASTON
+          $hc.lpszDefaultScheme = "High Contrast Black"
+          $ok = [HC]::SystemParametersInfo(0x0043, $hc.cbSize, [ref]$hc, 3)   # SPI_SETHIGHCONTRAST, update and broadcast
+          "SPI_SETHIGHCONTRAST returned $ok (error $([System.Runtime.InteropServices.Marshal]::GetLastWin32Error()))"
+          $theme = Get-ChildItem "C:\Windows\Resources\Ease of Access Themes\*.theme" -ErrorAction SilentlyContinue | Where-Object { $_.Name -match 'hcblack|hc2|nightsky' } | Select-Object -First 1
+          if ($theme) { "Opening $($theme.FullName)"; Start-Process $theme.FullName; Start-Sleep -Seconds 15; Stop-Process -Name SystemSettings -ErrorAction SilentlyContinue }
+          Get-ItemProperty "HKCU:\Control Panel\Accessibility\HighContrast" -ErrorAction Continue
+      - name: Serve the site and take the shots
+        shell: pwsh
+        run: |
+          $server = Start-Process -PassThru -NoNewWindow npx -ArgumentList 'vite','preview','--config','vite.demo.config.ts','--port','4173','--strictPort'
+          Start-Sleep -Seconds 8
+          node scripts/experiments/windows-contrast.mjs http://localhost:4173/ experiments/windows-contrast
+          Stop-Process -Id $server.Id -ErrorAction SilentlyContinue
+      - name: Commit what it saw
+        shell: pwsh
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add experiments/windows-contrast
+          git commit -m "Windows contrast experiment: what the runner saw"
+          git push
