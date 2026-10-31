@@ -241,3 +241,28 @@
   .pg-expand[aria-expanded="true"] { background: var(--vela-bg-selected); border-color: var(--vela-border-active); }
 }
 @media (forced-colors: active) { .pg-expand { border-color: ButtonText; } }
+
+/* ----------------------------------------------------- the stage width -- */
+/* Section 5, "Stage width" (slice 2b): the frame narrows to the chosen width, anchored top-left, with
+   a hairline at its right edge and its width printed beside it. The stage itself keeps its size.
+   Nothing animates: the width follows the reader's input. */
+.pg-width { display: inline-flex; align-items: center; gap: var(--vela-space-5); }
+.pg-width .pg-toolbar__label { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); }
+.pg-width__field {
+  width: calc(4 * var(--vela-space-20)); height: var(--vela-control-height-24); box-sizing: border-box;
+  padding: 0 var(--vela-space-5); border: 1px solid var(--vela-control-border); border-radius: var(--vela-radius-4);
+  background: var(--vela-control-bg); color: var(--vela-text-default);
+  font: inherit; font-size: var(--vela-text-meta-size); font-variant-numeric: tabular-nums;
+}
+.pg-width__unit { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
+.pg-width__slider { width: calc(8 * var(--vela-space-20)); accent-color: var(--vela-border-active); }
+.pg-width__note { margin: 0 0 var(--vela-space-10); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
+.pg-frame-body--sized { position: relative; box-sizing: border-box; max-width: 100%; }
+.pg-frame-body--sized.is-narrowed { border-inline-end: 1px solid var(--vela-border-default); }
+.pg-width__mark { position: absolute; top: calc(-1 * var(--vela-space-20)); right: var(--vela-space-5); color: var(--vela-text-default); font-variant-numeric: tabular-nums; }
+.pg-width__handle {
+  position: absolute; top: 0; bottom: 0; right: calc(-1 * var(--vela-space-5)); width: var(--vela-space-10);
+  cursor: ew-resize; touch-action: none;
+}
+@media (hover: hover) { .pg-width__handle:hover { background: var(--vela-bg-hover); } }
+@media (forced-colors: active) { .pg-frame-body--sized.is-narrowed { border-inline-end-color: CanvasText; } }

@@ -23,6 +23,8 @@ export interface LinkState {
   values: Values
   stage?: Stage
   compare?: Compare
+  /** The container width in px (section 5, "Stage width"): a number, clamped by the page to its range. */
+  width?: number
   notices: string[]
 }
 
@@ -68,11 +70,17 @@ export function readLink(query: string, name: string, controls: Control[], defau
     if ((COMPARES as string[]).includes(compare)) out.compare = compare as Compare
     else out.notices.push(`This link asked to compare \`${compare}\`, which this page can't. Showing Off.`)
   }
+  // A number, never free text (section 11): digits only, read as pixels.
+  const w = params.get('w')
+  if (w !== null) {
+    if (/^\d{1,5}$/.test(w)) out.width = Number(w)
+    else out.notices.push(`This link asked for a container width of \`${w}\`, which isn't a number of pixels. Showing the full width.`)
+  }
   return out
 }
 
 /** The query for the current settings: only what differs from the defaults, closed sets only. */
-export function writeLink(controls: Control[], values: Values, defaults: Values, extra: { implementation?: string; defaultImplementation?: string; stage: Stage; defaultStage: Stage; compare: Compare }): string {
+export function writeLink(controls: Control[], values: Values, defaults: Values, extra: { implementation?: string; defaultImplementation?: string; stage: Stage; defaultStage: Stage; compare: Compare; width?: number }): string {
   const params = new URLSearchParams()
   for (const c of controls) {
     if (c.kind === 'text') continue
@@ -82,6 +90,7 @@ export function writeLink(controls: Control[], values: Values, defaults: Values,
   if (extra.implementation && extra.implementation !== extra.defaultImplementation) params.set('implementation', extra.implementation)
   if (extra.stage !== extra.defaultStage) params.set('stage', extra.stage)
   if (extra.compare !== 'off') params.set('compare', extra.compare)
+  if (extra.width !== undefined) params.set('w', String(Math.round(extra.width)))
   if ([...params.keys()].length === 0) return ''
   return `v=${LINK_VERSION}&${params.toString()}`
 }

@@ -17,6 +17,7 @@ import { buildIndex, closest } from './playground/search'
 import { Segments } from './shell/Segments'
 import { ScrollRegion } from './shell/ScrollRegion'
 import { StageBoundary, COMMIT, type Settings } from './shell/ErrorBoundary'
+import { StageWidth, WidthHandle, FLOOR, clampWidth } from './playground/StageWidth'
 import './playground.css'
 
 type Mode = 'light' | 'dark'
@@ -186,6 +187,26 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
   // The phone stage strip (section 6, A8 and A12): pinned while the controls scroll, on a tall enough
   // phone screen (the media query in playground.css). It lets go while a text control has focus,
   // because the on-screen keyboard halves the height, and while the reader has expanded it.
+  const [width, setWidth] = useState<number | undefined>(() => (entry.containerResponsive ? link.width : undefined))
+  // The width the stage gives one frame's body: the top of the width control's range.
+  const frameRef = useRef<HTMLDivElement>(null)
+  const [avail, setAvail] = useState<number | null>(null)
+  useEffect(() => {
+    const el = frameRef.current
+    if (!el || !entry.containerResponsive) return
+    const measure = () => { const cs = getComputedStyle(el); setAvail(Math.floor(el.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight))) }
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    return () => ro.disconnect()
+  })
+  const [phone, setPhone] = useState(() => window.matchMedia('(max-width: 600px)').matches)
+  useEffect(() => {
+    const m = window.matchMedia('(max-width: 600px)')
+    const on = () => setPhone(m.matches)
+    m.addEventListener('change', on)
+    return () => m.removeEventListener('change', on)
+  }, [])
   const [typing, setTyping] = useState(false)
   const [expanded, setExpanded] = useState(false)
   const pageTheme = usePageTheme()
@@ -244,19 +265,23 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
   const texts = controls.filter((c) => c.kind === 'text')
   const booleans = controls.filter((c) => c.kind === 'boolean')
   const uncontrolled = spec.props.filter((p) => !controls.some((c) => c.prop === p.prop) && !entry.hide?.includes(p.prop))
-  const dirty = JSON.stringify(values) !== JSON.stringify(initial) || stage !== defaultStage || compare !== 'off'
+  // The width control's range: the spec's minimum (none is stated as a number yet, so 320px) to the stage's width.
+  const wMax = avail ?? 0
+  const wMin = Math.min(FLOOR, wMax)
+  const frameWidth = entry.containerResponsive && avail !== null && width !== undefined ? clampWidth(width, wMin, wMax) : undefined
+  const dirty = JSON.stringify(values) !== JSON.stringify(initial) || stage !== defaultStage || compare !== 'off' || width !== undefined
   const frames: Mode[] = compare === 'themes' ? ['light', 'dark'] : [pageTheme]
   const changedProps = controls.filter((c) => v[c.prop] !== initial[c.prop]).map((c) => c.prop)
   const levelOf = (rule: string) => entry.spec.match(new RegExp(`\\[\\[rule:\\s*${rule}\\s*\\|\\s*(\\w+)\\s*\\]\\]`))?.[1]
 
   // The address carries the settings (section 11), replaced, not pushed: no history entry per click.
   useEffect(() => {
-    const q = writeLink(controls, v, initial, { implementation: impl?.id, defaultImplementation: implIds[0], stage, defaultStage, compare })
+    const q = writeLink(controls, v, initial, { implementation: impl?.id, defaultImplementation: implIds[0], stage, defaultStage, compare, width: frameWidth })
     const next = `${href({ kind: 'component', id: entry.id, tab: tab })}${q ? `?${q}` : ''}`
     if (window.location.hash !== next) window.history.replaceState(window.history.state, '', next)
   })
 
-  const resetAll = () => { setValues(initial); setStage(defaultStage); setCompare('off'); setLock(null); setAnnounce('Stage updated: every setting back to its default') }
+  const resetAll = () => { setValues(initial); setStage(defaultStage); setCompare('off'); setWidth(undefined); setLock(null); setAnnounce('Stage updated: every setting back to its default') }
   // What a stage error report may carry: values from closed sets only (selects and switches, the
   // implementation, the stage view), never the free text typed into a field.
   const closedSettings: Settings = Object.fromEntries([
@@ -329,6 +354,9 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
                   <span className="pg-toolbar__group"><span className="pg-toolbar__label" aria-hidden="true">Compare</span>
                   <Segments label="Compare" value={compare} options={COMPARE_OPTIONS} onChange={(cmp) => { setCompare(cmp); setAnnounce(`Stage updated: ${cmp === 'themes' ? 'light and dark side by side' : 'one theme, the page\'s'}`) }} />
                   </span>
+                  {entry.containerResponsive && avail !== null && (
+                    <StageWidth min={wMin} max={wMax} width={frameWidth} onChange={setWidth} phone={phone} />
+                  )}
                   <div className="pg-toolbar__spacer" />
                   <Toggle label="Reduced motion" size="tiny" checked={reduced} onChange={setReduced} />
                   <span className="pg-reset">
@@ -336,6 +364,7 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
                     {!dirty && <span className="pg-reset__why">Nothing to reset</span>}
                   </span>
                 </div>
+                {entry.widthNote?.(v) && <p className="pg-width__note">{entry.widthNote(v)}</p>}
                 {/* A landmark of its own (spec section 13): header, nav, main, Stage, Controls and Code. */}
                 <section aria-label="Stage" className="pg-stage-region">
                 <button type="button" className="pg-expand vela-meta" aria-expanded={expanded} onClick={() => setExpanded((x) => !x)}>
@@ -348,12 +377,19 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
                   onReset={() => { setValues(initial); setAttempt((n) => n + 1) }}
                 >
                   <ScrollRegion label="Stage, scrollable" className={cn('pg-stage', frames.length === 1 && 'pg-stage--single', reduced && 'pg-reduced')}>
-                    {frames.map((m) => (
-                      <div key={m} className="vela-root pg-frame" data-theme={m}>
+                    {frames.map((m, i) => (
+                      <div key={m} ref={i === 0 ? frameRef : undefined} className="vela-root pg-frame" data-theme={m}>
                         <span className="pg-frame-label vela-meta">
                           {m}{compare === 'off' ? ' · follows the page theme' : ''}{stage === 'full' ? ' · Full width' : ''}
                         </span>
-                        <div className="pg-frame-body"><Rendered entry={entry} v={v} /></div>
+                        {entry.containerResponsive ? (
+                          // Only the frame moves (section 5): a hairline at its edge, its width beside it.
+                          <div className={cn('pg-frame-body pg-frame-body--sized', frameWidth !== undefined && 'is-narrowed')} style={frameWidth !== undefined ? { width: frameWidth } : undefined}>
+                            <Rendered entry={entry} v={v} />
+                            {frameWidth !== undefined && <span className="pg-width__mark vela-meta" aria-hidden="true">{frameWidth}px</span>}
+                            {!phone && avail !== null && <WidthHandle width={frameWidth ?? wMax} min={wMin} max={wMax} onChange={setWidth} />}
+                          </div>
+                        ) : <div className="pg-frame-body"><Rendered entry={entry} v={v} /></div>}
                       </div>
                     ))}
                   </ScrollRegion>
