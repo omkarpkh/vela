@@ -28,6 +28,12 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   built.
 
 ### Changed
+- **Patterns, Copy: paragraphs split to fit the site's 240-character limit** (from the icon thread).
+  The opening paragraph is split between its two sentences. The Status paragraph is now a short
+  line, with the status rule and the pressure-test note as two bullets under it and a blank line
+  before "Carried out by". The section 5 bullet on a blocked copy is now two bullets. No words
+  changed. One paragraph is still over the limit as rendered: open question 3, at 243 characters.
+  The site still splits it between sentences.
 - **Site: the header and every page title say "Vela Design System"**, the full name the Figma
   thread's naming rule asks for once per page (Omkar kept the name on 1 Nov 2026). A phone's header
   shows "Vela"; its page title keeps the full name. The package stays `@omkarux/vela`.
