@@ -59,6 +59,40 @@ export type CopyResult = 'copied' | 'selected' | 'none'
  */
 export interface CopySimulation { api?: boolean; fallback?: boolean }
 
+let ownWrite = false
+/**
+ * True while this page's own fallback copy runs: the browser fires a `copy` event for it, which a
+ * listener (CopyGroup) must not take for the person's own Ctrl+C.
+ */
+export const isOwnWrite = () => ownWrite
+
+/**
+ * The second try for a value the page doesn't show (a secret fetched at the press): an off-screen,
+ * read-only field holds it for the copy command and is removed at once. Nothing is left selected, so
+ * a refusal is "nothing was copied".
+ */
+function copyUnshown(text: string, simulate?: CopySimulation): CopyResult {
+  if (simulate?.fallback) return 'none'
+  const field = document.createElement('textarea')
+  field.value = text
+  field.readOnly = true
+  field.setAttribute('aria-hidden', 'true')
+  field.style.position = 'fixed'
+  field.style.opacity = '0'
+  field.style.pointerEvents = 'none'
+  const before = document.activeElement as HTMLElement | null
+  document.body.appendChild(field)
+  field.select()
+  let copied = false
+  ownWrite = true
+  try { copied = document.execCommand('copy') } catch { copied = false } finally { ownWrite = false }
+  field.remove()
+  window.getSelection()?.removeAllRanges()
+  // Focus never moves: the control that copied keeps it.
+  before?.focus?.()
+  return copied ? 'copied' : 'none'
+}
+
 /** Copies `text`; `shown` is the element that shows exactly that text. */
 export async function copyText(text: string, shown: HTMLElement | null, simulate?: CopySimulation): Promise<CopyResult> {
   try {
@@ -67,10 +101,11 @@ export async function copyText(text: string, shown: HTMLElement | null, simulate
     await navigator.clipboard.writeText(text)
     return 'copied'
   } catch { /* the second try */ }
-  if (!shown) return 'none'
+  if (!shown) return copyUnshown(text, simulate)
   select(shown)
   let copied = false
-  try { copied = simulate?.fallback ? false : document.execCommand('copy') } catch { copied = false }
+  ownWrite = true
+  try { copied = simulate?.fallback ? false : document.execCommand('copy') } catch { copied = false } finally { ownWrite = false }
   if (copied) { window.getSelection()?.removeAllRanges(); return 'copied' }
   select(shown)
   return 'selected'

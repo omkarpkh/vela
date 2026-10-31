@@ -28,6 +28,32 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   built.
 
 ### Changed
+- **Site, slice 6b: the Copy page's second half** (`#/patterns/copy`, sections 5 to 13; playground
+  spec, section 12). The page now carries all of `guidelines/patterns/copy.md`, and the note that
+  sent readers to GitHub for the rest is gone. Each section leads with a live example:
+  - **Secrets:** a masked sample key, fetched only at the press and never in the page before it,
+    with a read count; the receipt gives its length; Clipboard blocked and May reveal switches,
+    and Show key to copy opens a selected field with this platform's keys, which hides on copy,
+    blur, Hide, or when the page is hidden.
+  - **Commands:** an agent's command with a real right-to-left mark and curly quotes, made at
+    runtime; the mark shows as an escape, two warnings say what is wrong, and the copy is exact
+    with one trailing newline removed.
+  - **Tables and groups:** 200 rows in the kit's Table, in a stand-in for CopyGroup
+    (`demo/shell/CopyGroup.tsx`). The page now has one "Copied" mark, keyed by the value's
+    identity, so it follows its value through a sort, and Rotate key turns it into "Changed since
+    you copied". Every word the mark can show keeps its place, so nothing moves.
+  - **Everyone gets the same story:** Keyboard and Reduced motion switches, a panel showing what a
+    screen reader says, and three images captured in Chromium's forced-colours emulation.
+  - **Motion:** the keyframe strip at 48 and 16 pixels, and a time scrubber that stops the real CSS
+    transitions at any moment, with Play at 1× or 5× slower.
+  - **Components, minimum width, tests:** the tables; the stage width control at 160px and 280px
+    (it gains optional marks); and a proof link for any rule whose component is built, "not built
+    yet" for the rest.
+
+  A value the page doesn't show, like a fetched secret, now has a second try too: an off-screen
+  field copied from and removed at once. Inline markdown renders code inside bold, and the Copy page
+  reads single-asterisk emphasis. e2e covers each section; the unit tests cover the one mark, the
+  right-to-left mark made at runtime, and the 240-character rule over the whole page.
 - **Figma: a published set is extended in place, and the code holds it to that** (R18).
   Builders create and never update, because a rebuilt set detaches its instances, but until now a
   change to a published set had no route except by hand. It is now an extension,

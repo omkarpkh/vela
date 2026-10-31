@@ -240,3 +240,38 @@ body { margin: 0; background: var(--vela-bg-global); }
 }
 .copy-value__mark.is-off { visibility: hidden; }
 .copy-showme { white-space: nowrap; }
+
+/* Copy pattern, sections 5 to 13 (slice 6b). The mark keeps a place for every word it can show,
+   stacked in one grid cell, so a word arriving or changing never moves what is around it. */
+.copy-mark { display: inline-grid; }
+.copy-mark > .copy-value__mark { grid-area: 1 / 1; }
+.copy-example__note { margin: 0; }
+.copy-receipt { display: block; min-height: var(--vela-text-meta-line-height); }
+.copy-value__failure { display: flex; flex-wrap: wrap; align-items: center; gap: var(--vela-space-5) var(--vela-space-10); }
+.copy-secret { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--vela-space-10); }
+.copy-command { white-space: pre-wrap; }
+/* A hidden character, shown as its escape: a dashed box says "this is not what it looks like", and the word is in its title and in the warning. */
+.copy-escape { padding: 0 var(--vela-space-5); margin: 0 var(--vela-space-5); border: 1px dashed var(--vela-border-default); border-radius: var(--vela-radius-3); }
+.copy-warnings { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--vela-space-5); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); font-weight: var(--vela-font-weight-semibold); }
+.copy-warnings li { display: flex; align-items: center; gap: var(--vela-space-5); }
+.copy-story { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, calc(8 * var(--vela-space-30))), 1fr)); gap: var(--vela-space-15) var(--vela-space-20); align-items: start; }
+.copy-sr { padding: var(--vela-space-10) var(--vela-space-15); border: 1px solid var(--vela-border-default); border-radius: var(--vela-radius-4); }
+.copy-sr__title { margin: 0 0 var(--vela-space-5); font-weight: var(--vela-font-weight-semibold); }
+.copy-sr__lines { margin: 0; padding-inline-start: var(--vela-space-20); font-family: var(--vela-font-family-mono); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); }
+.copy-sr__line { margin: 0; }
+.copy-forced { margin: 0; display: flex; flex-direction: column; gap: var(--vela-space-5); }
+.copy-forced__shots { display: flex; flex-wrap: wrap; gap: var(--vela-space-10); }
+.copy-forced__shots img { display: block; max-width: 100%; height: auto; border: 1px solid var(--vela-border-default); border-radius: var(--vela-radius-4); }
+.copy-forced figcaption { margin: 0; }
+.copy-frames { display: flex; flex-wrap: wrap; gap: var(--vela-space-10); }
+.copy-frames__frame { display: flex; flex-direction: column; align-items: center; gap: var(--vela-space-5); }
+.copy-scrub { width: calc(8 * var(--vela-space-30)); max-width: 100%; accent-color: var(--vela-border-active); }
+.copy-scrub__value { font-variant-numeric: tabular-nums; }
+.copy-width { min-width: 0; }
+.copy-width__frame { box-sizing: content-box; max-width: 100%; padding: var(--vela-space-10); border: 1px dashed var(--vela-border-default); border-radius: var(--vela-radius-4); }
+/* Full layout from 280px: the label's 70px, a gap, and the value's 200px side by side; below it, stacked. */
+.copy-width__value { display: flex; flex-wrap: wrap; align-items: center; gap: var(--vela-space-5) var(--vela-space-10); }
+.copy-width__label { flex: 1 0 calc(7 * var(--vela-space-10)); margin: 0; white-space: nowrap; }
+.copy-width__value > .copy-value { flex: 1 0 calc(20 * var(--vela-space-10)); min-width: 0; }
+.copy-page__details { margin: var(--vela-space-10) 0 0; }
+.copy-page__details summary { cursor: pointer; font-weight: var(--vela-font-weight-semibold); }
