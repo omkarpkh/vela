@@ -129,8 +129,7 @@ dark) and the container (3.07 light, 3.29 dark). The body text on `--vela-bg-rai
 content to read — it is something that appears, which is what `base` is for. The 4% of scale is
 the whole movement, about 11px across a 280px popover, so on `--vela-ease-out` it is most of the
 way there in the first frames. Under `prefers-reduced-motion` the global collapse in `base.css`
-applies; the popover reads correctly frozen at either end. The values are provisional until
-reviewed on the Motion review page (`#/motion`).
+applies; the popover reads correctly frozen at either end. The values were approved on 31 October 2026, from the Motion review page (`#/motion`); decision 006.
 
 ## Responsive behaviour
 

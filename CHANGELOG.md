@@ -28,10 +28,14 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   `PAIRS`: the lock on the highlighted row.
 - **DESIGN.md's Locked line covers a policy that applies to everyone**, and says a value a
   person's role may never have is not shown at all.
+- **The motion values are decided.** `duration-travel`, `ease-out` and `ease-spring`, and the
+  values below (the overlays' 0.96, the small controls' 0.9, the toast stack's step and scale),
+  were approved by Omkar on 31 October from recordings of the Motion review page. They were
+  provisional since 0.13.0. Decision 006 records it.
+
 ### Added
 - **Motion pass, part 2: the Toast stack, overlays that grow from their trigger, state and press
-  motion on the small controls.** No new token and no new prop; every value below is
-  **provisional until the owner has reviewed the feel** on the Motion review page. Thirty new
+  motion on the small controls.** No new token and no new prop. Thirty new
   rules, all `browser`, each with a Playwright proof that the part moves only by `transform` and
   `opacity` (the stack also uses the `translate` and `scale` properties), reads correctly at its end
   state under reduced motion, ends in the right state when re-triggered mid-flight, and does not
@@ -74,6 +78,12 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   - Not done, noted for later: the kit has no disclosure chevron and no copy-to-clipboard control
     today (the glyphs exist in the Icon set, but no component owns that state), so neither got
     motion; Table's sort glyph swap was left as it is.
+
+### Fixed
+- **The npm description and `llms.txt` gave the wrong rule count.** 0.14.0's npm page says 69 of
+  170 rules are enforced by the compiler, and `llms.txt` said 69 of 178. The specs carried 180 at
+  release, and carry 182 now. A test now checks the README, the package description and `llms.txt` against the
+  specs' own tags.
 
 ## [0.14.0] — 2026-10-31
 

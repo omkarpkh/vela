@@ -19,7 +19,7 @@ export interface Item {
   id: string
   title: string
   href: string
-  /** A lifecycle tag, shown as words: Experimental, Proposal, Planned. Approved carries none. */
+  /** A lifecycle tag, shown as words: Experimental, Proposal, Planned, Specified, Not in Vela. Approved carries none. */
   tag?: string
   aliases: string[]
   /** The "When to use" lines that send a reader here, without their markdown. */
@@ -62,6 +62,16 @@ export const MISSING: { id: string; title: string; aliases: string[]; stands: st
   { id: 'side-navigation', title: 'Side Navigation', aliases: ['sidebar', 'side nav', 'navigation', 'nav'], stands: 'not specified yet', sign: 'The page-level list of places. Within a page, Tabs switch sections.', closest: 'tabs' },
 ]
 
+/**
+ * The tag says where a missing component stands, as its line does: "Planned" only for what the
+ * roadmap plans, "Specified" for a spec that isn't built, and "Not in Vela" for the rest.
+ */
+export function missingTag(stands: string): 'Planned' | 'Specified' | 'Not in Vela' {
+  if (/^planned\b/i.test(stands)) return 'Planned'
+  if (/^specified\b/i.test(stands)) return 'Specified'
+  return 'Not in Vela'
+}
+
 export function buildIndex(): Item[] {
   const items: Item[] = []
   const nameToId = new Map(REGISTRY.map((e) => [e.name.toLowerCase(), e.id]))
@@ -83,7 +93,7 @@ export function buildIndex(): Item[] {
   }
   for (const m of MISSING) {
     const closest = REGISTRY.find((e) => e.id === m.closest)!
-    items.push({ kind: 'missing', id: m.id, title: m.title, href: href({ kind: 'component', id: closest.id }), tag: 'Planned', aliases: m.aliases, uses: [], sign: m.sign })
+    items.push({ kind: 'missing', id: m.id, title: m.title, href: href({ kind: 'component', id: closest.id }), tag: missingTag(m.stands), aliases: m.aliases, uses: [], sign: m.sign })
   }
   for (const p of PROPOSALS) items.push({ kind: 'proposal', id: p.id, title: p.name, href: href({ kind: 'proposal', id: p.id }), tag: 'Proposal', aliases: [], uses: [], sign: plain(p.what) })
   for (const f of FOUNDATIONS) items.push({ kind: 'foundation', id: f.id, title: f.title, href: href({ kind: 'foundation', id: f.id }), aliases: [], uses: [], sign: 'Foundation' })

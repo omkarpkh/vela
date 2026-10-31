@@ -24,12 +24,15 @@ export const SEGMENT_MAX = 6
 
 export interface OpenLock { prop: string; value: string; lock: Lock }
 
-/** "1 unavailable: text-link. text-link never carries an icon." Read in order; never the word "locked". */
+/**
+ * One sentence per unavailable value, each starting with the value: "text-link never carries an
+ * icon." (playground spec, section 5). The count prefix is A24's form for a select, not for segments.
+ * Never the word "locked".
+ */
 function unavailableLine(options: string[], locks: Record<string, Lock>) {
-  const values = options.filter((o) => locks[o])
-  if (values.length === 0) return null
-  const reasons = [...new Set(values.map((o) => locks[o].reason))]
-  return <span className="pg-field__note">{values.length} unavailable: {values.join(', ')}. {reasons.join(' ')}</span>
+  const reasons = [...new Set(options.filter((o) => locks[o]).map((o) => locks[o].reason))]
+  if (reasons.length === 0) return null
+  return <span className="pg-field__note">{reasons.join(' ')}</span>
 }
 
 /** One control. `locks` are this prop's locked values, by value. */

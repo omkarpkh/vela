@@ -15,6 +15,7 @@ needs a record; `TEMPLATE.md` is the shape.
 | 003 | [Icons: a curated Lucide set, compiled into the core](003-icons-lucide-curated/README.md) | 29 Oct 2026 | Shipped as Experimental in 0.13.0. The move of the kit's own glyphs is open; see the record. |
 | 004 | [Icon strokes may draw](004-icon-strokes-draw/README.md) | 30 Oct 2026 | Shipped in 0.14.0: the rule 1 exception and its checks. No component uses it yet; frame cost outside Chromium is open. |
 | 005 | [Tabs hover preview: the Seed](005-tabs-hover-seed/README.md) | 30 Oct 2026 | Shipped in 0.14.0, with the press growing in place. The near/far hybrid and a real Windows contrast theme are open. |
+| 006 | [The motion values are approved](006-motion-values-approved/README.md) | 31 Oct 2026 | Shipped in 0.15.0. Judged from Chromium recordings; Safari, Firefox, swipe and Dialog not seen. |
 
 ## Numbering
 

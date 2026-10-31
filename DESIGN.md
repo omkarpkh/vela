@@ -203,10 +203,10 @@ bullet below and `guidelines/components/tabs.md#motion`):
   place after a pointer press, and the Toast stack moving back and spreading), always paired with
   `--vela-duration-travel`.
 
-The three new values (`duration-travel`, `ease-out`, `ease-spring`) are **provisional** until the
-owner has reviewed their feel on the playground's Motion review page (`#/motion`), and so are the
-values the specs choose with them (the overlays' 0.96, the small controls' 0.9, the toast stack's
-step and scale).
+The three new values (`duration-travel`, `ease-out`, `ease-spring`), and the values the specs choose
+with them (the overlays' 0.96, the small controls' 0.9, the toast stack's step and scale), were
+approved by the owner on 31 October 2026, from recordings of the playground's Motion review page
+(`#/motion`); decision 006 records it.
 
 Overlays enter on `--vela-ease-out` and leave on opacity alone; one opened or closed from the
 keyboard does not animate (`data-vela-instant`). Popover and Tooltip grow from their trigger —

@@ -138,8 +138,7 @@ Motion, says why 0.9). The dot is moved by the component that owns the selection
 fade has finished. **The keyboard mark is on the group, not the radio**: an arrow key pressed on
 one radio selects another, and that radio's dot must not animate either. A pointer anywhere on the
 group clears it. Under `prefers-reduced-motion` the global collapse in `base.css` applies. No prop
-turns any of this on or off. The values are provisional until reviewed on the Motion review page
-(`#/motion`).
+turns any of this on or off. The values were approved on 31 October 2026, from the Motion review page (`#/motion`); decision 006.
 
 ## Responsive behaviour
 

@@ -300,7 +300,7 @@ test.describe('the page header', () => {
     await expect(page.locator('.pg-install-command')).toHaveCount(1)
   })
 
-  test('a set built but not yet published still links to the library file', async ({ page }) => {
+  test('Dropdown List links to its set in the library, published with 0.14.0', async ({ page }) => {
     await page.goto('/#/components/dropdown-list')
     const use = page.getByRole('region', { name: 'Use Dropdown List' })
     await expect(use.getByRole('link', { name: 'Figma' })).toHaveAttribute('href', /node-id=164-85$/)
@@ -670,7 +670,7 @@ test.describe('review of slices 1 to 3', () => {
     const appearance = controls.locator('.pg-field[data-prop="appearance"]')
     const textLink = appearance.getByRole('button', { name: 'text-link', exact: true })
     await expect(textLink.locator('svg.vela-icon')).toHaveAttribute('aria-hidden', 'true')
-    await expect(appearance.locator('.pg-field__note')).toHaveText('1 unavailable: text-link. text-link never carries an icon.')
+    await expect(appearance.locator('.pg-field__note')).toHaveText('text-link never carries an icon.')
     await textLink.focus()
     await page.keyboard.press('Enter')
     await expect(controls.getByRole('button', { name: 'Keep the icon' })).toBeVisible()
@@ -711,6 +711,8 @@ test.describe('review of slices 1 to 3', () => {
     await expect(facts).toContainText('@omkarux/vela/headless')
     await expect(facts).toContainText('Not built')
     await expect(facts.locator('.pg-fact--rules dt')).toHaveText('Rules planned')
+    // Counted from the proposal's own Hard constraints, never a zero it can't read (B9).
+    await expect(facts.locator('.pg-fact--rules .pg-fact__total')).toHaveText('19')
     await expect(page.getByRole('link', { name: 'Follow or discuss this proposal' })).toHaveAttribute('href', 'https://github.com/omkarpkh/vela/pull/21')
   })
 })

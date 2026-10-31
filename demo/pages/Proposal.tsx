@@ -4,7 +4,7 @@ import { REGISTRY } from '../playground/registry'
 import { PROPOSALS, loadProposal } from '../playground/proposals'
 import type { ProposalPage } from '../playground/proposal-read'
 import { LINKS, figmaUrl } from '../links'
-import { rulesOf } from '../playground/facts'
+import { proposalRulesOf } from '../playground/facts'
 
 // A Proposal page (playground spec, section 7; P1 request, item 3, following GOV.UK): a written
 // spec that is not built. No stage, no controls, no snippet and no install. The first block is a
@@ -84,7 +84,8 @@ function dependenciesLine(source: string): string | undefined {
 function ProposalFacts({ source }: { source: string }) {
   const deps = dependenciesLine(source)
   const entry = deps && /\/headless|base-ui/i.test(deps) ? '@omkarux/vela/headless' : '@omkarux/vela'
-  const rules = rulesOf(source)
+  // B9: a count that can't be read is left out, never shown as 0.
+  const rules = proposalRulesOf(source)
   return (
     <div className="pg-facts-wrap">
       <dl className="pg-facts pg-facts--proposal" aria-label="Contract">
@@ -92,13 +93,15 @@ function ProposalFacts({ source }: { source: string }) {
         <div className="pg-fact"><dt>Planned entry</dt><dd><code>{entry}</code></dd></div>
         <div className="pg-fact"><dt>Will need</dt><dd>{deps ?? 'Not stated in the spec'}</dd></div>
         <div className="pg-fact"><dt>Built</dt><dd>Not built</dd></div>
-        <div className="pg-fact pg-fact--rules">
-          <dt>Rules planned</dt>
-          <dd>
-            <span className="pg-fact__total">{rules.total}</span>
-            {rules.byLevel.map((l) => <span key={l.level} className="site-tag">{l.count} {l.words}</span>)}
-          </dd>
-        </div>
+        {rules.total > 0 && (
+          <div className="pg-fact pg-fact--rules">
+            <dt>Rules planned</dt>
+            <dd>
+              <span className="pg-fact__total">{rules.total}</span>
+              {rules.byLevel.map((l) => <span key={l.level} className="site-tag">{l.count} {l.words}</span>)}
+            </dd>
+          </div>
+        )}
       </dl>
     </div>
   )

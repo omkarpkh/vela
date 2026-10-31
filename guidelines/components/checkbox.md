@@ -165,8 +165,7 @@ clears the mark. A change the app makes — a controlled `checked` set from else
 select-all — animates like a pointer one, unless this box's last input was the keyboard.
 
 Under `prefers-reduced-motion` the global collapse in `base.css` applies. No prop turns any of this
-on or off; the prop set stays closed. The values are provisional until reviewed on the Motion review
-page (`#/motion`).
+on or off; the prop set stays closed. The values were approved on 31 October 2026, from the Motion review page (`#/motion`); decision 006.
 
 ## Responsive behaviour
 

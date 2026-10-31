@@ -243,8 +243,7 @@ How it is built, all in `Toast.css`, from Base UI's own signals:
 
 Under `prefers-reduced-motion` the global collapse in `base.css` applies to every movement here: the
 stack collapses and spreads at once. It does not shorten the dwell: `--vela-duration-toast` is a
-timer, not a transition. No prop turns any of this on or off; the prop set stays closed. The values
-are provisional until reviewed on the Motion review page (`#/motion`).
+timer, not a transition. No prop turns any of this on or off; the prop set stays closed. The values were approved on 31 October 2026, from the Motion review page (`#/motion`); decision 006.
 
 ## Responsive behaviour
 

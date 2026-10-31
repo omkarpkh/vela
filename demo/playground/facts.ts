@@ -23,6 +23,19 @@ export function rulesOf(spec: string): { total: number; byLevel: { level: Level;
   return { total: found.length, byLevel }
 }
 
+/**
+ * A proposal's planned rules. A proposal lists each rule as `` `id` · level `` at the end of its bullet
+ * under "## Hard constraints"; the tags become `[[rule: … ]]` when the spec enters
+ * guidelines/components/. Counted from that section only, so a rule named in prose elsewhere is not
+ * counted twice. Zero means none were found, so the page leaves the count out rather than show 0.
+ */
+export function proposalRulesOf(spec: string): ReturnType<typeof rulesOf> {
+  const section = spec.split(/^## Hard constraints\s*$/m)[1]?.split(/^## /m)[0] ?? ''
+  const found = [...section.matchAll(/`[a-z0-9-]+` · (compiler|runtime|browser|convention)\b/g)].map((m) => m[1] as Level)
+  const byLevel = LEVELS.map((l) => ({ ...l, count: found.filter((f) => f === l.level).length })).filter((l) => l.count > 0)
+  return { total: found.length, byLevel }
+}
+
 /** What a consumer installs besides the package, for the entry they import from. */
 export function dependenciesFor(entry: Entry): string {
   if (!entry.endsWith('/headless')) return 'None at runtime'

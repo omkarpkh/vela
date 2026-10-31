@@ -82,8 +82,7 @@ of a 34px track is half a pixel, so the track presses to 0.9 (`checkbox.md`, Mot
 `:active` whether the track or the label is pressed, so both press the track. Before the motion pass, part 2, the knob
 also slid on Enter and Space; it now moves at once from the keyboard, as `foundations/motion.md`
 has always said. A key pressed on the toggle marks it `data-vela-instant`; a pointer on it clears
-the mark. No prop turns any of this on or off. The values are provisional until reviewed on the
-Motion review page (`#/motion`).
+the mark. No prop turns any of this on or off. The values were approved on 31 October 2026, from the Motion review page (`#/motion`); decision 006.
 
 ## Figma mapping
 

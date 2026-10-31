@@ -111,8 +111,7 @@ never grows a second size for a second paragraph — a second paragraph is a Pop
 
 `--vela-duration-fast`, not `base`, and faster than Popover: a tooltip has already waited
 `--vela-delay-tooltip` (600ms) for the pointer to rest, it is a few words rather than content, and it
-is crossed many times a day; 180ms more before the label is readable reads as lag. The values are
-provisional until reviewed on the Motion review page (`#/motion`).
+is crossed many times a day; 180ms more before the label is readable reads as lag. The values were approved on 31 October 2026, from the Motion review page (`#/motion`); decision 006.
 
 ## Responsive behaviour
 

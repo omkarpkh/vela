@@ -51,11 +51,11 @@ Why these values:
   values for its own `SpringDescription`; Figma receives the fallback curve and the values in the
   variable's description.
 
-**These three — `duration-travel`, `ease-out`, `ease-spring` — are provisional until the owner has
-reviewed their feel** on the playground's Motion review page (`#/motion`), which plays the Tabs
+**These three — `duration-travel`, `ease-out`, `ease-spring` — were approved by the owner on 31
+October 2026** (decision 006), from the playground's Motion review page (`#/motion`), which plays the Tabs
 hover preview and press in both implementations, the Toast stack, Popover and Tooltip, and the
 Checkbox, Radio Group and Toggle, each in both themes, with a Replay and a ×5 slow-motion switch that
-reaches all of them. Tune by feel, then look again the next day.
+reaches all of them. A change to any of them is a new review there, and a new decision record.
 
 - `--vela-delay-tooltip` (600ms): not an animation — how long the pointer rests on a control before
   its Tooltip opens, so a pointer crossing a toolbar does not flash every label. Keyboard focus does
