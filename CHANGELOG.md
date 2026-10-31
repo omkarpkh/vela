@@ -92,6 +92,13 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   broken (TypeScript 5.9.3)", and "Open proof" links to the test at the commit the page was built
   from. A line above says which build that is. The map is generated, never committed. A unit test
   checks that every proof line names its rule.
+- **Site: the Tabs stage shows ten tabs, and its width note no longer claims the "more" control.**
+  The example is the playground thread's ten security views (Overview, Alerts, Assets, Identities,
+  Policies, Devices, Reports, Audit log disabled, Sessions, Integrations), so the stage width control
+  has a full row to narrow. The note under the toolbar said the "more" control is in the headless
+  Tabs; it is designed but not built, and both implementations scroll the row today. The note now
+  says that. A component that responds to its container no longer widens the stage to fit its
+  content, so the width control's range is the stage's own width.
 - **Site, slice 2b: the stage width control** (playground spec, section 5, "Stage width"). On a
   component whose layout follows its container's width, Tabs first, the stage toolbar gains a
   Container width field and slider (the arrows move 10px, Page Up and Page Down 50px, Home and End

@@ -127,8 +127,16 @@ test('the Tabs page switches implementation, and the import line and install com
   await page.keyboard.press('ArrowRight')
   await expect(frame.getByRole('tab', { name: /^Assets/ })).toHaveAttribute('aria-selected', 'true')
   await expect(frame.getByRole('tabpanel')).toHaveText('Only the active panel is mounted.')
-  await page.keyboard.press('ArrowRight')   // Audit is disabled: wraps to Alerts
-  await expect(alerts).toBeFocused()
+  // Home and End jump; Audit log is disabled, so the arrows step over it.
+  await page.keyboard.press('Home')
+  await expect(frame.getByRole('tab', { name: 'Overview' })).toBeFocused()
+  await page.keyboard.press('End')
+  const last = frame.getByRole('tab', { name: 'Integrations' })
+  await expect(last).toBeFocused()
+  await page.keyboard.press('ArrowLeft')
+  await page.keyboard.press('ArrowLeft')
+  await expect(frame.getByRole('tab', { name: 'Reports' })).toBeFocused()
+  await alerts.click()
   await expect(alerts).toHaveAttribute('aria-selected', 'true')
   // Tabs.css keys on `[aria-selected='true']` and `:disabled`; Base UI's markup must hit both.
   const underline = (name: RegExp | string) => frame.getByRole('tab', { name }).evaluate((el) => getComputedStyle(el).borderBottomColor)
@@ -428,8 +436,8 @@ test.describe('the Tabs hover preview', () => {
         await open(page, impl)
         const min = parseFloat(await token(page, '--vela-tab-preview-width-min'))
         expect(min).toBe(24)
-        // The second tab, by position: its label is rewritten below.
-        const assets = frame(page).getByRole('tab').nth(1)
+        // Assets, by position (the third tab): its label is rewritten below.
+        const assets = frame(page).getByRole('tab').nth(2)
         await expect(assets).toHaveAccessibleName(/^Assets/)
         const measure = async (label: string, count: boolean) => {
           await assets.evaluate((t, [label, count]) => {

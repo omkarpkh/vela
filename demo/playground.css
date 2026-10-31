@@ -299,3 +299,8 @@
 }
 .pg-rule__where a { color: var(--vela-text-link); }
 .pg-proofs__intro p { margin: 0; }
+/* A component that responds to its container must never widen it: its frames take the stage's
+   width, not their content's minimum, so the width control's range is the stage's own width. */
+.pg-stage--responsive { grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); }
+.pg-stage--responsive.pg-stage--single { grid-template-columns: minmax(0, 1fr); }
+.pg-stage--responsive .pg-frame { min-width: 0; }
