@@ -1,6 +1,7 @@
 import { execSync } from 'node:child_process'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { specFactsPlugin } from './scripts/vite-spec-facts.mjs'
 
 // The commit the site is built from, for the error boundaries' "Report it on GitHub" link
 // (demo/shell/ErrorBoundary.tsx). CI provides GITHUB_SHA; a local build asks git; neither gives
@@ -14,7 +15,7 @@ function commit(): string {
 export default defineConfig({
   root: 'demo',
   base: process.env.VITE_BASE ?? '/',
-  plugins: [react()],
+  plugins: [react(), specFactsPlugin()],
   // The build date goes beside the commit in each component page's facts grid ("Built"), so a reader
   // knows which build the proofs come from (playground spec, A25). UTC, as a date only.
   define: {

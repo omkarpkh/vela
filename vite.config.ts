@@ -1,10 +1,13 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { specFactsPlugin } from './scripts/vite-spec-facts.mjs'
 import dts from 'vite-plugin-dts'
 
 export default defineConfig({
   plugins: [
     react(),
+    // For the site's tests: the nav and search read specs through ?facts (playground spec, B8).
+    specFactsPlugin(),
     dts({
       tsconfigPath: './tsconfig.types.json',
       include: ['src'],

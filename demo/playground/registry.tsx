@@ -5,7 +5,7 @@ import { Tabs as HeadlessTabs, Checkbox, RadioGroup, Popover, Tooltip, Dialog, T
 import type { ToastLimit, ToastPlacement, ToastSeverity, DropdownListAlign, DropdownListItem } from '../../src/headless'
 import { PlusIcon } from '../../src/lib/icons'
 import { printJsx, type Control, type Spec } from './spec'
-import { catalogEntry, type CatalogEntry } from './catalog'
+import { catalogEntry as factsEntry, type CatalogEntry } from './catalog'
 
 export type Values = Record<string, string | boolean | undefined>
 
@@ -26,6 +26,14 @@ export interface Implementation {
  * again. The rest follow the approved canvas.
  */
 export { GROUPS, type Group } from './catalog'
+
+// The full specs, for the component page's controls, rules and tokens. The catalog carries only each
+// spec's facts, for the shell (B8); this module loads with the component pages, so these do too.
+const FULL = import.meta.glob<string>('../../guidelines/components/*.md', { query: '?raw', import: 'default', eager: true })
+const catalogEntry = (id: string): CatalogEntry => {
+  const e = factsEntry(id)
+  return { ...e, spec: FULL[`../../guidelines/components/${e.file}`] }
+}
 
 /** Why a value can't be chosen now, and what would let it be. "Locked" is never shown or spoken. */
 export interface Lock {
