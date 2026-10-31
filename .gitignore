@@ -8,3 +8,4 @@ src/styles/tokens.dev.css
 test-results/
 playwright-report/
 .checks/
+demo/public/proofs/

@@ -1,0 +1,196 @@
+{
+  "spec": "guidelines/components/dropdown-list.md",
+  "typescript": "5.9.3",
+  "rules": [
+    {
+      "id": "dropdown-list-label-required",
+      "level": "compiler",
+      "sentence": "**`label` is required and is a `string`.** An unnamed menu is announced as \"menu\" and nothing else.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 464
+      },
+      "fixture": {
+        "name": "dropdown list with no label",
+        "snippet": "<DropdownList trigger={<Button>6 more</Button>} items={[{ value: 'alerts', label: 'Alerts' }]} defaultValue=\"alerts\" />",
+        "error": "fixture.tsx(3,26): error TS2322: Type '{ trigger: Element; items: [{ value: string; label: string; }]; defaultValue: string; }' is not assignable to type 'IntrinsicAttributes & DropdownListProps'.\n  Type '{ trigger: Element; items: [{ value: string; label: string; }]; defaultValue: string; }' is not assignable to type '(IntrinsicAttributes & DropdownListBaseProps & { value?: undefined; defaultValue?: string | undefined; } & { open: boolean; defaultOpen?: undefined; }) | (IntrinsicAttributes & ... 2 more ... & { ...; })'.\n    Property 'label' is missing in type '{ trigger: Element; items: [{ value: string; label: string; }]; defaultValue: string; }' but required in type 'DropdownListBaseProps'."
+      }
+    },
+    {
+      "id": "dropdown-list-items-required",
+      "level": "compiler",
+      "sentence": "**`trigger` and at least one item are required.** The items type is a non-empty tuple, so `[]` doesn't compile.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 466
+      },
+      "fixture": {
+        "name": "dropdown list with no trigger",
+        "snippet": "<DropdownList label=\"All tabs\" items={[{ value: 'alerts', label: 'Alerts' }]} defaultValue=\"alerts\" />",
+        "error": "fixture.tsx(3,26): error TS2322: Type '{ label: string; items: [{ value: string; label: string; }]; defaultValue: string; }' is not assignable to type 'IntrinsicAttributes & DropdownListProps'.\n  Type '{ label: string; items: [{ value: string; label: string; }]; defaultValue: string; }' is not assignable to type '(IntrinsicAttributes & DropdownListBaseProps & { value?: undefined; defaultValue?: string | undefined; } & { open: boolean; defaultOpen?: undefined; }) | (IntrinsicAttributes & ... 2 more ... & { ...; })'.\n    Property 'trigger' is missing in type '{ label: string; items: [{ value: string; label: string; }]; defaultValue: string; }' but required in type 'DropdownListBaseProps'."
+      }
+    },
+    {
+      "id": "dropdown-list-controlled-exclusive",
+      "level": "compiler",
+      "sentence": "**Controlled and uncontrolled are exclusive**, for the value and for open: `value` or `defaultValue`, `open` or `defaultOpen`. Both is a build failure, as on Tabs and Popover.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 469
+      },
+      "fixture": {
+        "name": "dropdown list value both controlled and uncontrolled",
+        "snippet": "<DropdownList label=\"All tabs\" trigger={<Button>6 more</Button>} items={[{ value: 'alerts', label: 'Alerts' }]} value=\"alerts\" defaultValue=\"alerts\" />",
+        "error": "fixture.tsx(3,26): error TS2322: Type '{ label: string; trigger: Element; items: [{ value: string; label: string; }]; value: string; defaultValue: string; }' is not assignable to type 'IntrinsicAttributes & DropdownListProps'.\n  Types of property 'defaultValue' are incompatible.\n    Type 'string' is not assignable to type 'undefined'."
+      }
+    },
+    {
+      "id": "dropdown-list-align-closed",
+      "level": "compiler",
+      "sentence": "**Two alignments.** `start` and `end`; there is no `center`, `left` or `right`. The list always opens below and flips above on its own when there is no room.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 471
+      },
+      "fixture": {
+        "name": "centred dropdown list",
+        "snippet": "<DropdownList label=\"All tabs\" trigger={<Button>6 more</Button>} items={[{ value: 'alerts', label: 'Alerts' }]} defaultValue=\"alerts\" align=\"center\" />",
+        "error": "fixture.tsx(3,159): error TS2322: Type '\"center\"' is not assignable to type 'DropdownListAlign | undefined'."
+      }
+    },
+    {
+      "id": "dropdown-list-item-closed",
+      "level": "compiler",
+      "sentence": "**An item has four fields.** `value`, `label`, `meta`, `locked`. An `icon`, `description`, `children` or `onClick` doesn't compile: choosing calls `onValueChange`, nothing else. A `locked` item has a `reason` string, and `meta` and `locked` together don't compile; nor does 0.14.0's `disabled`.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 473
+      },
+      "fixture": {
+        "name": "dropdown list item with an icon",
+        "snippet": "<DropdownList label=\"All tabs\" trigger={<Button>6 more</Button>} items={[{ value: 'alerts', label: 'Alerts', icon: <svg /> }]} defaultValue=\"alerts\" />",
+        "error": "fixture.tsx(3,134): error TS2353: Object literal may only specify known properties, and 'icon' does not exist in type 'DropdownListItem'."
+      }
+    },
+    {
+      "id": "dropdown-list-value-exists",
+      "level": "runtime",
+      "sentence": "**The current value must exist.** A `value` or `defaultValue` that matches no item throws a named error, rather than opening a list with nothing marked.",
+      "proof": {
+        "file": "src/headless/DropdownList/DropdownList.test.tsx",
+        "line": 112
+      }
+    },
+    {
+      "id": "dropdown-list-menu-radio",
+      "level": "runtime",
+      "sentence": "**It is a menu of radio items, opened from a button.** The popup is `role=\"menu\"` named by `label`. Each item is `role=\"menuitemradio\"`, and exactly the current one has `aria-checked=\"true\"`. The trigger renders a `<button>`; in development, anything else throws a named error.",
+      "proof": {
+        "file": "src/headless/DropdownList/DropdownList.test.tsx",
+        "line": 39
+      }
+    },
+    {
+      "id": "dropdown-list-meta-in-name",
+      "level": "runtime",
+      "sentence": "**The item's whole text is its name.** The accessible name includes `meta` (\"Firewall, 1 new\"), so what is seen is what is heard.",
+      "proof": {
+        "file": "src/headless/DropdownList/DropdownList.test.tsx",
+        "line": 103
+      }
+    },
+    {
+      "id": "dropdown-list-choose-closes",
+      "level": "runtime",
+      "sentence": "**Choosing closes it and returns focus.** A click, Enter or Space on an item calls `onValueChange`, closes the list and puts focus back on the trigger. Choosing the current item closes the list and returns focus too, **without** calling `onValueChange`: nothing changed.",
+      "proof": {
+        "file": "src/headless/DropdownList/DropdownList.test.tsx",
+        "line": 124
+      }
+    },
+    {
+      "id": "dropdown-list-focus-current",
+      "level": "runtime",
+      "sentence": "**Opening lands on the current item, however it opens.** A click, Enter, Space, Arrow Down and Arrow Up all put focus on the current item, not the first or the last, so a keyboard user starts where they are. The next arrow key moves on from the current item, and the loop wraps from it when it is the last. A locked current item still takes focus.",
+      "proof": {
+        "file": "src/headless/DropdownList/DropdownList.test.tsx",
+        "line": 194
+      }
+    },
+    {
+      "id": "dropdown-list-dismiss",
+      "level": "runtime",
+      "sentence": "**Escape, Tab and a press outside close it.** Escape returns focus to the trigger; Tab closes it and moves on through the page.",
+      "proof": {
+        "file": "src/headless/DropdownList/DropdownList.test.tsx",
+        "line": 266
+      }
+    },
+    {
+      "id": "dropdown-list-non-modal",
+      "level": "runtime",
+      "sentence": "**It is non-modal.** The page keeps its scroll and its accessibility tree, and focus is not trapped: Tab leaves the list. A press outside closes it and still reaches what it landed on, as on Popover.",
+      "proof": {
+        "file": "src/headless/DropdownList/DropdownList.test.tsx",
+        "line": 303
+      }
+    },
+    {
+      "id": "dropdown-list-trigger-instant-from-keyboard",
+      "level": "runtime",
+      "sentence": "**A keyboard open is instant.** When the list opens or closes from the keyboard, the trigger carries `data-vela-instant` for that change, and loses it on the next pointer interaction.",
+      "proof": {
+        "file": "src/headless/DropdownList/DropdownList.test.tsx",
+        "line": 414
+      }
+    },
+    {
+      "id": "dropdown-list-locked-not-chosen",
+      "level": "runtime",
+      "sentence": "**A locked item can be reached but not chosen** (DESIGN.md, *States*, Locked). It stays in the arrow-key order, so it can be read, and its reason shows where `meta` would and is heard with its name (\"Archive, Needs retention on\"). It has `aria-disabled=\"true\"`, and choosing it does nothing. Icon's `lock` comes before its name, hidden from assistive technology, because the reason is already in the row (`icon.md`, *Glyphs*).",
+      "proof": {
+        "file": "src/headless/DropdownList/DropdownList.test.tsx",
+        "line": 340
+      }
+    },
+    {
+      "id": "dropdown-list-locked-has-a-cause",
+      "level": "convention",
+      "sentence": "**A locked item names a setting or a policy that rules it out; a value the person's role may never have is not listed.** A permission is about who the person is; a setting or a policy is about the state of things, applies to everyone and can change. A plan limit or a fault isn't listed either. \"Needs retention on.\" for a setting; \"Set by the Data Retention policy.\" for a policy. The reason never says \"Locked\". The twin of Segmented Control's `segmented-locked-has-a-cause`.",
+      "proof": null
+    },
+    {
+      "id": "dropdown-list-names-wrap",
+      "level": "browser",
+      "sentence": "**Names wrap in full, never truncated.** The list is where a long name is read in full, on touch too, even a name with no spaces (`customer-ingest-pipeline-eu-west-2`). When the name and its meta don't fit side by side, the meta drops under the name.",
+      "proof": {
+        "file": "tests/e2e/playground.spec.ts",
+        "line": 956
+      }
+    },
+    {
+      "id": "dropdown-list-forced-colours",
+      "level": "browser",
+      "sentence": "**It holds up in forced colours.** The highlighted item is the system's `Highlight` / `HighlightText` pair, and the check is drawn in `currentColor`, so it follows the row's text.",
+      "proof": {
+        "file": "tests/e2e/playground.spec.ts",
+        "line": 1127
+      }
+    },
+    {
+      "id": "dropdown-list-meta-is-words",
+      "level": "convention",
+      "sentence": "**`meta` is words, never a colour.** \"1 new\", \"2 new\", \"3 open\". Never a dot alone, never a coloured word.",
+      "proof": null
+    },
+    {
+      "id": "dropdown-list-meta-not-a-taxonomy-label",
+      "level": "runtime",
+      "sentence": "**`meta` is never a taxonomy label.** Never \"Critical\", \"High\", \"Degraded\" or \"Malicious\". In development, a `meta` equal (ignoring case) to a Severity, Risk, Status or Verdict value or label logs a warning that names the item and the taxonomy.",
+      "proof": {
+        "file": "src/headless/DropdownList/DropdownList.test.tsx",
+        "line": 69
+      }
+    }
+  ]
+}

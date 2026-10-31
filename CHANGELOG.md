@@ -32,6 +32,16 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   October 2026, shown as "Licensed under CC BY 4.0"). `LICENSE-DESIGN.md` and the README no longer
   say the listing is planned, and `RELEASING.md` step 9 adds the listing's own update after each
   library publish, because a listing doesn't follow the library by itself.
+- **Site, slice 4: the Rules tab reads the proof map** (playground spec, section 8).
+  `npm run rules:check -- --write <dir>` (and `npm run proofs`, which `dev` and `demo:build` run)
+  writes one JSON file per component: each rule's level and sentence, the file and line of its
+  proof, and for a compiler rule its fixture and the compiler's own error. The page fetches its own
+  file. The tab groups rules by level ("Enforced by the compiler", "Checked at runtime", "Proved in a
+  real browser", "Conventions") with a Show filter; each rule has its tag (a label), its id and a
+  separate action: "Try to break it" shows the fixture and "What the compiler says if this rule is
+  broken (TypeScript 5.9.3)", and "Open proof" links to the test at the commit the page was built
+  from. A line above says which build that is. The map is generated, never committed. A unit test
+  checks that every proof line names its rule.
 - **Site, slice 2b: the stage width control** (playground spec, section 5, "Stage width"). On a
   component whose layout follows its container's width, Tabs first, the stage toolbar gains a
   Container width field and slider (the arrows move 10px, Page Up and Page Down 50px, Home and End

@@ -1,0 +1,168 @@
+{
+  "spec": "guidelines/components/checkbox.md",
+  "typescript": "5.9.3",
+  "rules": [
+    {
+      "id": "checkbox-label-required",
+      "level": "compiler",
+      "sentence": "**`label` is required and is a `string`.** Not optional, not `ReactNode`. A box with no name is unusable by screen reader, so the type makes one impossible.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 403
+      },
+      "fixture": {
+        "name": "checkbox with no label",
+        "snippet": "<Checkbox />",
+        "error": "fixture.tsx(3,26): error TS2322: Type '{}' is not assignable to type 'IntrinsicAttributes & (CheckboxProps & RefAttributes<HTMLButtonElement>)'."
+      }
+    },
+    {
+      "id": "checkbox-controlled-exclusive",
+      "level": "compiler",
+      "sentence": "**Controlled and uncontrolled are exclusive.** Pass `checked` **or** `defaultChecked`; both is a build failure, as on Toggle and Tabs.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 405
+      },
+      "fixture": {
+        "name": "checkbox both controlled and uncontrolled",
+        "snippet": "<Checkbox label=\"Accept\" checked defaultChecked />",
+        "error": "fixture.tsx(3,26): error TS2322: Type '{ label: string; checked: true; defaultChecked: true; }' is not assignable to type 'IntrinsicAttributes & (CheckboxProps & RefAttributes<HTMLButtonElement>)'.\n  Types of property 'defaultChecked' are incompatible.\n    Type 'true' is not assignable to type 'undefined'."
+      }
+    },
+    {
+      "id": "checkbox-sizes-closed",
+      "level": "compiler",
+      "sentence": "**Two sizes.** `regular` and `tiny`, the Toggle pair. There is no `small`, no `large`.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 406
+      },
+      "fixture": {
+        "name": "invented checkbox size",
+        "snippet": "<Checkbox label=\"Accept\" size=\"small\" />",
+        "error": "fixture.tsx(3,50): error TS2322: Type '\"small\"' is not assignable to type 'CheckboxSize | undefined'."
+      }
+    },
+    {
+      "id": "checkbox-error-is-a-message",
+      "level": "compiler",
+      "sentence": "**`error` is a message, not a flag.** `error={true}` with the text somewhere else does not compile; pass the string and the component renders and announces it, as Input does.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 407
+      },
+      "fixture": {
+        "name": "checkbox error as a boolean",
+        "snippet": "<Checkbox label=\"Accept\" error />",
+        "error": "fixture.tsx(3,50): error TS2322: Type 'boolean' is not assignable to type 'string'."
+      }
+    },
+    {
+      "id": "checkbox-group-label-required",
+      "level": "compiler",
+      "sentence": "**A Group has a `label`.** `Checkbox.Group` without one does not compile: an unnamed group reads to a screen-reader user as a run of unrelated boxes.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 408
+      },
+      "fixture": {
+        "name": "checkbox group with no label",
+        "snippet": "<Checkbox.Group><Checkbox value=\"a\" label=\"A\" /></Checkbox.Group>",
+        "error": "fixture.tsx(3,26): error TS2322: Type '{ children: Element; }' is not assignable to type 'IntrinsicAttributes & CheckboxGroupProps'.\n  Property 'label' is missing in type '{ children: Element; }' but required in type 'CheckboxGroupBaseProps'."
+      }
+    },
+    {
+      "id": "checkbox-group-controlled-exclusive",
+      "level": "compiler",
+      "sentence": "**A Group is controlled or uncontrolled, never both.** `value` **or** `defaultValue`.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 409
+      },
+      "fixture": {
+        "name": "checkbox group both controlled and uncontrolled",
+        "snippet": "<Checkbox.Group label=\"Scope\" value={['a']} defaultValue={['a']}><Checkbox value=\"a\" label=\"A\" /></Checkbox.Group>",
+        "error": "fixture.tsx(3,26): error TS2322: Type '{ children: Element; label: string; value: string[]; defaultValue: string[]; }' is not assignable to type 'IntrinsicAttributes & CheckboxGroupProps'.\n  Types of property 'defaultValue' are incompatible.\n    Type 'string[]' is not assignable to type 'undefined'."
+      }
+    },
+    {
+      "id": "checkbox-in-group-requires-value",
+      "level": "runtime",
+      "sentence": "**A Checkbox inside a Group carries a `value`.** Without one the group cannot know which box changed, so the component throws a named error rather than rendering a box that silently tracks nothing.",
+      "proof": {
+        "file": "src/headless/Checkbox/Checkbox.test.tsx",
+        "line": 213
+      }
+    },
+    {
+      "id": "checkbox-describedby-only-rendered",
+      "level": "runtime",
+      "sentence": "**`aria-describedby` points only at rendered elements.** No `description` and no `error` → no attribute; a dangling reference is worse than none.",
+      "proof": {
+        "file": "src/headless/Checkbox/Checkbox.test.tsx",
+        "line": 102
+      }
+    },
+    {
+      "id": "checkbox-indeterminate-is-mixed",
+      "level": "runtime",
+      "sentence": "**Indeterminate is `aria-checked=\"mixed\"` with a visible dash.** Not an unchecked box with a different border, not a tooltip: the state is in the markup and in the glyph.",
+      "proof": {
+        "file": "src/headless/Checkbox/Checkbox.test.tsx",
+        "line": 81
+      }
+    },
+    {
+      "id": "checkbox-records-intent",
+      "level": "convention",
+      "sentence": "**A Checkbox records intent; a Toggle acts.** Never wire a Checkbox to take effect on change with no Save, and never put a Toggle behind a Save button.",
+      "proof": null
+    },
+    {
+      "id": "checkbox-mark-scales-in",
+      "level": "browser",
+      "sentence": "**The mark scales in, by transform and opacity alone.** Checked with a pointer, the mark — or the indeterminate dash — scales from half size as it fades in; unchecked, it fades out where it is. Transitions only, never a keyframe.",
+      "proof": {
+        "file": "tests/e2e/playground.spec.ts",
+        "line": 2014
+      }
+    },
+    {
+      "id": "checkbox-mark-retargets",
+      "level": "browser",
+      "sentence": "**Changed again mid-flight, it turns round.** A press while the mark is still arriving or leaving reverses it from where it is, and it ends in the state the box is in.",
+      "proof": {
+        "file": "tests/e2e/playground.spec.ts",
+        "line": 2042
+      }
+    },
+    {
+      "id": "checkbox-keyboard-is-instant",
+      "level": "browser",
+      "sentence": "**From the keyboard it does not animate.** Space checks and unchecks at once: no press, no fill fade, no mark motion.",
+      "proof": {
+        "file": "tests/e2e/playground.spec.ts",
+        "line": 2063
+      }
+    },
+    {
+      "id": "checkbox-motion-reduced-end-state",
+      "level": "browser",
+      "sentence": "**Under reduced motion it is at its end state.** Pressed while held, released after, the mark in full.",
+      "proof": {
+        "file": "tests/e2e/playground.spec.ts",
+        "line": 2084
+      }
+    },
+    {
+      "id": "checkbox-press-keeps-hit-target",
+      "level": "browser",
+      "sentence": "**A press never moves the hit target.** The box presses to 0.9; a guard holds its original box for as long as the press lasts, so a release at its edge still lands on it.",
+      "proof": {
+        "file": "tests/e2e/playground.spec.ts",
+        "line": 2098
+      }
+    }
+  ]
+}

@@ -1,0 +1,154 @@
+{
+  "spec": "guidelines/components/popover.md",
+  "typescript": "5.9.3",
+  "rules": [
+    {
+      "id": "popover-title-required",
+      "level": "compiler",
+      "sentence": "**`title` is required and is a `string`.** The popup is a `role=\"dialog\"`, and an unnamed dialog is announced as \"dialog\" and nothing else.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 440
+      },
+      "fixture": {
+        "name": "popover with no title",
+        "snippet": "<Popover trigger={<Button>Filters</Button>}>Body</Popover>",
+        "error": "fixture.tsx(3,26): error TS2322: Type '{ children: string; trigger: Element; }' is not assignable to type 'IntrinsicAttributes & PopoverProps'.\n  Property 'title' is missing in type '{ children: string; trigger: Element; }' but required in type 'PopoverBaseProps'."
+      }
+    },
+    {
+      "id": "popover-trigger-required",
+      "level": "compiler",
+      "sentence": "**`trigger` is required.** A popover is anchored to the element that opened it; there is no free-floating popover.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 442
+      },
+      "fixture": {
+        "name": "popover with no trigger",
+        "snippet": "<Popover title=\"Filter alerts\">Body</Popover>",
+        "error": "fixture.tsx(3,26): error TS2322: Type '{ children: string; title: string; }' is not assignable to type 'IntrinsicAttributes & PopoverProps'.\n  Property 'trigger' is missing in type '{ children: string; title: string; }' but required in type 'PopoverBaseProps'."
+      }
+    },
+    {
+      "id": "popover-controlled-exclusive",
+      "level": "compiler",
+      "sentence": "**Controlled and uncontrolled are exclusive.** Pass `open` **or** `defaultOpen`; both is a build failure, as on Tabs.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 443
+      },
+      "fixture": {
+        "name": "popover both controlled and uncontrolled",
+        "snippet": "<Popover trigger={<Button>Filters</Button>} title=\"Filter alerts\" open defaultOpen>Body</Popover>",
+        "error": "fixture.tsx(3,26): error TS2322: Type '{ children: string; trigger: Element; title: string; open: true; defaultOpen: true; }' is not assignable to type 'IntrinsicAttributes & PopoverProps'.\n  Types of property 'defaultOpen' are incompatible.\n    Type 'true' is not assignable to type 'undefined'."
+      }
+    },
+    {
+      "id": "popover-placement-closed",
+      "level": "compiler",
+      "sentence": "**Four placements, three alignments.** `top`, `bottom`, `start`, `end` and `start`, `center`, `end`. There is no `left` / `right` (use the logical `start` / `end`) and no `auto` — it flips on its own.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 444
+      },
+      "fixture": {
+        "name": "physical popover placement",
+        "snippet": "<Popover trigger={<Button>Filters</Button>} title=\"Filter alerts\" placement=\"left\">Body</Popover>",
+        "error": "fixture.tsx(3,91): error TS2322: Type '\"left\"' is not assignable to type 'OverlayPlacement | undefined'."
+      }
+    },
+    {
+      "id": "popover-sizes-closed",
+      "level": "compiler",
+      "sentence": "**Two sizes.** `regular` and `wide`. There is no `small`, no `full`.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 446
+      },
+      "fixture": {
+        "name": "invented popover size",
+        "snippet": "<Popover trigger={<Button>Filters</Button>} title=\"Filter alerts\" size=\"small\">Body</Popover>",
+        "error": "fixture.tsx(3,91): error TS2322: Type '\"small\"' is not assignable to type 'PopoverSize | undefined'."
+      }
+    },
+    {
+      "id": "popover-focus-in-and-back",
+      "level": "runtime",
+      "sentence": "**Focus moves in on open and back to the trigger on close.** The first control in the popover takes focus (the popup itself when it has none); Escape or the trigger returns it to the trigger, so a keyboard user never loses their place.",
+      "proof": {
+        "file": "src/headless/Popover/Popover.test.tsx",
+        "line": 41
+      }
+    },
+    {
+      "id": "popover-dismiss-escape-outside",
+      "level": "runtime",
+      "sentence": "**Escape and a press outside close it.** Both, every time — a popover the user cannot dismiss is a Dialog wearing the wrong name.",
+      "proof": {
+        "file": "src/headless/Popover/Popover.test.tsx",
+        "line": 61
+      }
+    },
+    {
+      "id": "popover-is-non-modal",
+      "level": "runtime",
+      "sentence": "**It is non-modal.** The page behind is neither hidden from assistive technology nor scroll locked, and focus is not trapped: Tab leaves the popover.",
+      "proof": {
+        "file": "src/headless/Popover/Popover.test.tsx",
+        "line": 80
+      }
+    },
+    {
+      "id": "popover-named-by-title",
+      "level": "runtime",
+      "sentence": "**It is named by its title.** `role=\"dialog\"` with `aria-labelledby` pointing at the rendered heading.",
+      "proof": {
+        "file": "src/headless/Popover/Popover.test.tsx",
+        "line": 24
+      }
+    },
+    {
+      "id": "popover-never-only-copy",
+      "level": "convention",
+      "sentence": "**Never the only copy of information the page needs.** A popover is closed most of the time; an error, a status or a value the task depends on lives on the page.",
+      "proof": null
+    },
+    {
+      "id": "popover-grows-from-its-trigger",
+      "level": "browser",
+      "sentence": "**It grows from its trigger, by transform and opacity alone.** Opened with a pointer it scales from 0.96 to full size as it fades in, pivoting on Base UI's `--transform-origin` — the point on the popup nearest the trigger — so it comes out of the button whichever side it opens on.",
+      "proof": {
+        "file": "tests/e2e/playground.spec.ts",
+        "line": 1862
+      }
+    },
+    {
+      "id": "popover-reopen-mid-flight",
+      "level": "browser",
+      "sentence": "**Closed and reopened mid-flight, it turns round.** The motion is a transition, so a press that reopens it while it is still fading out brings the same popup back from where it is, and it ends open and at rest.",
+      "proof": {
+        "file": "tests/e2e/playground.spec.ts",
+        "line": 1890
+      }
+    },
+    {
+      "id": "popover-keyboard-is-instant",
+      "level": "browser",
+      "sentence": "**From the keyboard it does not animate.** Enter or Space on the trigger opens it, and Escape closes it, at once.",
+      "proof": {
+        "file": "tests/e2e/playground.spec.ts",
+        "line": 1917
+      }
+    },
+    {
+      "id": "popover-motion-reduced-end-state",
+      "level": "browser",
+      "sentence": "**Under reduced motion it is at its end state.** Open is full size and opaque; closed is gone.",
+      "proof": {
+        "file": "tests/e2e/playground.spec.ts",
+        "line": 1937
+      }
+    }
+  ]
+}

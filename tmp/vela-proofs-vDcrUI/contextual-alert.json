@@ -1,0 +1,47 @@
+{
+  "spec": "guidelines/components/contextual-alert.md",
+  "typescript": "5.9.3",
+  "rules": [
+    {
+      "id": "alert-severity-closed-set",
+      "level": "compiler",
+      "sentence": "**Six severities, no more.** There is no `\"high\"`, no `\"error\"`, no `\"danger\"`. Those belong to the Risk taxonomy or to nothing. The compiler rejects them.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 383
+      },
+      "fixture": {
+        "name": "invented severity",
+        "snippet": "<ContextualAlert severity=\"high\">Body</ContextualAlert>",
+        "error": "fixture.tsx(3,42): error TS2322: Type '\"high\"' is not assignable to type 'Severity'."
+      }
+    },
+    {
+      "id": "alert-live-region-by-severity",
+      "level": "runtime",
+      "sentence": "**`major` and `critical` announce assertively** (`role=\"alert\"`, `aria-live=\"assertive\"`); everything else is polite (`role=\"status\"`). This is derived from `severity` and is not configurable — an info banner that interrupts a screen reader is a defect.",
+      "proof": {
+        "file": "src/components/ContextualAlert/ContextualAlert.test.tsx",
+        "line": 7
+      }
+    },
+    {
+      "id": "alert-dismiss-requires-handler",
+      "level": "runtime",
+      "sentence": "**No dismiss control unless `onDismiss` is passed.** A critical alert the user can clear without acting is usually wrong.",
+      "proof": {
+        "file": "src/components/ContextualAlert/ContextualAlert.test.tsx",
+        "line": 42
+      }
+    },
+    {
+      "id": "alert-icon-is-decorative",
+      "level": "runtime",
+      "sentence": "Icon is chosen by severity and is `aria-hidden` — the text carries the meaning.",
+      "proof": {
+        "file": "src/components/ContextualAlert/ContextualAlert.test.tsx",
+        "line": 31
+      }
+    }
+  ]
+}

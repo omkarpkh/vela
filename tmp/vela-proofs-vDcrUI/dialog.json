@@ -1,0 +1,168 @@
+{
+  "spec": "guidelines/components/dialog.md",
+  "typescript": "5.9.3",
+  "rules": [
+    {
+      "id": "dialog-title-required",
+      "level": "compiler",
+      "sentence": "**`title` is required and is a `string`.** A dialog with no name is announced as \"dialog\" and nothing else.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 452
+      },
+      "fixture": {
+        "name": "dialog with no title",
+        "snippet": "<Dialog trigger={<Button>Edit Policy</Button>}>Body</Dialog>",
+        "error": "fixture.tsx(3,26): error TS2322: Type '{ children: string; trigger: Element; }' is not assignable to type 'IntrinsicAttributes & DialogProps'.\n  Property 'title' is missing in type '{ children: string; trigger: Element; }' but required in type 'DialogBaseProps'."
+      }
+    },
+    {
+      "id": "dialog-description-is-text",
+      "level": "compiler",
+      "sentence": "**`description` is a `string`.** It is read as the dialog's description, so it holds a sentence, not controls; controls go in the body.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 454
+      },
+      "fixture": {
+        "name": "dialog description holding a control",
+        "snippet": "<Dialog title=\"Edit policy\" description={<Button>Undo</Button>}>Body</Dialog>",
+        "error": "fixture.tsx(3,53): error TS2322: Type 'Element' is not assignable to type 'string'."
+      }
+    },
+    {
+      "id": "dialog-controlled-exclusive",
+      "level": "compiler",
+      "sentence": "**Controlled and uncontrolled are exclusive.** `open` **or** `defaultOpen`, as on Popover.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 455
+      },
+      "fixture": {
+        "name": "dialog both controlled and uncontrolled",
+        "snippet": "<Dialog title=\"Edit policy\" open defaultOpen>Body</Dialog>",
+        "error": "fixture.tsx(3,26): error TS2322: Type '{ children: string; title: string; open: true; defaultOpen: true; }' is not assignable to type 'IntrinsicAttributes & DialogProps'.\n  Types of property 'defaultOpen' are incompatible.\n    Type 'true' is not assignable to type 'undefined'."
+      }
+    },
+    {
+      "id": "dialog-props-closed",
+      "level": "compiler",
+      "sentence": "**Two sizes, two variants.** `regular` / `wide` and `standard` / `alert`. There is no `small`, no `fullscreen`, no `sheet`.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 456
+      },
+      "fixture": {
+        "name": "invented dialog size",
+        "snippet": "<Dialog title=\"Edit policy\" size=\"fullscreen\">Body</Dialog>",
+        "error": "fixture.tsx(3,53): error TS2322: Type '\"fullscreen\"' is not assignable to type 'DialogSize | undefined'."
+      }
+    },
+    {
+      "id": "alert-dialog-requires-cancel-and-confirm",
+      "level": "compiler",
+      "sentence": "**An alert has an explicit cancel and a confirm.** `variant=\"alert\"` without `cancelLabel`, `confirmLabel` or `onConfirm` does not compile: a destructive question needs a named way out and a named way through.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 458
+      },
+      "fixture": {
+        "name": "alert with no cancel",
+        "snippet": "<Dialog variant=\"alert\" title=\"Delete policy?\" confirmLabel=\"Delete Policy\" onConfirm={() => {}} />",
+        "error": "fixture.tsx(3,26): error TS2322: Type '{ variant: \"alert\"; title: string; confirmLabel: string; onConfirm: () => void; }' is not assignable to type 'IntrinsicAttributes & DialogProps'.\n  Type '{ variant: \"alert\"; title: string; confirmLabel: string; onConfirm: () => void; }' is not assignable to type '(IntrinsicAttributes & DialogBaseProps & { open: boolean; defaultOpen?: undefined; } & AlertDialogProps) | (IntrinsicAttributes & DialogBaseProps & { ...; } & AlertDialogProps)'.\n    Property 'cancelLabel' is missing in type '{ variant: \"alert\"; title: string; confirmLabel: string; onConfirm: () => void; }' but required in type 'AlertDialogProps'."
+      }
+    },
+    {
+      "id": "alert-dialog-actions-are-fixed",
+      "level": "compiler",
+      "sentence": "**An alert's actions are fixed.** `footer` and `closeLabel` do not compile with `alert`: the component renders the cancel and a confirm that is **always a `destructive` Button**, so a destructive confirmation can never be styled as a safe one.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 461
+      },
+      "fixture": {
+        "name": "alert with its own footer",
+        "snippet": "<Dialog variant=\"alert\" title=\"Delete policy?\" cancelLabel=\"Keep\" confirmLabel=\"Delete Policy\" onConfirm={() => {}} footer={<Button>Delete</Button>} />",
+        "error": "fixture.tsx(3,26): error TS2322: Type '{ variant: \"alert\"; title: string; cancelLabel: string; confirmLabel: string; onConfirm: () => void; footer: Element; }' is not assignable to type 'IntrinsicAttributes & DialogProps'.\n  Types of property 'footer' are incompatible.\n    Type 'Element' is not assignable to type 'undefined'."
+      }
+    },
+    {
+      "id": "alert-dialog-cancel-first",
+      "level": "runtime",
+      "sentence": "**The confirm is destructive and the cancel takes focus.** In an alert the confirm renders as `variant=\"destructive\"`, and focus lands on the cancel when it opens — Enter on a dialog that just appeared must never destroy anything.",
+      "proof": {
+        "file": "src/headless/Dialog/Dialog.test.tsx",
+        "line": 165
+      }
+    },
+    {
+      "id": "dialog-traps-focus-and-returns",
+      "level": "runtime",
+      "sentence": "**Focus is trapped and comes back.** On open, focus moves into the dialog (a standard dialog's first control in the body or footer, else its close button); Tab cycles inside it; on close it returns to the trigger.",
+      "proof": {
+        "file": "src/headless/Dialog/Dialog.test.tsx",
+        "line": 75
+      }
+    },
+    {
+      "id": "dialog-inert-and-scroll-locked",
+      "level": "runtime",
+      "sentence": "**The page behind is inert and does not scroll.** While open, everything outside the dialog is hidden from assistive technology and the document is scroll-locked.",
+      "proof": {
+        "file": "src/headless/Dialog/Dialog.test.tsx",
+        "line": 112
+      }
+    },
+    {
+      "id": "dialog-dismissal",
+      "level": "runtime",
+      "sentence": "**Escape closes it — as the cancel, in an alert.** A standard dialog also closes on a press on the backdrop; an alert does not, because a stray click is not an answer.",
+      "proof": {
+        "file": "src/headless/Dialog/Dialog.test.tsx",
+        "line": 129
+      }
+    },
+    {
+      "id": "dialog-describedby-only-rendered",
+      "level": "runtime",
+      "sentence": "**`aria-describedby` points only at a rendered description.** No `description` → no attribute.",
+      "proof": {
+        "file": "src/headless/Dialog/Dialog.test.tsx",
+        "line": 67
+      }
+    },
+    {
+      "id": "dialog-close-requires-dialog",
+      "level": "runtime",
+      "sentence": "**`Dialog.Close` renders inside a `Dialog`.** Outside one it throws a named error rather than rendering a button that closes nothing.",
+      "proof": {
+        "file": "src/headless/Dialog/Dialog.test.tsx",
+        "line": 199
+      }
+    },
+    {
+      "id": "dialog-body-scrolls",
+      "level": "browser",
+      "sentence": "**The body scrolls; the header and the footer stay.** A dialog is never taller than the viewport less its gutters; past that its body scrolls inside it, and the title and the actions stay on screen. Only a real layout can show this.",
+      "proof": {
+        "file": "tests/e2e/playground.spec.ts",
+        "line": 721
+      }
+    },
+    {
+      "id": "dialog-blocks-for-a-decision",
+      "level": "convention",
+      "sentence": "**A dialog is for a decision that blocks the task.** Not for a message (a Contextual Alert), not for a long form (a page), and never two at once unless the second is a confirmation the first asked for.",
+      "proof": null
+    },
+    {
+      "id": "dialog-enters-on-ease-out",
+      "level": "browser",
+      "sentence": "**It enters on ease-out, by opacity and a step of rise.** Only `opacity` and `transform` move, on `--vela-ease-out` because it enters; opened from the keyboard nothing moves at all.",
+      "proof": {
+        "file": "tests/e2e/playground.spec.ts",
+        "line": 1952
+      }
+    }
+  ]
+}

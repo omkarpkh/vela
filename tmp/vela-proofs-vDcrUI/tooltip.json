@@ -1,0 +1,141 @@
+{
+  "spec": "guidelines/components/tooltip.md",
+  "typescript": "5.9.3",
+  "rules": [
+    {
+      "id": "tooltip-content-is-text",
+      "level": "compiler",
+      "sentence": "**`content` is a `string`, and it is required.** Not `ReactNode`: a tooltip that could hold a link or a button would hold one, and nothing in it can be reached before it closes.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 447
+      },
+      "fixture": {
+        "name": "tooltip content as a link",
+        "snippet": "<Tooltip content={<a href=\"/docs\">Docs</a>}><Button>Export</Button></Tooltip>",
+        "error": "fixture.tsx(3,34): error TS2322: Type 'Element' is not assignable to type 'string'."
+      }
+    },
+    {
+      "id": "tooltip-wraps-one-element",
+      "level": "compiler",
+      "sentence": "**It wraps exactly one element.** `children` is a single `ReactElement` — not a string, not a fragment of two — because the tooltip attaches its listeners and its description to that one element.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 449
+      },
+      "fixture": {
+        "name": "tooltip around a bare string",
+        "snippet": "<Tooltip content=\"Download as CSV\">Export</Tooltip>",
+        "error": "fixture.tsx(3,60): error TS2747: 'Tooltip' components don't accept text as child elements. Text in JSX has the type 'string', but the expected type of 'children' is 'ReactElement<unknown, string | JSXElementConstructor<any>>'."
+      }
+    },
+    {
+      "id": "tooltip-placement-closed",
+      "level": "compiler",
+      "sentence": "**Four placements, three alignments**, the Popover sets. No `left` / `right`, no `auto`.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 451
+      },
+      "fixture": {
+        "name": "invented tooltip placement",
+        "snippet": "<Tooltip content=\"Download as CSV\" placement=\"auto\"><Button>Export</Button></Tooltip>",
+        "error": "fixture.tsx(3,60): error TS2322: Type '\"auto\"' is not assignable to type 'OverlayPlacement | undefined'."
+      }
+    },
+    {
+      "id": "tooltip-trigger-has-own-name",
+      "level": "runtime",
+      "sentence": "**The trigger is named by itself, never by the tooltip.** The element needs its own accessible name — visible text or an `aria-label` — and the component throws a named error when it has none. An icon-only Button carries `aria-label`; the tooltip may repeat the words for sighted users.",
+      "proof": {
+        "file": "src/headless/Tooltip/Tooltip.test.tsx",
+        "line": 104
+      }
+    },
+    {
+      "id": "tooltip-is-a-description",
+      "level": "runtime",
+      "sentence": "**The tooltip is a description.** The popup is `role=\"tooltip\"`, and while it is rendered the trigger's `aria-describedby` points at it — and only then: no dangling reference when it is closed, and any description the trigger already had is kept.",
+      "proof": {
+        "file": "src/headless/Tooltip/Tooltip.test.tsx",
+        "line": 62
+      }
+    },
+    {
+      "id": "tooltip-opens-on-hover-and-focus",
+      "level": "runtime",
+      "sentence": "**Hover waits, focus does not.** On hover it opens after `--vela-delay-tooltip` (600ms), read from the stylesheet, so a pointer crossing a toolbar does not flash every label; on keyboard focus it opens at once.",
+      "proof": {
+        "file": "src/headless/Tooltip/Tooltip.test.tsx",
+        "line": 34
+      }
+    },
+    {
+      "id": "tooltip-escape-dismisses",
+      "level": "runtime",
+      "sentence": "**Escape dismisses it** without moving focus or closing anything else.",
+      "proof": {
+        "file": "src/headless/Tooltip/Tooltip.test.tsx",
+        "line": 91
+      }
+    },
+    {
+      "id": "tooltip-not-on-disabled",
+      "level": "convention",
+      "sentence": "**Never on a disabled control.** A disabled button takes no focus and, in most browsers, no pointer events, so its tooltip is unreachable — and why a control is disabled belongs in adjacent text (`DESIGN.md`, *States*). If a design insists, wrap the control in a focusable `<span tabIndex={0}>` with its own name and put the tooltip on that, and say so in review.",
+      "proof": null
+    },
+    {
+      "id": "tooltip-supplementary-only",
+      "level": "convention",
+      "sentence": "**Supplementary only.** Touch users never see a tooltip (Base UI disables them on touch), so it never carries the only copy of anything.",
+      "proof": null
+    },
+    {
+      "id": "tooltip-forced-colours",
+      "level": "browser",
+      "sentence": "**In forced colours it keeps an edge.** The fill is replaced by `Canvas`, so the popup takes a 1px `CanvasText` border.",
+      "proof": {
+        "file": "tests/e2e/playground.spec.ts",
+        "line": 1568
+      }
+    },
+    {
+      "id": "tooltip-grows-from-its-trigger",
+      "level": "browser",
+      "sentence": "**It grows from its trigger, by transform and opacity alone.** Opened by a resting pointer it scales from 0.96 to full size as it fades in, pivoting on Base UI's `--transform-origin` — the edge nearest the trigger.",
+      "proof": {
+        "file": "tests/e2e/playground.spec.ts",
+        "line": 1863
+      }
+    },
+    {
+      "id": "tooltip-reopen-mid-flight",
+      "level": "browser",
+      "sentence": "**Closed and reopened mid-flight, it turns round.** A pointer that comes back while it is fading out brings the same tooltip back from where it is; it ends open and at rest.",
+      "proof": {
+        "file": "tests/e2e/playground.spec.ts",
+        "line": 1891
+      }
+    },
+    {
+      "id": "tooltip-keyboard-is-instant",
+      "level": "browser",
+      "sentence": "**From the keyboard it does not animate.** Focus opens it, and Escape closes it, at once.",
+      "proof": {
+        "file": "tests/e2e/playground.spec.ts",
+        "line": 1918
+      }
+    },
+    {
+      "id": "tooltip-motion-reduced-end-state",
+      "level": "browser",
+      "sentence": "**Under reduced motion it is at its end state.** Open is full size and opaque; closed is gone.",
+      "proof": {
+        "file": "tests/e2e/playground.spec.ts",
+        "line": 1938
+      }
+    }
+  ]
+}

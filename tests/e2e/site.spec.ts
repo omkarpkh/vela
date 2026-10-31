@@ -850,12 +850,13 @@ test.describe('slice 2b · stage width', () => {
     const field = page.getByRole('spinbutton', { name: 'Container width' })
     await expect(field).toHaveValue('480')
     await expect(page).toHaveURL(/w=480/)
-    // A link is read when the page opens, so each one is opened afresh.
+    // A link is read when the page opens, so each one is opened afresh. A hash change alone would
+    // let the open page rewrite the address before a reload could read it.
+    await page.goto('about:blank')
     await page.goto('/#/components/tabs?v=1&w=10')
-    await page.reload()
     await expect(field).toHaveValue('320')
+    await page.goto('about:blank')
     await page.goto('/#/components/tabs?v=1&w=wide')
-    await page.reload()
     await expect(page.getByText("This link asked for a container width of `wide`, which isn't a number of pixels. Showing the full width.")).toBeVisible()
     await field.fill('400')
     await page.getByRole('button', { name: 'Reset' }).click()
@@ -866,8 +867,8 @@ test.describe('slice 2b · stage width', () => {
   test('core Tabs says where overflow lives; a component that does not respond to width has no control', async ({ page }) => {
     await page.goto('/#/components/tabs')
     await expect(page.getByText('Core Tabs scrolls when the row is full. The "more" control is in the headless Tabs.')).toBeVisible()
+    await page.goto('about:blank')
     await page.goto('/#/components/tabs?v=1&implementation=headless')
-    await page.reload()
     await expect(page.getByText('Core Tabs scrolls when the row is full.')).toHaveCount(0)
     await page.goto('/#/components/button')
     await expect(page.getByRole('spinbutton', { name: 'Container width' })).toHaveCount(0)
@@ -879,6 +880,46 @@ test.describe('slice 2b · stage width', () => {
     await expect(page.getByRole('spinbutton', { name: 'Container width' })).toBeVisible()
     await expect(page.getByRole('slider', { name: 'Container width' })).toHaveCount(0)
     await expect(page.locator('.pg-width__handle')).toHaveCount(0)
+  })
+})
+
+test.describe('slice 4 · proof', () => {
+  test('the Rules tab groups rules by level, and Show filters them with counts from the proof map', async ({ page }) => {
+    await page.goto('/#/components/button/rules')
+    await expect(page.getByText(/^Every proof below passed in the build that published this page: /)).toBeVisible()
+    const show = page.getByRole('group', { name: 'Show' })
+    await expect(show.getByRole('button')).toHaveText(['All 10', 'compiler 3', 'browser test 2', 'convention 5'])
+    for (const h of ['Enforced by the compiler', 'Proved in a real browser', 'Conventions'])
+      await expect(page.getByRole('heading', { name: h, level: 2 })).toBeVisible()
+    await expect(page.getByText('Not mechanically enforced. A reviewer checks these; no test can.')).toBeVisible()
+    await show.getByRole('button', { name: 'convention 5' }).click()
+    await expect(page.getByRole('heading', { name: 'Enforced by the compiler' })).toHaveCount(0)
+    await expect(page.locator('.pg-rule')).toHaveCount(5)
+    // A tag is a label, never a control.
+    await expect(page.locator('.pg-rule .site-tag').first()).toHaveJSProperty('tagName', 'SPAN')
+  })
+
+  test('"Try to break it" shows the fixture and the compiler\'s own error, in a neutral block', async ({ page }) => {
+    await page.goto('/#/components/button/rules')
+    const rule = page.locator('.pg-rule[data-rule="button-text-link-requires-primary"]')
+    const tryIt = rule.getByRole('button', { name: 'Try to break it' })
+    await expect(tryIt).toHaveAttribute('aria-expanded', 'false')
+    await tryIt.click()
+    await expect(tryIt).toHaveAttribute('aria-expanded', 'true')
+    await expect(rule.getByText(/^What the compiler says if this rule is broken \(TypeScript \d+\.\d+\.\d+\):$/)).toBeVisible()
+    await expect(rule.locator('.pg-rule__code').first()).toContainText('appearance="text-link"')
+    await expect(rule.locator('.pg-rule__code').last()).toContainText(/error TS\d+:/)
+  })
+
+  test('each proof links to its file and line at the built commit', async ({ page }) => {
+    await page.goto('/#/components/tabs/rules')
+    const links = page.locator('.pg-rule__where a')
+    // The map is fetched when the page opens (B8); wait for it.
+    await expect(links.first()).toBeVisible()
+    for (const href of await links.evaluateAll((as) => as.map((a) => a.getAttribute('href'))))
+      expect(href).toMatch(/^https:\/\/github\.com\/omkarpkh\/vela\/blob\/([0-9a-f]{7,40}|main)\/(src|tests|scripts)\/[\w./-]+#L\d+$/)
+    const open = page.locator('.pg-rule[data-rule="tabs-only-active-panel-renders"]').getByRole('link', { name: 'Open proof' })
+    await expect(open).toHaveAttribute('href', /src\/components\/Tabs\/Tabs\.test\.tsx#L\d+$/)
   })
 })
 

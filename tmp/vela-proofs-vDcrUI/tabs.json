@@ -1,0 +1,169 @@
+{
+  "spec": "guidelines/components/tabs.md",
+  "typescript": "5.9.3",
+  "rules": [
+    {
+      "id": "tabs-list-requires-aria-label",
+      "level": "compiler",
+      "sentence": "**`Tabs.List` requires `aria-label`.** An unnamed tablist is unnavigable by screen reader, so the type makes it impossible.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 390
+      },
+      "fixture": {
+        "name": "tablist with no accessible name",
+        "snippet": "<Tabs defaultValue=\"a\"><Tabs.List><Tabs.Trigger value=\"a\">A</Tabs.Trigger></Tabs.List></Tabs>",
+        "error": "fixture.tsx(3,49): error TS2741: Property ''aria-label'' is missing in type '{ children: Element; }' but required in type 'TabListProps'."
+      }
+    },
+    {
+      "id": "tabs-parts-require-provider",
+      "level": "runtime",
+      "sentence": "**Parts must be used inside `<Tabs>`.** They throw a named error otherwise, rather than rendering something silently broken.",
+      "proof": {
+        "file": "src/components/Tabs/Tabs.test.tsx",
+        "line": 159
+      }
+    },
+    {
+      "id": "tabs-only-active-panel-renders",
+      "level": "runtime",
+      "sentence": "**Only the active panel renders.** Do not rely on hidden panels holding DOM state.",
+      "proof": {
+        "file": "src/components/Tabs/Tabs.test.tsx",
+        "line": 47
+      }
+    },
+    {
+      "id": "tabs-controlled-exclusive",
+      "level": "compiler",
+      "sentence": "Controlled and uncontrolled are exclusive.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 394
+      },
+      "fixture": {
+        "name": "tabs both controlled and uncontrolled",
+        "snippet": "<Tabs value=\"a\" defaultValue=\"a\"><Tabs.List aria-label=\"V\"><Tabs.Trigger value=\"a\">A</Tabs.Trigger></Tabs.List></Tabs>",
+        "error": "fixture.tsx(3,26): error TS2322: Type '{ children: Element; value: string; defaultValue: string; }' is not assignable to type 'IntrinsicAttributes & TabsProps'.\n  Types of property 'defaultValue' are incompatible.\n    Type 'string' is not assignable to type 'undefined'."
+      }
+    },
+    {
+      "id": "tabs-press-grows-in-place",
+      "level": "browser",
+      "sentence": "**A pointer press grows the underline in place.** The pressed tab's Seed grows from its centre into the full underline where it is, and the old underline shrinks back and fades under the old tab. Nothing travels across the row, and only `transform` and `opacity` change: every layer is its own tab's full width, centred under it, and its `left` and `width` never change.",
+      "proof": {
+        "file": "tests/e2e/playground.spec.ts",
+        "line": 1352
+      }
+    },
+    {
+      "id": "tabs-keyboard-switch-is-instant",
+      "level": "browser",
+      "sentence": "**A keyboard switch is instant.** Arrow keys, Home and End change the selection, the colours and the underline at once; nothing in the Tabs animates, and no Seed shows.",
+      "proof": {
+        "file": "tests/e2e/playground.spec.ts",
+        "line": 1463
+      }
+    },
+    {
+      "id": "tabs-press-retargets",
+      "level": "browser",
+      "sentence": "**A second press mid-flight retargets.** Every layer turns towards its new end from wherever it is — the half-grown underline under the first tab shrinks back from where it got to — and the underline ends under the second tab; nothing finishes the old change first or snaps.",
+      "proof": {
+        "file": "tests/e2e/playground.spec.ts",
+        "line": 1409
+      }
+    },
+    {
+      "id": "tabs-press-reduced-motion-end-state",
+      "level": "browser",
+      "sentence": "**Under reduced motion a press lands at its end state.** The collapsed transitions leave the pressed tab's line full under it, every other line gone, and hand the underline straight back to the tab's border.",
+      "proof": {
+        "file": "tests/e2e/playground.spec.ts",
+        "line": 1490
+      }
+    },
+    {
+      "id": "tabs-underline-rest-is-the-border",
+      "level": "browser",
+      "sentence": "**At rest the underline is the selected tab's own border.** The selected tab's line lies on that border in the same colour, on the same pixels, so a still tab list renders exactly as the border alone did; the border is set aside only while a pointer press is in flight.",
+      "proof": {
+        "file": "tests/e2e/playground.spec.ts",
+        "line": 1491
+      }
+    },
+    {
+      "id": "tabs-underline-not-clipped",
+      "level": "browser",
+      "sentence": "**The underline is never clipped.** The list scrolls, so it clips at its padding box; the 2px underline, its line and every Seed lie wholly inside it, over the list rule's pixel, and render 2px.",
+      "proof": {
+        "file": "tests/e2e/playground.spec.ts",
+        "line": 232
+      }
+    },
+    {
+      "id": "tabs-forced-colours-selected",
+      "level": "browser",
+      "sentence": "**In forced colours the selected tab is the only one marked.** The selected tab's label and underline are `Highlight`; no other tab has an underline; a disabled tab is `GrayText`.",
+      "proof": {
+        "file": "tests/e2e/playground.spec.ts",
+        "line": 267
+      }
+    },
+    {
+      "id": "tabs-preview-rest-delay",
+      "level": "browser",
+      "sentence": "**The Seed waits for a resting pointer.** It starts to appear only once the pointer has rested `--vela-delay-preview` (80ms) on the tab, so a pointer sweeping across the row shows nothing. It fades in over `--vela-duration-travel` on `--vela-ease-out` to `--vela-opacity-preview`, and leaves faster than it came: at once, over `--vela-duration-base`.",
+      "proof": {
+        "file": "tests/e2e/playground.spec.ts",
+        "line": 319
+      }
+    },
+    {
+      "id": "tabs-preview-never-selected-or-disabled",
+      "level": "browser",
+      "sentence": "**Never on the selected tab, never on a disabled one.** The Seed previews a selection that has not happened; on the selected tab there is nothing to preview, and a disabled tab cannot be chosen.",
+      "proof": {
+        "file": "tests/e2e/playground.spec.ts",
+        "line": 413
+      }
+    },
+    {
+      "id": "tabs-preview-pointer-only",
+      "level": "browser",
+      "sentence": "**The Seed is for a pointer that can hover.** Every rule that shows it sits under `@media (hover: hover)`, so touch never sees it; keyboard focus never shows it, and a keyboard switch puts it away until a pointer moves over the list again.",
+      "proof": {
+        "file": "tests/e2e/playground.spec.ts",
+        "line": 484
+      }
+    },
+    {
+      "id": "tabs-preview-size",
+      "level": "browser",
+      "sentence": "**The Seed is a third of its tab, never under `--vela-tab-preview-width-min` (24px), never wider than the tab, and centred under it.** A third of a two-letter tab would be about 4px.",
+      "proof": {
+        "file": "tests/e2e/playground.spec.ts",
+        "line": 426
+      }
+    },
+    {
+      "id": "tabs-preview-forced-colours",
+      "level": "browser",
+      "sentence": "**In forced colours the Seed is `CanvasText`, never `Highlight`.** A solid 1px line at its own length, with no mask, so preview and selection differ in colour, weight and length and never collapse into one mark.",
+      "proof": {
+        "file": "tests/e2e/playground.spec.ts",
+        "line": 461
+      }
+    },
+    {
+      "id": "tabs-preview-decorative",
+      "level": "runtime",
+      "sentence": "**The Seed and the line are decorative.** Two empty `aria-hidden` spans inside each trigger: the tab's role, its accessible name and the single roving tab stop are unchanged, and the list holds nothing but its tabs.",
+      "proof": {
+        "file": "src/components/Tabs/Tabs.test.tsx",
+        "line": 119
+      }
+    }
+  ]
+}

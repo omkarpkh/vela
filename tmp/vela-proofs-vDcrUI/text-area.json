@@ -1,0 +1,112 @@
+{
+  "spec": "guidelines/components/text-area.md",
+  "typescript": "5.9.3",
+  "rules": [
+    {
+      "id": "text-area-label-required",
+      "level": "compiler",
+      "sentence": "**`label` is required.** A text area with only a placeholder is not labelled.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 396
+      },
+      "fixture": {
+        "name": "text area with no label",
+        "snippet": "<TextArea />",
+        "error": "fixture.tsx(3,26): error TS2322: Type '{}' is not assignable to type 'IntrinsicAttributes & (TextAreaProps & RefAttributes<HTMLTextAreaElement>)'."
+      }
+    },
+    {
+      "id": "text-area-controlled-exclusive",
+      "level": "compiler",
+      "sentence": "**Controlled and uncontrolled are exclusive:** pass `value` **or** `defaultValue`, never both.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 397
+      },
+      "fixture": {
+        "name": "text area both controlled and uncontrolled",
+        "snippet": "<TextArea label=\"Notes\" value=\"a\" defaultValue=\"a\" />",
+        "error": "fixture.tsx(3,26): error TS2322: Type '{ label: string; value: string; defaultValue: string; }' is not assignable to type 'IntrinsicAttributes & (TextAreaProps & RefAttributes<HTMLTextAreaElement>)'.\n  Types of property 'defaultValue' are incompatible.\n    Type 'string' is not assignable to type 'undefined'."
+      }
+    },
+    {
+      "id": "text-area-error-is-a-message",
+      "level": "compiler",
+      "sentence": "**`error` is a message, not a boolean.** An error state with no explanation is not an error state.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 398
+      },
+      "fixture": {
+        "name": "text area error as a boolean",
+        "snippet": "<TextArea label=\"Notes\" error />",
+        "error": "fixture.tsx(3,49): error TS2322: Type 'boolean' is not assignable to type 'string'."
+      }
+    },
+    {
+      "id": "text-area-resize-closed",
+      "level": "compiler",
+      "sentence": "**`resize` is `vertical` or `none`.** A field dragged wider breaks the form column it sits in, so `\"horizontal\"` and `\"both\"` do not compile.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 399
+      },
+      "fixture": {
+        "name": "horizontal resize",
+        "snippet": "<TextArea label=\"Notes\" resize=\"horizontal\" />",
+        "error": "fixture.tsx(3,49): error TS2322: Type '\"horizontal\"' is not assignable to type '\"none\" | \"vertical\" | undefined'."
+      }
+    },
+    {
+      "id": "text-area-size-closed",
+      "level": "compiler",
+      "sentence": "**Three sizes, Input's three.** `tiny`, `regular`, `large`; there is no `\"medium\"`.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 401
+      },
+      "fixture": {
+        "name": "invented text area size",
+        "snippet": "<TextArea label=\"Notes\" size=\"medium\" />",
+        "error": "fixture.tsx(3,49): error TS2322: Type '\"medium\"' is not assignable to type '\"tiny\" | \"regular\" | \"large\" | undefined'."
+      }
+    },
+    {
+      "id": "text-area-never-resizes-horizontally",
+      "level": "browser",
+      "sentence": "**The field never resizes horizontally**, whatever the host stylesheet's browser default: the computed `resize` is only ever `vertical` or `none`, and `rows` is a floor the drag handle cannot cross. A Playwright spec measures both.",
+      "proof": {
+        "file": "tests/e2e/playground.spec.ts",
+        "line": 69
+      }
+    },
+    {
+      "id": "text-area-describedby-only-rendered",
+      "level": "runtime",
+      "sentence": "`aria-describedby` only ever references elements that are actually rendered — hint, error and count each join it only when present.",
+      "proof": {
+        "file": "src/components/TextArea/TextArea.test.tsx",
+        "line": 72
+      }
+    },
+    {
+      "id": "text-area-count-in-code-points",
+      "level": "runtime",
+      "sentence": "**The count and the limit agree.** Both are measured in characters as a person counts them (code points, `[...value].length`), not UTF-16 units, so an emoji is one character in the count and one against the limit. Typing or pasting past `maxLength` keeps the first `maxLength` characters.",
+      "proof": {
+        "file": "src/components/TextArea/TextArea.test.tsx",
+        "line": 89
+      }
+    },
+    {
+      "id": "text-area-count-announced-near-limit",
+      "level": "runtime",
+      "sentence": "**The count is announced politely, and only near the limit.** The visible `n / max` is silent while typing; a polite live region speaks \"n characters left\" once 10% or less of the limit remains, and \"Character limit reached\" at the limit. Never `role=\"alert\"`, never on every keystroke from the first.",
+      "proof": {
+        "file": "src/components/TextArea/TextArea.test.tsx",
+        "line": 123
+      }
+    }
+  ]
+}
