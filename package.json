@@ -41,6 +41,7 @@
     "dist",
     "guidelines",
     "!guidelines/proposals",
+    "!guidelines/patterns",
     "README.md",
     "CHANGELOG.md",
     "LICENSE",

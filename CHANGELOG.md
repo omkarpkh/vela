@@ -5,6 +5,20 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+### Added
+- **Patterns: a new area, `guidelines/patterns/`, and its first page, Copy** (`copy.md`, with nine
+  figures in `copy/`). A pattern records the decisions a component can't make alone: who may read
+  a secret, where the "last copied" mark lives, whether a row is clickable, whether the page copies
+  what it shows or what it means. Copy was approved by Omkar on 31 October; it is Experimental and
+  not built, because the Copy Button and Copyable Value it is carried out by are specified but not
+  yet in `guidelines/components/`. The area is left out of the npm package until its components
+  ship.
+- **`pattern-cites-real-rules`, in `npm run rules:check`.** A pattern's Tests table names component
+  rules with their levels, and states the components' totals. The check fails a rule no built
+  component defines, a level that disagrees with the spec, and totals that don't add up; a
+  component that is only specified is printed as not built yet. Five unit tests prove it fails
+  when a pattern drifts (`src/styles/patterns.test.ts`).
+
 ## [0.15.0] — 2026-10-31
 
 ### Changed
