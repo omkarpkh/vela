@@ -59,6 +59,14 @@ export interface Entry extends CatalogEntry {
    * "Implementation" control; one names the entry a headless-only component ships from.
    */
   implementations?: Implementation[]
+  /**
+   * The spec describes this component's layout by its container's width, so the page offers the
+   * stage width control (playground spec, section 5, "Stage width"; A23). Reviewed in the PR, never
+   * a spec field (C4).
+   */
+  containerResponsive?: boolean
+  /** A line under the stage toolbar about how this implementation responds to its width, when it differs. */
+  widthNote?: (v: Values) => string | undefined
   /** Mirrors the type-level rules: invalid combinations do not exist, so they cannot be picked. */
   constrain?: (v: Values) => Values
   /**
@@ -399,6 +407,9 @@ export const REGISTRY: Entry[] = [
     // The spec's Props table gives size no default; the code's is regular. Seeded so a current value
     // shows (a segment row with nothing current is not a legal state); the gap goes to the spec thread.
     seed: { implementation: 'core', size: 'regular' },
+    containerResponsive: true,
+    // Overflow is headless only (Omkar, 30 Oct): narrowing the core Tabs shows its plain scrolling row.
+    widthNote: (v) => (v.implementation === 'headless' ? undefined : 'Core Tabs scrolls when the row is full. The "more" control is in the headless Tabs.'),
     hide: ['defaultValue'],
     // The Phase 1 proving case: the same props through either implementation, against the same
     // spec and the same stylesheet. The entries are the ones tabs.md states under "Implementations".

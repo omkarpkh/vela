@@ -49,6 +49,14 @@ describe('reading a link', () => {
     expect(readLink('v=1&implementation=vue', 'Tabs', controls, defaults, ['core', 'headless']).notices[0]).toMatch(/vue implementation/)
   })
 
+  it('reads the container width as a number of pixels, and nothing else (slice 2b)', () => {
+    expect(readLink('v=1&w=480', 'Tabs', controls, defaults).width).toBe(480)
+    const r = readLink('v=1&w=480px', 'Tabs', controls, defaults)
+    expect(r.width).toBeUndefined()
+    expect(r.notices).toEqual(["This link asked for a container width of `480px`, which isn't a number of pixels. Showing the full width."])
+    expect(readLink('v=1&w=-20', 'Tabs', controls, defaults).width).toBeUndefined()
+  })
+
   it('finds the query after the address', () => {
     expect(queryOf('#/components/button?v=1&size=tiny')).toBe('v=1&size=tiny')
     expect(queryOf('#/components/button')).toBe('')
@@ -63,6 +71,10 @@ describe('writing a link', () => {
   it('writes only what differs, closed sets only, versioned', () => {
     const q = writeLink(controls, { ...defaults, variant: 'destructive', children: 'Delete everything' }, defaults, { ...base, stage: 'full', compare: 'themes' })
     expect(q).toBe('v=1&variant=destructive&stage=full&compare=themes')
+  })
+  it('writes the container width only when the frame is narrowed', () => {
+    expect(writeLink(controls, defaults, defaults, { ...base, width: 480 })).toBe('v=1&w=480')
+    expect(writeLink(controls, defaults, defaults, { ...base, width: undefined })).toBe('')
   })
   it('round-trips', () => {
     const values = { ...defaults, size: 'tiny', loading: true }

@@ -806,6 +806,82 @@ test.describe('slice 5 · phone and Appearance', () => {
   })
 })
 
+test.describe('slice 2b · stage width', () => {
+  test('the field, the slider and its keys set the same width; only the frame moves', async ({ page }) => {
+    await page.goto('/#/components/tabs')
+    const field = page.getByRole('spinbutton', { name: 'Container width' })
+    const slider = page.getByRole('slider', { name: 'Container width' })
+    const stage = page.locator('.pg-stage')
+    const body = page.locator('.pg-frame-body').first()
+    const before = await stage.boundingBox()
+    const full = Number(await field.inputValue())
+    await field.fill('480')
+    await expect(slider).toHaveValue('480')
+    await expect(slider).toHaveAttribute('aria-valuetext', '480 pixels')
+    await expect.poll(async () => Math.round((await body.boundingBox())!.width)).toBe(480)
+    await slider.focus()
+    await page.keyboard.press('ArrowRight')
+    await expect(field).toHaveValue('490')
+    await page.keyboard.press('PageDown')
+    await expect(field).toHaveValue('440')
+    await page.keyboard.press('Home')
+    await expect(field).toHaveValue('320')
+    await page.keyboard.press('End')
+    await expect(field).toHaveValue(String(full))
+    // The stage keeps its size and place.
+    expect(await stage.boundingBox()).toEqual(before)
+  })
+
+  test('dragging is never the only way: the handle is hidden from assistive tech, and the field and slider stay', async ({ page }) => {
+    await page.goto('/#/components/tabs')
+    await expect(page.locator('.pg-width__handle')).toHaveAttribute('aria-hidden', 'true')
+    const handle = (await page.locator('.pg-width__handle').boundingBox())!
+    await page.mouse.move(handle.x + handle.width / 2, handle.y + 20)
+    await page.mouse.down()
+    await page.mouse.move(handle.x - 200, handle.y + 20, { steps: 5 })
+    await page.mouse.up()
+    const w = Number(await page.getByRole('spinbutton', { name: 'Container width' }).inputValue())
+    await expect(page.getByRole('slider', { name: 'Container width' })).toHaveValue(String(w))
+    await expect(page.locator('.pg-width__mark')).toHaveText(`${w}px`)
+  })
+
+  test('the width is in the link, a number clamped to the range, and Reset returns the full width', async ({ page }) => {
+    await page.goto('/#/components/tabs?v=1&w=480')
+    const field = page.getByRole('spinbutton', { name: 'Container width' })
+    await expect(field).toHaveValue('480')
+    await expect(page).toHaveURL(/w=480/)
+    // A link is read when the page opens, so each one is opened afresh.
+    await page.goto('/#/components/tabs?v=1&w=10')
+    await page.reload()
+    await expect(field).toHaveValue('320')
+    await page.goto('/#/components/tabs?v=1&w=wide')
+    await page.reload()
+    await expect(page.getByText("This link asked for a container width of `wide`, which isn't a number of pixels. Showing the full width.")).toBeVisible()
+    await field.fill('400')
+    await page.getByRole('button', { name: 'Reset' }).click()
+    await expect(page).not.toHaveURL(/w=/)
+    await expect(page.locator('.pg-width__mark')).toHaveCount(0)
+  })
+
+  test('core Tabs says where overflow lives; a component that does not respond to width has no control', async ({ page }) => {
+    await page.goto('/#/components/tabs')
+    await expect(page.getByText('Core Tabs scrolls when the row is full. The "more" control is in the headless Tabs.')).toBeVisible()
+    await page.goto('/#/components/tabs?v=1&implementation=headless')
+    await page.reload()
+    await expect(page.getByText('Core Tabs scrolls when the row is full.')).toHaveCount(0)
+    await page.goto('/#/components/button')
+    await expect(page.getByRole('spinbutton', { name: 'Container width' })).toHaveCount(0)
+  })
+
+  test('on a phone, the field alone', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.goto('/#/components/tabs')
+    await expect(page.getByRole('spinbutton', { name: 'Container width' })).toBeVisible()
+    await expect(page.getByRole('slider', { name: 'Container width' })).toHaveCount(0)
+    await expect(page.locator('.pg-width__handle')).toHaveCount(0)
+  })
+})
+
 test.describe('axe', () => {
   for (const path of ['/#/components/button', '/#/components/tabs', '/#/components/dropdown-list', '/#/proposals/evidence-locker'])
     for (const theme of ['Light', 'Dark'] as const)

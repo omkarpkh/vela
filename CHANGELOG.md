@@ -32,6 +32,15 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   October 2026, shown as "Licensed under CC BY 4.0"). `LICENSE-DESIGN.md` and the README no longer
   say the listing is planned, and `RELEASING.md` step 9 adds the listing's own update after each
   library publish, because a listing doesn't follow the library by itself.
+- **Site, slice 2b: the stage width control** (playground spec, section 5, "Stage width"). On a
+  component whose layout follows its container's width, Tabs first, the stage toolbar gains a
+  Container width field and slider (the arrows move 10px, Page Up and Page Down 50px, Home and End
+  go to the ends), and a pointer can drag the frame's edge, never as the only way. Only the frame
+  narrows, with a hairline and its width beside it; the stage keeps its size. The range runs from
+  320px, since no built spec states a minimum as a number yet, to the stage's width. The width
+  goes in the shared link as `w=`, a number clamped to that range. With the core Tabs, a line says
+  that it scrolls when the row is full and that the "more" control is in the headless Tabs. On a
+  phone, the field alone.
 - **Site, slice 5: Appearance, a phone header and a pinned stage** (playground spec, sections 3, 6
   and 9). The header's theme control becomes an Appearance button that opens a side panel: Mode
   (System, Light, Dark) and Brand (Default; Custom unavailable, with its reason in view, until
