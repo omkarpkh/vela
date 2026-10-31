@@ -351,7 +351,7 @@ test.describe('the page header', () => {
     const length = await page.evaluate(() => history.length)
     await tabs.getByRole('tab', { name: 'Rules' }).click()
     await expect(page).toHaveURL(/#\/components\/button\/rules$/)
-    await expect(page.getByRole('heading', { level: 2, name: 'Hard constraints' })).toBeVisible()
+    await expect(page.getByRole('heading', { level: 2, name: 'States' })).toBeVisible()
     expect(await page.evaluate(() => history.length)).toBe(length)
     // The nav link stays current on every tab of the page.
     await expect(page.getByRole('navigation', { name: 'Site' }).getByRole('link', { name: 'Button', exact: true })).toHaveAttribute('aria-current', 'page')
