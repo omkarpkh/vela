@@ -20,14 +20,19 @@ describe('the contract facts', () => {
 
   it('agrees with the rule checker on every spec: the per-spec counts sum to its total', () => {
     let total = 0
+    let compiler = 0
     for (const f of readdirSync(dir).filter((f) => f.endsWith('.md'))) {
       const r = rulesOf(spec(f))
       expect(r.byLevel.reduce((n, l) => n + l.count, 0), f).toBe(r.total)
       total += r.total
+      compiler += r.byLevel.find((l) => l.level === 'compiler')?.count ?? 0
     }
-    // The same number `npm run rules:check` prints ("N rules across 17 specs").
-    const readme = readFileSync(resolve(process.cwd(), 'README.md'), 'utf8')
-    expect(readme).toContain(`of the ${total} by the TypeScript compiler`)
+    // The same numbers `npm run rules:check` prints ("N rules across 17 specs"), in every place
+    // that states them: the README, the npm description and the agents' summary.
+    const read = (f: string) => readFileSync(resolve(process.cwd(), f), 'utf8')
+    expect(read('README.md')).toContain(`${compiler} of the ${total} by the TypeScript compiler`)
+    expect(JSON.parse(read('package.json')).description).toContain(`${compiler} of ${total} by the TypeScript compiler`)
+    expect(read('guidelines/llms.txt')).toContain(`${compiler} of the ${total} design rules are enforced by the TypeScript types`)
   })
 
   it('names the dependencies by entry: none for core, the optional peer for headless', () => {
