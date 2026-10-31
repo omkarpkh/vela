@@ -1,8 +1,10 @@
 # Copy
 
 Copying a value from a console into another app is one of the most common things a security
-analyst does, and one of the least trusted. The person can't see the clipboard, so the page has to
-answer three questions for them, without being asked twice.
+analyst does, and one of the least trusted.
+
+The person can't see the clipboard, so the page has to answer three questions for them, without
+being asked twice.
 
 ![A table of hosts. The first IP shows a tick: it was just copied. The second carries the word Copied: the last one taken. The third shows the copy mark: ready to copy again.](copy/fig-01-three-questions.svg)
 
@@ -14,7 +16,11 @@ answer three questions for them, without being asked twice.
 - can't mark a copied secret as sensitive in clipboard history (W3C clipboard-apis issue 154);
 - can't tell where the person pastes.
 
-**Status:** Experimental, a scenario pattern. Not built. A pattern takes the lowest status of its components, so Copy is Experimental until both components below are built, and Stable only when both are. Pressure-tested by the spec thread. **Approved by Omkar, 31 Oct 2026, 17:45 IST.**
+**Status:** Experimental, a scenario pattern. Not built. **Approved by Omkar, 31 Oct 2026, 17:45 IST.**
+
+- A pattern takes the lowest status of its components: Copy is Experimental until both components below are built, and Stable when both are.
+- Pressure-tested by the spec thread.
+
 **Carried out by** (both specified, not yet in `guidelines/components/`):
 
 - **Copy Button**;
@@ -119,7 +125,8 @@ Every string is whole, built from the object's name (the `label`), in British En
 - **A copy is a read.** Offer it only where the person may read the full value. Masked dots are not permission.
 - **The secret isn't in the page** until someone copies or shows it. It is fetched at the press, so each read is a real server request the product can log.
 - **Eight dots, always,** plus the last few characters the host already shows. The length appears only in the receipt, after a copy.
-- **When the copy is blocked,** the way out is the person's choice. **Show key to copy** exists only when they may reveal the key. It shows the key selected, with the shortcut hint. It hides on copy, on blur, on **Hide**, or when the page is hidden.
+- **When the copy is blocked,** the way out is the person's choice. **Show key to copy** exists only when they may reveal the key.
+- **Show key to copy** shows the key selected, with the shortcut hint. It hides on copy, on blur, on **Hide**, or when the page is hidden.
 - **Reading and revealing are separate permissions.** "Show key" without copying is offered as its own button when the person may reveal.
 - **Clipboard history** may keep a copied secret, and there is no web way yet to mark it as sensitive (W3C clipboard-apis issue 154). That goes in the product's docs, not the UI.
 
