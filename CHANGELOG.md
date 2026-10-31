@@ -89,8 +89,8 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ### Fixed
 - **The npm description and `llms.txt` gave the wrong rule count.** 0.14.0's npm page says 69 of
   170 rules are enforced by the compiler, and `llms.txt` said 69 of 178. The specs carried 180 at
-  release, and carry 182 now. A test now checks the README, the package description and `llms.txt` against the
-  specs' own tags.
+  that release; 0.15.0 carries 212, and all three places say so. A test now checks the README, the
+  package description and `llms.txt` against the specs' own tags.
 
 ## [0.14.0] — 2026-10-31
 
