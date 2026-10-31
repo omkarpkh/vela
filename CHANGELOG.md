@@ -28,6 +28,20 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   built.
 
 ### Changed
+- **Site, slice 5: Appearance, a phone header and a pinned stage** (playground spec, sections 3, 6
+  and 9). The header's theme control becomes an Appearance button that opens a side panel: Mode
+  (System, Light, Dark) and Brand (Default; Custom unavailable, with its reason in view, until
+  `createBrand`). The button's name says the state ("Appearance: theme Dark, brand Default"). On a
+  phone the header holds Search and Appearance as icons, and GitHub, npm and Figma move into the
+  menu as words; elsewhere they stay written links until the brand marks can ship together. On a
+  phone tall enough, a component page's stage pins under the header as a strip while the controls
+  scroll; it lets go while a text control has focus, "Expand stage" opens it at full height, and
+  focus is never scrolled under it.
+- **Site: each page is its own chunk, loaded when opened** (B8). The first download falls from
+  1,185 kB to 512 kB minified (360 kB to 158 kB gzipped); the components' stages load with the
+  component pages, and the MUI comparison with its own page. Nav and search read a new catalog of
+  names and specs; the stage code stays in the registry. The first chunk is still just over the
+  build's 500 kB warning: most of what remains is the 17 specs, which search reads.
 - **Figma: Dropdown List says a locked item always shows its reason.** The guideline's *Figma
   mapping* gains the line "Locked: always show Meta with the reason; the lock never appears without
   it", which the sync carries into the set's description, and the builder draws a "Usage / Locked"

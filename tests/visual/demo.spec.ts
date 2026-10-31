@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test'
+import { setTheme } from '../theme'
 
 // One screenshot per component section per theme, plus both columns of the "adopt without
 // rewrite" view. The unit tests prove behaviour and the contrast audit proves the numbers;
@@ -12,7 +13,7 @@ const widthSuffix = (width: number | undefined) => (width === undefined || width
 
 async function open(page: Page, theme: (typeof THEMES)[number]) {
   await page.goto('/')
-  await page.getByRole('group', { name: 'Theme' }).getByRole('button', { name: new RegExp(`^${theme}$`, 'i') }).click()
+  await setTheme(page, theme)
   // Open Sans loads from Google Fonts; a screenshot taken before it arrives is a fallback font.
   await page.evaluate(() => document.fonts.ready)
 }

@@ -5,23 +5,7 @@ import { Tabs as HeadlessTabs, Checkbox, RadioGroup, Popover, Tooltip, Dialog, T
 import type { ToastLimit, ToastPlacement, ToastSeverity, DropdownListAlign, DropdownListItem } from '../../src/headless'
 import { PlusIcon } from '../../src/lib/icons'
 import { printJsx, type Control, type Spec } from './spec'
-import buttonMd from '../../guidelines/components/button.md?raw'
-import toggleMd from '../../guidelines/components/toggle.md?raw'
-import inputMd from '../../guidelines/components/input.md?raw'
-import textAreaMd from '../../guidelines/components/text-area.md?raw'
-import alertMd from '../../guidelines/components/contextual-alert.md?raw'
-import statusMd from '../../guidelines/components/status-indicator.md?raw'
-import riskMd from '../../guidelines/components/risk-pill.md?raw'
-import tabsMd from '../../guidelines/components/tabs.md?raw'
-import iconMd from '../../guidelines/components/icon.md?raw'
-import checkboxMd from '../../guidelines/components/checkbox.md?raw'
-import radioGroupMd from '../../guidelines/components/radio-group.md?raw'
-import tableMd from '../../guidelines/components/table.md?raw'
-import popoverMd from '../../guidelines/components/popover.md?raw'
-import tooltipMd from '../../guidelines/components/tooltip.md?raw'
-import dialogMd from '../../guidelines/components/dialog.md?raw'
-import toastMd from '../../guidelines/components/toast.md?raw'
-import dropdownListMd from '../../guidelines/components/dropdown-list.md?raw'
+import { catalogEntry, type CatalogEntry } from './catalog'
 
 export type Values = Record<string, string | boolean | undefined>
 
@@ -41,8 +25,7 @@ export interface Implementation {
  * Inputs: a value a form keeps and submits. Overlays: opens over the page from a trigger and closes
  * again. The rest follow the approved canvas.
  */
-export type Group = 'Actions' | 'Inputs' | 'Feedback' | 'Overlays' | 'Data'
-export const GROUPS: Group[] = ['Actions', 'Inputs', 'Feedback', 'Overlays', 'Data']
+export { GROUPS, type Group } from './catalog'
 
 /** Why a value can't be chosen now, and what would let it be. "Locked" is never shown or spoken. */
 export interface Lock {
@@ -58,23 +41,7 @@ export interface Lock {
   keep: string
 }
 
-export interface Entry {
-  id: string
-  name: string
-  group: Group
-  /**
-   * Other names people search for (playground spec, section 10): first the names the spec's own
-   * "When to use" gives, then the common names in other systems. Search only; never shown as a title.
-   * An alias points only to a component whose own "When to use" covers that job (spec v1.2): a name
-   * Vela has nothing for goes in search.ts's MISSING, with the nearest component, instead.
-   */
-  aliases: string[]
-  spec: string
-  /** Spec file and source folder, for the page's links. */
-  file: string
-  src: string
-  /** What the import line names, when it is not the source folder's name (Toast: a provider and a hook). */
-  imports?: string
+export interface Entry extends CatalogEntry {
   /** Starting values for controls the spec does not default (label text, children). */
   seed: Values
   /** Controls the Props table cannot express (a callback becomes a boolean "present"). */
@@ -258,13 +225,7 @@ function DropdownListStage({ v }: { v: Values }) {
 
 export const REGISTRY: Entry[] = [
   {
-    id: 'button',
-    file: 'button.md',
-    src: 'Button',
-    name: 'Button',
-    group: 'Actions',
-    aliases: ['action', 'call to action', 'cta'],
-    spec: buttonMd,
+    ...catalogEntry('button'),
     seed: { children: 'Save Changes', variant: 'primary', icon: true },
     // type changes nothing on the stage: "submit" only means anything inside a <form>, and the
     // spec says so ("submit only for a form's commit button"). Documented, not demonstrated.
@@ -331,13 +292,7 @@ export const REGISTRY: Entry[] = [
     bindingKey: (v) => (bool(v.disabled) ? 'disabled (any)' : `${str(v.variant) || 'standard'} · ${str(v.appearance) || 'filled'}`),
   },
   {
-    id: 'toggle',
-    file: 'toggle.md',
-    src: 'Toggle',
-    name: 'Toggle',
-    group: 'Inputs',
-    aliases: ['switch', 'on/off', 'toggle switch'],
-    spec: toggleMd,
+    ...catalogEntry('toggle'),
     seed: { label: 'Email alerts', defaultChecked: true },
     render: (v) => (
       <Toggle
@@ -353,13 +308,7 @@ export const REGISTRY: Entry[] = [
       printJsx('Toggle', { label: v.label, defaultChecked: v.defaultChecked, disabled: v.disabled, labelPosition: v.labelPosition, size: v.size }, defaultsOf(spec)),
   },
   {
-    id: 'input',
-    file: 'input.md',
-    src: 'Input',
-    name: 'Input',
-    group: 'Inputs',
-    aliases: ['text field', 'textbox', 'text input', 'field'],
-    spec: inputMd,
+    ...catalogEntry('input'),
     seed: { label: 'Tenant name', hint: 'Lowercase letters only', error: '' },
     render: (v) => (
       <Input
@@ -374,13 +323,7 @@ export const REGISTRY: Entry[] = [
     code: (v, spec) => printJsx('Input', { label: v.label, hint: v.hint, error: v.error, size: v.size, required: v.required }, defaultsOf(spec)),
   },
   {
-    id: 'text-area',
-    file: 'text-area.md',
-    src: 'TextArea',
-    name: 'Text Area',
-    group: 'Inputs',
-    aliases: ['textarea', 'multiline', 'comment box'],
-    spec: textAreaMd,
+    ...catalogEntry('text-area'),
     seed: { label: 'Justification', hint: 'Shown to the approver', error: '', defaultValue: 'Blocking the transfer: the destination bucket is public.' },
     // `value` is the controlled arm: on this stage it would freeze the field, so the page drives
     // defaultValue instead. rows and maxLength are numbers, so they become selects of a few values.
@@ -418,13 +361,7 @@ export const REGISTRY: Entry[] = [
       ),
   },
   {
-    id: 'contextual-alert',
-    file: 'contextual-alert.md',
-    src: 'ContextualAlert',
-    name: 'Contextual Alert',
-    group: 'Feedback',
-    aliases: ['banner', 'callout', 'inline alert', 'inline message', 'severity'],
-    spec: alertMd,
+    ...catalogEntry('contextual-alert'),
     seed: { severity: 'warning', title: 'Scan incomplete', children: 'The scan could not reach 3 of 12 hosts.', onDismiss: true },
     extra: [{ prop: 'onDismiss', kind: 'boolean', type: '() => void', default: false, notes: 'Present → the alert can be dismissed.' }],
     render: (v) => (
@@ -442,26 +379,14 @@ export const REGISTRY: Entry[] = [
       printJsx('ContextualAlert', { severity: v.severity, title: v.title, dismissLabel: v.dismissLabel }, defaultsOf(spec), str(v.children), bool(v.onDismiss) ? { onDismiss: 'close' } : {}),
   },
   {
-    id: 'status-indicator',
-    file: 'status-indicator.md',
-    src: 'StatusIndicator',
-    name: 'Status Indicator',
-    group: 'Feedback',
-    aliases: ['status', 'status dot', 'health'],
-    spec: statusMd,
+    ...catalogEntry('status-indicator'),
     seed: { status: 'healthy', label: 'api-gateway-01' },
     highlight: (v) => (t) => t.includes(`-status-${str(v.status) || 'unknown'}`),
     render: (v) => <StatusIndicator status={(str(v.status) || 'unknown') as Status} label={str(v.label) || undefined} size={(str(v.size) || 'regular') as 'small' | 'regular'} />,
     code: (v, spec) => printJsx('StatusIndicator', { status: v.status, label: v.label, size: v.size }, defaultsOf(spec)),
   },
   {
-    id: 'risk-pill',
-    file: 'risk-pill.md',
-    src: 'RiskPill',
-    name: 'Risk Pill',
-    group: 'Feedback',
-    aliases: ['risk', 'risk badge', 'risk level'],
-    spec: riskMd,
+    ...catalogEntry('risk-pill'),
     // An empty label is the default on purpose: the pill then renders the level word, which is
     // what the spec says happens, and the printed code carries no label prop.
     seed: { risk: 'high', label: '' },
@@ -470,13 +395,7 @@ export const REGISTRY: Entry[] = [
     code: (v, spec) => printJsx('RiskPill', { risk: v.risk, label: v.label, size: v.size }, defaultsOf(spec)),
   },
   {
-    id: 'tabs',
-    file: 'tabs.md',
-    src: 'Tabs',
-    name: 'Tabs',
-    group: 'Data',
-    aliases: ['tab', 'tab bar', 'tab list'],
-    spec: tabsMd,
+    ...catalogEntry('tabs'),
     // The spec's Props table gives size no default; the code's is regular. Seeded so a current value
     // shows (a segment row with nothing current is not a legal state); the gap goes to the spec thread.
     seed: { implementation: 'core', size: 'regular' },
@@ -513,13 +432,7 @@ export const REGISTRY: Entry[] = [
 </Tabs>`,
   },
   {
-    id: 'icon',
-    file: 'icon.md',
-    src: 'Icon',
-    name: 'Icon',
-    group: 'Data',
-    aliases: ['glyph', 'symbol', 'icons'],
-    spec: iconMd,
+    ...catalogEntry('icon'),
     seed: { name: 'shield-x', label: '' },
     // `name` is the IconName union — fifty literals the Props table names by type rather than
     // spelling out — so its control is built here from ICON_NAMES, the same list the type is.
@@ -553,13 +466,7 @@ export const REGISTRY: Entry[] = [
     code: (v, spec) => printJsx('Icon', { name: str(v.name) || 'shield-x', size: v.size, tone: v.tone, label: v.label }, defaultsOf(spec)),
   },
   {
-    id: 'checkbox',
-    file: 'checkbox.md',
-    src: 'Checkbox',
-    name: 'Checkbox',
-    group: 'Inputs',
-    aliases: ['check box', 'tick box'],
-    spec: checkboxMd,
+    ...catalogEntry('checkbox'),
     seed: { label: 'Accept the data-processing terms', defaultChecked: true, description: '', error: '' },
     // `checked` is the controlled arm: on this stage it would freeze the box, so the page drives
     // defaultChecked instead. name and value only mean anything inside a <form> or a Group.
@@ -588,13 +495,7 @@ export const REGISTRY: Entry[] = [
       bool(v.disabled) ? 'disabled (any)' : str(v.error) ? 'error (any)' : bool(v.defaultChecked) || bool(v.indeterminate) ? 'checked / indeterminate' : 'unchecked',
   },
   {
-    id: 'radio-group',
-    file: 'radio-group.md',
-    src: 'RadioGroup',
-    name: 'Radio Group',
-    group: 'Inputs',
-    aliases: ['radio', 'radio button', 'option buttons'],
-    spec: radioGroupMd,
+    ...catalogEntry('radio-group'),
     seed: { label: 'Enforcement', defaultValue: 'block', error: '' },
     // `value` is the controlled arm (it would freeze the stage); `defaultValue` becomes a select of
     // the three enabled options below. name only means anything inside a <form>.
@@ -626,13 +527,7 @@ export const REGISTRY: Entry[] = [
     bindingKey: (v) => (bool(v.disabled) ? 'disabled (any)' : str(v.error) ? 'error (any)' : str(v.defaultValue) ? 'selected' : 'unselected'),
   },
   {
-    id: 'table',
-    file: 'table.md',
-    src: 'Table',
-    name: 'Table',
-    group: 'Data',
-    aliases: ['data table', 'grid', 'data grid'],
-    spec: tableMd,
+    ...catalogEntry('table'),
     seed: { caption: 'Assets' },
     // children is the composition below, not a value a control can hold.
     hide: ['children'],
@@ -666,13 +561,7 @@ export const REGISTRY: Entry[] = [
   // stage open or shut); `defaultOpen` would open one overlay per frame on load — documented, not
   // demonstrated.
   {
-    id: 'popover',
-    file: 'popover.md',
-    src: 'Popover',
-    name: 'Popover',
-    group: 'Overlays',
-    aliases: ['flyout', 'popup', 'pop-up'],
-    spec: popoverMd,
+    ...catalogEntry('popover'),
     seed: { title: 'Filter alerts', children: 'Show alerts from the last 24 hours, critical and major only.' },
     hide: ['open'],
     noControl: ['defaultOpen'],
@@ -696,13 +585,7 @@ export const REGISTRY: Entry[] = [
 </Popover>`,
   },
   {
-    id: 'tooltip',
-    file: 'tooltip.md',
-    src: 'Tooltip',
-    name: 'Tooltip',
-    group: 'Overlays',
-    aliases: ['hint', 'tip', 'hover text'],
-    spec: tooltipMd,
+    ...catalogEntry('tooltip'),
     seed: { content: 'Download the last 24 hours as CSV' },
     implementations: [{ id: 'headless', entry: '@omkarux/vela/headless' }],
     render: (v) => (
@@ -720,13 +603,7 @@ export const REGISTRY: Entry[] = [
 </Tooltip>`,
   },
   {
-    id: 'dialog',
-    file: 'dialog.md',
-    src: 'Dialog',
-    name: 'Dialog',
-    group: 'Overlays',
-    aliases: ['modal', 'confirm', 'alert dialog', 'confirmation'],
-    spec: dialogMd,
+    ...catalogEntry('dialog'),
     seed: {
       variant: 'standard',
       title: 'Edit policy',
@@ -793,14 +670,7 @@ export const REGISTRY: Entry[] = [
   // and the presence of an action are extras. `label` and `dismissLabel` change only accessible
   // names: documented, not demonstrated.
   {
-    id: 'toast',
-    file: 'toast.md',
-    src: 'Toast',
-    imports: 'ToastProvider, useToast',
-    name: 'Toast',
-    group: 'Feedback',
-    aliases: ['snackbar', 'notification', 'flash message', 'severity'],
-    spec: toastMd,
+    ...catalogEntry('toast'),
     seed: { severity: 'success', title: 'Policy saved', description: 'Block legacy TLS now applies to 14 tenants.', action: false },
     extra: [
       { prop: 'action', kind: 'boolean', type: '{ label: string; onClick: () => void }', default: false, notes: 'Present → an Undo, a shortcut to the Undo on the page. A toast with an action never times out.' },
@@ -842,13 +712,7 @@ toast.add({ ${opts} })`
   // view, so `value` is the controlled arm the stage uses; `defaultValue` and `defaultOpen` would
   // seed one list per frame and `open` would pin it — documented, not demonstrated.
   {
-    id: 'dropdown-list',
-    file: 'dropdown-list.md',
-    src: 'DropdownList',
-    name: 'Dropdown List',
-    group: 'Overlays',
-    aliases: ['dropdown', 'menu', 'overflow menu', 'view switcher'],
-    spec: dropdownListMd,
+    ...catalogEntry('dropdown-list'),
     seed: { label: 'Views' },
     hide: ['value', 'open'],
     noControl: ['defaultValue', 'defaultOpen'],

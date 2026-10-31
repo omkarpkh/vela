@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Markdown } from '../playground/Markdown'
-import { REGISTRY } from '../playground/registry'
+import { CATALOG as REGISTRY } from '../playground/catalog'
 import { PROPOSALS, loadProposal } from '../playground/proposals'
 import type { ProposalPage } from '../playground/proposal-read'
 import { LINKS, figmaUrl } from '../links'
