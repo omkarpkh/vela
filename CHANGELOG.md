@@ -53,6 +53,31 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   55). Figma's layer-opacity field runs 0 to 100, so a bound 0.5 reads as 0.5%, not 50%. The sync
   writes each OPACITY-scoped number ×100, its description says "percent in Figma, a fraction in
   CSS", and `tokens:figma:check` reads it back the same way. The CSS is unchanged (0.5 and 0.55).
+- **Site, slice 6a: a Patterns section, and the Copy page's first half** (`#/patterns/copy`; playground
+  spec, section 12). The nav gains Patterns, between Components and Project, which lists a pattern
+  once its content is approved; Copy is the first. The page is its own chunk, loaded only when it is
+  opened, and its words are read from `guidelines/patterns/copy.md`, so the two can't drift. It has
+  the opening and sections 1 to 4, each led by a live example instead of a static figure: a Hosts
+  table where each address can be copied; do, live, beside don't, drawn as a picture that never
+  takes focus; one large control with a state scrubber (rest to failed) and a 5× slower speed; the
+  words table, where each row's Show me puts a live control in that moment; and a value whose
+  switches play out a blocked clipboard, an embedded app and each platform, saying "Simulated" while
+  they are on and never touching the browser's settings. A blocked copy really fails, leaves the text
+  selected and says how to copy it on that platform, in the Copy Button spec's own words. The
+  examples are the icon thread's lab build of the copy-to-tick morph, ported as a shell part
+  (`demo/shell/CopyMorph.tsx`), labelled "Experimental, not yet in the kit": CSS transitions on Vela's
+  motion tokens, nothing animates from the keyboard, and under reduced motion (the system's or the
+  page's own switch) the tick lands in one frame with no lean while the 1.5s hold stays. Sample
+  secrets use an invented `vela_sample_` format, and hidden characters are made at runtime, never
+  typed into the source. Two copy.md paragraphs are longer than the playground's 240 characters (the
+  opening's first and the Status line); the page shows each as two, split between sentences, and the
+  words are unchanged. Sections 5 to 13 follow in slice 6b. Unit tests hold the 240-character rule
+  and the absence of hidden characters; e2e covers the nav, the switches, focus, a blocked copy, the
+  single announcement, that nothing moves when the word Copied arrives (its place is kept while it
+  is hidden), and the chunk; axe now runs on the page in both themes.
+- **The pattern checker's fixtures get the same 30s allowance as the real-pattern check**
+  (`src/styles/patterns.test.ts`). Each runs the rule checker in a child process, which can pass 5s
+  on a loaded runner.
 - **The Figma library is on Figma Community** ([Vela Design System](https://www.figma.com/community/file/1698367695704645041/vela-design-system), listed by Omkar on 31
   October 2026, shown as "Licensed under CC BY 4.0"). `LICENSE-DESIGN.md` and the README no longer
   say the listing is planned, and `RELEASING.md` step 9 adds the listing's own update after each
@@ -76,6 +101,9 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   goes in the shared link as `w=`, a number clamped to that range. With the core Tabs, a line says
   that it scrolls when the row is full and that the "more" control is in the headless Tabs. On a
   phone, the field alone.
+- **Site: Appearance's Custom reason is read once.** The Custom segment's description now points
+  at the visible note under the group, instead of a hidden copy that a screen reader in browse mode
+  could hear a second time (the playground thread's check of slice 5).
 - **Site, slice 5: Appearance, a phone header and a pinned stage** (playground spec, sections 3, 6
   and 9). The header's theme control becomes an Appearance button that opens a side panel: Mode
   (System, Light, Dark) and Brand (Default; Custom unavailable, with its reason in view, until

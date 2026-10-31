@@ -161,3 +161,78 @@
   .shell-appearance__button[aria-expanded="true"] { border-color: Highlight; }
   .shell-segment__swatch { forced-color-adjust: none; }
 }
+
+/* ------------------------------------------------------------ copy morph -- */
+/* Copy Morph (demo/shell/CopyMorph.tsx): stands in for Copy Button, ported from the icon thread's
+   "Copy Lab Stage 2". CSS transitions only; the component sets data-state, data-press, data-ret and
+   data-instant. Every duration and delay is a Vela motion token or a fraction of one. Lengths inside
+   .vela-icon are units of the glyph's 24-unit grid (transform-box: view-box), which the CSS check
+   allows in transform-origin and translate(); the stroke-dashoffset draw is the icon-stroke exception
+   (foundations/motion.md, rule 1; decision 004). The tick is ink, never green. */
+.shell-cm {
+  display: inline-grid; place-items: center; flex: none; box-sizing: border-box;
+  width: var(--vela-control-height-24); height: var(--vela-control-height-24); padding: 0;
+  border: 0; border-radius: var(--vela-radius-4); background: transparent; color: var(--vela-icon-strong);
+  font: inherit; cursor: pointer; touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--vela-duration-base) var(--vela-ease-standard);
+}
+.shell-cm--regular { width: var(--vela-control-height-35); height: var(--vela-control-height-35); }
+.shell-cm--preview { width: calc(3 * var(--vela-control-height-24)); height: calc(3 * var(--vela-control-height-24)); border: 1px dashed var(--vela-border-default); }
+@media (hover: hover) { .shell-cm:hover { background: var(--vela-btn-standard-hover-bg); transition-duration: var(--vela-duration-fast); } }
+.shell-cm .vela-icon { display: block; overflow: visible; }
+.shell-cm--preview .shell-cm__glyph { width: calc(2 * var(--vela-icon-24)); height: calc(2 * var(--vela-icon-24)); }
+.shell-cm__alt { display: grid; place-items: center; }
+.shell-cm--preview .shell-cm__alt { transform: scale(3); }
+.shell-cm .vela-icon * { transform-box: view-box; }
+
+.shell-cm .vela-icon .press { transform-origin: 12px 12px; transition: transform var(--vela-duration-base) var(--vela-ease-standard); }
+.shell-cm .vela-icon .move { transition: transform var(--vela-duration-base) var(--vela-ease-out); }
+.shell-cm .vela-icon .turn { transform-origin: 22px 22px; transition: transform var(--vela-duration-base) var(--vela-ease-standard); }
+.shell-cm .vela-icon .lA, .shell-cm .vela-icon .sA, .shell-cm .vela-icon .arc { transform-origin: 22px 22px; transition: transform var(--vela-duration-base) var(--vela-ease-out); }
+.shell-cm .vela-icon .lB, .shell-cm .vela-icon .sB { transition: transform var(--vela-duration-base) var(--vela-ease-out); }
+/* The dash gap is longer than the path, so a retracting leftover never wraps into a stray dot. */
+.shell-cm .vela-icon .chain { stroke-dasharray: 1 2; stroke-dashoffset: 0; transition: stroke-dashoffset var(--vela-duration-base) var(--vela-ease-out), opacity var(--vela-duration-base) var(--vela-ease-out); }
+.shell-cm .vela-icon .back { transition: opacity var(--vela-duration-base) var(--vela-ease-standard), filter var(--vela-duration-base) var(--vela-ease-standard); }
+
+/* Hover, pointer only: the front sheet leans 4.5° about its corner after the instant dwell. The
+   Copy page's scrubber shows the pose anywhere (data-forced). */
+@media (hover: hover) {
+  .shell-cm[data-state="hover"] .vela-icon .turn { transform: rotate(4.5deg); transition: transform var(--vela-duration-fast) var(--vela-ease-out) var(--vela-duration-instant); }
+}
+.shell-cm[data-forced][data-state="hover"] .vela-icon .turn { transform: rotate(4.5deg); transition: transform var(--vela-duration-fast) var(--vela-ease-out) var(--vela-duration-instant); }
+/* Press: the glyph sinks to 88% from wherever it is. The box never moves. */
+.shell-cm[data-press] .vela-icon .press { transform: scale(0.88); transition: transform var(--vela-duration-instant) var(--vela-ease-standard); }
+
+/* Copied: forward, over --vela-duration-travel; the turn seats on the spring. */
+.shell-cm[data-state="copied"] .vela-icon .press { transform: none; transition: transform var(--vela-duration-travel) var(--vela-ease-out); }
+.shell-cm[data-state="copied"][data-press] .vela-icon .press { transform: scale(0.9); transition: transform var(--vela-duration-instant) var(--vela-ease-standard); }
+.shell-cm[data-state="copied"] .vela-icon .move { transform: translate(-13px, -5px); transition: transform var(--vela-duration-travel) var(--vela-ease-out); }
+.shell-cm[data-state="copied"] .vela-icon .turn { transform: rotate(45deg); transition: transform var(--vela-duration-travel) var(--vela-ease-spring); }
+.shell-cm[data-state="copied"] .vela-icon .lA { transform: translateY(2px); transition: transform calc(var(--vela-duration-travel) * 0.7) var(--vela-ease-out) calc(var(--vela-duration-travel) * 0.1); }
+.shell-cm[data-state="copied"] .vela-icon .sA { transform: translateX(2px); transition: transform calc(var(--vela-duration-travel) * 0.7) var(--vela-ease-out) calc(var(--vela-duration-travel) * 0.1); }
+.shell-cm[data-state="copied"] .vela-icon .arc { transform: scale(0); transition: transform calc(var(--vela-duration-travel) * 0.7) var(--vela-ease-out) calc(var(--vela-duration-travel) * 0.1); }
+.shell-cm[data-state="copied"] .vela-icon .lB { transform: translateY(-3.556px); transition: transform var(--vela-duration-travel) var(--vela-ease-out); }
+.shell-cm[data-state="copied"] .vela-icon .sB { transform: translateX(4.929px); transition: transform var(--vela-duration-travel) var(--vela-ease-out); }
+/* The leftovers retract into the arms, then fade: a zero-length round-capped dash still paints a dot. */
+.shell-cm[data-state="copied"] .vela-icon .chain { stroke-dashoffset: 1; opacity: 0; transition: stroke-dashoffset var(--vela-duration-fast) var(--vela-ease-standard) calc(var(--vela-duration-travel) * 0.05), opacity calc(var(--vela-duration-travel) * 0.2) var(--vela-ease-standard) calc(var(--vela-duration-travel) * 0.35); }
+/* The back sheet steps back first. */
+.shell-cm[data-state="copied"] .vela-icon .back { opacity: 0; filter: blur(calc(var(--vela-blur-materialize) * 0.45)); transition: opacity calc(var(--vela-duration-travel) * 0.35) var(--vela-ease-standard), filter calc(var(--vela-duration-travel) * 0.35) var(--vela-ease-standard); }
+
+/* The way back: --vela-duration-base on ease-out, no spring; it lands on the hover pose if the pointer is there. */
+.shell-cm[data-ret] .vela-icon .press, .shell-cm[data-ret] .vela-icon .move, .shell-cm[data-ret] .vela-icon .turn, .shell-cm[data-ret] .vela-icon .lB, .shell-cm[data-ret] .vela-icon .sB { transition: transform var(--vela-duration-base) var(--vela-ease-out); }
+.shell-cm[data-ret] .vela-icon .lA, .shell-cm[data-ret] .vela-icon .sA, .shell-cm[data-ret] .vela-icon .arc { transition: transform calc(var(--vela-duration-base) * 0.75) var(--vela-ease-out) calc(var(--vela-duration-base) * 0.25); }
+.shell-cm[data-ret] .vela-icon .chain { transition: stroke-dashoffset calc(var(--vela-duration-base) * 0.75) var(--vela-ease-out) calc(var(--vela-duration-base) * 0.25), opacity calc(var(--vela-duration-base) * 0.15) var(--vela-ease-standard) calc(var(--vela-duration-base) * 0.25); }
+.shell-cm[data-ret] .vela-icon .back { transition: opacity calc(var(--vela-duration-base) * 0.5) var(--vela-ease-standard) calc(var(--vela-duration-base) * 0.5), filter calc(var(--vela-duration-base) * 0.5) var(--vela-ease-standard) calc(var(--vela-duration-base) * 0.5); }
+
+/* From the keyboard, nothing animates. */
+.shell-cm[data-instant] .vela-icon * { transition: none !important; }
+/* Reduced motion, the system's or the page's own switch: base.css collapses durations, and the
+   delays collapse here too, or the frozen states would arrive in steps. There is no lean. */
+@media (prefers-reduced-motion: reduce) {
+  .shell-cm .vela-icon * { transition-duration: 0s !important; transition-delay: 0s !important; }
+  .shell-cm[data-state="hover"] .vela-icon .turn { transform: none; }
+}
+.shell-cm-reduced .shell-cm .vela-icon * { transition-duration: 0s !important; transition-delay: 0s !important; }
+.shell-cm-reduced .shell-cm[data-state="hover"] .vela-icon .turn { transform: none; }
+@media (forced-colors: active) { .shell-cm { color: ButtonText; } }

@@ -28,7 +28,7 @@ export function platformOf(): Platform {
   const p = (navigator as Navigator & { userAgentData?: { platform?: string } }).userAgentData?.platform ?? navigator.platform ?? ''
   return /mac|iphone|ipad|ipod/i.test(p) ? 'apple' : 'other'
 }
-const PLATFORM = platformOf()
+export const PLATFORM = platformOf()
 
 /** The Copy Button spec's own strings, so nothing changes when the kit's control replaces this part. */
 export const COPY_WORDS = {
@@ -52,9 +52,17 @@ function select(el: HTMLElement) {
 /** How a copy ended: copied; refused, with the text left selected; or refused with nothing selected. */
 export type CopyResult = 'copied' | 'selected' | 'none'
 
+/**
+ * A refusal the Copy page plays out (its "Clipboard blocked" and "Embedded app" switches). It
+ * replaces this function's own calls for one copy; it never changes the browser's settings or
+ * permissions. `api`: the Clipboard API is refused. `fallback`: the copy command is refused too.
+ */
+export interface CopySimulation { api?: boolean; fallback?: boolean }
+
 /** Copies `text`; `shown` is the element that shows exactly that text. */
-export async function copyText(text: string, shown: HTMLElement | null): Promise<CopyResult> {
+export async function copyText(text: string, shown: HTMLElement | null, simulate?: CopySimulation): Promise<CopyResult> {
   try {
+    if (simulate?.api) throw new Error('simulated: the Clipboard API is refused')
     if (!navigator.clipboard) throw new Error('no clipboard')
     await navigator.clipboard.writeText(text)
     return 'copied'
@@ -62,7 +70,7 @@ export async function copyText(text: string, shown: HTMLElement | null): Promise
   if (!shown) return 'none'
   select(shown)
   let copied = false
-  try { copied = document.execCommand('copy') } catch { copied = false }
+  try { copied = simulate?.fallback ? false : document.execCommand('copy') } catch { copied = false }
   if (copied) { window.getSelection()?.removeAllRanges(); return 'copied' }
   select(shown)
   return 'selected'

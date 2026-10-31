@@ -168,3 +168,75 @@ body { margin: 0; background: var(--vela-bg-global); }
 .sitenav__link { gap: var(--vela-space-10); }
 /* A top-level heading already carries the nav's inset; its toggle adds none of its own. */
 .sitenav__group h3 .sitenav__heading { padding: 0; }
+
+/* ---------------------------------------------------------- Copy pattern -- */
+/* The Copy pattern page (demo/pages/CopyPattern.tsx). Every live example sits in one frame with its
+   "Experimental, not yet in the kit" tag; a "don't" drawing is a picture on the page surface with a
+   dashed edge, told apart by the word "Don't", never by a colour. Body text and the de-emphasized
+   text of a disabled drawing are on bg-global (PAIRS: "Body text on page", "De-emphasized text"). */
+.copy-page__settings { margin: var(--vela-space-15) 0 0; }
+.copy-section { padding: var(--vela-space-30) 0; border-bottom: 1px solid var(--vela-border-subtle); container-type: inline-size; }
+.copy-section > h2 { margin: 0 0 var(--vela-space-15); }
+.copy-page__words { max-width: 72ch; margin-top: var(--vela-space-20); }
+.copy-page__words .pg-p, .copy-page__words .pg-list, .copy-page__words .pg-table { font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height); }
+.copy-page__words .pg-p { margin: 0 0 var(--vela-space-10); }
+.copy-page__list { margin: 0 0 var(--vela-space-15); padding-inline-start: var(--vela-space-20); }
+.copy-page__list li { margin: 0 0 var(--vela-space-5); }
+.copy-page__list ul { margin: var(--vela-space-5) 0 0; padding-inline-start: var(--vela-space-20); }
+
+.copy-example {
+  display: flex; flex-direction: column; gap: var(--vela-space-15);
+  padding: var(--vela-space-15) var(--vela-space-20);
+  border: 1px solid var(--vela-border-default); border-radius: var(--vela-radius-4);
+  background: var(--vela-bg-global); color: var(--vela-text-default);
+}
+.copy-example__label { margin: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--vela-space-5) var(--vela-space-10); }
+.copy-example__simulated { margin: 0; padding: var(--vela-space-5) var(--vela-space-10); border: 1px dashed var(--vela-border-default); border-radius: var(--vela-radius-4); font-weight: var(--vela-font-weight-semibold); }
+.copy-example__caption { margin: 0; }
+.copy-toolbar { margin: 0; }
+
+/* A value with its copy control, its mark and its failure words. The control's box never moves. */
+.copy-value { display: inline-flex; flex-direction: column; gap: var(--vela-space-5); max-width: 100%; }
+.copy-value__row { display: inline-flex; flex-wrap: wrap; align-items: center; gap: var(--vela-space-5) var(--vela-space-10); }
+.copy-value__text { font-family: var(--vela-font-family-mono); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); overflow-wrap: anywhere; white-space: pre-wrap; }
+.copy-value__mark { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); font-weight: var(--vela-font-weight-semibold); }
+.copy-value__msg { max-width: 60ch; font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); font-weight: var(--vela-font-weight-semibold); }
+
+/* Section 1: do, live, beside don't, drawn. Two columns when there is room, one below it. */
+.copy-pairs { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--vela-space-20); }
+.copy-pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, calc(8 * var(--vela-space-30))), 1fr)); gap: var(--vela-space-10) var(--vela-space-20); padding-bottom: var(--vela-space-20); border-bottom: 1px solid var(--vela-border-subtle); }
+.copy-pair:last-child { padding-bottom: 0; border-bottom: 0; }
+.copy-pair__title { grid-column: 1 / -1; margin: 0; }
+.copy-pair__side { display: flex; flex-direction: column; gap: var(--vela-space-10); min-width: 0; }
+.copy-pair__verdict { margin: 0; }
+.copy-pair__live { min-height: var(--vela-control-height-35); display: flex; align-items: center; }
+.copy-pair__key { font-weight: var(--vela-font-weight-semibold); margin-inline-end: var(--vela-space-10); }
+.copy-drawing { min-height: var(--vela-control-height-35); display: flex; align-items: center; padding: var(--vela-space-5) var(--vela-space-10); border: 1px dashed var(--vela-border-default); border-radius: var(--vela-radius-4); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); }
+.copy-drawing__row { display: inline-flex; flex-wrap: wrap; align-items: center; gap: var(--vela-space-5) var(--vela-space-10); }
+.copy-drawing__ghost, .copy-drawing__box { display: inline-flex; align-items: center; min-height: var(--vela-control-height-24); padding: 0 var(--vela-space-5); border: 1px dashed var(--vela-border-default); border-radius: var(--vela-radius-4); }
+.copy-drawing__box { border-style: solid; }
+.copy-drawing__box--off { color: var(--vela-text-de-emphasized); border-style: dashed; }
+.copy-drawing__note { font-style: italic; }
+
+/* Section 2: the large control and its caption, the list of states with the one on show marked. */
+.copy-stage { display: flex; flex-wrap: wrap; align-items: center; gap: var(--vela-space-20); min-height: calc(4 * var(--vela-control-height-24)); }
+.copy-stage__side { display: flex; flex-direction: column; gap: var(--vela-space-5); }
+.copy-states { margin: 0; padding-inline-start: var(--vela-space-20); display: flex; flex-direction: column; gap: var(--vela-space-5); font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height); }
+.copy-states > li { padding: var(--vela-space-5) var(--vela-space-10); border-radius: var(--vela-radius-4); }
+.copy-states > li.is-current { box-shadow: inset var(--vela-stroke-2) 0 0 var(--vela-border-active); }
+.copy-states__now { margin-inline-end: var(--vela-space-5); }
+.copy-states ul { margin: var(--vela-space-5) 0 0; padding-inline-start: var(--vela-space-20); }
+.copy-try__title { margin: 0; }
+.copy-try { margin: 0; display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--vela-space-5); }
+
+/* Section 3: the specimen, and where each string goes. */
+.copy-specimen { display: flex; flex-direction: column; gap: var(--vela-space-10); }
+.copy-specimen__where { margin: 0; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: var(--vela-space-5) var(--vela-space-15); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); }
+.copy-specimen__where > div { display: contents; }
+.copy-specimen__where dt { font-weight: var(--vela-font-weight-semibold); }
+.copy-specimen__where dd { margin: 0; }
+@media (forced-colors: active) {
+  .copy-states > li.is-current { outline: var(--vela-stroke-2) solid Highlight; }
+}
+.copy-value__mark.is-off { visibility: hidden; }
+.copy-showme { white-space: nowrap; }
