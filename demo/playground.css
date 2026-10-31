@@ -266,3 +266,36 @@
 }
 @media (hover: hover) { .pg-width__handle:hover { background: var(--vela-bg-hover); } }
 @media (forced-colors: active) { .pg-frame-body--sized.is-narrowed { border-inline-end-color: CanvasText; } }
+
+/* ------------------------------------------------------------ the proofs -- */
+/* The Rules tab from the proof map (section 8, slice 4). Tags are labels, never controls; the
+   action beside each is a separate link or disclosure; the compiler's error is a neutral code
+   block, never in error colours (A14). */
+.pg-proofs { display: flex; flex-direction: column; gap: var(--vela-space-20); }
+.pg-proofs__built { margin: 0; font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
+.pg-proofs__show { display: flex; align-items: center; flex-wrap: wrap; gap: var(--vela-space-10); }
+.pg-proofs__group { display: flex; flex-direction: column; gap: var(--vela-space-10); }
+.pg-proofs__group .pg-h2 { margin: 0; }
+.pg-proofs__note { margin: 0; font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
+.pg-proofs__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.pg-rule { display: flex; flex-direction: column; gap: var(--vela-space-5); padding: var(--vela-space-15) 0; border-top: 1px solid var(--vela-border-subtle); }
+.pg-rule__sentence p { margin: 0; }
+.pg-rule__meta { display: flex; align-items: center; flex-wrap: wrap; gap: var(--vela-space-5) var(--vela-space-10); }
+.pg-rule__id { font-size: var(--vela-text-meta-size); color: var(--vela-text-default); overflow-wrap: anywhere; }
+.pg-rule__action {
+  display: inline-flex; align-items: center; min-height: var(--vela-control-height-24); padding: 0;
+  border: none; background: none; color: var(--vela-text-link); font: inherit; font-size: var(--vela-text-meta-size);
+  text-decoration: underline; cursor: pointer;
+}
+.pg-rule__where { margin: 0; font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); overflow-wrap: anywhere; }
+.pg-rule__try { display: flex; flex-direction: column; gap: var(--vela-space-5); }
+.pg-rule__try[hidden] { display: none; }
+.pg-rule__label { margin: var(--vela-space-5) 0 0; font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); font-weight: var(--vela-font-weight-semibold); }
+.pg-rule__code {
+  margin: 0; padding: var(--vela-space-10); overflow-x: auto; white-space: pre-wrap; overflow-wrap: anywhere;
+  border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4);
+  background: var(--vela-bg-raised); color: var(--vela-text-default);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height);
+}
+.pg-rule__where a { color: var(--vela-text-link); }
+.pg-proofs__intro p { margin: 0; }

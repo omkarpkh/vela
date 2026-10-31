@@ -1,0 +1,131 @@
+{
+  "spec": "guidelines/components/icon.md",
+  "typescript": "5.9.3",
+  "rules": [
+    {
+      "id": "icon-name-closed-set",
+      "level": "compiler",
+      "sentence": "**Fifty glyphs.** `name` is required and is one of `ICON_NAMES`: an invented name, a Lucide glyph outside the curated set (`\"airplay\"`), a Lucide alias (`\"trash-2\"`) and a missing name are compile errors. A new glyph is a spec change: this table, then `scripts/icons.list.json`, then `npm run icons:build`.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 417
+      },
+      "fixture": {
+        "name": "unknown icon name",
+        "snippet": "<Icon name=\"shield\" />",
+        "error": "fixture.tsx(3,31): error TS2820: Type '\"shield\"' is not assignable to type '\"search\" | \"copy\" | \"user\" | \"x\" | \"ellipsis\" | \"info\" | \"shield-x\" | \"shield-alert\" | \"shield-check\" | \"shield-question-mark\" | \"clock-alert\" | \"undo-2\" | \"hourglass\" | \"wrench\" | ... 35 more ... | \"rotate-ccw-clock\"'. Did you mean '\"shield-x\"'?"
+      }
+    },
+    {
+      "id": "icon-size-closed-set",
+      "level": "compiler",
+      "sentence": "**Three sizes.** `regular`, `small`, `large` — not a number, not `\"medium\"`. The boxes are the three icon-size tokens.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 421
+      },
+      "fixture": {
+        "name": "invalid icon size",
+        "snippet": "<Icon name=\"check\" size=\"medium\" />",
+        "error": "fixture.tsx(3,44): error TS2322: Type '\"medium\"' is not assignable to type 'IconSize | undefined'."
+      }
+    },
+    {
+      "id": "icon-tone-closed-set",
+      "level": "compiler",
+      "sentence": "**Three tones.** `default`, `muted`, `inherit`. There is no `\"critical\"`, `\"high\"` or `\"unhealthy\"` tone: a glyph in a taxonomy's colour belongs to the component that owns the taxonomy.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 423
+      },
+      "fixture": {
+        "name": "severity used as an icon tone",
+        "snippet": "<Icon name=\"shield-x\" tone=\"critical\" />",
+        "error": "fixture.tsx(3,47): error TS2322: Type '\"critical\"' is not assignable to type 'IconTone | undefined'."
+      }
+    },
+    {
+      "id": "icon-not-interactive",
+      "level": "compiler",
+      "sentence": "**An icon is not a control.** No `onClick`, no `tabIndex`, no `style`: the props are closed and the compiler rejects them. A clickable glyph is an Icon Button, not in the kit.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 425
+      },
+      "fixture": {
+        "name": "icon with a click handler",
+        "snippet": "<Icon name=\"x\" onClick={() => {}} />",
+        "error": "fixture.tsx(3,40): error TS2322: Type '{ name: \"x\"; onClick: () => void; }' is not assignable to type 'IntrinsicAttributes & IconProps'.\n  Property 'onClick' does not exist on type 'IntrinsicAttributes & IconProps'."
+      }
+    },
+    {
+      "id": "icon-unknown-name-throws",
+      "level": "runtime",
+      "sentence": "**An unknown name throws a named error.** For the JavaScript caller the type cannot reach, `<Icon name=\"shield\">` throws `not in Vela's curated set` rather than React's \"element type is invalid\".",
+      "proof": {
+        "file": "src/components/Icon/Icon.test.tsx",
+        "line": 86
+      }
+    },
+    {
+      "id": "icon-decorative-unless-labelled",
+      "level": "runtime",
+      "sentence": "**Decorative unless labelled.** Without `label` the svg is `aria-hidden=\"true\"` and has no role, so assistive technology skips it and the adjacent text carries the meaning. With `label` it is `role=\"img\"` named by the label, and not hidden.",
+      "proof": {
+        "file": "src/components/Icon/Icon.test.tsx",
+        "line": 12
+      }
+    },
+    {
+      "id": "icon-never-focusable",
+      "level": "runtime",
+      "sentence": "**Never focusable.** The svg carries `focusable=\"false\"` and no `tabindex`, so a glyph is never a tab stop, labelled or not.",
+      "proof": {
+        "file": "src/components/Icon/Icon.test.tsx",
+        "line": 37
+      }
+    },
+    {
+      "id": "icon-stroke-from-token",
+      "level": "runtime",
+      "sentence": "**Size and stroke come from the tokens.** The svg carries no `width`, `height` or `stroke-width`; `Icon.css` binds `--vela-icon-size*` and `--vela-icon-stroke`, so a token change moves every glyph and nothing can disagree with it.",
+      "proof": {
+        "file": "src/components/Icon/Icon.test.tsx",
+        "line": 46
+      }
+    },
+    {
+      "id": "icon-set-is-generated",
+      "level": "runtime",
+      "sentence": "**The set is generated, never hand-edited.** Every name in `scripts/icons.list.json` is in `ICON_NAMES`, renders a glyph, and has a row in the table below; `npm run icons:check` (in `verify`) fails if the committed output differs from a rebuild.",
+      "proof": {
+        "file": "src/components/Icon/Icon.test.tsx",
+        "line": 94
+      }
+    },
+    {
+      "id": "icon-not-a-taxonomy",
+      "level": "convention",
+      "sentence": "**A glyph is not a taxonomy.** `shield-x` is not \"critical\", `circle-check` is not \"healthy\", `triangle-alert` is not the warning severity. Severity, risk and status keep their own components, and an Icon never stands in for one.",
+      "proof": null
+    },
+    {
+      "id": "icon-meaning-has-words",
+      "level": "convention",
+      "sentence": "**A meaningful glyph is never alone.** If the glyph carries meaning, either text beside it states that meaning or `label` does — the label is the fallback, not the default.",
+      "proof": null
+    },
+    {
+      "id": "icon-muted-on-page",
+      "level": "convention",
+      "sentence": "**`muted` sits on the page, not on a container.** `--vela-icon-default` measures 3.47:1 on `--vela-bg-global` and 3.07:1 on `--vela-bg-container` in light mode; the kit's floor is the input border's 3.29:1, so on a container use `default`.",
+      "proof": null
+    },
+    {
+      "id": "icon-lock-has-written-reason",
+      "level": "convention",
+      "sentence": "**`lock` never appears without its written reason beside it**: visible text in the same view, next to the glyph or on the line under the control that holds it, never only in a tooltip. One glyph covers two readings (by policy, by the other settings), so only the words tell them apart (*Glyphs*).",
+      "proof": null
+    }
+  ]
+}

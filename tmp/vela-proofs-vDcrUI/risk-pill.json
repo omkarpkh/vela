@@ -1,0 +1,58 @@
+{
+  "spec": "guidelines/components/risk-pill.md",
+  "typescript": "5.9.3",
+  "rules": [
+    {
+      "id": "risk-closed-set",
+      "level": "compiler",
+      "sentence": "**Three levels.** Not severity's six, not status's five. There is no `\"critical\"` risk and no `\"unhealthy\"` risk, and `risk` is required — the compiler rejects an invented level, a severity used as a risk, and a pill with no level.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 385
+      },
+      "fixture": {
+        "name": "invented risk",
+        "snippet": "<RiskPill risk=\"severe\" />",
+        "error": "fixture.tsx(3,35): error TS2322: Type '\"severe\"' is not assignable to type 'Risk'."
+      }
+    },
+    {
+      "id": "risk-pill-sizes-closed",
+      "level": "compiler",
+      "sentence": "**Two sizes.** `regular` and `small`. There is no `\"large\"` and no `\"tiny\"`.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 389
+      },
+      "fixture": {
+        "name": "invented risk pill size",
+        "snippet": "<RiskPill risk=\"low\" size=\"large\" />",
+        "error": "fixture.tsx(3,46): error TS2322: Type '\"large\"' is not assignable to type '\"regular\" | \"small\" | undefined'."
+      }
+    },
+    {
+      "id": "risk-never-colour-only",
+      "level": "runtime",
+      "sentence": "**Never colour-only.** With no `label` the pill renders the level word, so it is never an empty coloured box. A custom `label` replaces the word and must still name the level — `\"High · 87\"`, never a bare `\"87\"`.",
+      "proof": {
+        "file": "src/components/RiskPill/RiskPill.test.tsx",
+        "line": 6
+      }
+    },
+    {
+      "id": "risk-pill-is-not-interactive",
+      "level": "runtime",
+      "sentence": "**A pill is a label, not a control.** It renders a `<span>`: no hover, no focus, no click handler. Filtering by risk is another component's job.",
+      "proof": {
+        "file": "src/components/RiskPill/RiskPill.test.tsx",
+        "line": 24
+      }
+    },
+    {
+      "id": "risk-medium-is-a-score",
+      "level": "convention",
+      "sentence": "**`medium` risk is not `medium` status.** The same word sits in two taxonomies: here it is the middle of a three-point score; on Status Indicator it means degraded. Never derive one from the other.",
+      "proof": null
+    }
+  ]
+}

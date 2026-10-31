@@ -1,0 +1,43 @@
+{
+  "spec": "guidelines/components/input.md",
+  "typescript": "5.9.3",
+  "rules": [
+    {
+      "id": "input-label-required",
+      "level": "compiler",
+      "sentence": "**`label` is required.** An input with only a placeholder is not labelled.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 392
+      },
+      "fixture": {
+        "name": "input with no label",
+        "snippet": "<Input />",
+        "error": "fixture.tsx(3,26): error TS2741: Property 'label' is missing in type '{}' but required in type 'InputProps'."
+      }
+    },
+    {
+      "id": "input-error-is-a-message",
+      "level": "compiler",
+      "sentence": "**`error` is a message, not a boolean.** An error state with no explanation is not an error state.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 393
+      },
+      "fixture": {
+        "name": "error as a boolean",
+        "snippet": "<Input label=\"Tenant\" error />",
+        "error": "fixture.tsx(3,47): error TS2322: Type 'boolean' is not assignable to type 'string'."
+      }
+    },
+    {
+      "id": "input-describedby-only-rendered",
+      "level": "runtime",
+      "sentence": "`aria-describedby` only ever references elements that are actually rendered — a dangling reference is worse than none, and a test asserts this.",
+      "proof": {
+        "file": "src/components/Input/Input.test.tsx",
+        "line": 22
+      }
+    }
+  ]
+}

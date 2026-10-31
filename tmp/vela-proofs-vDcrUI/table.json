@@ -1,0 +1,219 @@
+{
+  "spec": "guidelines/components/table.md",
+  "typescript": "5.9.3",
+  "rules": [
+    {
+      "id": "table-caption-required",
+      "level": "compiler",
+      "sentence": "**`caption` is required and is a `string`.** A table with no name is a grid of words to a screen-reader user, and the scroll region needs the same name; the type makes an unnamed or node-named table impossible. Hide it with `captionHidden`, never omit it.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 427
+      },
+      "fixture": {
+        "name": "table with no caption",
+        "snippet": "<Table><Table.Body><Table.Empty colSpan={1}>None</Table.Empty></Table.Body></Table>",
+        "error": "fixture.tsx(3,26): error TS2741: Property 'caption' is missing in type '{ children: Element; }' but required in type 'TableProps'."
+      }
+    },
+    {
+      "id": "table-density-closed",
+      "level": "compiler",
+      "sentence": "**Two densities, DESIGN.md's two steps.** `comfortable` and `compact`. There is no `regular`, no `spacious`, no `condensed`.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 429
+      },
+      "fixture": {
+        "name": "size word used as a table density",
+        "snippet": "<Table caption=\"Assets\" density=\"regular\"><Table.Body><Table.Empty colSpan={1}>None</Table.Empty></Table.Body></Table>",
+        "error": "fixture.tsx(3,49): error TS2322: Type '\"regular\"' is not assignable to type 'TableDensity | undefined'."
+      }
+    },
+    {
+      "id": "table-layout-closed",
+      "level": "compiler",
+      "sentence": "**Two layouts.** `auto` and `fixed`, the CSS `table-layout` values.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 430
+      },
+      "fixture": {
+        "name": "invented table layout",
+        "snippet": "<Table caption=\"Assets\" layout=\"grid\"><Table.Body><Table.Empty colSpan={1}>None</Table.Empty></Table.Body></Table>",
+        "error": "fixture.tsx(3,49): error TS2322: Type '\"grid\"' is not assignable to type 'TableLayout | undefined'."
+      }
+    },
+    {
+      "id": "table-header-scope-closed",
+      "level": "compiler",
+      "sentence": "**`scope` is `col` or `row`.** No `colgroup`, no `rowgroup`: Vela has no column or row groups yet.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 431
+      },
+      "fixture": {
+        "name": "invented header scope",
+        "snippet": "<Table.HeaderCell scope=\"colgroup\">Asset</Table.HeaderCell>",
+        "error": "fixture.tsx(3,43): error TS2322: Type '\"colgroup\"' is not assignable to type '\"row\" | \"col\" | undefined'."
+      }
+    },
+    {
+      "id": "table-sort-direction-closed",
+      "level": "compiler",
+      "sentence": "**A sort direction is `ascending`, `descending` or `none`.** Not `asc`, not a boolean, not a fourth state.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 432
+      },
+      "fixture": {
+        "name": "invented sort direction",
+        "snippet": "<Table.HeaderCell sort={{ direction: 'asc', onSort: () => {} }}>Asset</Table.HeaderCell>",
+        "error": "fixture.tsx(3,51): error TS2322: Type '\"asc\"' is not assignable to type 'TableSortDirection'."
+      }
+    },
+    {
+      "id": "table-sort-column-headers-only",
+      "level": "compiler",
+      "sentence": "**Only a column header sorts.** `sort` on a `scope=\"row\"` header does not compile — a row is not an axis the table orders by.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 433
+      },
+      "fixture": {
+        "name": "sort on a row header",
+        "snippet": "<Table.HeaderCell scope=\"row\" sort={{ direction: 'none', onSort: () => {} }}>api-01</Table.HeaderCell>",
+        "error": "fixture.tsx(3,63): error TS2322: Type 'string' is not assignable to type 'TableSortDirection'."
+      }
+    },
+    {
+      "id": "table-sort-label-is-a-string",
+      "level": "compiler",
+      "sentence": "**A sortable header's label is a `string`.** The sort button's accessible name is built from it, so it cannot be an icon or a node; an unsortable header's label may be any node.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 434
+      },
+      "fixture": {
+        "name": "sortable header labelled with a node",
+        "snippet": "<Table.HeaderCell sort={{ direction: 'none', onSort: () => {} }}><b>Asset</b></Table.HeaderCell>",
+        "error": "fixture.tsx(3,26): error TS2322: Type '{ children: Element; sort: { direction: \"none\"; onSort: () => void; }; }' is not assignable to type 'IntrinsicAttributes & TableHeaderCellProps'.\n  Types of property 'children' are incompatible.\n    Type 'Element' is not assignable to type 'string'."
+      }
+    },
+    {
+      "id": "table-align-closed",
+      "level": "compiler",
+      "sentence": "**Two alignments, and numbers are always end-aligned.** `align` is `start` or `end`; `numeric` sets end alignment itself and takes no `align`, so a start-aligned number column does not compile.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 435
+      },
+      "fixture": {
+        "name": "invented cell alignment",
+        "snippet": "<Table.Cell align=\"center\">42</Table.Cell>",
+        "error": "fixture.tsx(3,37): error TS2322: Type '\"center\"' is not assignable to type 'TableAlign | undefined'."
+      }
+    },
+    {
+      "id": "table-empty-requires-text",
+      "level": "compiler",
+      "sentence": "**`Table.Empty` carries its message as a `string`.** An empty table with no words is a blank box; with a message it says whether the filters, the data or the permissions are why.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 437
+      },
+      "fixture": {
+        "name": "empty state with no message",
+        "snippet": "<Table.Empty colSpan={3} />",
+        "error": "fixture.tsx(3,26): error TS2741: Property 'children' is missing in type '{ colSpan: number; }' but required in type 'TableEmptyProps'."
+      }
+    },
+    {
+      "id": "table-region-labelled-focusable",
+      "level": "runtime",
+      "sentence": "**The table scrolls inside a labelled, focusable region.** The region is `role=\"region\"`, `aria-labelledby` the caption, `tabIndex={0}` — always, because whether it overflows depends on the host's width and the reader's zoom, both of which change after render.",
+      "proof": {
+        "file": "src/components/Table/Table.test.tsx",
+        "line": 50
+      }
+    },
+    {
+      "id": "table-aria-sort-only-when-sortable",
+      "level": "runtime",
+      "sentence": "**`aria-sort` only on a sortable column, and only while it is sorted.** An unsortable header never carries it; a sortable one that is not sorted carries none (WAI-ARIA APG sortable table); the sorted one carries `ascending` or `descending`.",
+      "proof": {
+        "file": "src/components/Table/Table.test.tsx",
+        "line": 69
+      }
+    },
+    {
+      "id": "table-sort-button-names-next-direction",
+      "level": "runtime",
+      "sentence": "**A sort button is named by its column and the direction it will sort.** \"Last seen, sort ascending\" — the visible label first (WCAG 2.5.3), then what pressing does, as an `aria-label` so every browser computes the same string. `onSort` receives that same direction: `none` → `ascending` → `descending` → `ascending`.",
+      "proof": {
+        "file": "src/components/Table/Table.test.tsx",
+        "line": 85
+      }
+    },
+    {
+      "id": "table-numeric-tabular",
+      "level": "runtime",
+      "sentence": "**Numeric cells use tabular numerals.** `numeric` sets `font-variant-numeric: tabular-nums` and end alignment, so digits line up down the column.",
+      "proof": {
+        "file": "src/components/Table/Table.test.tsx",
+        "line": 109
+      }
+    },
+    {
+      "id": "table-row-state-in-markup",
+      "level": "runtime",
+      "sentence": "**Row state lives in the markup.** `selected` renders `aria-selected=\"true\"` and `aria-current` passes through; the CSS keys on those attributes, never on a class alone, and draws a start-edge marker as well as the tint.",
+      "proof": {
+        "file": "src/components/Table/Table.test.tsx",
+        "line": 119
+      }
+    },
+    {
+      "id": "table-scroll-stays-in-region",
+      "level": "browser",
+      "sentence": "**A wide table never widens its host.** Below its minimum width the region scrolls horizontally and the page, the grid track or the flex row around it does not; the region scrolls from the keyboard once focused.",
+      "proof": {
+        "file": "tests/e2e/playground.spec.ts",
+        "line": 553
+      }
+    },
+    {
+      "id": "table-sticky-header-pins",
+      "level": "browser",
+      "sentence": "**A sticky header stays at the top of the region** while the body scrolls under it, in a table whose height the host has bounded.",
+      "proof": {
+        "file": "tests/e2e/playground.spec.ts",
+        "line": 582
+      }
+    },
+    {
+      "id": "table-is-presentational",
+      "level": "convention",
+      "sentence": "**Presentational.** The table holds no sort state, fetches nothing, pages nothing and virtualises nothing: the host owns the rows and their order, and re-renders.",
+      "proof": null
+    },
+    {
+      "id": "table-rows-carry-no-colour-meaning",
+      "level": "convention",
+      "sentence": "**Rows carry no colour meaning.** No zebra striping, and never a Severity, Status or Risk colour on a row: a cell holds a Status Indicator or a Risk Pill, which carry their words. The only row tints are hover (a reading aid) and selection (with its marker and its attribute).",
+      "proof": null
+    },
+    {
+      "id": "table-selection-has-a-control",
+      "level": "convention",
+      "sentence": "**Selection has a control.** A selectable row puts a labelled Checkbox (`checkbox.md`) in its first cell; `selected` mirrors it. `aria-selected` on a table row is not announced by every screen reader, so the checkbox is what carries the state.",
+      "proof": null
+    },
+    {
+      "id": "table-never-truncates",
+      "level": "convention",
+      "sentence": "**Never truncate.** No ellipsis on a cell: a hostname or a hash cut short is a different hostname. Auto layout widens the column and the region scrolls; fixed layout wraps inside the column.",
+      "proof": null
+    }
+  ]
+}

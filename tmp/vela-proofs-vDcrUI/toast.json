@@ -1,0 +1,275 @@
+{
+  "spec": "guidelines/components/toast.md",
+  "typescript": "5.9.3",
+  "rules": [
+    {
+      "id": "toast-title-required",
+      "level": "compiler",
+      "sentence": "**`title` is required and is a `string`.** It is the toast's accessible name — a toast with no title is announced as \"dialog\" — and it says what happened in words, so the severity is never carried by the icon alone.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 483
+      },
+      "fixture": {
+        "name": "toast with no title",
+        "snippet": "useToast().add({ severity: \"success\" })",
+        "error": "fixture.tsx(3,40): error TS2345: Argument of type '{ severity: \"success\"; }' is not assignable to parameter of type 'ToastOptions'.\n  Property 'title' is missing in type '{ severity: \"success\"; }' but required in type 'ToastOptions'."
+      }
+    },
+    {
+      "id": "toast-description-is-text",
+      "level": "compiler",
+      "sentence": "**`description` is a `string`.** It is read as the toast's description: a sentence, never a control or a link.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 485
+      },
+      "fixture": {
+        "name": "toast description holding a link",
+        "snippet": "useToast().add({ title: \"Report ready\", description: <a href=\"/reports\">Open</a> })",
+        "error": "fixture.tsx(3,65): error TS2322: Type 'Element' is not assignable to type 'string'."
+      }
+    },
+    {
+      "id": "toast-severity-closed",
+      "level": "compiler",
+      "sentence": "**Three severities: `success`, `info`, `warning`.** A toast confirms something that already happened. `minor`, `major` and `critical` describe events the user must read and act on, and those belong in a Contextual Alert on the page, where they stay until resolved — not in a surface that leaves on a timer. A failure of the user's own action is shown where the work is, not in a toast. And a toast's severity is the Severity taxonomy only: `\"high\"` is a Risk, `\"unhealthy\"` a Status, `\"error\"` nothing; none compiles.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 486
+      },
+      "fixture": {
+        "name": "critical toast",
+        "snippet": "useToast().add({ title: \"Data loss detected\", severity: \"critical\" })",
+        "error": "fixture.tsx(3,71): error TS2322: Type '\"critical\"' is not assignable to type 'ToastSeverity | undefined'."
+      }
+    },
+    {
+      "id": "toast-one-action-with-label",
+      "level": "compiler",
+      "sentence": "**At most one action, and it has a label.** `action` is one `{ label, onClick }`, never an array: two buttons on a toast are a decision, and a decision is a Dialog. The label is a string, a verb or \"View\" — never an icon alone.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 491
+      },
+      "fixture": {
+        "name": "toast action with no label",
+        "snippet": "useToast().add({ title: \"Policy archived\", action: { onClick: () => {} } })",
+        "error": "fixture.tsx(3,68): error TS2741: Property 'label' is missing in type '{ onClick: () => void; }' but required in type 'ToastAction'."
+      }
+    },
+    {
+      "id": "toast-options-closed",
+      "level": "compiler",
+      "sentence": "**The caller does not set the timing or the politeness.** `add` takes `title`, `description`, `severity` and `action` and nothing else: no `timeout`, no `priority`, no `id`. Both follow from the severity and the action, so no toast can be made to vanish in a second or to interrupt.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 494
+      },
+      "fixture": {
+        "name": "toast with its own timeout",
+        "snippet": "useToast().add({ title: \"Policy saved\", timeout: 2000 })",
+        "error": "fixture.tsx(3,65): error TS2353: Object literal may only specify known properties, and 'timeout' does not exist in type 'ToastOptions'."
+      }
+    },
+    {
+      "id": "toast-placement-closed",
+      "level": "compiler",
+      "sentence": "**Three placements: `bottom-end`, `top-end`, `bottom-center`.** No start side — in a console the start side carries the navigation — no `top-center`, which sits over the page title and the global banners, and no physical `bottom-right`: `end` follows the writing direction.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 497
+      },
+      "fixture": {
+        "name": "physical toast placement",
+        "snippet": "<ToastProvider placement=\"bottom-right\"><span /></ToastProvider>",
+        "error": "fixture.tsx(3,40): error TS2322: Type '\"bottom-right\"' is not assignable to type 'ToastPlacement | undefined'."
+      }
+    },
+    {
+      "id": "toast-limit-closed",
+      "level": "compiler",
+      "sentence": "**At most three at once.** `limit` is `1`, `2` or `3`. More than three stacked confirmations is a log, and a log belongs on a page.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 499
+      },
+      "fixture": {
+        "name": "toast limit above three",
+        "snippet": "<ToastProvider limit={5}><span /></ToastProvider>",
+        "error": "fixture.tsx(3,40): error TS2322: Type '5' is not assignable to type 'ToastLimit | undefined'."
+      }
+    },
+    {
+      "id": "toast-timing-by-severity",
+      "level": "runtime",
+      "sentence": "**Only a plain confirmation times out.** A `success` or `info` toast with no action leaves after `--vela-duration-toast` (6000ms), read from the stylesheet. A `warning`, and **any toast with an action**, never times out: it stays until it is dismissed or its action is taken (WCAG 2.2.1, Timing Adjustable — an action on a timer is a time limit on a function, and a caveat on a timer is one some readers never finish).",
+      "proof": {
+        "file": "src/headless/Toast/Toast.test.tsx",
+        "line": 42
+      }
+    },
+    {
+      "id": "toast-pauses-on-hover-and-focus",
+      "level": "runtime",
+      "sentence": "**Hover and focus pause it.** While the pointer is over the region, or focus is inside it, every timer stops; leaving resumes each with the time it had left, never a fresh one. So does the window losing focus.",
+      "proof": {
+        "file": "src/headless/Toast/Toast.test.tsx",
+        "line": 68
+      }
+    },
+    {
+      "id": "toast-polite-live-region",
+      "level": "runtime",
+      "sentence": "**Every toast is announced politely.** The region is a `role=\"region\"` landmark with `aria-live=\"polite\"`; no toast is `role=\"alert\"` or assertive. Politeness is derived from severity as on Contextual Alert — `major` and `critical` interrupt, everything else waits — and a toast never carries `major` or `critical`, so it never interrupts.",
+      "proof": {
+        "file": "src/headless/Toast/Toast.test.tsx",
+        "line": 114
+      }
+    },
+    {
+      "id": "toast-region-reachable-f6",
+      "level": "runtime",
+      "sentence": "**F6 reaches the region from anywhere.** F6 moves focus to the region (and pauses every timer); Tab then moves into the toasts, and Shift+Tab from the region, or the last toast leaving, returns focus to where it was.",
+      "proof": {
+        "file": "src/headless/Toast/Toast.test.tsx",
+        "line": 84
+      }
+    },
+    {
+      "id": "toast-never-steals-focus",
+      "level": "runtime",
+      "sentence": "**A toast never takes focus.** Adding one moves nothing: the user's focus, caret and selection stay where they were.",
+      "proof": {
+        "file": "src/headless/Toast/Toast.test.tsx",
+        "line": 136
+      }
+    },
+    {
+      "id": "toast-escape-dismisses",
+      "level": "runtime",
+      "sentence": "**Escape dismisses the focused toast** — that one only — and focus moves to the next toast, or back to where it was before F6.",
+      "proof": {
+        "file": "src/headless/Toast/Toast.test.tsx",
+        "line": 146
+      }
+    },
+    {
+      "id": "toast-always-dismissible",
+      "level": "runtime",
+      "sentence": "**Every toast can be dismissed.** Each carries a real close button named by `dismissLabel` (\"Dismiss\"), whatever its severity — a toast that cannot be cleared is a banner in the wrong place.",
+      "proof": {
+        "file": "src/headless/Toast/Toast.test.tsx",
+        "line": 165
+      }
+    },
+    {
+      "id": "toast-action-runs-and-dismisses",
+      "level": "runtime",
+      "sentence": "**The action is a real button, and it closes the toast.** It renders as a tiny standard Button named by its label; activating it calls `onClick` once and dismisses the toast.",
+      "proof": {
+        "file": "src/headless/Toast/Toast.test.tsx",
+        "line": 188
+      }
+    },
+    {
+      "id": "toast-requires-provider",
+      "level": "runtime",
+      "sentence": "**`useToast` needs a `ToastProvider`.** Outside one it throws a named error rather than returning an `add` that adds to nothing.",
+      "proof": {
+        "file": "src/headless/Toast/Toast.test.tsx",
+        "line": 201
+      }
+    },
+    {
+      "id": "toast-icon-is-decorative",
+      "level": "runtime",
+      "sentence": "**The severity mark is decorative.** The icon is `aria-hidden`; the title carries the meaning.",
+      "proof": {
+        "file": "src/headless/Toast/Toast.test.tsx",
+        "line": 208
+      }
+    },
+    {
+      "id": "toast-stays-in-viewport",
+      "level": "browser",
+      "sentence": "**It stays on screen at every width.** The region sits `--vela-space-20` from the viewport's edges at its placement, and a toast is `--vela-toast-width` wide, never wider than the viewport less those gutters. Only a real layout can show this.",
+      "proof": {
+        "file": "tests/e2e/playground.spec.ts",
+        "line": 849
+      }
+    },
+    {
+      "id": "toast-enters-from-its-edge",
+      "level": "browser",
+      "sentence": "**It enters from the edge it sits on, by transform and opacity alone.** A new toast travels its own height in from its edge as it fades in; nothing in the region animates layout, and every movement is a transition, never a keyframe.",
+      "proof": {
+        "file": "tests/e2e/playground.spec.ts",
+        "line": 1660
+      }
+    },
+    {
+      "id": "toast-stack-collapses-and-spreads",
+      "level": "browser",
+      "sentence": "**The stack collapses, and spreads on hover or focus.** Behind the front toast each older one steps back `--vela-space-10` and 5% smaller, its top edge one step above the one in front. While the pointer is over the region, or keyboard focus is in it, every toast sits at full size `--vela-space-10` beyond the toasts in front of it. Under reduced motion both are reached at once.",
+      "proof": {
+        "file": "tests/e2e/playground.spec.ts",
+        "line": 1769
+      }
+    },
+    {
+      "id": "toast-stack-keeps-warnings-in-view",
+      "level": "browser",
+      "sentence": "**A collapsed stack never hides a warning.** A warning never times out, so behind another toast it would stay out of sight for as long as it lasts. While a warning sits behind the front toast the stack stays spread and its title is on screen; a warning in front collapses the stack as usual.",
+      "proof": {
+        "file": "tests/e2e/playground.spec.ts",
+        "line": 1807
+      }
+    },
+    {
+      "id": "toast-stack-reflows-mid-flight",
+      "level": "browser",
+      "sentence": "**A toast raised mid-flight re-flows the stack from where it is.** The stack moves by transitions, so a second toast turns every movement round from its current position and each toast ends in its place.",
+      "proof": {
+        "file": "tests/e2e/playground.spec.ts",
+        "line": 1685
+      }
+    },
+    {
+      "id": "toast-keyboard-dismiss-is-instant",
+      "level": "browser",
+      "sentence": "**From the keyboard, nothing in the stack animates.** F6 spreads it at once; Escape, or Enter or Space on a toast's button, dismisses that toast at once, and the toasts behind it close up at once.",
+      "proof": {
+        "file": "tests/e2e/playground.spec.ts",
+        "line": 1704
+      }
+    },
+    {
+      "id": "toast-swipe-follows-the-pointer",
+      "level": "browser",
+      "sentence": "**A swipe follows the pointer, then carries on out.** Dragged towards the edge it sits on, a toast moves with the pointer with no transition between; released past the threshold it continues out in that direction from where it was, fading.",
+      "proof": {
+        "file": "tests/e2e/playground.spec.ts",
+        "line": 1735
+      }
+    },
+    {
+      "id": "toast-confirms-what-happened",
+      "level": "convention",
+      "sentence": "**A toast confirms; it never decides.** It reports something that has already happened. It does not ask a question, does not offer two outcomes, and does not wait on the user to finish a task.",
+      "proof": null
+    },
+    {
+      "id": "toast-never-only-record",
+      "level": "convention",
+      "sentence": "**Never the only record.** What a toast says is also on the page — the updated row, the listed policy, the audit entry, the queued export — so a user who never sees it (it timed out, they were away, they use a screen reader that was busy) loses nothing.",
+      "proof": null
+    },
+    {
+      "id": "toast-undo-also-in-place",
+      "level": "convention",
+      "sentence": "**Undo on a toast is only a shortcut.** An Undo (or Restore, or Revert) on a toast must also exist in place — on the row, in the object's history — and keep working after the toast is gone. The toast's action is the fast path to it, never the only path.",
+      "proof": null
+    }
+  ]
+}

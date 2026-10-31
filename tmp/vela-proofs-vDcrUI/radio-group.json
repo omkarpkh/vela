@@ -1,0 +1,168 @@
+{
+  "spec": "guidelines/components/radio-group.md",
+  "typescript": "5.9.3",
+  "rules": [
+    {
+      "id": "radio-group-label-required",
+      "level": "compiler",
+      "sentence": "**The group has a `label`.** `RadioGroup` without one does not compile: an unnamed radiogroup reads as a run of unrelated buttons.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 410
+      },
+      "fixture": {
+        "name": "radio group with no label",
+        "snippet": "<RadioGroup><RadioGroup.Radio value=\"a\" label=\"A\" /></RadioGroup>",
+        "error": "fixture.tsx(3,26): error TS2322: Type '{ children: Element; }' is not assignable to type 'IntrinsicAttributes & RadioGroupProps'.\n  Property 'label' is missing in type '{ children: Element; }' but required in type 'RadioGroupBaseProps'."
+      }
+    },
+    {
+      "id": "radio-group-controlled-exclusive",
+      "level": "compiler",
+      "sentence": "**Controlled and uncontrolled are exclusive.** Pass `value` **or** `defaultValue`; both is a build failure, as on Tabs.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 411
+      },
+      "fixture": {
+        "name": "radio group both controlled and uncontrolled",
+        "snippet": "<RadioGroup label=\"Mode\" value=\"a\" defaultValue=\"a\"><RadioGroup.Radio value=\"a\" label=\"A\" /></RadioGroup>",
+        "error": "fixture.tsx(3,26): error TS2322: Type '{ children: Element; label: string; value: string; defaultValue: string; }' is not assignable to type 'IntrinsicAttributes & RadioGroupProps'.\n  Types of property 'defaultValue' are incompatible.\n    Type 'string' is not assignable to type 'undefined'."
+      }
+    },
+    {
+      "id": "radio-group-error-is-a-message",
+      "level": "compiler",
+      "sentence": "**`error` is a message, not a flag.** `error={true}` does not compile; pass the string and the component renders and announces it, as Input does.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 412
+      },
+      "fixture": {
+        "name": "radio group error as a boolean",
+        "snippet": "<RadioGroup label=\"Mode\" error><RadioGroup.Radio value=\"a\" label=\"A\" /></RadioGroup>",
+        "error": "fixture.tsx(3,50): error TS2322: Type 'boolean' is not assignable to type 'string'."
+      }
+    },
+    {
+      "id": "radio-group-orientation-closed",
+      "level": "compiler",
+      "sentence": "**Two orientations.** `vertical` and `horizontal`. There is no `grid`, no `inline`.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 413
+      },
+      "fixture": {
+        "name": "invented radio group orientation",
+        "snippet": "<RadioGroup label=\"Mode\" orientation=\"grid\"><RadioGroup.Radio value=\"a\" label=\"A\" /></RadioGroup>",
+        "error": "fixture.tsx(3,50): error TS2322: Type '\"grid\"' is not assignable to type '\"horizontal\" | \"vertical\" | undefined'."
+      }
+    },
+    {
+      "id": "radio-value-required",
+      "level": "compiler",
+      "sentence": "**Every radio has a `value`.** A radio the group cannot name cannot be chosen, so the type requires it.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 414
+      },
+      "fixture": {
+        "name": "radio with no value",
+        "snippet": "<RadioGroup label=\"Mode\"><RadioGroup.Radio label=\"A\" /></RadioGroup>",
+        "error": "fixture.tsx(3,51): error TS2741: Property 'value' is missing in type '{ label: string; }' but required in type 'RadioProps'."
+      }
+    },
+    {
+      "id": "radio-label-required",
+      "level": "compiler",
+      "sentence": "**Every radio has a `label`, and it is a `string`.** Not optional, not `ReactNode`.",
+      "proof": {
+        "file": "scripts/verify-pack.mjs",
+        "line": 415
+      },
+      "fixture": {
+        "name": "radio with no label",
+        "snippet": "<RadioGroup label=\"Mode\"><RadioGroup.Radio value=\"a\" /></RadioGroup>",
+        "error": "fixture.tsx(3,51): error TS2741: Property 'label' is missing in type '{ value: string; }' but required in type 'RadioProps'."
+      }
+    },
+    {
+      "id": "radio-requires-group",
+      "level": "runtime",
+      "sentence": "**A `RadioGroup.Radio` renders inside a `RadioGroup`.** Outside one it throws a named error rather than rendering a button that belongs to no set. The types cannot say where a child is rendered, so this is enforced at runtime, as `Tabs.Trigger` outside `Tabs` is.",
+      "proof": {
+        "file": "src/headless/RadioGroup/RadioGroup.test.tsx",
+        "line": 187
+      }
+    },
+    {
+      "id": "radio-disabled-is-skipped",
+      "level": "runtime",
+      "sentence": "**Disabled radios are skipped.** Arrow keys move past a disabled radio and it is out of the tab order; it is never the group's one tab stop.",
+      "proof": {
+        "file": "src/headless/RadioGroup/RadioGroup.test.tsx",
+        "line": 103
+      }
+    },
+    {
+      "id": "radio-group-describedby-only-rendered",
+      "level": "runtime",
+      "sentence": "**`aria-describedby` points only at rendered elements.** No `description` → no attribute on the radio; no `error` → no attribute on the group.",
+      "proof": {
+        "file": "src/headless/RadioGroup/RadioGroup.test.tsx",
+        "line": 142
+      }
+    },
+    {
+      "id": "radio-group-few-options",
+      "level": "convention",
+      "sentence": "**Five options or fewer.** A radio group is a comparison the eye makes in one pass. Six or more is a Select List, which is not in this kit: flag it rather than stacking radios.",
+      "proof": null
+    },
+    {
+      "id": "radio-dot-scales-in",
+      "level": "browser",
+      "sentence": "**The dot scales in, by transform and opacity alone.** Selected with a pointer, the radio's dot scales from half size as it fades in; the radio that lost the selection fades its dot out where it is. Transitions only, never a keyframe.",
+      "proof": {
+        "file": "tests/e2e/playground.spec.ts",
+        "line": 2015
+      }
+    },
+    {
+      "id": "radio-dot-retargets",
+      "level": "browser",
+      "sentence": "**Changed again mid-flight, it turns round.** A press on another radio, and back, while the dots are still moving ends with one dot, on the selected radio, at rest.",
+      "proof": {
+        "file": "tests/e2e/playground.spec.ts",
+        "line": 2043
+      }
+    },
+    {
+      "id": "radio-keyboard-is-instant",
+      "level": "browser",
+      "sentence": "**From the keyboard it does not animate.** Arrow keys and Space move the selection at once: no press, no fill fade, no dot motion — on the radio that was left as well as the one reached.",
+      "proof": {
+        "file": "tests/e2e/playground.spec.ts",
+        "line": 2064
+      }
+    },
+    {
+      "id": "radio-motion-reduced-end-state",
+      "level": "browser",
+      "sentence": "**Under reduced motion it is at its end state.** Pressed while held, released after, the dot in full.",
+      "proof": {
+        "file": "tests/e2e/playground.spec.ts",
+        "line": 2085
+      }
+    },
+    {
+      "id": "radio-press-keeps-hit-target",
+      "level": "browser",
+      "sentence": "**A press never moves the hit target.** The circle presses to 0.9; a guard holds its original box for as long as the press lasts, so a release at its edge still lands on it.",
+      "proof": {
+        "file": "tests/e2e/playground.spec.ts",
+        "line": 2099
+      }
+    }
+  ]
+}

@@ -45,11 +45,17 @@
  * Division of labour with verify-pack.mjs: this runs early and cheaply, proving the fixtures
  * are rejected by the types in `src`. verify-pack.mjs runs after the build and proves the same
  * fixtures are rejected by the .d.ts that is actually SHIPPED. Two different claims.
+ *
+ * `--write <dir>` also writes the proof map, one JSON file per component spec (playground spec,
+ * section 8; slice 4): each rule's id, level and sentence; the file and line of its proof; and, for
+ * a compiler rule, its fixture and the error the compiler gave for it. The site fetches the file for
+ * the page being read (B8). `npm run proofs` writes them to demo/public/proofs/, which is generated,
+ * never committed: the lines are only true of the commit they were read from.
  */
 import { execFileSync } from 'node:child_process'
-import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { dirname, join } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
@@ -84,7 +90,7 @@ for (const file of readdirSync(specDir).filter((f) => f.endsWith('.md'))) {
     }
     const [, id, level] = tag
     if (!LEVELS.includes(level)) fail(`${file}: rule "${id}" has unknown enforcement "${level}" (expected ${LEVELS.join(', ')})`)
-    rules.push({ id, level, file, text })
+    rules.push({ id, level, file, text, sentence: bullet.replace(/^- /, '').replace(/\s*\[\[rule:[^\]]*\]\]\s*/, ' ').replace(/\s+/g, ' ').trim() })
   }
 }
 
@@ -116,6 +122,7 @@ for (const r of compiler)
 // 1b. and the types actually reject it. One tsc run over one file per fixture: a fixture that
 // produces no error is a rule the compiler does not enforce, whatever the guideline says.
 let rejected = new Set()
+const compilerSays = new Map()   // fixture index -> the compiler's own error text
 const proven = fixtures.filter((f) => seen.has(f.id) && rules.some((r) => r.id === f.id && r.level === 'compiler'))
 if (proven.length) {
   const dir = mkdtempSync(join(tmpdir(), 'vela-rules-'))
@@ -141,6 +148,14 @@ if (proven.length) {
         { cwd: dir, encoding: 'utf8', stdio: 'pipe' })
     } catch (e) { out = (e.stdout || '') + (e.stderr || '') }
     rejected = new Set([...out.matchAll(/^f(\d+)\.tsx\(/gm)].map((m) => Number(m[1])))
+    // Each error starts "fN.tsx(line,col): error TS…" and may run on over indented lines.
+    let at = -1
+    for (const line of out.split('\n')) {
+      const m = line.match(/^f(\d+)\.tsx(\(\d+,\d+\): .*)$/)
+      if (m) { at = Number(m[1]); compilerSays.set(at, [...(compilerSays.get(at) ?? []), `fixture.tsx${m[2]}`]) }
+      else if (at >= 0 && /^\s+\S/.test(line)) compilerSays.get(at).push(line)
+      else at = -1
+    }
     proven.forEach((f, i) => {
       if (!rejected.has(i))
         fail(`rule "${f.id}" is tagged compiler, but its fixture COMPILES — the rule is documentation only\n          fixture: ${f.name}\n          ${f.snippet.slice(0, 96)}`)
@@ -218,6 +233,40 @@ for (const file of patternFiles) {
     const [t, p] = [comps.reduce((n, c) => n + c.total, 0), comps.reduce((n, c) => n + c.proved, 0)]
     if (+overall[1] !== t || +overall[2] !== p) fail(`${where}: the total says ${overall[1]} rules, ${overall[2]} with proofs; its components add up to ${t}, ${p}`)
   }
+}
+
+// ---------- the proof map (--write <dir>) ----------
+const writeAt = process.argv.indexOf('--write')
+if (writeAt > 0) {
+  const out = resolve(root, process.argv[writeAt + 1] ?? 'demo/public/proofs')
+  mkdirSync(out, { recursive: true })
+  const lineOf = (src, index) => src.slice(0, index).split('\n').length
+  const rel = (p) => p.slice(root.length + 1)
+  const typescript = JSON.parse(readFileSync(join(root, 'node_modules/typescript/package.json'), 'utf8')).version
+  const proofOf = (r) => {
+    if (r.level === 'compiler') {
+      const at = packSrc.search(new RegExp(`\\['${r.id}',`))
+      return at < 0 ? null : { file: 'scripts/verify-pack.mjs', line: lineOf(packSrc, at) }
+    }
+    if (r.level === 'runtime' || r.level === 'browser') {
+      for (const t of proofs[r.level].files) {
+        const at = t.src.search(new RegExp(`\\[\\[rule:\\s*${r.id}\\b`))
+        if (at >= 0) return { file: rel(t.p), line: lineOf(t.src, at) }
+      }
+    }
+    return null
+  }
+  for (const file of new Set(rules.map((r) => r.file))) {
+    const own = rules.filter((r) => r.file === file).map((r) => {
+      const fx = r.level === 'compiler' ? proven.map((f, i) => ({ f, i })).find(({ f }) => f.id === r.id) : undefined
+      return {
+        id: r.id, level: r.level, sentence: r.sentence, proof: proofOf(r),
+        ...(fx ? { fixture: { name: fx.f.name, snippet: fx.f.snippet, error: (compilerSays.get(fx.i) ?? []).join('\n') } } : {}),
+      }
+    })
+    writeFileSync(join(out, file.replace(/\.md$/, '.json')), JSON.stringify({ spec: `guidelines/components/${file}`, typescript, rules: own }, null, 2) + '\n')
+  }
+  console.log(`  Proof map written to ${out.startsWith(root) ? rel(out) : out}/ (${new Set(rules.map((r) => r.file)).size} files)`)
 }
 
 // ---------- report ----------

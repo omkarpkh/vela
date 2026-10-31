@@ -18,6 +18,7 @@ import { Segments } from './shell/Segments'
 import { ScrollRegion } from './shell/ScrollRegion'
 import { StageBoundary, COMMIT, type Settings } from './shell/ErrorBoundary'
 import { StageWidth, WidthHandle, FLOOR, clampWidth } from './playground/StageWidth'
+import { useProofs, RulesFromProofs } from './playground/Proofs'
 import './playground.css'
 
 type Mode = 'light' | 'dark'
@@ -249,8 +250,10 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
     ...(figmaSet ? [{ value: 'figma' as const, label: 'Figma' }] : []),
   ]
   const current = tabs.some((t) => t.value === tab) ? tab! : 'playground'
+  const proofs = useProofs(entry.file.replace(/\.md$/, ''))
   useEffect(() => {
-    if (current !== 'rules' || !proofRule) return
+    // Wait for the proof map, so focus lands on the list the reader will see.
+    if (current !== 'rules' || !proofRule || !proofs.settled) return
     const tagged = document.querySelector<HTMLElement>(`.pg-rules [data-rule~="${CSS.escape(proofRule)}"]`)
     const target = tagged?.closest<HTMLElement>('li, p') ?? tagged
     if (target) {
@@ -260,7 +263,7 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
       target.focus({ preventScroll: true })
     }
     setProofRule(null)
-  }, [current, proofRule])
+  }, [current, proofRule, proofs.settled])
   const selects = controls.filter((c) => c.kind === 'select')
   const texts = controls.filter((c) => c.kind === 'text')
   const booleans = controls.filter((c) => c.kind === 'boolean')
@@ -469,7 +472,16 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
 
           <Tabs.Panel value="rules">
             <div className="pg-rules">
-              {rules.map((s) => (
+              {proofs.map && (
+                <RulesFromProofs
+                  map={proofs.map}
+                  commit={COMMIT}
+                  built={import.meta.env.VITE_VELA_BUILT}
+                  // The spec's own lead-in to its constraints, the prose before the first bullet.
+                  intro={rules.find((s) => s.heading === 'Hard constraints')?.body.split(/^- /m)[0].trim()}
+                />
+              )}
+              {rules.filter((s) => !(proofs.map && s.heading === 'Hard constraints')).map((s) => (
                 <div key={s.heading}>
                   <h2 className="vela-h4 pg-h2">{s.heading}</h2>
                   <Markdown source={s.body} />
