@@ -343,9 +343,6 @@ planned.
 Library file: **Vela Design System** → page `Dropdown List`.
 - **Published** with the library on 31 Oct 2026: the item set is node `164:85`, the popup `164:86`.
   Built from `scripts/figma/components/dropdown-list.figma.js`.
-- **The 0.14.0 library still names the `Locked` axis `Disabled`, and draws no lock.** The builder
-  below draws both; the Figma thread renames the axis and adds the lock in place, so instances keep
-  their variant, with the next library update. Until then, read `Disabled` as `Locked`.
 - **The set the builder draws:** "Dropdown List item", one row of the list. Its variant axes mirror
   the markup, one per state the item carries:
   - `Highlighted` (false / true): `data-highlighted`;
@@ -366,7 +363,7 @@ Library file: **Vela Design System** → page `Dropdown List`.
 | Figma property | Code prop |
 |---|---|
 | `Current` | `value` equals the item's `value` |
-| `Locked` | item `locked`; its reason is `Meta text` (the 0.14.0 library calls the axis `Disabled`) |
+| `Locked` | item `locked`; its reason is `Meta text` |
 | `Meta` / `Meta text` | item `meta` |
 | `Label` | item `label` |
 
