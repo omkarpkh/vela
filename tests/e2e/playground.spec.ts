@@ -942,10 +942,10 @@ test('the Dropdown List page opens a themed menu on the current item, and a choi
   await expect(page.getByRole('menu')).toHaveCount(0)
   await expect(frame.getByText('Showing Reports')).toBeVisible()
   await expect(frame.getByRole('button', { name: 'Switch View' })).toBeFocused()
-  // A disabled item is not chosen. (Playwright waits for an aria-disabled element to become
+  // A locked item is not chosen. (Playwright waits for an aria-disabled element to become
   // enabled; a person can still press it, so the press is forced.)
   await frame.getByRole('button', { name: 'Switch View' }).click()
-  await page.getByRole('menuitemradio', { name: 'Archive, No access' }).click({ force: true })
+  await page.getByRole('menuitemradio', { name: 'Archive, Needs retention on' }).click({ force: true })
   await expect(page.getByRole('menu')).toBeVisible()
   await expect(frame.getByText('Showing Reports')).toBeVisible()
   // A press outside closes it.
@@ -1091,9 +1091,9 @@ test('the Dropdown List never clips the focus ring, and a disabled item highligh
   // The list is capped by the short viewport, so the End case above was a scrolled list.
   expect((await ringInside()).scrolls).toBe(true)
 
-  // Keyboard focus on the disabled item shows the highlight surface; its name stays inactive and
-  // its meta stays readable.
-  const archive = page.getByRole('menuitemradio', { name: 'Archive, No access' })
+  // Keyboard focus on the locked item shows the highlight surface; its name stays inactive and
+  // its reason stays readable.
+  const archive = page.getByRole('menuitemradio', { name: 'Archive, Needs retention on' })
   await page.keyboard.press('ArrowUp')
   await expect(archive).toBeFocused()
   const look = () => archive.evaluate((el) => ({
