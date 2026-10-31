@@ -4,10 +4,9 @@ A short list that opens from a button. One option is current, and choosing anoth
 it opens that tab or that view, and the list closes. Its first use is the Tabs overflow control
 ("6 more"), which lists every tab in the row.
 
-**Status:** Experimental — built; its Figma set is built, not yet published. It is born in
-`@omkarux/vela/headless` (Base UI 1.9 `Menu`) with no core implementation. It is Approved once the API has
-settled, the set is published and the manual screen-reader check in Accessibility is done; see
-`GOVERNANCE.md`.
+**Status:** Experimental — built, and its Figma set is published (31 Oct 2026). It is born in
+`@omkarux/vela/headless` (Base UI 1.9 `Menu`) with no core implementation. It is Approved once the
+API has settled and the manual screen-reader check in Accessibility is done; see `GOVERNANCE.md`.
 **Dependencies:** @base-ui/react (optional peer, via /headless)
 
 ## When to use Dropdown List (vs. Select List, vs. Actions Dropdown, vs. Popover)
@@ -342,16 +341,23 @@ planned.
 ## Figma mapping
 
 Library file: **Vela Design System** → page `Dropdown List`.
-- **Built, not yet published** (node `164:85`), from `scripts/figma/components/dropdown-list.figma.js`.
-  Publishing it is the maintainer's step.
-- **Not drawn in the set yet:** a locked item's `lock` glyph, and the `Locked` name for the
-  `Disabled` axis. Both are for the Figma thread, with the next library update.
+- **Published** with the library on 31 Oct 2026: the item set is node `164:85`, the popup `164:86`.
+  Built from `scripts/figma/components/dropdown-list.figma.js`.
+- **The 0.14.0 library still names the `Locked` axis `Disabled`, and draws no lock.** The builder
+  below draws both; the Figma thread renames the axis and adds the lock in place, so instances keep
+  their variant, with the next library update. Until then, read `Disabled` as `Locked`.
 - **The set the builder draws:** "Dropdown List item", one row of the list. Its variant axes mirror
   the markup, one per state the item carries:
   - `Highlighted` (false / true): `data-highlighted`;
   - `Current` (false / true): `aria-checked="true"`;
-  - `Disabled` (false / true): `aria-disabled="true"`;
-  - plus the boolean `Meta` and the text properties `Label` and `Meta text`.
+  - `Locked` (false / true): `aria-disabled="true"`. A locked variant puts an instance of Icon's
+    `Glyph=lock` (`icon/size`, `icon/strong`) in a slot one body line tall, `space/5` before the
+    name, inside a `Name` row;
+  - plus the boolean `Meta` and the text properties `Label` and `Meta text`. A locked item's reason
+    is `Meta text`.
+  - `Current=true` with `Locked=true` can't happen in code (`dropdown-list-locked-not-chosen`). The
+    two variants stay, because the 0.14.0 set published them and removing a variant breaks the
+    instances that use it.
   - The `Meta` text uses the `Body/Strong` text style (SemiBold 14/21, from the body size and line
     height and the semibold weight).
 - **The popup:** a one-size "Dropdown List" component (a component, not a frame) on Popover's
@@ -360,7 +366,7 @@ Library file: **Vela Design System** → page `Dropdown List`.
 | Figma property | Code prop |
 |---|---|
 | `Current` | `value` equals the item's `value` |
-| `Disabled` | item `locked` (the set's axis keeps its 0.14.0 name until the next library update) |
+| `Locked` | item `locked`; its reason is `Meta text` (the 0.14.0 library calls the axis `Disabled`) |
 | `Meta` / `Meta text` | item `meta` |
 | `Label` | item `label` |
 

@@ -64,10 +64,10 @@ export const SETS = {
   'dialog.md': { set: 'Dialog', src: 'Dialog', entry: 'headless', state: 'published', node: '129:54', export: 'Dialog' },
   // A toast is raised with `toast.add(...)` from `useToast()`, inside the app's one ToastProvider.
   'toast.md': { set: 'Toast', src: 'Toast', entry: 'headless', state: 'published', node: '129:94', export: 'useToast', imports: ['ToastProvider', 'useToast'] },
-  // Built by the Figma thread on 31 Oct 2026 for 0.14.0 (R20), not yet published: the item set is
-  // 164:85 (Highlighted × Current × Disabled, 8 variants) on its own page; the popup that holds four
-  // item instances is the component 164:86, which carries no description of its own.
-  'dropdown-list.md': { set: 'Dropdown List item', src: 'DropdownList', entry: 'headless', state: 'built', node: '164:85', export: 'DropdownList' },
+  // Built by the Figma thread for 0.14.0 (R20) and published with the library on 31 Oct 2026 (R21):
+  // the item set is 164:85 (Highlighted × Current × Disabled, 8 variants) on its own page; the popup
+  // that holds four item instances is the component 164:86, which carries no description of its own.
+  'dropdown-list.md': { set: 'Dropdown List item', src: 'DropdownList', entry: 'headless', state: 'published', node: '164:85', export: 'DropdownList' },
 }
 export const FILE_KEY = 'XO2rmeCcgOjyKe4oipgF4j'
 

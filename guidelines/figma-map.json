@@ -113,7 +113,7 @@
     {
       "set": "Dropdown List item",
       "page": "Dropdown List",
-      "state": "built",
+      "state": "published",
       "node": "164:85",
       "url": "https://www.figma.com/design/XO2rmeCcgOjyKe4oipgF4j/Vela-Design-System?node-id=164-85",
       "import": "import { DropdownList } from '@omkarux/vela/headless'",
@@ -124,8 +124,8 @@
           "prop": "value equals the item's value"
         },
         {
-          "figma": "Disabled",
-          "prop": "item locked (the set's axis keeps its 0.14.0 name until the next library update)"
+          "figma": "Locked",
+          "prop": "item locked; its reason is Meta text (the 0.14.0 library calls the axis Disabled)"
         },
         {
           "figma": "Meta",
