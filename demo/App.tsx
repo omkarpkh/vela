@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Input, cn } from '../src'
+import { cn } from '../src'
 import pkg from '../package.json'
 import './demo.css'
 import { useRoute, href, sameRoute, type Route } from './router'
@@ -90,7 +90,6 @@ export function App() {
   const route = useRoute()
   const [theme, setTheme] = useState<Theme>('system')
   const [navOpen, setNavOpen] = useState(() => window.matchMedia('(min-width: 901px)').matches)
-  const [filter, setFilter] = useState('')
   // The phone header shows Search as an icon named "Search" (playground spec, section 3).
   const phone = useMedia('(max-width: 600px)')
 
@@ -106,10 +105,11 @@ export function App() {
     if (!window.matchMedia('(min-width: 901px)').matches) setNavOpen(false)
   }, [route])
 
-  const q = filter.trim().toLowerCase()
-  const components = COMPONENTS.filter((c) => !q || c.title.toLowerCase().includes(q))
-  const foundations = FOUNDATIONS.filter((f) => !q || f.title.toLowerCase().includes(q))
-  const proposals = PROPOSALS.filter((p) => !q || p.title.toLowerCase().includes(q))
+  // No nav Filter (playground spec v1.2, section 2): Search covers names, aliases and rule ids, and
+  // two find boxes side by side make people choose between them.
+  const components = COMPONENTS
+  const foundations = FOUNDATIONS
+  const proposals = PROPOSALS
 
   return (
     <div className={cn('vela-root shell', !navOpen && 'shell--nav-closed')}>
@@ -141,7 +141,6 @@ export function App() {
 
       <div className="shell__body">
         <nav id="site-nav" className="sitenav" aria-label="Site" onKeyDown={(e) => { if (e.key === 'Escape') setNavOpen(false) }}>
-          <Input label="Filter" size="tiny" placeholder="Find a page" value={filter} onChange={(e) => setFilter(e.target.value)} />
           <NavGroup title="Start" holdsCurrent={route.kind === 'overview' || route.kind === 'how'}>
             <NavLink to={{ kind: 'overview' }} current={route}>Overview</NavLink>
             <NavLink to={{ kind: 'how' }} current={route}>How it is made</NavLink>

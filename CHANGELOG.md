@@ -5,6 +5,16 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+### Changed
+- **Icon: `lock` means "can't be changed or chosen here, for a reason written beside it"**,
+  restricted or read-only by policy, or not with the other settings as they are. `lock-open` is
+  never used on a value in a set. New convention rule `icon-lock-has-written-reason`: the glyph
+  never appears without its reason in visible text beside it, because only the words tell the two
+  readings apart. DESIGN.md's Locked line gains one sentence saying a locked value may carry the
+  glyph. Decided by Omkar on 31 October; wording from the icon thread
+  (`requests/icon-thread-to-repo-lock-meaning.md`).
+- **Tabs' spec states `size`'s default, `regular`**, which both entry points already used.
+
 ## [0.14.0] — 2026-10-31
 
 ### Added

@@ -27,7 +27,7 @@
 
 /* Locked (specs/segmented-control.md): default text, never faded; a dashed inset edge; no hover fill
    and no press, because it can't be chosen. Its reason is read with it, not shown. */
-.shell-segment.is-locked { border-style: dashed; cursor: not-allowed; }
+.shell-segment.is-locked { border-style: dashed; cursor: not-allowed; gap: var(--vela-space-5); }
 @media (hover: hover) { .shell-segment.is-locked:hover { background: transparent; } }
 
 /* ------------------------------------------------------- forced colours -- */

@@ -50,7 +50,7 @@ afterEach(() => { quiet.mockRestore(); flags.overviewThrows = false; window.loca
 const go = (hash: string) => act(() => { window.location.hash = hash; window.dispatchEvent(new HashChangeEvent('hashchange')) })
 
 describe('the stage error boundary', () => {
-  it('a render error in the stage leaves the nav and its filter working, and a prop change retries', async () => {
+  it('a render error in the stage leaves the nav working, and a prop change retries', async () => {
     const user = userEvent.setup()
     window.location.hash = '#/components/boom'
     render(<SiteBoundary><App /></SiteBoundary>)
@@ -73,13 +73,15 @@ describe('the stage error boundary', () => {
     expect(body).toMatch(/Commit: \S+/)
     expect(body).not.toContain('Save Changes')   // the label is free text
 
-    // The page around the stage still works: the heading, the controls, the nav and its filter.
+    // The page around the stage still works: the heading, the controls, and the nav, whose groups
+    // still collapse and open (the nav Filter is gone: Search covers it, spec v1.2).
     expect(screen.getByRole('heading', { level: 1, name: 'Boom' })).toBeInTheDocument()
     const nav = screen.getByRole('navigation', { name: 'Site' })
-    await user.type(within(nav).getByLabelText('Filter'), 'tog')
-    expect(within(nav).getByRole('link', { name: 'Toggle' })).toBeInTheDocument()
-    expect(within(nav).queryByRole('link', { name: 'Button' })).toBeNull()
-    await user.clear(within(nav).getByLabelText('Filter'))
+    const inputs = within(nav).getByRole('button', { name: 'Inputs' })
+    await user.click(inputs)
+    expect(inputs).toHaveAttribute('aria-expanded', 'false')
+    await user.click(inputs)
+    expect(within(nav).getByRole('link', { name: /^Toggle/ })).toBeInTheDocument()
 
     // A prop change retries: a variant that renders brings the stage back.
     const props = screen.getByRole('complementary', { name: 'Controls' })

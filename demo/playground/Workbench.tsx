@@ -24,6 +24,14 @@ export const SEGMENT_MAX = 6
 
 export interface OpenLock { prop: string; value: string; lock: Lock }
 
+/** "1 unavailable: text-link. text-link never carries an icon." Read in order; never the word "locked". */
+function unavailableLine(options: string[], locks: Record<string, Lock>) {
+  const values = options.filter((o) => locks[o])
+  if (values.length === 0) return null
+  const reasons = [...new Set(values.map((o) => locks[o].reason))]
+  return <span className="pg-field__note">{values.length} unavailable: {values.join(', ')}. {reasons.join(' ')}</span>
+}
+
 /** One control. `locks` are this prop's locked values, by value. */
 export function ControlField({ c, value, changed, locks, onChange, onLockedPress }: {
   c: Control
@@ -45,6 +53,8 @@ export function ControlField({ c, value, changed, locks, onChange, onLockedPress
           onChange={onChange}
           onLockedPress={onLockedPress}
         />
+        {/* The lock glyph never appears without its reason in view (icon.md, Glyphs). */}
+        {unavailableLine(c.options!, locks)}
       </div>
     )
   if (c.kind === 'select') {
@@ -84,12 +94,14 @@ export function ControlField({ c, value, changed, locks, onChange, onLockedPress
 }
 
 /** The lock panel: the rule in words, its id and enforcement, the proof, and the legal moves. */
-export function LockPanel({ open, component, levelOf, onMove, onClose }: {
+export function LockPanel({ open, component, levelOf, onMove, onClose, onOpenProof }: {
   open: OpenLock
   component: string
   levelOf: (rule: string) => string | undefined
   onMove: (patch: Values) => void
   onClose: () => void
+  /** Opens the Rules tab on this rule, with focus on it (until slice 4's proof links). */
+  onOpenProof: (rule: string) => void
 }) {
   const ref = useRef<HTMLElement>(null)
   const headingId = useId()
@@ -109,13 +121,13 @@ export function LockPanel({ open, component, levelOf, onMove, onClose }: {
       <p className="pg-lock__rule">
         <code>{open.lock.rule}</code>
         {words && <span className="site-tag">{level === 'convention' ? 'convention' : `Enforced by ${words}`}</span>}
-        <a href={`#/components/${component}/rules`}>Open proof</a>
+        <a href={`#/components/${component}/rules`} onClick={(e) => { e.preventDefault(); onOpenProof(open.lock.rule) }}>Open proof</a>
       </p>
       <div className="pg-lock__moves">
         {open.lock.moves.map((m) => (
           <Button key={m.label} size="tiny" appearance="hollow" onClick={() => onMove(m.patch)}>{m.label}</Button>
         ))}
-        <Button size="tiny" appearance="hollow" onClick={onClose}>Keep it as it is</Button>
+        <Button size="tiny" appearance="hollow" onClick={onClose}>{open.lock.keep}</Button>
       </div>
     </section>
   )

@@ -54,6 +54,8 @@ export interface Lock {
   rule: string
   /** Legal moves: each sets every prop it names, together, so the result is always legal. */
   moves: { label: string; patch: Values }[]
+  /** The way out that changes nothing, naming what stays: "Keep the icon" (spec v1.2, section 5). */
+  keep: string
 }
 
 export interface Entry {
@@ -63,6 +65,8 @@ export interface Entry {
   /**
    * Other names people search for (playground spec, section 10): first the names the spec's own
    * "When to use" gives, then the common names in other systems. Search only; never shown as a title.
+   * An alias points only to a component whose own "When to use" covers that job (spec v1.2): a name
+   * Vela has nothing for goes in search.ts's MISSING, with the nearest component, instead.
    */
   aliases: string[]
   spec: string
@@ -278,26 +282,27 @@ export const REGISTRY: Entry[] = [
       const ICON = { reason: 'text-link never carries an icon.', rule: 'button-text-link-size-and-icon' }
       if (v.appearance === 'text-link') {
         out.variant = Object.fromEntries((['standard', 'destructive'] as const).map((x) => [x, {
-          heading: `${x} needs filled or hollow`, ...PRIMARY,
+          heading: `${x} needs filled or hollow`, ...PRIMARY, keep: 'Keep text-link',
           moves: [{ label: `Use ${x}, filled`, patch: { variant: x, appearance: 'filled' } }, { label: `Use ${x}, hollow`, patch: { variant: x, appearance: 'hollow' } }],
         }]))
         out.size = Object.fromEntries((['large', 'huge'] as const).map((x) => [x, {
-          heading: `${x} needs filled or hollow`, ...SIZE,
+          heading: `${x} needs filled or hollow`, ...SIZE, keep: 'Keep text-link',
           moves: [{ label: `Use ${x}, filled`, patch: { size: x, appearance: 'filled' } }, { label: `Use ${x}, hollow`, patch: { size: x, appearance: 'hollow' } }],
         }]))
-        out.icon = { true: { heading: 'An icon needs filled or hollow', ...ICON, moves: [{ label: 'Add the icon, filled', patch: { icon: true, appearance: 'filled' } }] } }
+        out.icon = { true: { heading: 'An icon needs filled or hollow', ...ICON, keep: 'Keep text-link', moves: [{ label: 'Add the icon, filled', patch: { icon: true, appearance: 'filled' } }] } }
         return out
       }
       // text-link from here: everything it needs, named, and one move that sets it all at once.
-      const needs: { what: string; reason: string; rule: string; patch: Values }[] = []
-      if (v.variant !== 'primary') needs.push({ what: 'primary', ...PRIMARY, patch: { variant: 'primary' } })
-      if (v.size === 'large' || v.size === 'huge') needs.push({ what: 'regular size', ...SIZE, patch: { size: 'regular' } })
-      if (v.icon === true) needs.push({ what: 'no icon', ...ICON, patch: { icon: false } })
+      const needs: { what: string; stays: string; reason: string; rule: string; patch: Values }[] = []
+      if (v.variant !== 'primary') needs.push({ what: 'primary', stays: String(v.variant), ...PRIMARY, patch: { variant: 'primary' } })
+      if (v.size === 'large' || v.size === 'huge') needs.push({ what: 'regular size', stays: String(v.size), ...SIZE, patch: { size: 'regular' } })
+      if (v.icon === true) needs.push({ what: 'no icon', stays: 'the icon', ...ICON, patch: { icon: false } })
       if (needs.length > 0) {
         const patch = Object.assign({ appearance: 'text-link' }, ...needs.map((n) => n.patch)) as Values
         out.appearance = { 'text-link': {
           heading: `text-link needs ${needs.map((n) => n.what).join(' and ')}`,
           reason: needs.map((n) => n.reason).join(' '), rule: needs[0].rule,
+          keep: `Keep ${needs.map((n) => n.stays).join(' and ')}`,
           moves: [{ label: `Switch to ${needs.map((n) => n.what).join(', ')}, text-link`, patch }],
         } }
       }
@@ -418,7 +423,7 @@ export const REGISTRY: Entry[] = [
     src: 'ContextualAlert',
     name: 'Contextual Alert',
     group: 'Feedback',
-    aliases: ['banner', 'callout', 'inline alert', 'inline message'],
+    aliases: ['banner', 'callout', 'inline alert', 'inline message', 'severity'],
     spec: alertMd,
     seed: { severity: 'warning', title: 'Scan incomplete', children: 'The scan could not reach 3 of 12 hosts.', onDismiss: true },
     extra: [{ prop: 'onDismiss', kind: 'boolean', type: '() => void', default: false, notes: 'Present → the alert can be dismissed.' }],
@@ -794,7 +799,7 @@ export const REGISTRY: Entry[] = [
     imports: 'ToastProvider, useToast',
     name: 'Toast',
     group: 'Feedback',
-    aliases: ['snackbar', 'notification', 'flash message'],
+    aliases: ['snackbar', 'notification', 'flash message', 'severity'],
     spec: toastMd,
     seed: { severity: 'success', title: 'Policy saved', description: 'Block legacy TLS now applies to 14 tenants.', action: false },
     extra: [
