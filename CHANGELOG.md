@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.15.0] — 2026-10-31
+
 ### Changed
 - **Icon: `lock` means "can't be changed or chosen here, for a reason written beside it"**,
   restricted or read-only by policy, or not with the other settings as they are. `lock-open` is
@@ -14,6 +16,12 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   glyph. Decided by Omkar on 31 October; wording from the icon thread
   (`requests/icon-thread-to-repo-lock-meaning.md`).
 - **Tabs' spec states `size`'s default, `regular`**, which both entry points already used.
+- **DESIGN.md's Locked line covers a policy that applies to everyone**, and says a value a
+  person's role may never have is not shown at all.
+- **The motion values are decided.** `duration-travel`, `ease-out` and `ease-spring`, and the
+  values below (the overlays' 0.96, the small controls' 0.9, the toast stack's step and scale),
+  were approved by Omkar on 31 October from recordings of the Motion review page. They were
+  provisional since 0.13.0. Decision 006 records it.
 
 ### Changed (Experimental, breaking)
 - **Dropdown List: `locked: { reason }` replaces an item's `disabled?: boolean`.** A locked item
@@ -26,12 +34,11 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   isn't listed. Decided by Omkar on 31 October; the rule and examples are from the spec and icon
   threads (`requests/spec-thread-to-repo-dropdown-list-locked-alignment.md`). New pair in
   `PAIRS`: the lock on the highlighted row.
-- **DESIGN.md's Locked line covers a policy that applies to everyone**, and says a value a
-  person's role may never have is not shown at all.
-- **The motion values are decided.** `duration-travel`, `ease-out` and `ease-spring`, and the
-  values below (the overlays' 0.96, the small controls' 0.9, the toast stack's step and scale),
-  were approved by Omkar on 31 October from recordings of the Motion review page. They were
-  provisional since 0.13.0. Decision 006 records it.
+- **Figma: Dropdown List's `Disabled` axis becomes `Locked`.** The set was published with the
+  0.14.0 library on 31 October. Its builder now draws the `Locked` axis and an instance of Icon's
+  `lock` before a locked item's name. The library is edited in place to match after this release,
+  so instances keep their variant. A builder may now declare `// @uses <builder>` to place
+  another set's instances.
 
 ### Added
 - **Motion pass, part 2: the Toast stack, overlays that grow from their trigger, state and press

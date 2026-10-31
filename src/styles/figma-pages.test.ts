@@ -140,7 +140,7 @@ describe('the Changelog page', () => {
       expect([link.chars, link.style]).toEqual(['Full entry: CHANGELOG.md', 'Body/Link'])
       expect(link.link).toMatch(/^https:\/\/github\.com\/omkarpkh\/vela\/blob\/main\/CHANGELOG\.md#\d+--\d{4}-\d{2}-\d{2}$/)
     }
-    expect(cards[0].ch!.at(-1)!.link).toBe('https://github.com/omkarpkh/vela/blob/main/CHANGELOG.md#0140--2026-10-31')
+    expect(cards[0].ch!.at(-1)!.link).toBe('https://github.com/omkarpkh/vela/blob/main/CHANGELOG.md#0150--2026-10-31')
   })
 
   it('says where "on npm" came from: the committed published.json, which lists every release but 0.1.0', () => {
