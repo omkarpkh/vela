@@ -148,7 +148,7 @@ type Common = {
 type ByChannel =
   | { channel: "tool-call"; call: { tool: string; callId: string; literal: string }; givenBy?: never; memory?: never }
   | { channel: "given"; givenBy: string; call?: never; memory?: never }   // the host, the pipeline, another agent
-  | { channel: "memory"; memory: { writtenBy: string; writtenAt: string }; call?: never; givenBy?: never }
+  | { channel: "memory"; memory: { writtenBy: string; writtenAt: string; lesson?: never }; call?: never; givenBy?: never }
 
 type ByTrust =
   | { trust: "system-record"; writtenBy?: never; lockerRef?: never }
@@ -159,7 +159,16 @@ type ByTrust =
       content: { kind: "text"; text: string; truncatedAt?: number } | NotRetained }
     // who outside the trust boundary could have written it: "the email's sender"
 
-type EvidenceItem = Common & ByChannel & ByTrust
+// A lesson the agent applied (Override & Teach Panel). Always agent-written: a lesson is guidance,
+// not evidence, so a world-claim resting only on it is weak.
+type LessonMemory = {
+  channel: "memory"
+  memory: { writtenBy: string; writtenAt: string; lesson: { id: string; version: number; href?: string } }
+  trust: "agent-output"; writtenBy: string        // the agent: "Triage agent 2.4, from A. Rao's lesson"
+  call?: never; givenBy?: never; lockerRef?: never
+}
+
+type EvidenceItem = Common & ((ByChannel & ByTrust) | LessonMemory)
 
 // `supportedBy` is the agent's citation — which items it says back the claim — not a check.
 type Claim =
@@ -246,6 +255,10 @@ Rule ids are listed with their proof level; they become `[[rule: … ]]` tags wh
 - **Each channel carries its proof.** `tool-call` requires `call` with the tool, the call id and
   the literal. `given` requires `givenBy`. `memory` requires `memory.writtenBy` and
   `memory.writtenAt`. Each forbids the others' fields. `locker-channel-carries-proof` · compiler
+- **A lesson is agent-written memory.** A `memory` item with `memory.lesson` requires
+  `trust: "agent-output"` and `writtenBy` naming the agent. A lesson marked `system-record` does not
+  compile, so `weakWorldClaims` always treats a world-claim resting only on lessons as weak.
+  `locker-lesson-is-agent-output` · compiler
 - **Untrusted content is a string.** An `untrusted` item's content is `{ kind: "text" }` (or
   `not-retained`), never records and never a React node or HTML. It also requires `writtenBy`. A
   records column marked `trust: "untrusted"` requires `writtenBy` too. A host cannot pass rendered
@@ -287,8 +300,9 @@ Rule ids are listed with their proof level; they become `[[rule: … ]]` tags wh
 - **Not seen comes first.** The not-seen list renders above the items, in reading order, before any
   evidence: what the agent could not see frames what it did. `locker-not-seen-first` · runtime
 - **Memory says who wrote it.** A `memory` item reads "From the agent's memory — written by
-  *writtenBy* on *writtenAt*". It is never shown as if the agent had just read it.
-  `locker-memory-attributed` · runtime
+  *writtenBy* on *writtenAt*". It is never shown as if the agent had just read it. A lesson reads
+  "From the agent's memory — lesson *id* v*version*, taught by *writtenBy* on *writtenAt*", with the
+  approver when the lesson's panel gives one. `locker-memory-attributed` · runtime
 - **A detector's flag is a hint.** `detector.hint` renders beside the item as the detector's words,
   with its name: "Injection screen 1.2: contains text that reads as instructions to an AI". It is
   never the only marker of an untrusted item, and its absence never means content is safe.
@@ -322,8 +336,8 @@ Rule ids are listed with their proof level; they become `[[rule: … ]]` tags wh
   rather than "Written by an attacker". "The agent cites" rather than "Supported by": a citation is
   the agent's, not a check. `locker-labels-claim-only-data` · convention
 
-**Proof plan:** 4 compiler (4 fixtures), 10 runtime (10 unit tests), 2 browser (on the shared
-container-width harness), 3 convention — 19 rules, 16 with proofs.
+**Proof plan:** 5 compiler (5 fixtures), 10 runtime (10 unit tests), 2 browser (on the shared
+container-width harness), 3 convention — 20 rules, 17 with proofs.
 
 ## Token bindings
 
@@ -364,6 +378,7 @@ None. The container decides the layout.
 | Claims not stated | "The agent did not state its claims: *reason*. Evidence cannot be tied to claims." Items group by trust. |
 | Detector flag | Beside the item: "*Detector*: *hint*." |
 | Memory item | "From the agent's memory — written by *writtenBy* on *writtenAt*." |
+| Lesson | "From the agent's memory — lesson ls_31 v3, taught by A. Rao on 29 Oct, approved by S. Iyer." Links to the lesson's Override & Teach Panel. |
 | Records truncated | "Showing 50 of 412 — the rest in *checkAt*." |
 | Untrusted column | Header "Device (could have been set by the user)"; its cells inert, with escapes and punycode as in a quote block. |
 | Hidden characters | Item heading: "3 hidden characters shown · 1 look-alike domain"; each escape visible in place. |
@@ -458,6 +473,11 @@ Applied in this same change to `verdict-card.md`:
 
 The card's rule count does not change: 28 rules, 22 with proofs.
 
+**Amended for the Override & Teach Panel (31 Oct 2026).** Additive: a `memory` item may carry a
+`lesson`, typed as `LessonMemory`, with the new rule `locker-lesson-is-agent-output` · compiler and
+the lesson wording in `locker-memory-attributed`. The Locker now has 20 rules, 17 with proofs. See
+`override-and-teach-panel.md`.
+
 ## Figma mapping
 
 Library file: **Vela Design System** → page `Evidence Locker`. Two sets and one example frame.
@@ -466,7 +486,7 @@ Library file: **Vela Design System** → page `Evidence Locker`. Two sets and on
   (`Tool call`, `Given`, `Memory`) × `Content` (`Text`, `Records`, `Not retained`) = 27
   combinations. `Untrusted` has no `Records` (a compile rule), so the set is **24 variants**.
   Booleans: `Detector flag`, `Truncated`, `No permission`, `Hidden characters`, `Untrusted column`
-  (Records only), `Follows to evidence` (Agent output only).
+  (Records only), `Follows to evidence` (Agent output only), `Lesson` (Memory × Agent output only).
 - `Evidence Locker / Claim`: `About` (`World`, `Item`) × `Support` (`Mixed`, `Only weak`,
   `Not here`). `Item` claims are never weak, so the set is 3 + 1 = **4 variants**, with the claim
   text as a text property.
@@ -479,6 +499,7 @@ Library file: **Vela Design System** → page `Evidence Locker`. Two sets and on
 | `Channel` | `channel` |
 | `Content` | `content.kind` |
 | `Detector flag` / `Truncated` / `No permission` | `detector`; `truncatedAt` or `rows.length < total`; the host's permission |
+| `Lesson` | `memory.lesson` is present |
 | `About` | `claim.about` |
 | `Support` | derived: `Only weak` when `weakWorldClaims` returns the claim; `Not here` when a cited id is missing |
 

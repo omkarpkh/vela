@@ -1,4 +1,6 @@
 import { test, expect, type Locator, type Page } from '@playwright/test'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 
 /** Chooses a control's value: a segment (up to six values, D4) or, above six, the native select (A24). */
 async function choose(scope: Locator, prop: string, value: string) {
@@ -711,8 +713,11 @@ test.describe('review of slices 1 to 3', () => {
     await expect(facts).toContainText('@omkarux/vela/headless')
     await expect(facts).toContainText('Not built')
     await expect(facts.locator('.pg-fact--rules dt')).toHaveText('Rules planned')
-    // Counted from the proposal's own Hard constraints, never a zero it can't read (B9).
-    await expect(facts.locator('.pg-fact--rules .pg-fact__total')).toHaveText('19')
+    // Counted from the proposal's own Hard constraints, never a zero it can't read (B9). The spec
+    // states its own total ("20 rules, 17 with proofs"), so the page must agree with it.
+    const stated = readFileSync(resolve(process.cwd(), 'guidelines/proposals/evidence-locker.md'), 'utf8').match(/(\d+) rules, \d+ with proofs/)
+    expect(stated?.[1]).toBe('20')
+    await expect(facts.locator('.pg-fact--rules .pg-fact__total')).toHaveText(stated![1])
     await expect(page.getByRole('link', { name: 'Follow or discuss this proposal' })).toHaveAttribute('href', 'https://github.com/omkarpkh/vela/pull/21')
   })
 })

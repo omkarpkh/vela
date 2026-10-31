@@ -9,16 +9,17 @@ did: name the closest component that does exist, and flag the gap (`AGENTS.md`, 
 
 | Spec | What it is | Rules (with proofs) | Stage |
 |---|---|---|---|
-| [Verdict Card](verdict-card.md) | One agent verdict on one case, with the person's decision on it | 28 (22) | pressure-tested |
+| [Verdict Card](verdict-card.md) | One agent verdict on one case, with the person's decision on it | 29 (23) | pressure-tested |
 | [Action Impact Card](action-impact-card.md) | What one proposed change will do, before it runs and after | 30 (22) | pressure-tested |
 | [Autonomy Ladder](autonomy-ladder.md) | How far an agent may act alone on one action, and why a change landed where it did | 28 (22) | pressure-tested |
 | [Approval Queue](approval-queue.md) | The one place a person decides on what agents propose; undecided means not run | 27 (21) | pressure-tested |
 | [Calibrated Confidence Gate](calibrated-confidence-gate.md) | How sure an agent says it is, beside how often people confirmed it; decides which band the kit acts on | 21 (17) | pressure-tested |
-| [Evidence Locker](evidence-locker.md) | Everything an agent used for one conclusion, as it was then; who could have written each item, and which claims rest on what | 19 (16) | pressure-tested |
+| [Evidence Locker](evidence-locker.md) | Everything an agent used for one conclusion, as it was then; who could have written each item, and which claims rest on what | 20 (17) | pressure-tested |
 | [Agent Provenance Badge](agent-provenance-badge.md) | Which agent, version and model produced an output, what started it, on whose authority, and whether its identity was verified | 15 (12) | pressure-tested |
 | [Awareness Clock](awareness-clock.md) | When a named person became aware of something reportable under the CRA, NIS2 or DORA, and every reporting limit counted from the right moment | 20 (17) | pressure-tested |
+| [Override & Teach Panel](override-and-teach-panel.md) | Turns one person's override into a lesson the agent keeps, on purpose, after seeing what it stores, which way it moves the agent and what it would have changed | 26 (23) | pressure-tested |
 
-Eight proposals: 188 rules, 149 with proofs.
+Nine proposals: 216 rules, 174 with proofs.
 
 **How a proposal becomes a component.** Each was drafted, then pressure-tested in a written
 review that it answered point by point. When one is built, it moves to `guidelines/components/`,
@@ -30,7 +31,8 @@ Verdict (4), Confidence band (4), Reversibility tier (4), Autonomy rung (4), Con
 Evidence channel (3). None of them carries colour except Verdict, which has a text and icon row and
 no background. The Agent Provenance Badge adds two closed prop sets that carry no tokens: Run type
 (5) and Identity assurance (2). The Awareness Clock adds three more, also without tokens: Regime
-(4), Answer (3) and Claim check (3). The order they will be
+(4), Answer (3) and Claim check (3). The Override & Teach Panel adds Lesson direction (2), words only,
+with no tokens. The order they will be
 built in, and what each needs from Phase 1, is in [`ROADMAP.md`](../../ROADMAP.md).
 
 **Evidence.** Each spec says what it answers and where that comes from: the EU AI Act (Article

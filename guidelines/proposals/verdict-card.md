@@ -23,6 +23,10 @@ It changes nothing on its own.
 > [Agent Provenance Badge](agent-provenance-badge.md), `source` is a full `Provenance`, shown as the
 > badge, and the card spreads `provenanceAttributes(source)` on its own `<article>`.
 
+> **Changed 31 Oct 2026 — additive.** With the [Override & Teach Panel](override-and-teach-panel.md),
+> the card gains an optional `onTeach`, offered only after an override or an agreement with the
+> lean, and one line naming each lesson the agent says it applied (`verdict-lesson-named`).
+
 ## Intent
 
 An analyst should be able to answer six questions from the card without opening anything else:
@@ -72,7 +76,7 @@ cannot see a related alert that landed in a different case.
   an **Approval Queue**. A verdict is a conclusion; an action is a change.
 - A risk score on an object → **Risk Pill**, or **Score Badge with Explanation** (Phase 2b).
 - An event the user must read → **Contextual Alert**.
-- Teaching the agent from an override → **Override & Teach panel**, which the card opens.
+- Teaching the agent from an override → **Override & Teach Panel**, which the card opens.
 - Two producers disagreeing on one case → one card per producer, stacked, with one disagreement
   line above both. That arrangement is a page pattern, not part of this component.
 
@@ -134,6 +138,7 @@ type VerdictAndConfidence =
 | `overrideEffect` | `ActionEffect` | — | As above. |
 | `onUndo` | `(e: DecisionEvent) => Promise<void>` | — | Shown only while a decision exists and its undo is available. |
 | `onReanalyse` | `() => Promise<void>` | — | Optional. Offered beside Override whenever Accept is withheld. |
+| `onTeach` | `(e: DecisionEvent) => void` | — | Optional. "Teach the agent", offered only in the Overridden and Agreed-with-lean states, never before a decision. Opens the **Override & Teach Panel**; the card stores nothing itself. |
 | `decideWith` | `string` | — | Shown when no decision handlers are passed: who can decide ("Ask a Tier 2 analyst"). |
 
 ```ts
@@ -215,6 +220,11 @@ Rule ids are listed with their proof level; they become `[[rule: … ]]` tags wh
   shares its line. The card's "What the agent read" list is derived from
   `evidence.items`, and marks untrusted items with the Locker's words ("Untrusted — could have
   been written by the email's sender"). `verdict-coverage-separate` · runtime
+- **A lesson the agent applied is named.** When `evidence.items` holds a memory item with
+  `memory.lesson`, the card prints one line under the rationale for each: "The agent says it applied
+  lesson ls_31 (v3): *the lesson's text*." It is the agent's citation, not a check, and it never
+  confirms the verdict; a world-claim resting only on a lesson is weak, by the Locker's rule.
+  `verdict-lesson-named` · runtime
 - **Accept is withheld, not disabled,** while the verdict is outdated, for `inconclusive`, and
   when the band the Gate allows — `gateBand(confidence, now).band` — is `low` or `unrated`. That
   includes a stated High that is not yet calibrated: "Not yet calibrated: 6 of 30 High verdicts
@@ -273,9 +283,10 @@ Rule ids are listed with their proof level; they become `[[rule: … ]]` tags wh
   days", not "Checked all activity". A claim that leaves the case says so: "only in the mail
   admin console". `verdict-labels-claim-only-data` · convention
 
-**Proof plan:** 6 compiler (6 fixtures), 14 runtime (14 unit tests naming the rule id), 2 browser
-(2 Playwright specs on a container-width harness at 280, 320 and 480 px), 6 convention. 28 rules,
-22 with proofs (`confidence-band-closed-set` moved to the Calibrated Confidence Gate).
+**Proof plan:** 6 compiler (6 fixtures), 15 runtime (15 unit tests naming the rule id), 2 browser
+(2 Playwright specs on a container-width harness at 280, 320 and 480 px), 6 convention. 29 rules,
+23 with proofs (`confidence-band-closed-set` moved to the Calibrated Confidence Gate;
+`verdict-lesson-named` added for the Override & Teach Panel).
 
 ## Token bindings
 
@@ -293,7 +304,7 @@ Rule ids are listed with their proof level; they become `[[rule: … ]]` tags wh
 | Counts, times, owners | `--vela-text-de-emphasized`, Meta |
 | Check-at links | `--vela-text-link` |
 | History entries | `--vela-text-de-emphasized`, Meta; divider `--vela-border-subtle` |
-| Decision bar | Button `regular`: Accept `variant="primary" appearance="filled"`; Override `variant="standard" appearance="filled"`; Re-analyse and Undo `variant="primary" appearance="hollow"`. Only one card on a page carries the filled primary. A page listing several verdicts uses the text summary per row and one card for the open case. |
+| Decision bar | Button `regular`: Accept `variant="primary" appearance="filled"`; Override `variant="standard" appearance="filled"`; Re-analyse and Undo `variant="primary" appearance="hollow"`; Teach the agent `variant="standard" appearance="hollow"`. Only one card on a page carries the filled primary. A page listing several verdicts uses the text summary per row and one card for the open case. |
 
 **Icons (Lucide, ISC, from Vela's icon export).** Shields keep verdicts apart from Vela's severity
 shapes; each always sits beside its word.
@@ -338,8 +349,8 @@ Density is a subtree property, not a prop.
 | Low or unrated confidence | Headline "No recommendation"; the not-seen list next; then "Agent's lean: Malicious". Accept withheld. |
 | Inconclusive | Headline "Inconclusive"; the rationale says why; the not-seen list next. No lean. Accept withheld; Re-analyse and Override (labelled "Set verdict") offered. |
 | Accepted | Decision line "Accepted by A. Rao at 08:50 UTC" replaces the bar; Undo while available. |
-| Overridden | "Overridden to Benign by A. Rao at 08:50 UTC — *reason*". The agent's verdict stays visible beneath. Undo while available. "Teach the agent" opens the Override & Teach panel when the host provides it. |
-| Agreed with lean | "Agreed with the agent's lean (Malicious) by A. Rao at 08:50 UTC — *reason*"; Undo while available. |
+| Overridden | "Overridden to Benign by A. Rao at 08:50 UTC — *reason*". The agent's verdict stays visible beneath. Undo while available. "Teach the agent" when `onTeach` is passed. |
+| Agreed with lean | "Agreed with the agent's lean (Malicious) by A. Rao at 08:50 UTC — *reason*"; Undo while available. "Teach the agent" when `onTeach` is passed. |
 | Revised | Newest version in full; history shows "Version 2: Suspicious, moderate — overridden to Malicious by A. Rao: *reason*". |
 | Re-analysing | Content stays; decision bar `aria-busy="true"`; freshness line "Re-analysing since 08:52 UTC". No skeleton over content the person is reading. |
 | Not analysed | "No verdict yet." Re-analyse (labelled "Analyse") if `onReanalyse` is passed; otherwise who to ask. |
@@ -417,7 +428,8 @@ show the text summary.
 - **Agent Provenance Badge** (Phase 2) for `source`, with `provenanceAttributes` on the `<article>`.
 - **Evidence Locker** (Phase 2) opens from "What the agent read", and shares the card's `evidence`
   object, so the two cannot disagree; `weakWorldClaims` decides the weak-claim line and Accept.
-- Later slot: the **Override & Teach panel** opens from an override.
+- The **Override & Teach Panel** (proposal) opens from "Teach the agent" (`onTeach`), after an
+  override or an agreement with the lean.
 
 ## Figma mapping
 
