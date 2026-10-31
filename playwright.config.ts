@@ -48,7 +48,9 @@ export default defineConfig({
   // On CI the gate never writes: a missing baseline fails until the runner writes it through
   // the step or workflow that commits it to the branch for review.
   updateSnapshots: process.env.CI ? 'none' : 'missing',
-  reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : [['list']],
+  // On CI the `github` reporter also writes each failure as an annotation on the check run, so a
+  // failing test can be read from the pull request without downloading the artifact.
+  reporter: process.env.CI ? [['list'], ['github'], ['html', { open: 'never' }]] : [['list']],
   outputDir: 'test-results',
   // No {-projectName} in the template: the width is part of the screenshot name the test
   // builds, so the 1440 baselines keep the names they had before projects existed.

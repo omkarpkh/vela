@@ -2,6 +2,7 @@ import * as React from 'react'
 import { RadioGroup as BaseRadioGroup } from '@base-ui/react/radio-group'
 import { Radio as BaseRadio } from '@base-ui/react/radio'
 import { cn } from '../../lib/cn'
+import { useKeyboardInstant } from '../../lib/instant'
 
 /**
  * Radio Group on Base UI — born in `@omkarux/vela/headless` alongside Checkbox. The spec is
@@ -91,10 +92,17 @@ export function RadioGroup({
     [onValueChange],
   )
   const context = React.useMemo(() => ({ disabled }), [disabled])
+  // On the group, not the radio: an arrow key pressed on one radio selects another, and that
+  // radio's dot must not animate either (radio-group.md, Motion).
+  const motion = useKeyboardInstant()
 
   return (
     <VelaRadioGroupContext.Provider value={context}>
-      <div className={cn('vela-radio-group', `vela-radio-group--${orientation}`, disabled && 'vela-radio-group--disabled', className)}>
+      <div
+        className={cn('vela-radio-group', `vela-radio-group--${orientation}`, disabled && 'vela-radio-group--disabled', className)}
+        data-vela-instant={motion.instant || undefined}
+        {...motion.handlers}
+      >
         <span id={labelId} className="vela-radio-group__label">
           {label}
         </span>

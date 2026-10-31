@@ -33,6 +33,17 @@ A binary setting that takes effect **immediately**. No Save step.
 - The change is immediate. Never pair a Toggle with a Save button that gates it. [[rule: toggle-change-is-immediate | convention]]
 - **In forced colours the switch keeps its shape.** The track has a `CanvasText` edge and the knob
   a solid fill; on is `Highlight` with a `HighlightText` knob; disabled is `GrayText`. [[rule: toggle-forced-colours | browser]]
+- **A pointer flip moves by transform alone.** The track presses to 0.9 and releases; the knob
+  slides by `transform`; the track's colour settles. Nothing animates layout, and nothing is a
+  keyframe. [[rule: toggle-press-by-transform | browser]]
+- **Flipped again mid-flight, it turns round.** The knob and the press are transitions, so a second
+  flip reverses them from where they are and the toggle ends in its state, at rest. [[rule: toggle-press-retargets | browser]]
+- **From the keyboard it does not animate.** Enter and Space flip it at once: no press, no knob
+  slide, no colour fade. [[rule: toggle-keyboard-is-instant | browser]]
+- **Under reduced motion it is at its end state.** Pressed while held, released after, the knob at
+  its end. [[rule: toggle-motion-reduced-end-state | browser]]
+- **A press never moves the hit target.** A guard holds the track's original box for as long as the
+  press lasts, so a release at its edge still lands on it. [[rule: toggle-press-keeps-hit-target | browser]]
 
 ## Token bindings
 
@@ -55,7 +66,23 @@ sizes are the only density control.
 - Renders a native `<button role="switch">` with `aria-checked`.
 - Enter and Space activate it; it is in the tab order.
 - The visible label is wired via `aria-labelledby` and is itself clickable.
-- Motion respects `prefers-reduced-motion`.
+- Motion respects `prefers-reduced-motion`, and nothing animates from the keyboard (see *Motion*).
+
+## Motion
+
+| Moment | What moves | Timing | Why |
+|---|---|---|---|
+| Press in (pointer, on the track or the label) | the track, `transform: scale(0.9)`, from its centre; a guard holds the hit target | `--vela-duration-instant` (70ms), `--vela-ease-standard` | feedback: the press landed |
+| Press out | the scale releases | `--vela-duration-base` (180ms) | a release settles |
+| Flip (pointer) | the knob slides (`transform`); the track's colour settles | `--vela-duration-base` (180ms), `--vela-ease-standard` | continuity: the same knob, the other end |
+| From the keyboard | nothing | instant | Enter and Space: from the keyboard nothing animates; the focus ring collapses onto the edge, as on Button |
+
+The press is Button's CSS mechanism (`button.md#motion`) at the small controls' depth: Button's 3%
+of a 34px track is half a pixel, so the track presses to 0.9 (`checkbox.md`, Motion). The wrapper is
+`:active` whether the track or the label is pressed, so both press the track. Before the motion pass, part 2, the knob
+also slid on Enter and Space; it now moves at once from the keyboard, as `foundations/motion.md`
+has always said. A key pressed on the toggle marks it `data-vela-instant`; a pointer on it clears
+the mark. No prop turns any of this on or off. The values were approved on 31 October 2026, from the Motion review page (`#/motion`); decision 006.
 
 ## Figma mapping
 

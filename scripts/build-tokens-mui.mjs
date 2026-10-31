@@ -141,16 +141,16 @@ export function generateMui(set, version) {
     // (pointer answers and exits at `fast`, anything that settles or enters at `base`). The KIND of
     // feedback does not travel: Material's ripple stays until the component is swapped for Vela's,
     // whose press is a 3% scale. That boundary is component behaviour, which is why shared
-    // components are step two. The bridge keeps --vela-ease-standard on every easing slot for now:
-    // Material's easeOut is its entering curve, and it moves to --vela-ease-out together with Vela's
-    // own overlays in a later part of the motion pass, so the two never disagree in one app.
+    // components are step two. Material's easeOut is its entering curve, so it carries
+    // --vela-ease-out, as Vela's own overlays do since the motion pass, part 2 — the two never
+    // disagree in one app. Every other slot is a thing moving on screen: --vela-ease-standard.
     t.transitions = {
       duration: {
         shortest: ms('duration-fast'), shorter: ms('duration-fast'), short: ms('duration-fast'),
         standard: ms('duration-base'), complex: ms('duration-base'), enteringScreen: ms('duration-base'),
         leavingScreen: ms('duration-fast'),
       },
-      easing: { easeInOut: bezier('ease-standard'), easeOut: bezier('ease-standard'), easeIn: bezier('ease-standard'), sharp: bezier('ease-standard') },
+      easing: { easeInOut: bezier('ease-standard'), easeOut: bezier('ease-out'), easeIn: bezier('ease-standard'), sharp: bezier('ease-standard') },
     }
     t.components = {
       ...t.components,

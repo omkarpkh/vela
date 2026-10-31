@@ -1,14 +1,17 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { Button, Toggle, Tabs } from '../../src'
-import { Tabs as HeadlessTabs } from '../../src/headless'
+import { Tabs as HeadlessTabs, Checkbox, RadioGroup, Popover, Tooltip, ToastProvider, useToast } from '../../src/headless'
+import type { ToastPlacement, ToastSeverity } from '../../src/headless'
 import tokensJson from '../../tokens/vela.tokens.json'
 import { springAt, springLinear } from '../../scripts/spring.mjs'
 import '../playground.css'
 
 // The motion pass, for the owner's review: the Tabs underline and its hover preview (the Seed) in
-// both implementations and both themes, a Replay that presses the tabs the way a pointer does, a
-// slow-motion switch, and every motion token with its value and its reason — read from
-// tokens/vela.tokens.json, so this page cannot disagree with the file the CSS is generated from.
+// both implementations, the Toast stack, the overlays growing from their triggers, the state and
+// press motion of Checkbox, Radio Group and Toggle — each in both themes — with a Replay that
+// presses the tabs the way a pointer does, a slow-motion switch that reaches all of them, and every
+// motion token with its value and its reason, read from tokens/vela.tokens.json so this page cannot
+// disagree with the file the CSS is generated from.
 const VENDOR = 'com.omkarux.vela'
 type Spring = { stiffness: number; damping: number; mass: number; duration: string }
 type MotionToken = { $type: string; $value: unknown; $description?: string; $extensions?: { [VENDOR]?: { figma?: string; spring?: Spring } } }
@@ -96,6 +99,67 @@ function Sample({ implementation }: { implementation: 'core' | 'headless' }) {
   )
 }
 
+// Toast: each frame has its own region, the light one at the bottom end and the dark one at the
+// top end, so both stack directions can be seen at once. Three severities, raised in any order:
+// raise two or three to see the stack, hover it to spread it, raise a warning behind another to
+// see the stack stay spread.
+const TOASTS: Record<ToastSeverity, { title: string; description: string }> = {
+  success: { title: 'Policy saved', description: 'Block legacy TLS now applies to 14 tenants.' },
+  info: { title: 'Export started', description: 'The report will be in Reports when it is ready.' },
+  warning: { title: 'Policy saved with 2 tenants skipped', description: 'Both are read-only; the policy list shows which.' },
+}
+function ToastButtons({ theme }: { theme: string }) {
+  const toast = useToast()
+  return (
+    <div className="motion-row" role="group" aria-label={`Raise a toast (${theme})`}>
+      {(['success', 'info', 'warning'] as const).map((severity) => (
+        <Button key={severity} size="tiny" onClick={() => toast.add({ severity, ...TOASTS[severity] })}>
+          {`Raise ${severity[0].toUpperCase()}${severity.slice(1)}`}
+        </Button>
+      ))}
+    </div>
+  )
+}
+const PLACEMENT: Record<'light' | 'dark', ToastPlacement> = { light: 'bottom-end', dark: 'top-end' }
+
+// The overlays and the small controls, one set per frame.
+function Overlays() {
+  return (
+    <div className="motion-row">
+      <Popover trigger={<Button size="tiny">Filters</Button>} title="Filter alerts">
+        <p className="vela-body motion-sample__panel">Only alerts from the last 24 hours.</p>
+      </Popover>
+      <Tooltip content="Download the last 24 hours as CSV">
+        <Button size="tiny">Export</Button>
+      </Tooltip>
+    </div>
+  )
+}
+function Controls() {
+  return (
+    <div className="motion-controls">
+      <Checkbox label="Include archived policies" />
+      <RadioGroup label="Enforcement" defaultValue="block" orientation="horizontal">
+        <RadioGroup.Radio value="block" label="Block" />
+        <RadioGroup.Radio value="quarantine" label="Quarantine" />
+        <RadioGroup.Radio value="monitor" label="Monitor" />
+      </RadioGroup>
+      <Toggle label="Email alerts" />
+    </div>
+  )
+}
+
+const Frames = ({ children }: { children: (theme: 'light' | 'dark') => ReactNode }) => (
+  <div className="pg-stage motion-stage">
+    {(['light', 'dark'] as const).map((m) => (
+      <div key={m} className="vela-root pg-frame motion-frame" data-theme={m}>
+        <span className="pg-frame-label vela-meta">{m}</span>
+        <div className="pg-frame-body motion-frame__body">{children(m)}</div>
+      </div>
+    ))}
+  </div>
+)
+
 // A press the way a pointer makes one, so the components take their pointer path: pointerdown
 // (which records the modality), pointerup, click. Base UI and the core both activate on it.
 function press(el: HTMLElement) {
@@ -157,9 +221,9 @@ export function Motion() {
         <p className="vela-meta page-head__eyebrow">Review</p>
         <h1 className="vela-h2">Motion review</h1>
         <p className="vela-meta">
-          A review aid for the motion pass, part 1. Every value here is provisional until the feel is approved; look at it again
-          tomorrow before deciding. Slow motion is for review only — it changes the playback rate of the page's running
-          animations and touches no component stylesheet.
+          A review aid for the motion pass, parts 1 and 2. The values here were approved on 31 October 2026 (decision 006); a
+          change to any of them is reviewed here again. Slow motion is for review only — it changes the playback rate of the page's running
+          animations, toasts and overlays included, and touches no component stylesheet.
         </p>
       </header>
 
@@ -191,6 +255,43 @@ export function Motion() {
             </div>
           ))}
         </div>
+      </section>
+
+      <section className="motion-section" aria-labelledby="motion-toast">
+        <h2 id="motion-toast" className="vela-h3">Toast: the stack</h2>
+        <p className="vela-body motion-copy">
+          Raise two or three: each enters from the edge it sits on, and the older ones step back behind it, smaller. Hover the
+          stack, or press F6 and Tab into it, and it spreads out; leave it and it closes up. A warning behind another toast keeps
+          the stack spread, because a warning never times out. Drag a toast towards its edge to swipe it away. Dismiss one with
+          Escape and nothing animates. The light frame's toasts sit at the bottom end, the dark frame's at the top end.
+        </p>
+        <Frames>
+          {(m) => (
+            <ToastProvider placement={PLACEMENT[m]}>
+              <ToastButtons theme={m} />
+            </ToastProvider>
+          )}
+        </Frames>
+      </section>
+
+      <section className="motion-section" aria-labelledby="motion-overlays">
+        <h2 id="motion-overlays" className="vela-h3">Popover and Tooltip: they grow from their trigger</h2>
+        <p className="vela-body motion-copy">
+          Press Filters: the popover grows out of the button, from 96% of its size, as it fades in, on <code>--vela-ease-out</code> over
+          <code> --vela-duration-base</code>. Rest the pointer on Export: after <code>--vela-delay-tooltip</code> the tooltip grows the same
+          way over <code>--vela-duration-fast</code>. Both leave on a fade alone. Opened or closed from the keyboard, neither animates.
+        </p>
+        <Frames>{() => <Overlays />}</Frames>
+      </section>
+
+      <section className="motion-section" aria-labelledby="motion-controls">
+        <h2 id="motion-controls" className="vela-h3">Checkbox, Radio Group, Toggle: state and press</h2>
+        <p className="vela-body motion-copy">
+          Press and hold: each control presses to 90% of its size, in at <code>--vela-duration-instant</code>, and releases at
+          <code> --vela-duration-base</code>. Check the box: the mark scales in from half size. Choose a radio: its dot scales in and the
+          old one fades. Flip the toggle: the knob slides. With Space, Enter or the arrow keys, every change lands at once.
+        </p>
+        <Frames>{() => <Controls />}</Frames>
       </section>
 
       <section className="motion-section" aria-labelledby="motion-curves">

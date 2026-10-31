@@ -9,7 +9,10 @@
   background: var(--vela-toggle-off-bg);
   border: none; border-radius: var(--vela-radius-full);
   padding: 0; cursor: inherit;
-  transition: background-color var(--vela-duration-base) var(--vela-ease-standard);
+  /* Asymmetric press, as on Button: the :active rule swaps in duration-instant on the way down. */
+  --vela-toggle-press-duration: var(--vela-duration-base);
+  transition: background-color var(--vela-duration-base) var(--vela-ease-standard),
+              transform var(--vela-toggle-press-duration) var(--vela-ease-standard);
 }
 .vela-toggle--tiny .vela-toggle__track { width: var(--vela-toggle-track-width-tiny); height: var(--vela-toggle-track-height-tiny); }
 
@@ -26,6 +29,28 @@
 /* Knob travel is derived, so the four geometry tokens cannot drift apart: 34 - 16 - 2·2 = 14 at regular, 26 - 11 - 2·2 = 11 at tiny. */
 .vela-toggle__track[aria-checked='true'] .vela-toggle__knob { transform: translateX(calc(var(--vela-toggle-track-width) - var(--vela-toggle-knob-size) - 2 * var(--vela-toggle-knob-inset))); }
 .vela-toggle--tiny .vela-toggle__track[aria-checked='true'] .vela-toggle__knob { transform: translateX(calc(var(--vela-toggle-track-width-tiny) - var(--vela-toggle-knob-size-tiny) - 2 * var(--vela-toggle-knob-inset))); }
+
+/* Press: pointer only, the Button mechanism (button.md#motion) on the track. Pressing the label
+   presses the track too — the wrapper is :active either way. 3% of a 34px track is half a pixel,
+   so the small controls press to 0.9 (see toggle.md, Motion). :focus-visible excludes Enter and
+   Space; a disabled toggle does not pretend to react. */
+.vela-toggle:active .vela-toggle__track:not(:disabled):not(:focus-visible) {
+  --vela-toggle-press-duration: var(--vela-duration-instant);
+  transform: scale(0.9);
+}
+/* The guard: the inverse scale holds the track's original box for the length of the press, so a
+   release at its edge still lands on it. The track has no border, so the guard is its own box. */
+.vela-toggle:active .vela-toggle__track:not(:disabled):not(:focus-visible)::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  transform: scale(1.1111111);
+}
+.vela-toggle__track:active:not(:disabled):focus-visible { outline-offset: 0; }
+/* From the keyboard, nothing animates: Enter and Space move the knob and the colour at once. */
+.vela-toggle[data-vela-instant] .vela-toggle__track,
+.vela-toggle[data-vela-instant] .vela-toggle__knob { transition: none; }
 
 .vela-toggle__track:disabled { background: var(--vela-border-inactive); cursor: not-allowed; }
 .vela-toggle__track:disabled .vela-toggle__knob { background: var(--vela-bg-global); }

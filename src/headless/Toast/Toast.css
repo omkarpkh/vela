@@ -1,12 +1,14 @@
 /* ------------------------------------------------------------------ Toast -- */
 /* guidelines/components/toast.md. The region is fixed to the viewport, --vela-space-20 from its
-   edges at the placement; toasts stack --vela-space-10 apart, the newest nearest that edge. Keys on
-   Base UI's transition attributes (data-starting-style, data-ending-style), data-limited and
-   data-swipe-direction; the contract never depends on them. */
+   edges at the placement. Keys on Base UI's transition attributes (data-starting-style,
+   data-ending-style), data-limited, data-swipe-direction, data-expanded and its --toast-index,
+   --toast-offset-y and --toast-swipe-movement-x/y variables; the contract never depends on them. */
 .vela-toast-region {
   position: fixed;
   z-index: var(--vela-layer-overlay);
-  display: flex; flex-direction: column-reverse; gap: var(--vela-space-10);
+  /* One grid cell holds every toast, so they overlap: the newest in front, the older ones behind it.
+     Each keeps its own height, anchored on the edge the region sits on. */
+  display: grid; align-items: end;
   width: var(--vela-toast-width);
   /* Never wider than the viewport less its gutters: a fixed box's percentage is the viewport's. */
   max-width: calc(100% - var(--vela-space-20) * 2);
@@ -14,7 +16,7 @@
   inset-inline-end: var(--vela-space-20);
 }
 .vela-toast-region--top-end {
-  flex-direction: column;
+  align-items: start;
   inset-block-start: var(--vela-space-20); inset-block-end: auto;
 }
 .vela-toast-region--bottom-center {
@@ -23,6 +25,9 @@
 }
 
 .vela-toast {
+  grid-area: 1 / 1;
+  position: relative; /* the hover bridge below */
+  z-index: calc(10 - var(--toast-index));
   display: flex; align-items: flex-start; gap: var(--vela-space-10);
   padding: var(--vela-space-15);
   background: var(--vela-bg-raised);
@@ -31,22 +36,75 @@
   border: 1px solid var(--vela-border-default);
   border-radius: var(--vela-radius-4);
   font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height);
-  transition: opacity var(--vela-duration-base) var(--vela-ease-standard),
-              transform var(--vela-duration-base) var(--vela-ease-standard);
+  /* The stack (toast.md, Motion). Collapsed: each toast behind the front one steps back
+     --vela-space-10 and 5% smaller, scaled from the edge that shows, so its top edge peeks out
+     above the one in front by exactly a step. The stack moves on the `translate` and `scale`
+     properties and the entrance, the exit and the swipe on `transform`, so the two compose and
+     never contend for one property. */
+  transform-origin: 50% 0;
+  translate: 0 calc(var(--toast-index) * var(--vela-space-10) * -1);
+  scale: calc(1 - var(--toast-index) * 0.05);
+  /* Entering and leaving: opacity and travel at duration-base on ease-out. The stack closing up,
+     moving back or spreading out is travel across a distance: duration-travel, on the spring. All
+     transitions, so a toast added mid-flight re-flows from wherever each one is. */
+  transition: opacity var(--vela-duration-base) var(--vela-ease-out),
+              transform var(--vela-duration-base) var(--vela-ease-out),
+              translate var(--vela-duration-travel) var(--vela-ease-spring),
+              scale var(--vela-duration-travel) var(--vela-ease-spring);
+}
+.vela-toast-region--top-end .vela-toast {
+  transform-origin: 50% 100%;
+  translate: 0 calc(var(--toast-index) * var(--vela-space-10));
+}
+/* Spread: on hover, on keyboard focus inside the region (Base UI's data-expanded), and while a
+   warning sits behind the front toast (data-vela-spread) — a collapsed stack never hides one. Each
+   toast sits --vela-space-10 beyond the toasts in front of it, at full size. */
+.vela-toast-region[data-expanded] .vela-toast,
+.vela-toast-region[data-vela-spread] .vela-toast {
+  translate: 0 calc((var(--toast-offset-y) + var(--toast-index) * var(--vela-space-10)) * -1);
+  scale: 1;
+}
+.vela-toast-region--top-end[data-expanded] .vela-toast,
+.vela-toast-region--top-end[data-vela-spread] .vela-toast {
+  translate: 0 calc(var(--toast-offset-y) + var(--toast-index) * var(--vela-space-10));
+}
+/* The hover bridge: the gap between two spread toasts belongs to the toast nearer the edge, so a
+   pointer crossing it does not leave the region and collapse the stack under itself. */
+.vela-toast::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 100%;
+  bottom: calc(var(--vela-space-10) * -1 - 1px);
+}
+.vela-toast-region--top-end .vela-toast::after {
+  top: calc(var(--vela-space-10) * -1 - 1px);
+  bottom: 100%;
 }
 /* Past the limit a toast waits, hidden and inert (Base UI marks it), until a newer one leaves. */
 .vela-toast[data-limited] { display: none; }
 
-/* Appearing: a fade and a step of travel in from the edge it sits on. Leaving: the fade only. */
-.vela-toast[data-starting-style] { opacity: 0; transform: translateY(var(--vela-space-5)); }
-.vela-toast-region--top-end .vela-toast[data-starting-style] { transform: translateY(calc(var(--vela-space-5) * -1)); }
-.vela-toast[data-ending-style] { opacity: 0; }
-/* Swiped away: it stays where the finger left it while it fades, instead of snapping back. */
-.vela-toast[data-ending-style][data-swipe-direction] {
-  transform: translate(var(--toast-swipe-movement-x), var(--toast-swipe-movement-y));
+/* Appearing: it travels its own height in from the edge it sits on as it fades in. Leaving: the
+   same way back out, fading. */
+.vela-toast[data-starting-style],
+.vela-toast[data-ending-style] { opacity: 0; transform: translateY(100%); }
+.vela-toast-region--top-end .vela-toast[data-starting-style],
+.vela-toast-region--top-end .vela-toast[data-ending-style] { transform: translateY(-100%); }
+/* Swiped away: while the pointer is down Base UI moves it with the pointer (an inline transform,
+   no transition). Released past the threshold, it carries on from where the pointer left it, out
+   in the direction of the swipe, fading. */
+.vela-toast[data-ending-style][data-swipe-direction='right'] {
+  transform: translate(calc(var(--toast-swipe-movement-x) + 100%), var(--toast-swipe-movement-y));
 }
-/* From the keyboard, nothing animates (foundations/motion.md). */
-.vela-toast[data-vela-instant] { transition: none; }
+.vela-toast[data-ending-style][data-swipe-direction='down'] {
+  transform: translate(var(--toast-swipe-movement-x), calc(var(--toast-swipe-movement-y) + 100%));
+}
+.vela-toast[data-ending-style][data-swipe-direction='up'] {
+  transform: translate(var(--toast-swipe-movement-x), calc(var(--toast-swipe-movement-y) - 100%));
+}
+/* From the keyboard, nothing animates (foundations/motion.md): the dismissed toast and the toasts
+   that close up behind it all move at once. */
+.vela-toast-region[data-vela-instant] .vela-toast { transition: none; }
 
 .vela-toast__mark {
   flex: none; display: inline-flex; align-items: center; justify-content: center;

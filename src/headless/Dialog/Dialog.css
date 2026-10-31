@@ -7,7 +7,7 @@
   z-index: var(--vela-layer-overlay);
   background: var(--vela-bg-scrim);
   opacity: var(--vela-opacity-scrim);
-  transition: opacity var(--vela-duration-base) var(--vela-ease-standard);
+  transition: opacity var(--vela-duration-base) var(--vela-ease-out);
 }
 .vela-dialog__backdrop[data-starting-style],
 .vela-dialog__backdrop[data-ending-style] { opacity: 0; }
@@ -28,8 +28,9 @@
   color: var(--vela-text-default);
   border-radius: var(--vela-radius-8);
   font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height);
-  transition: opacity var(--vela-duration-base) var(--vela-ease-standard),
-              transform var(--vela-duration-base) var(--vela-ease-standard);
+  /* Things that enter take ease-out (foundations/motion.md). The step of travel is unchanged. */
+  transition: opacity var(--vela-duration-base) var(--vela-ease-out),
+              transform var(--vela-duration-base) var(--vela-ease-out);
 }
 .vela-dialog--wide { width: var(--vela-dialog-width-wide); }
 /* Appearing: a fade and a step of travel. Leaving: the fade only, softer than it arrived. */

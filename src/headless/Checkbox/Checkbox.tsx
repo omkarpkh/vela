@@ -2,6 +2,7 @@ import * as React from 'react'
 import { Checkbox as BaseCheckbox } from '@base-ui/react/checkbox'
 import { CheckboxGroup as BaseCheckboxGroup } from '@base-ui/react/checkbox-group'
 import { cn } from '../../lib/cn'
+import { useKeyboardInstant } from '../../lib/instant'
 
 /**
  * Checkbox and Checkbox.Group on Base UI — the first component born in `@omkarux/vela/headless`.
@@ -122,9 +123,15 @@ const CheckboxRoot = React.forwardRef<HTMLButtonElement, CheckboxProps>(function
   const isDisabled = disabled || !!group?.disabled
 
   const handleChange = React.useCallback((next: boolean) => onCheckedChange?.(next), [onCheckedChange])
+  // Space on the box changes it with no transition; a pointer change scales the mark in (checkbox.md, Motion).
+  const motion = useKeyboardInstant()
 
   return (
-    <span className={cn('vela-checkbox', `vela-checkbox--${size}`, isDisabled && 'vela-checkbox--disabled', className)}>
+    <span
+      className={cn('vela-checkbox', `vela-checkbox--${size}`, isDisabled && 'vela-checkbox--disabled', className)}
+      data-vela-instant={motion.instant || undefined}
+      {...motion.handlers}
+    >
       <BaseCheckbox.Root
         ref={ref}
         id={id}

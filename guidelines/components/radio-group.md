@@ -68,6 +68,17 @@ there is no core implementation, and its Figma set is published in the library (
   radio; no `error` → no attribute on the group. [[rule: radio-group-describedby-only-rendered | runtime]]
 - **Five options or fewer.** A radio group is a comparison the eye makes in one pass. Six or more
   is a Select List, which is not in this kit: flag it rather than stacking radios. [[rule: radio-group-few-options | convention]]
+- **The dot scales in, by transform and opacity alone.** Selected with a pointer, the radio's dot
+  scales from half size as it fades in; the radio that lost the selection fades its dot out where
+  it is. Transitions only, never a keyframe. [[rule: radio-dot-scales-in | browser]]
+- **Changed again mid-flight, it turns round.** A press on another radio, and back, while the dots
+  are still moving ends with one dot, on the selected radio, at rest. [[rule: radio-dot-retargets | browser]]
+- **From the keyboard it does not animate.** Arrow keys and Space move the selection at once: no
+  press, no fill fade, no dot motion — on the radio that was left as well as the one reached. [[rule: radio-keyboard-is-instant | browser]]
+- **Under reduced motion it is at its end state.** Pressed while held, released after, the dot in
+  full. [[rule: radio-motion-reduced-end-state | browser]]
+- **A press never moves the hit target.** The circle presses to 0.9; a guard holds its original box
+  for as long as the press lasts, so a release at its edge still lands on it. [[rule: radio-press-keeps-hit-target | browser]]
 
 ## Token bindings
 
@@ -107,8 +118,27 @@ where a Checkbox `tiny` belongs. Gap circle-to-label `--vela-space-10`; gap betw
 - **Error** — CSS keys on `[aria-invalid='true']` on the group, set when `error` is a non-empty
   string, and every circle in the group takes the error border.
 - **Disabled** — the native attribute; CSS keys on `:disabled`. Nothing animates.
-- **Motion** — the fill changes over `--vela-duration-fast` with `--vela-ease-standard`; the dot
-  does not animate (arrow keys are the keyboard, and from the keyboard nothing animates).
+- **Pressed** — pointer only, the circle at `scale(0.9)`; see *Motion*.
+- **Motion** — see below.
+
+## Motion
+
+| Moment | What moves | Timing | Why |
+|---|---|---|---|
+| Press in (pointer, on the circle or its label) | the circle, `transform: scale(0.9)`, from its centre; a guard holds the hit target | `--vela-duration-instant` (70ms), `--vela-ease-standard` | feedback: the press landed |
+| Press out | the scale releases | `--vela-duration-base` (180ms) | a release settles |
+| Selected (pointer) | the dot: opacity, and scale from 0.5 | `--vela-duration-fast` (120ms), `--vela-ease-out` | continuity: the choice arrives in the circle |
+| Deselected | the old dot fades out where it is | `--vela-duration-fast` (120ms) | softer than it arrived |
+| Fill and border | colour | `--vela-duration-fast`, `--vela-ease-standard` | unchanged |
+| From the keyboard | nothing | instant | arrow keys and Space: from the keyboard nothing animates |
+
+The press is Button's CSS mechanism at the small controls' depth, as on Checkbox (`checkbox.md`,
+Motion, says why 0.9). The dot is moved by the component that owns the selection: Base UI's
+`Radio.Indicator` carries `data-starting-style` and `data-ending-style` and stays mounted until its
+fade has finished. **The keyboard mark is on the group, not the radio**: an arrow key pressed on
+one radio selects another, and that radio's dot must not animate either. A pointer anywhere on the
+group clears it. Under `prefers-reduced-motion` the global collapse in `base.css` applies. No prop
+turns any of this on or off. The values were approved on 31 October 2026, from the Motion review page (`#/motion`); decision 006.
 
 ## Responsive behaviour
 

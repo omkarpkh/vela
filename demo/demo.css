@@ -147,6 +147,8 @@ body { margin: 0; background: var(--vela-bg-global); }
 .motion-key { display: inline-flex; align-items: center; gap: var(--vela-space-5); font-family: var(--vela-font-family-mono); }
 .motion-key::before { content: ''; width: var(--vela-space-15); height: var(--vela-stroke-2); background: currentColor; }
 .motion-tokens td { overflow-wrap: anywhere; }
+.motion-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--vela-space-10); }
+.motion-controls { display: flex; flex-direction: column; align-items: flex-start; gap: var(--vela-space-20); }
 .motion-new { color: var(--vela-text-link); font-weight: var(--vela-font-weight-semibold); }
 
 /* Nav groups by job (playground spec, section 2). A component group is a sub-heading under

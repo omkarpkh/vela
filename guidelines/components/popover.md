@@ -76,6 +76,15 @@ there is no core implementation, and its Figma set is published in the library (
   heading. [[rule: popover-named-by-title | runtime]]
 - **Never the only copy of information the page needs.** A popover is closed most of the time; an
   error, a status or a value the task depends on lives on the page. [[rule: popover-never-only-copy | convention]]
+- **It grows from its trigger, by transform and opacity alone.** Opened with a pointer it scales
+  from 0.96 to full size as it fades in, pivoting on Base UI's `--transform-origin` — the point on
+  the popup nearest the trigger — so it comes out of the button whichever side it opens on. [[rule: popover-grows-from-its-trigger | browser]]
+- **Closed and reopened mid-flight, it turns round.** The motion is a transition, so a press that
+  reopens it while it is still fading out brings the same popup back from where it is, and it ends
+  open and at rest. [[rule: popover-reopen-mid-flight | browser]]
+- **From the keyboard it does not animate.** Enter or Space on the trigger opens it, and Escape
+  closes it, at once. [[rule: popover-keyboard-is-instant | browser]]
+- **Under reduced motion it is at its end state.** Open is full size and opaque; closed is gone. [[rule: popover-motion-reduced-end-state | browser]]
 
 ## Token bindings
 
@@ -112,12 +121,15 @@ dark) and the container (3.07 light, 3.29 dark). The body text on `--vela-bg-rai
 
 | Moment | What moves | Timing | Why |
 |---|---|---|---|
-| Appears | opacity, and `--vela-space-5` of travel from the trigger | `--vela-duration-base` (180ms), `--vela-ease-standard` | orientation: it came from the button |
-| Leaves | opacity only | `--vela-duration-base` (180ms) | softer than it arrived; it is going nowhere |
+| Appears | opacity, and scale from 0.96, pivoting on the point nearest the trigger | `--vela-duration-base` (180ms), `--vela-ease-out` | orientation: it grows out of the button that opened it |
+| Leaves | opacity only, at full size | `--vela-duration-base` (180ms) | softer than it arrived; it is going nowhere |
 | From the keyboard | nothing | instant | Escape, or Enter / Space on the trigger: from the keyboard nothing animates |
 
-Under `prefers-reduced-motion` the global collapse in `base.css` applies; the popover reads
-correctly frozen at either end.
+`--vela-duration-base`, not `fast`: a popover is opened deliberately, a few times a day, and carries
+content to read — it is something that appears, which is what `base` is for. The 4% of scale is
+the whole movement, about 11px across a 280px popover, so on `--vela-ease-out` it is most of the
+way there in the first frames. Under `prefers-reduced-motion` the global collapse in `base.css`
+applies; the popover reads correctly frozen at either end. The values were approved on 31 October 2026, from the Motion review page (`#/motion`); decision 006.
 
 ## Responsive behaviour
 
@@ -174,6 +186,8 @@ difference is recorded here:
   outside and the trigger close it).
 - **Keyboard and motion.** Base UI animates every open and close; this implementation marks one
   that came from the keyboard with `data-vela-instant`, and the stylesheet skips the transition.
+  The pivot of the grow is Base UI's `--transform-origin`, written on the positioner and inherited
+  by the popup; no JavaScript of Vela's measures anything.
 - **Extra attributes.** Base UI adds `data-open` / `data-closed`, `data-side`, `data-align`,
   focus-guard `<span>`s and `data-base-ui-*` markers; ids are Base UI's. None is part of the
   contract.

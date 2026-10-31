@@ -29,19 +29,17 @@
   /* No shadow: no elevation token exists. The edge is the border, asserted against page and container. */
   border: 1px solid var(--vela-border-default);
   border-radius: var(--vela-radius-4);
+  /* Base UI's positioner writes --transform-origin: the point on the popup nearest the trigger, so
+     the popup grows out of the button whichever side it opens on. */
   transform-origin: var(--transform-origin);
-  transition: opacity var(--vela-duration-base) var(--vela-ease-standard),
-              transform var(--vela-duration-base) var(--vela-ease-standard);
+  transition: opacity var(--vela-duration-base) var(--vela-ease-out),
+              transform var(--vela-duration-base) var(--vela-ease-out);
 }
 .vela-popover--wide { width: var(--vela-popover-width-wide); }
 
-/* Appearing: a fade and a step of travel from the trigger. Leaving: the fade only, softer. */
-.vela-popover[data-starting-style] { opacity: 0; transform: translateY(calc(var(--vela-space-5) * -1)); }
-.vela-popover[data-side='top'][data-starting-style] { transform: translateY(var(--vela-space-5)); }
-.vela-popover[data-side='inline-start'][data-starting-style],
-.vela-popover[data-side='inline-end'][data-starting-style],
-.vela-popover[data-side='left'][data-starting-style],
-.vela-popover[data-side='right'][data-starting-style] { transform: none; }
+/* Appearing: it grows from its trigger, scale 0.96 to 1 as it fades in, on ease-out because it
+   enters. Leaving: the fade only, at full size — softer than it arrived (popover.md, Motion). */
+.vela-popover[data-starting-style] { opacity: 0; transform: scale(0.96); }
 .vela-popover[data-ending-style] { opacity: 0; }
 /* From the keyboard, nothing animates (foundations/motion.md). */
 .vela-popover[data-instant],

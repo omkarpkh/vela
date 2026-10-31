@@ -19,16 +19,57 @@
   border-radius: var(--vela-radius-3);
   color: var(--vela-control-check-mark);
   cursor: pointer;
+  /* The press is asymmetric, as on Button: the :active rule swaps in duration-instant on the way
+     down, so this value is only ever the release. */
+  --vela-checkbox-press-duration: var(--vela-duration-base);
   transition: background-color var(--vela-duration-fast) var(--vela-ease-standard),
-              border-color var(--vela-duration-fast) var(--vela-ease-standard);
+              border-color var(--vela-duration-fast) var(--vela-ease-standard),
+              transform var(--vela-checkbox-press-duration) var(--vela-ease-standard);
 }
 .vela-checkbox--tiny .vela-checkbox__box {
   width: var(--vela-control-checkbox-size-tiny); height: var(--vela-control-checkbox-size-tiny);
   margin-top: calc((var(--vela-text-meta-line-height) - var(--vela-control-checkbox-size-tiny)) / 2);
 }
 
-.vela-checkbox__indicator { display: flex; width: 100%; height: 100%; }
+.vela-checkbox__indicator {
+  display: flex; width: 100%; height: 100%;
+  transition: opacity var(--vela-duration-fast) var(--vela-ease-out),
+              transform var(--vela-duration-fast) var(--vela-ease-out);
+}
 .vela-checkbox__glyph { display: block; width: 100%; height: 100%; }
+
+/* State motion (checkbox.md, Motion). Checking scales the mark — or the indeterminate dash — in
+   from half size as it fades in; unchecking fades it out where it is. Keyed on Base UI's
+   transition attributes on the Indicator, which mounts only while checked or indeterminate and
+   stays mounted until its fade has finished. A transition, so a second press mid-flight turns it
+   round from wherever it is. */
+.vela-checkbox__indicator[data-starting-style] { opacity: 0; transform: scale(0.5); }
+.vela-checkbox__indicator[data-ending-style] { opacity: 0; }
+
+/* Press: pointer only, the Button mechanism (button.md#motion) on a 16px box. 3% of 16px is a
+   quarter of a pixel, which is no feedback at all, so the small controls press to 0.9 — under a
+   pixel of travel a side. In at duration-instant, out at duration-base. :focus-visible excludes
+   Space; a disabled box does not pretend to react. Pressing the label presses the box too: a
+   label's control matches :active while the label does. */
+.vela-checkbox__box:active:not(:disabled):not(:focus-visible) {
+  --vela-checkbox-press-duration: var(--vela-duration-instant);
+  transform: scale(0.9);
+}
+/* The guard: the inverse scale (0.9 x 1.1111111 = 1) holds the box's original border box for as
+   long as the press lasts, so a release at its edge still lands on it. The transform above makes
+   the box the containing block; inset -1px matches its 1px border. */
+.vela-checkbox__box:active:not(:disabled):not(:focus-visible)::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  transform: scale(1.1111111);
+}
+/* Keyboard press: the focus ring collapses onto the edge, as on Button. No geometry, no duration. */
+.vela-checkbox__box:active:not(:disabled):focus-visible { outline-offset: 0; }
+/* From the keyboard, nothing animates: no fill fade, no mark, no press. */
+.vela-checkbox[data-vela-instant] .vela-checkbox__box,
+.vela-checkbox[data-vela-instant] .vela-checkbox__indicator { transition: none; }
 
 @media (hover: hover) {
   .vela-checkbox:hover .vela-checkbox__box[aria-checked='false']:not(:disabled):not([aria-invalid='true']) { border-color: var(--vela-control-border-hover); }

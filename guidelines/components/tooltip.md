@@ -66,6 +66,13 @@ there is no core implementation, and its Figma set is published in the library (
   never carries the only copy of anything. [[rule: tooltip-supplementary-only | convention]]
 - **In forced colours it keeps an edge.** The fill is replaced by `Canvas`, so the popup takes a
   1px `CanvasText` border. [[rule: tooltip-forced-colours | browser]]
+- **It grows from its trigger, by transform and opacity alone.** Opened by a resting pointer it
+  scales from 0.96 to full size as it fades in, pivoting on Base UI's `--transform-origin` — the
+  edge nearest the trigger. [[rule: tooltip-grows-from-its-trigger | browser]]
+- **Closed and reopened mid-flight, it turns round.** A pointer that comes back while it is fading
+  out brings the same tooltip back from where it is; it ends open and at rest. [[rule: tooltip-reopen-mid-flight | browser]]
+- **From the keyboard it does not animate.** Focus opens it, and Escape closes it, at once. [[rule: tooltip-keyboard-is-instant | browser]]
+- **Under reduced motion it is at its end state.** Open is full size and opaque; closed is gone. [[rule: tooltip-motion-reduced-end-state | browser]]
 
 ## Token bindings
 
@@ -98,9 +105,13 @@ never grows a second size for a second paragraph — a second paragraph is a Pop
 
 | Moment | What moves | Timing | Why |
 |---|---|---|---|
-| Appears on hover | opacity | `--vela-duration-base` (180ms), `--vela-ease-standard`, after `--vela-delay-tooltip` | feedback that the rest registered, without a jump |
-| Leaves | opacity | `--vela-duration-base` (180ms) | continuity |
+| Appears on hover | opacity, and scale from 0.96, pivoting on the edge nearest the trigger | `--vela-duration-fast` (120ms), `--vela-ease-out`, after `--vela-delay-tooltip` | feedback that the rest registered, coming from the control it labels |
+| Leaves | opacity only | `--vela-duration-fast` (120ms) | continuity |
 | From the keyboard | nothing | instant | focus opens it and Escape closes it with no transition |
+
+`--vela-duration-fast`, not `base`, and faster than Popover: a tooltip has already waited
+`--vela-delay-tooltip` (600ms) for the pointer to rest, it is a few words rather than content, and it
+is crossed many times a day; 180ms more before the label is readable reads as lag. The values were approved on 31 October 2026, from the Motion review page (`#/motion`); decision 006.
 
 ## Responsive behaviour
 

@@ -27,6 +27,10 @@ import { useOverlayPortal } from '../overlay'
  *   is expanded; the close button and the action here are Vela's own and call the manager.
  * - **Portal.** The portal element carries `vela-root` and the theme of where the provider is
  *   rendered, re-read on every `add` (`../overlay`).
+ * - **Stack.** Base UI's `--toast-index` and `--toast-offset-y`, and its `data-expanded` on the
+ *   viewport (hover, or keyboard focus inside), drive a collapsed deck that spreads out; the
+ *   region adds `data-vela-spread` while a warning sits behind the front toast, so a collapsed
+ *   stack never hides one (toast.md, Motion).
  */
 
 /** The Severity taxonomy's subset a toast may carry. Minor, major and critical belong in a Contextual Alert. */
@@ -149,9 +153,38 @@ function ToastRegion({
     [syncTheme],
   )
 
+  // From the keyboard, nothing animates: F6 spreading the stack, Tab moving through it, Escape or
+  // Enter / Space dismissing a toast — the toast that leaves and the toasts that move up behind it
+  // change at once. So the mark is on the region, not on one toast. A pointer on the region, or a
+  // new toast raised by the app, clears it.
+  const [instant, setInstantState] = React.useState(false)
+  const instantRef = React.useRef(false)
+  const setInstant = React.useCallback((next: boolean) => {
+    if (instantRef.current === next) return
+    instantRef.current = next
+    setInstantState(next)
+  }, [])
+
+  // A collapsed stack shows the front toast and the edges of the ones behind it. A warning never
+  // times out, so behind another toast it would stay out of sight for as long as it lasts: while
+  // one sits behind the front, the stack stays spread out.
+  // F6 is heard on the window — focus is still outside the region when it is pressed.
+  const empty = manager.toasts.length === 0
+  React.useEffect(() => {
+    if (empty) return
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'F6') setInstant(true) }
+    window.addEventListener('keydown', onKey, true)
+    return () => window.removeEventListener('keydown', onKey, true)
+  }, [empty, setInstant])
+
+  const live = manager.toasts.filter((t) => t.transitionStatus !== 'ending' && !t.limited)
+  const spread = live.slice(1).some((t) => t.type === 'warning')
+
   const api = React.useMemo<ToastApi>(
     () => ({
       add({ title, description, severity = 'info', action }) {
+        // The app raised it, not the keyboard: it enters, and the stack moves back to make room.
+        setInstant(false)
         // The region lives as long as the provider; a theme switched since it mounted is picked up here.
         syncTheme(portalNode.current)
         const timeout = severity === 'warning' || action ? 0 : readDuration(anchor.current)
@@ -160,7 +193,7 @@ function ToastRegion({
       },
       dismiss: (id) => close(id),
     }),
-    [baseAdd, close, syncTheme],
+    [baseAdd, close, syncTheme, setInstant],
   )
 
   return (
@@ -171,9 +204,20 @@ function ToastRegion({
         <BaseToast.Viewport
           aria-label={label}
           className={cn('vela-toast-region', `vela-toast-region--${placement}`)}
+          data-vela-instant={instant || undefined}
+          data-vela-spread={spread || undefined}
+          onKeyDownCapture={() => setInstant(true)}
+          onPointerDownCapture={() => setInstant(false)}
+          onPointerMoveCapture={() => setInstant(false)}
         >
           {manager.toasts.map((toast) => (
-            <ToastItem key={toast.id} toast={toast} swipe={SWIPE[placement]} dismissLabel={dismissLabel} close={close} />
+            <ToastItem
+              key={toast.id}
+              toast={toast}
+              swipe={SWIPE[placement]}
+              dismissLabel={dismissLabel}
+              close={close}
+            />
           ))}
         </BaseToast.Viewport>
       </BaseToast.Portal>
@@ -195,19 +239,11 @@ function ToastItem({
   const severity = toast.data?.severity ?? 'info'
   const action = toast.data?.action
   const Icon = ICON[severity]
-  // From the keyboard, nothing animates: a toast dismissed by Escape, or by Enter or Space on one of
-  // its buttons, leaves at once. A pointer press clears the mark.
-  const [instant, setInstant] = React.useState(false)
   return (
     <BaseToast.Root
       toast={toast}
       swipeDirection={swipe}
       className={cn('vela-toast', `vela-toast--${severity}`)}
-      data-vela-instant={instant || undefined}
-      onKeyDownCapture={(e) => {
-        if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') setInstant(true)
-      }}
-      onPointerDownCapture={() => setInstant(false)}
     >
       <span className="vela-toast__mark" aria-hidden="true">
         <Icon className="vela-toast__icon" />
