@@ -347,7 +347,7 @@ import type { DropdownListProps, DropdownListItem, DropdownListAlign } from '@om
 const items: [DropdownListItem, ...DropdownListItem[]] = [
   { value: 'alerts', label: 'Alerts' },
   { value: 'firewall', label: 'Firewall', meta: '1 new' },
-  { value: 'archive', label: 'Archive', disabled: true, meta: 'No access' },
+  { value: 'archive', label: 'Archive', locked: { reason: 'Needs retention on' } },
 ]
 export const A = () => (
   <DropdownList label="All tabs" trigger={<button type="button">6 more · 1 new</button>} items={items}
@@ -474,6 +474,10 @@ export const shapes: [DropdownListProps, DropdownListAlign] = [{ label: 'L', tri
     ['dropdown-list-item-closed', 'dropdown list item with a description', `<DropdownList label="All tabs" trigger={<Button>6 more</Button>} items={[{ value: 'alerts', label: 'Alerts', description: 'Every alert' }]} defaultValue="alerts" />`],
     ['dropdown-list-item-closed', 'dropdown list item with its own click handler', `<DropdownList label="All tabs" trigger={<Button>6 more</Button>} items={[{ value: 'alerts', label: 'Alerts', onClick: () => {} }]} defaultValue="alerts" />`],
     ['dropdown-list-item-closed', 'dropdown list item label as a node', `<DropdownList label="All tabs" trigger={<Button>6 more</Button>} items={[{ value: 'alerts', label: <b>Alerts</b> }]} defaultValue="alerts" />`],
+    ['dropdown-list-item-closed', 'dropdown list item disabled, the 0.14.0 field', `<DropdownList label="All tabs" trigger={<Button>6 more</Button>} items={[{ value: 'alerts', label: 'Alerts' }, { value: 'archive', label: 'Archive', disabled: true }]} defaultValue="alerts" />`],
+    ['dropdown-list-item-closed', 'dropdown list item locked with no reason', `<DropdownList label="All tabs" trigger={<Button>6 more</Button>} items={[{ value: 'alerts', label: 'Alerts' }, { value: 'archive', label: 'Archive', locked: {} }]} defaultValue="alerts" />`],
+    ['dropdown-list-item-closed', 'dropdown list item locked as a boolean', `<DropdownList label="All tabs" trigger={<Button>6 more</Button>} items={[{ value: 'alerts', label: 'Alerts' }, { value: 'archive', label: 'Archive', locked: true }]} defaultValue="alerts" />`],
+    ['dropdown-list-item-closed', 'dropdown list item with both meta and locked', `<DropdownList label="All tabs" trigger={<Button>6 more</Button>} items={[{ value: 'alerts', label: 'Alerts' }, { value: 'archive', label: 'Archive', meta: '2 open', locked: { reason: 'Needs retention on' } }]} defaultValue="alerts" />`],
     // Toast ships from `@omkarux/vela/headless` only. `add` is called on the hook's result, so each
     // fixture is an expression; every one carries a valid title unless the title is the point.
     ['toast-title-required', 'toast with no title', `useToast().add({ severity: "success" })`],

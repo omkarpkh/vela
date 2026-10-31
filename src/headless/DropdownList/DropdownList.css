@@ -54,12 +54,14 @@
   user-select: none;
 }
 /* The highlight follows the pointer and the keys at once: no transition, a fade would lag. A
-   disabled item takes it from the keyboard only; under the pointer it changes nothing. */
+   locked item takes it from the keyboard only; under the pointer it changes nothing. */
 .vela-dropdown-list__item[data-highlighted]:not([aria-disabled='true']),
 .vela-dropdown-list:not([data-vela-pointer]) .vela-dropdown-list__item[data-highlighted][aria-disabled='true'] { background: var(--vela-bg-raised-hover); }
 .vela-dropdown-list__item[aria-disabled='true'] { cursor: not-allowed; }
-/* A disabled name greys; its meta stays readable, because it says why. */
+/* A locked name greys; its reason stays readable, because it says why. The lock before the name
+   keeps Icon's default tone: it is a mark beside the reason, not a faded word. */
 .vela-dropdown-list__item[aria-disabled='true'] .vela-dropdown-list__label { color: var(--vela-text-inactive); }
+.vela-dropdown-list__lock { margin-inline-end: var(--vela-space-5); }
 
 /* The slot is one line tall, so the check sits on the first line of a name that wraps. */
 .vela-dropdown-list__check {
@@ -91,6 +93,8 @@
   .vela-dropdown-list__item[data-highlighted]:not([aria-disabled='true']),
   .vela-dropdown-list:not([data-vela-pointer]) .vela-dropdown-list__item[data-highlighted][aria-disabled='true'] { background: Highlight; color: HighlightText; forced-color-adjust: none; }
   .vela-dropdown-list__check { color: currentColor; }
+  /* The lock follows its name: GrayText at rest, HighlightText on the highlighted row. */
+  .vela-dropdown-list__lock { color: currentColor; }
   .vela-dropdown-list__item[aria-disabled='true'] .vela-dropdown-list__label { color: GrayText; }
   .vela-dropdown-list:not([data-vela-pointer]) .vela-dropdown-list__item[data-highlighted][aria-disabled='true'] .vela-dropdown-list__label { color: HighlightText; }
 }

@@ -150,12 +150,12 @@ markup already carries, not a new variant.
   settings as they are, or under a policy that applies to everyone, while the control itself
   still works. It stays reachable: in the tab or arrow-key order, marked `aria-disabled="true"`,
   never the native attribute. It states its reason in words a person can act on, read with it:
-  as its accessible description, or as its `meta` in a Dropdown List. A value a person's role
+  as its accessible description, or in the meta slot in a Dropdown List. A value a person's role
   may never have is not shown at all. The reason is never faded. Choosing it selects nothing, and it
   never animates as a press. "Locked" is Vela's internal word. People meet the screen reader's
   own word for `aria-disabled` and the reason, and never "Locked" as a status, because in a
   console "locked" means locked accounts and policies. A whole control that can't act is
-  Disabled, above. Cited by Segmented Control (`locked`) and Dropdown List (disabled items).
+  Disabled, above. Cited by Segmented Control and Dropdown List, both as `locked: { reason }`.
   A locked value may carry Icon's `lock` before its label, and then its reason is also visible
   beside it (`icon.md`, *Glyphs*).
 - **Loading** — the label stays, a spinner appears, `aria-busy="true"` is set, the control stays

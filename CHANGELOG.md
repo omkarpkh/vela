@@ -15,6 +15,19 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   (`requests/icon-thread-to-repo-lock-meaning.md`).
 - **Tabs' spec states `size`'s default, `regular`**, which both entry points already used.
 
+### Changed (Experimental, breaking)
+- **Dropdown List: `locked: { reason }` replaces an item's `disabled?: boolean`.** A locked item
+  can't be written without its reason, which shows in the meta slot and is heard with the name;
+  `meta` and `locked` together don't compile, and neither does `disabled`. Icon's `lock` comes
+  before a locked item's name. Migrate `{ disabled: true, meta: 'Why' }` to
+  `{ locked: { reason: 'Why' } }`. The runtime rule `dropdown-list-disabled-not-chosen` is now
+  `dropdown-list-locked-not-chosen`, and the convention rule `dropdown-list-locked-has-a-cause`
+  is new: a locked item names a setting or a policy, and a value a person's role may never have
+  isn't listed. Decided by Omkar on 31 October; the rule and examples are from the spec and icon
+  threads (`requests/spec-thread-to-repo-dropdown-list-locked-alignment.md`). New pair in
+  `PAIRS`: the lock on the highlighted row.
+- **DESIGN.md's Locked line covers a policy that applies to everyone**, and says a value a
+  person's role may never have is not shown at all.
 ### Added
 - **Motion pass, part 2: the Toast stack, overlays that grow from their trigger, state and press
   motion on the small controls.** No new token and no new prop; every value below is
@@ -22,7 +35,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   rules, all `browser`, each with a Playwright proof that the part moves only by `transform` and
   `opacity` (the stack also uses the `translate` and `scale` properties), reads correctly at its end
   state under reduced motion, ends in the right state when re-triggered mid-flight, and does not
-  animate from the keyboard. 182 rules (was 152), 42 of them `browser` (was 12).
+  animate from the keyboard. 212 rules (was 182), 53 of them `browser` (was 23).
   - **Toast** enters by travelling its own height in from the edge it sits on, at `duration-base` on
     `ease-out`, and leaves the same way, fading. Older toasts collapse behind the newest — each a
     `--vela-space-10` step back and 5% smaller — and spread out on hover or with keyboard focus in

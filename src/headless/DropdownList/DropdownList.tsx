@@ -33,17 +33,34 @@ import { fromKeyboard, useOverlayPortal } from '../overlay'
  * - **Trigger, offset and portal** are mapped as on Popover (`../overlay`).
  */
 
-/** One option. These four fields only (`dropdown-list-item-closed`). */
-export interface DropdownListItem {
+interface DropdownListItemBase {
   /** What `onValueChange` reports. Unique within the list. */
   value: string
   /** The name, shown and announced in full; it wraps, never truncates. Typeahead matches it. */
   label: string
-  /** Words at the end of the row — "1 new", "No access". Never a colour, never a taxonomy. */
-  meta?: string
-  /** Reachable and read, never chosen. Its `meta` can say why. */
-  disabled?: boolean
 }
+
+/**
+ * One option. These four fields only (`dropdown-list-item-closed`): `value`, `label`, and either
+ * `meta` or `locked`, never both, because the two share one slot at the end of the row.
+ */
+export type DropdownListItem = DropdownListItemBase &
+  (
+    | {
+        /** Words at the end of the row — "1 new", "3 open". Never a colour, never a taxonomy. */
+        meta?: string
+        locked?: never
+      }
+    | {
+        meta?: never
+        /**
+         * Reachable and read, never chosen (DESIGN.md, States, Locked). `reason` names the setting
+         * or the policy that rules it out, in words a person can act on, and shows where `meta`
+         * would. A value the person's role may never have is not listed at all.
+         */
+        locked: { reason: string }
+      }
+  )
 
 /** Which edge of the trigger the list lines up with. These two only (`dropdown-list-align-closed`). */
 export type DropdownListAlign = 'start' | 'end'
@@ -90,6 +107,9 @@ const taxonomiesOf = (meta: string) => {
   const word = meta.trim().toLowerCase()
   return Object.keys(TAXONOMY_WORDS).filter((t) => TAXONOMY_WORDS[t].includes(word))
 }
+
+/** The words at the end of the row: a locked item's reason, or its meta. */
+const endOf = (item: DropdownListItem) => item.locked?.reason ?? item.meta
 
 /** A short list from a button: one option is current, choosing another acts at once and closes it. */
 export function DropdownList({
@@ -145,7 +165,7 @@ export function DropdownList({
       if (hit.length) {
         console.warn(
           `<DropdownList label="${label}">: item "${item.label}" has meta "${item.meta}", a ${hit.join(' and ')} word. ` +
-            'Meta is words such as "1 new" or "No access", never a taxonomy label (guidelines/components/dropdown-list.md).',
+            'Meta is words such as "1 new" or "3 open", never a taxonomy label (guidelines/components/dropdown-list.md).',
         )
       }
     }
@@ -240,10 +260,10 @@ export function DropdownList({
                   value={item.value}
                   // Typeahead matches the name alone, not the meta.
                   label={item.label}
-                  disabled={item.disabled}
+                  disabled={item.locked !== undefined}
                   closeOnClick
-                  // dropdown-list-meta-in-name: what is seen is what is heard.
-                  aria-label={item.meta ? `${item.label}, ${item.meta}` : item.label}
+                  // dropdown-list-meta-in-name: what is seen is what is heard, the reason included.
+                  aria-label={endOf(item) ? `${item.label}, ${endOf(item)}` : item.label}
                   className="vela-dropdown-list__item"
                 >
                   <span className="vela-dropdown-list__check" aria-hidden="true">
@@ -252,8 +272,13 @@ export function DropdownList({
                     </Menu.RadioItemIndicator>
                   </span>
                   <span className="vela-dropdown-list__text">
-                    <span className="vela-dropdown-list__label">{item.label}</span>
-                    {item.meta ? <span className="vela-dropdown-list__meta">{item.meta}</span> : null}
+                    <span className="vela-dropdown-list__label">
+                      {/* Icon's lock never appears without its written reason (icon-lock-has-written-reason);
+                          the reason is in this row. It is the component's own glyph, not an item icon. */}
+                      {item.locked ? <Icon name="lock" size="regular" tone="default" className="vela-dropdown-list__lock" /> : null}
+                      {item.label}
+                    </span>
+                    {endOf(item) ? <span className="vela-dropdown-list__meta">{endOf(item)}</span> : null}
                   </span>
                 </Menu.RadioItem>
               ))}

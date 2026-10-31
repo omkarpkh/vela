@@ -10,7 +10,7 @@ const settle = () => act(() => new Promise((r) => setTimeout(r, 30)))
 const ITEMS = [
   { value: 'alerts', label: 'Alerts' },
   { value: 'firewall', label: 'Firewall', meta: '1 new' },
-  { value: 'archive', label: 'Archive', disabled: true, meta: 'No access' },
+  { value: 'archive', label: 'Archive', locked: { reason: 'Needs retention on' } },
   { value: 'reports', label: 'Reports' },
 ] as const satisfies DropdownListProps['items']
 
@@ -81,7 +81,7 @@ describe('Dropdown List (headless)', () => {
             { value: 'c', label: 'Agents', meta: 'Degraded' },
             { value: 'd', label: 'Cases', meta: 'MALICIOUS' },
             { value: 'e', label: 'Firewall', meta: '1 new' },
-            { value: 'f', label: 'Archive', meta: 'No access' },
+            { value: 'f', label: 'Archive', meta: '3 open' },
           ]}
         />,
       )
@@ -105,7 +105,7 @@ describe('Dropdown List (headless)', () => {
     render(<AllTabs />)
     await openWithClick()
     expect(item('Firewall, 1 new')).toHaveTextContent('Firewall1 new')
-    expect(item('Archive, No access')).toBeInTheDocument()
+    expect(item('Archive, Needs retention on')).toBeInTheDocument()
     expect(item('Alerts')).toBeInTheDocument()
   })
 
@@ -236,13 +236,13 @@ describe('Dropdown List (headless)', () => {
   })
 
   // [[rule: dropdown-list-focus-current]]
-  it('lands on a disabled current item too, which still cannot be chosen', async () => {
+  it('lands on a locked current item too, which still cannot be chosen', async () => {
     const onValueChange = vi.fn()
     for (const [how, open] of OPENS) {
       const { unmount } = render(<AllTabs defaultValue="archive" onValueChange={onValueChange} />)
       await open()
-      await landsOn('Archive, No access')
-      expect(item('Archive, No access'), how).toHaveAttribute('aria-checked', 'true')
+      await landsOn('Archive, Needs retention on')
+      expect(item('Archive, Needs retention on'), how).toHaveAttribute('aria-checked', 'true')
       await userEvent.keyboard('{ArrowDown}')
       expect(item('Reports'), how).toHaveFocus()
       unmount()
@@ -337,17 +337,24 @@ describe('Dropdown List (headless)', () => {
     expect(pressed).toHaveBeenCalledTimes(1)
   })
 
-  // [[rule: dropdown-list-disabled-not-chosen]]
-  it('a disabled item is reached by the arrow keys and read, but choosing it does nothing', async () => {
+  // [[rule: dropdown-list-locked-not-chosen]]
+  it('a locked item is reached by the arrow keys and read with its reason, but choosing it does nothing', async () => {
     const onValueChange = vi.fn()
     render(<AllTabs onValueChange={onValueChange} />)
     trigger().focus()
     await userEvent.keyboard('{Enter}')
     await settle()
     await userEvent.keyboard('{ArrowDown}')
-    const archive = item('Archive, No access')
+    const archive = item('Archive, Needs retention on')
     expect(archive).toHaveFocus()
     expect(archive).toHaveAttribute('aria-disabled', 'true')
+    // The reason shows where meta would, and Icon's lock comes before the name, hidden from the
+    // accessibility tree: the name already carries the reason.
+    expect(archive.querySelector('.vela-dropdown-list__meta')).toHaveTextContent('Needs retention on')
+    const lock = archive.querySelector('.vela-dropdown-list__label > svg.vela-dropdown-list__lock')
+    expect(lock).not.toBeNull()
+    expect(lock).toHaveAttribute('aria-hidden', 'true')
+    expect(item('Alerts').querySelector('.vela-dropdown-list__lock')).toBeNull()
     await userEvent.keyboard('{Enter}')
     await userEvent.keyboard(' ')
     await settle()
@@ -436,14 +443,14 @@ describe('Dropdown List (headless)', () => {
     expect(trigger()).toHaveAttribute('data-vela-instant')
   })
 
-  it('marks the popup while the pointer is the last input in it, so a disabled item it rests on shows no highlight', async () => {
+  it('marks the popup while the pointer is the last input in it, so a locked item it rests on shows no highlight', async () => {
     render(<AllTabs />)
     trigger().focus()
     await userEvent.keyboard('{Enter}')
     await settle()
     const menu = screen.getByRole('menu')
     expect(menu).not.toHaveAttribute('data-vela-pointer')
-    await userEvent.hover(item('Archive, No access'))
+    await userEvent.hover(item('Archive, Needs retention on'))
     expect(menu).toHaveAttribute('data-vela-pointer')
     await userEvent.keyboard('{ArrowDown}')
     expect(menu).not.toHaveAttribute('data-vela-pointer')

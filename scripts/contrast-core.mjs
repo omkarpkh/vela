@@ -202,6 +202,9 @@ export const PAIRS = [
   ['--vela-text-default', '--vela-bg-raised-hover', 'Dropdown List item text, highlighted',          'text'],
   ['--vela-text-link',    '--vela-bg-raised',       'Dropdown List current-item check',              'ui'],
   ['--vela-text-link',    '--vela-bg-raised-hover', 'Dropdown List current-item check, highlighted', 'ui'],
+  // A locked item's lock glyph is Icon's default tone (icon-strong). On the raised surface it is
+  // asserted for Dialog's close glyph above; with the keyboard on the row it sits on raised-hover.
+  ['--vela-icon-strong',  '--vela-bg-raised-hover', 'Dropdown List locked-item lock, keyboard focus', 'ui'],
   // The site's search (demo/shell/Search.tsx, playground slice 3). The header button reads as a
   // field: placeholder text and the search glyph on the control surface. The dialog is the raised
   // surface: its glyph, and the active result, which is the Dropdown List's highlight (above) plus a

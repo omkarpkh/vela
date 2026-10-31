@@ -125,7 +125,7 @@
         },
         {
           "figma": "Disabled",
-          "prop": "item disabled"
+          "prop": "item locked (the set's axis keeps its 0.14.0 name until the next library update)"
         },
         {
           "figma": "Meta",
@@ -136,7 +136,7 @@
           "prop": "item label"
         }
       ],
-      "example": "<DropdownList\n  label=\"All tabs\"\n  trigger={<button className=\"vela-tabs__more\">6 more · 1 new</button>}\n  items={[\n    { value: 'alerts', label: 'Alerts' },\n    { value: 'firewall', label: 'Firewall', meta: '1 new' },\n    { value: 'archive', label: 'Archive', disabled: true, meta: 'No access' },\n  ]}\n  value={tab}\n  onValueChange={setTab}\n/>",
+      "example": "<DropdownList\n  label=\"All tabs\"\n  trigger={<button className=\"vela-tabs__more\">6 more · 1 new</button>}\n  items={[\n    { value: 'alerts', label: 'Alerts' },\n    { value: 'firewall', label: 'Firewall', meta: '1 new' },\n    { value: 'archive', label: 'Archive', locked: { reason: 'Needs retention on' } },\n  ]}\n  value={tab}\n  onValueChange={setTab}\n/>",
       "spec": "guidelines/components/dropdown-list.md"
     },
     {
