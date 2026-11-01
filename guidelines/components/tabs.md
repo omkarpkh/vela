@@ -11,7 +11,9 @@ Navigate between **different** content panels.
   which is **not in this kit**. Flag the gap; do not substitute Tabs. If only the
   *presentation* of one dataset changes, it is not Tabs.
 - Sequential steps → a Wizard, not Tabs.
-- More than ~7 panels → reconsider the information architecture.
+- More than ~7 panels → reconsider the information architecture. When the row is narrower than its
+  tabs (a side panel, a phone), the headless Tabs puts the tabs that don't fit into "N more" (see
+  *Overflow*); that is for a narrow host, not for a long list of panels.
 
 ## Composition
 
@@ -36,6 +38,7 @@ Navigate between **different** content panels.
 | `Tabs.Trigger` | `value` | `string` | Must match a Panel. |
 | | `count` | `number` | Optional numeric badge. |
 | | `disabled` | `boolean` | Skipped by arrow-key navigation. |
+| | `unseen` | `boolean` | **Headless only.** The tab holds changes the person hasn't seen: set it when they arrive, clear it when the tab is opened. A hidden tab with `unseen` adds "· 1 new" to the "N more" control. The core trigger does not accept it. |
 | `Tabs.Panel` | `value` | `string` | Must match a Trigger. |
 
 ## Hard constraints
@@ -84,6 +87,55 @@ Navigate between **different** content panels.
   the tab's role, its accessible name and the single roving tab stop are unchanged, and the list
   holds nothing but its tabs. [[rule: tabs-preview-decorative | runtime]]
 
+The overflow rules (see *Overflow*). The five tests decided on 30 Oct 2026 prove the first three
+and the fifth. Each says whether the core keeps it ("both") or only the headless Tabs has it.
+
+- **The open tab never leaves view (headless).** It sticks to the edge it would leave by, its focus
+  ring's reach in from it, and the tabs that pass under it fade out where they meet it. The core has
+  no sticky tab: it scrolls the open tab wholly into view whenever it opens, and a person scrolling
+  the row can still move it out (the gap named under *Overflow*). [[rule: tabs-overflow-open-tab-in-view | browser]]
+- **A clicked or focused tab ends wholly in view, focus ring included (both).** Clicked while
+  partly hidden, or reached by the arrow keys, Home or End, the tab and the left and right of its
+  ring end inside the row, clear of the fades and of the stuck open tab. The row moves as little as
+  it can, and never while a pointer is still down on it, so the click lands on the tab it started
+  on. [[rule: tabs-overflow-reveal-whole | browser]]
+- **When tabs are hidden, a visible cue says so (both).** The edge where more tabs are fades; on the
+  headless row the "N more" control says how many as well. A fade is drawn only where tabs are
+  hidden. [[rule: tabs-overflow-cue | browser]]
+- **The cue survives forced colours (both).** The system removes the fade, so the edge where more
+  tabs are becomes one 1px `CanvasText` line; at the stuck open tab the edge is a half gap of
+  `Canvas` and then that line. The control's clear border is `Canvas`, and its words stay words.
+  [[rule: tabs-overflow-forced-colours | browser]]
+- **The Seed is never cut below 24px while the pointer is on any visible part of its tab (both).**
+  On a tab that is not wholly in view the Seed doesn't show at all; the label's colour still answers
+  the pointer, and a click brings the tab into view. [[rule: tabs-overflow-seed-never-cut | browser]]
+- **The count is measured, never a prop (headless).** "6 more" is the number of tabs not wholly in
+  view: cut by an edge, under a fade or under the stuck open tab. No prop sets it and no threshold
+  holds it back: it shows whenever one tab is hidden. [[rule: tabs-overflow-count-measured | runtime]]
+- **`unseen` is the headless trigger's only.** The core trigger has no overflow control to show it,
+  so `unseen` on the core `Tabs.Trigger` doesn't compile. [[rule: tabs-unseen-headless-only | compiler]]
+- **News is words (headless).** The control reads "6 more · 1 new", where 1 is the number of hidden
+  tabs with `unseen`; a tab in view adds nothing. The news is semibold `--vela-text-default` words,
+  never a colour or a dot alone. The control's spoken name is "All tabs, 6 hidden, 1 with new
+  items". [[rule: tabs-overflow-news-words | runtime]]
+- **News is announced once, politely (headless).** When the number of hidden tabs with news grows,
+  a polite live region says "All tabs, 1 with new items" once. Nothing is announced on the first
+  render, or when news is cleared. [[rule: tabs-overflow-announce-news | runtime]]
+- **The list holds every tab in row order (headless).** The control opens a Dropdown List named "All
+  tabs" with every tab that can be opened, by its full name, in row order, not only the hidden ones.
+  The open tab is current and says "open"; a tab with `unseen` says "new". Choosing one opens it as a
+  click would and scrolls the row to it. [[rule: tabs-overflow-list-every-tab | runtime]]
+- **The control is outside the scroller (headless).** It sits at the row's end, so a count changing
+  from 6 to 7 never moves a tab, and its focus ring is never clipped. [[rule: tabs-overflow-control-outside | browser]]
+- **One line, unbroken (headless).** The row is one tab high with nothing below it (no scrollbar),
+  and one thin `--vela-border-subtle` rule runs under the tabs and the control without a break. No
+  new shapes: no pills, circles, arrows or dividers. [[rule: tabs-overflow-one-line | browser]]
+- **Nothing appears when everything fits (both).** No control, no fade, no sticky tab: the row is
+  exactly today's. [[rule: tabs-overflow-nothing-when-fits | browser]]
+- **Scrolling a tab into view is instant (both).** From the pointer, the keyboard and the list
+  alike, so reduced motion needs nothing more; the control's own hover and press collapse with the
+  global rule. [[rule: tabs-overflow-scroll-instant | browser]]
+
 ## Token bindings
 
 Trigger rest `--vela-text-de-emphasized`; hover `--vela-text-default` (an unselected trigger only:
@@ -109,6 +161,19 @@ text), the selection by the full-strength underline (asserted at 3:1 on the page
 container), and keyboard and touch users, who never see the Seed, lose nothing. It is the same
 reasoning as the Tooltip's edge and the Risk Pill's border.
 
+**Overflow** (see *Overflow*). The "N more" control is an unselected tab's text: rest
+`--vela-text-de-emphasized`, hover and open `--vela-text-default`, the news `--vela-text-default` at
+`--vela-font-weight-semibold`, and its chevron `currentColor`. Its box is a tab's: `--vela-space-10`
+above and below and a clear `--vela-stroke-2` bottom border, `--vela-space-20` from the row and
+`--vela-space-5` from its words to the chevron. The fade is `--vela-space-20` wide. The stuck open
+tab stands the focus ring's reach (`--vela-focus-ring-width` plus `--vela-focus-ring-offset`) in from
+the edge, and its edge is half a gap (`--vela-space-10`) past it. **No new token, and no new colour
+pair:** every colour here is a tab's, already asserted in `PAIRS` (`--vela-text-de-emphasized` and
+`--vela-text-default` on the page), and the fade and the forced-colours line are not colours. The
+list is the Dropdown List, with its own pairs: its current item's name stays `--vela-text-default`,
+because `--vela-text-link` on the dark raised surface is 4.35:1, under 4.5, so only its check (a 3:1
+mark) uses the link colour, and its highlight is `--vela-bg-raised-hover`.
+
 ## States
 
 - **Hover** (a pointer that can hover, on an enabled unselected tab) — the label settles to
@@ -119,6 +184,13 @@ reasoning as the Tooltip's edge and the Risk Pill's border.
 - **Disabled** — native `disabled`: `--vela-text-inactive`, skipped by the arrow keys, no Seed.
 - **Pressed** (pointer) — the Seed under the pressed tab grows into the underline in place; see
   *Motion*. There is no scale-down press on a tab: the underline is the press feedback.
+- **Not wholly in view** — a tab cut by an edge, under a fade or under the stuck open tab shows no
+  Seed (`tabs-overflow-seed-never-cut`).
+
+The "N more" control (headless): default `--vela-text-de-emphasized`; hover `--vela-text-default`,
+in at `--vela-duration-fast`, out at `--vela-duration-base`, and no Seed; pressed (pointer only)
+`scale(0.97)` in at `--vela-duration-instant`; open (`aria-expanded="true"`) `--vela-text-default`;
+focus the global ring, never clipped. It has no selected state: the open tab never hides.
 
 ## Motion
 
@@ -183,6 +255,71 @@ How it is built, the same on both implementations and in the one `Tabs.css`:
 
 No prop turns any of this on or off; the prop set stays closed. See [Motion](../foundations/motion.md).
 
+## Overflow
+
+What the row does when its tabs no longer fit. Omkar decided it between 30 Oct and 1 Nov 2026
+(approved 1 Nov, as part of the refinement phase): overflow is part of Tabs, never a pattern a person
+assembles; the "more" control is the **headless** Tabs' only; the core keeps its plain scrolling row
+with the fixes that keep it honest, and this section names what it lacks.
+
+**Both implementations.**
+- The row scrolls sideways, as before. Swiping, trackpads and the keyboard still scroll it; there are
+  no arrow buttons.
+- A tab that is opened, clicked or focused is scrolled wholly into view, its focus ring included,
+  clear of the fades (`tabs-overflow-reveal-whole`). The open tab is brought into view when the Tabs
+  first render too. The scroll is instant (`tabs-overflow-scroll-instant`).
+- The edge where more tabs are fades over `--vela-space-20` (`tabs-overflow-cue`). The fade is a mask
+  on each tab that reaches the edge, never on the row, so the rule under the tabs stays one unbroken
+  line. In forced colours the fade is gone and the edge is one 1px `CanvasText` line
+  (`tabs-overflow-forced-colours`).
+- A tab not wholly in view shows no Seed (`tabs-overflow-seed-never-cut`).
+- When every tab fits, nothing of this appears (`tabs-overflow-nothing-when-fits`).
+
+**Headless only: the "N more" control and the sticky open tab.**
+
+| Part | What it is |
+|---|---|
+| Label | "6 more" while tabs are hidden; "6 more · 1 new" when hidden tabs have news. The count and the news are measured (`tabs-overflow-count-measured`). Numbers are tabular. |
+| Spoken name | "All tabs, 6 hidden, 1 with new items." News arriving is announced once, politely (`tabs-overflow-announce-news`). |
+| Looks | An unselected tab, plus a 16px `chevron-down` in `currentColor` that never turns. No Seed: it opens a list, not a tab. |
+| Place | At the row's end, outside the scroller, `--vela-space-20` from it (`tabs-overflow-control-outside`). |
+| When | Whenever a tab is hidden. One rule, no threshold. |
+| The list | A Dropdown List named "All tabs", aligned to the control's end: every tab that can be opened, in row order, by its full name; the open tab is current and says "open"; a tab with `unseen` says "new" (`tabs-overflow-list-every-tab`). Choosing one opens it and scrolls the row to it, and focus goes back to the control. |
+| The open tab | Sticks to the edge it would leave by, the focus ring's reach in from it; the tabs that pass under it fade out where they meet it, with the same fade as the far edge, and no divider (`tabs-overflow-open-tab-in-view`). In forced colours its edge is a half gap of `Canvas` and one `CanvasText` line. |
+| Forced colours | The control's clear border is `Canvas`; the list rule moves from the scroller to the row, so it runs under the control. |
+
+Five rules keep the row elegant, and the tests hold them: one thin line, unbroken; one line high, with
+nothing below the row (the headless scroller draws no scrollbar); no new shapes (no pills, circles,
+arrows or dividers); edges are fades, not lines, except in forced colours; and nothing appears until
+it is needed (`tabs-overflow-one-line`, `tabs-overflow-nothing-when-fits`).
+
+**Why "new" and not "1 new" in the list.** `unseen` is a yes or no on a tab, not a count of its new
+items, so a tab's row in the list says "new"; the control counts tabs, so it says "1 new".
+
+**Disabled tabs.** A disabled tab that is hidden counts in "N more", because it is a tab you can't
+see, but it is not in the list: it can't be opened, and a Dropdown List item that can't be chosen
+must say why (`dropdown-list-locked-has-a-cause`), which a Tabs trigger has no prop to say. If a
+disabled tab is ever the open one, the list keeps it, so the list always has its current item.
+
+**Core: what it does, and the gap.** The core has no "more" control, no list and no sticky open tab
+(Omkar, 30 Oct 2026). It scrolls, fades and reveals as above, so a hidden tab is always signalled and
+a tab you reach is always whole. What it lacks: the count, the news, and a way to reach a hidden tab
+without scrolling; and after a person scrolls the row themselves the open tab can be out of view.
+Use the headless Tabs where that matters. **The core keeps the platform's scrollbar**, decided here:
+with the arrows dropped and no "more" label, the cue the core owns is the fade, and in forced colours
+the line that replaces it; both show in every mode. The scrollbar is the platform's own cue where the
+platform draws one (classic scrollbars on Windows), so hiding it would remove a cue and add nothing.
+It is not relied on: overlay scrollbars (macOS, phones, a headless browser) show only while scrolling.
+The headless row hides it, because its control is the cue and its row is one line high.
+
+**The focus ring at the row's top and bottom, and at the core row's two ends.** The row is a
+scroller, so it clips what lies outside its box. Today, in both implementations, that cuts the top
+and bottom of a focused tab's ring (the ring lies 4px outside the tab, and the tab is as tall as the
+row), and on the core row the outer side of the ring of the first or last tab. The headless row
+reaches a ring's width past its ends while tabs are hidden, so its ends are clear. Fixing the top and
+bottom changes the list's box, which hosts style (the site's sticky page tabs do), so it is left for
+a decision rather than done here; `tabs-overflow-reveal-whole` is about the ring's left and right.
+
 ## Implementations
 
 Tabs ships from both entry points (`decisions/002-agent-ready-direction`). Same spec, same
@@ -223,18 +360,24 @@ the difference is recorded here rather than hidden:
   state and the Seed's measured size come from the same hooks (`components/Tabs/motion.ts`).
 - **Orientation.** Base UI supports `orientation="vertical"`; this spec does not expose it. The
   prop set stays closed on both implementations.
+- **Overflow.** The headless `Tabs.List` renders its tablist inside a row (`vela-tabs__row`) that
+  also holds, while tabs are hidden, the "N more" control (`vela-tabs__more`, a Dropdown List
+  trigger) and a polite live region; the rule moves from the list to the row. The tablist itself
+  still holds nothing but its tabs. The headless trigger takes `unseen`, and carries its value and
+  its news as `data-vela-value` and `data-vela-unseen` for the measure; neither is styled or part of
+  the contract. The core list is unchanged: no row, no control.
 
 ## Responsive behaviour
 
 The tab list is a single row that **scrolls horizontally** when the triggers no longer fit
-(`overflow-x: auto`); triggers never wrap or shrink (`white-space: nowrap`), because a tab
-label broken over two lines reads as two tabs. Keyboard users reach every tab regardless of
-scroll position (arrow keys move the roving tab stop and the browser scrolls the focused
-trigger into view). What is **not** yet done: there is no visual cue that more tabs exist off
-the edge, and no collapse into a menu on narrow hosts; both are spec gaps tracked for the
-headless migration in Phase 1 — name them rather than inventing a pattern. The panel fills its
-container and reflows its own content. Density tokens do not exist yet (see `DESIGN.md`,
-*Responsive and density*); until they do, the two sizes are the only density control.
+(`overflow-x: auto`); triggers never wrap or shrink (`white-space: nowrap`), because a tab label
+broken over two lines reads as two tabs. What happens then is *Overflow*: on both implementations
+the edge where more tabs are fades (a line in forced colours) and a tab you open, click or focus is
+scrolled wholly into view; on the headless one the tabs that don't fit go into "N more", a list of
+every tab, and the open tab sticks to the edge. The row's minimum is one tab and, on the headless
+row, the control beside it; below that it still scrolls, and nothing clips or truncates a label.
+The panel fills its container and reflows its own content. Density tokens do not exist yet (see
+`DESIGN.md`, *Responsive and density*); until they do, the two sizes are the only density control.
 
 ## Accessibility
 
@@ -245,6 +388,12 @@ This is the reason Tabs is more than a styled list:
 - **Roving tabindex** — the whole tablist is one Tab stop; Left/Right move between tabs and
   Home/End jump to the ends. Disabled tabs are skipped, and the list wraps.
 - The panel is focusable so keyboard users land in the content after activating a tab.
+- **Overflow (headless).** The "N more" control is a button outside the tablist, after it in the Tab
+  order, named "All tabs, 6 hidden, 1 with new items". It opens a menu of radio items (the Dropdown
+  List) on click, Enter, Space or Arrow Down, landing on the open tab. News arriving in a hidden tab
+  is announced once through a polite live region. Its visible words, "6 more", are not inside its
+  spoken name, which WCAG 2.5.3 (Label in Name) asks for so that speech input can say what it sees;
+  the name is the one decided, and the conflict is recorded for review.
 
 ## Figma mapping
 
@@ -268,6 +417,16 @@ width is measured when the variant is built and scales with the tab after that. 
 appears (`delay/preview`), the fade and the press exist only in code. The variants were added to the
 published set in place, by `scripts/figma/components/tabs.seed-hover.extend.figma.js`.
 
+**The overflow control is its own set, "Tabs overflow control", headless only**, on the same page,
+built by `scripts/figma/components/tabs-overflow-control.figma.js` (written, not yet run). It is a
+part, not an export: Tabs draws it when tabs overflow, so no one imports it, and the map and the
+Status page say so. Its properties:
+- `State`: default, hover or open. Hover is the pointer resting on it; open is `aria-expanded`.
+- `News` (boolean): whether hidden tabs have news, the "· 1 new" words.
+- `Count text` and `News text` (text): "6 more" and "· 1 new", written by the designer.
+Its list is an instance of the Dropdown List set. The count and the news are measured in code; in
+Figma they are words a designer writes.
+
 **The keyboard behaviour has no Figma expression.** Roving tabindex, arrow navigation, Home/End,
 and skipping disabled tabs exist only in code — which is exactly why the Figma library is not the
 source of truth for this component. The spec is.
@@ -281,3 +440,6 @@ source of truth for this component. The spec is.
 - ❌ Tabs as page navigation → use real links so URLs work.
 - ❌ Keeping hidden panels mounted to preserve form state → lift the state instead.
 - ❌ A Seed (or any hover mark) as the only sign of something → the label's colour carries the hover; the Seed is supplementary.
+- ❌ Passing the number of hidden tabs, or building your own "More" menu beside the tabs → the headless Tabs measures and draws it.
+- ❌ A dot, a badge or a colour on a tab for news → set `unseen`; news is words in the control.
+- ❌ Arrow buttons at the row's ends, or a divider beside the open tab → no new shapes: the fade, the control and the sticky tab are the whole of it.
