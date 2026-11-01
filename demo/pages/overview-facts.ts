@@ -106,7 +106,6 @@ export const TARGETS = {
   status: '#/status',
   patterns: `#/patterns/${PATTERNS[0].id}`,
   foundations: `#/foundations/${FOUNDATIONS[0].id}`,
-  states: '#/states',
   changelog: '#/changelog',
   roadmap: '#/roadmap',
   governance: `${LINKS.github}/blob/main/GOVERNANCE.md`,

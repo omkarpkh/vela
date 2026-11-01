@@ -126,7 +126,6 @@ export function Overview({ theme }: { theme: 'light' | 'dark' }) {
           <Way title="Foundations" line={<G>{FOUNDATIONS_LINE}</G>} to={TARGETS.foundations} />
           <Way title="Rules" line="Every rule, by component, with its proof" to={TARGETS.rules} />
           <Way title="Figma library" line="The same tokens and components, for design" to={figmaUrl()} />
-          <Way title="All states" line="Every component in every state on one page" to={TARGETS.states} />
         </ul>
       </section>
 

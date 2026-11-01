@@ -3,7 +3,7 @@ import { Button, Toggle, Tabs, cn } from '../src'
 import tokensJson from '../tokens/vela.tokens.json'
 import darkJson from '../tokens/vela.dark.tokens.json'
 import { REGISTRY, type Values, type Lock } from './playground/registry'
-import { parseSpec, sectionOf } from './playground/spec'
+import { parseSpec, sectionOf as specSection } from './playground/spec'
 import { ControlField, LockPanel, AlsoInTheApi, CodeBar, type OpenLock } from './playground/Workbench'
 import { readLink, writeLink, queryOf, type Stage, type Compare } from './playground/link'
 import { Markdown } from './playground/Markdown'
@@ -18,7 +18,10 @@ import { Segments } from './shell/Segments'
 import { ScrollRegion } from './shell/ScrollRegion'
 import { StageBoundary, COMMIT, type Settings } from './shell/ErrorBoundary'
 import { StageWidth, WidthHandle, FLOOR, clampWidth } from './playground/StageWidth'
-import { useProofs, RulesFromProofs } from './playground/Proofs'
+import { useProofs, RulesFromProofs, groupsOf, type ProofLevel, type ProofShow } from './playground/Proofs'
+import { SectionIndex, sectionOf, type SectionLink } from './shell/SectionIndex'
+import { NextCard } from './shell/Card'
+import { useArrival } from './shell/arrival'
 import './playground.css'
 
 type Mode = 'light' | 'dark'
@@ -122,6 +125,22 @@ function Unknown({ name }: { name: string }) {
 
 const BUILT = builtLine(COMMIT, import.meta.env.VITE_VELA_BUILT)
 
+/** The section index's words for each proof group: short, so the strip stays one row. */
+const INDEX_WORDS: Record<ProofLevel, string> = { compiler: 'Compiler', runtime: 'Runtime', browser: 'Browser', convention: 'Conventions' }
+const slugOf = (heading: string) => heading.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+
+/** A media query's answer, kept current. */
+function useMedia(query: string) {
+  const [matches, setMatches] = useState(() => window.matchMedia(query).matches)
+  useEffect(() => {
+    const m = window.matchMedia(query)
+    const on = () => setMatches(m.matches)
+    m.addEventListener('change', on)
+    return () => m.removeEventListener('change', on)
+  }, [query])
+  return matches
+}
+
 /** One step of the Use panel: what to do, where, the line itself and its Copy. */
 function UseStep({ n, title, hint, text, what, className, note }: { n: number; title: string; hint: string; text: string; what: string; className: string; note?: string }) {
   const id = useId()
@@ -211,6 +230,14 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
   const [typing, setTyping] = useState(false)
   const [expanded, setExpanded] = useState(false)
   const pageTheme = usePageTheme()
+  // Page tabs are size large, the clearest mark of level 1; under 480px they are regular and scroll
+  // sideways, as Tabs does, with the current tab in view (sweep T44).
+  const narrowTabs = useMedia('(max-width: 480px)')
+  // The Rules tab's "Show" filter, held here so the section index lists only the groups on show.
+  const [show, setShow] = useState<ProofShow>('all')
+  // Set by a Next card, so the tab it opens is read from its start.
+  const toTabStart = useRef(false)
+  useArrival()
   const codeId = useId().replace(/:/g, '')
   const lockOpener = useRef<HTMLElement | null>(null)
 
@@ -234,8 +261,8 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
   const bound = entry.bindingKey ? spec.bindings[entry.bindingKey(v)] : undefined
   const boundTokens = new Set(Object.values(bound ?? {}))
   const isBound = entry.highlight ? entry.highlight(v) : (t: string) => boundTokens.has(t)
-  const rules = ['Hard constraints', 'States', 'Motion', 'Anti-patterns'].map((h) => sectionOf(spec, h)).filter((s): s is NonNullable<typeof s> => !!s)
-  const figma = sectionOf(spec, 'Figma mapping')
+  const rules = useMemo(() => ['Hard constraints', 'States', 'Motion', 'Anti-patterns'].map((h) => specSection(spec, h)).filter((s): s is NonNullable<typeof s> => !!s), [spec])
+  const figma = specSection(spec, 'Figma mapping')
   const figmaSet = figmaSetFor(entry.file)
   const importLine = `import { ${entry.imports ?? entry.src} } from '${importPath}'`
   const snippet = `${importLine}\n\n${code}`
@@ -251,6 +278,47 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
   ]
   const current = tabs.some((t) => t.value === tab) ? tab! : 'playground'
   const proofs = useProofs(entry.file.replace(/\.md$/, ''))
+  // The Rules tab's sections, for its index: the proof groups on show, then the spec's own sections.
+  const rulesIndex = useMemo<SectionLink[]>(() => [
+    ...(proofs.map ? groupsOf(proofs.map).filter((g) => show === 'all' || show === g.level).map((g) => ({ id: g.level, label: INDEX_WORDS[g.level], count: g.count, target: `pg-proofs-${g.level}` })) : []),
+    ...rules.filter((s) => !(proofs.map && s.heading === 'Hard constraints')).map((s) => ({ id: slugOf(s.heading), label: s.heading })),
+  ], [proofs.map, show, rules])
+  // The way on from each tab: the next one, and from the last, back to the Playground.
+  const nextAfter = (t: 'playground' | PageTab) => (tabs.length > 1 ? tabs[(tabs.findIndex((x) => x.value === t) + 1) % tabs.length].value : null)
+  const goTo = (t: 'playground' | PageTab) => replaceRoute({ kind: 'component', id: entry.id, tab: t === 'playground' ? undefined : (t as PageTab) })
+  useEffect(() => {
+    if (!toTabStart.current) return
+    toTabStart.current = false
+    const list = document.querySelector<HTMLElement>('.pg-tabs .vela-tabs__list')
+    list?.scrollIntoView({ block: 'start', behavior: 'instant' as ScrollBehavior })
+    list?.querySelector<HTMLElement>('[aria-selected="true"]')?.focus({ preventScroll: true })
+  }, [current])
+  const next = (t: 'playground' | PageTab) => {
+    const to = nextAfter(t)
+    if (!to) return null
+    const words = {
+      playground: { title: `Try ${entry.name} in the Playground`, line: 'Every value the spec allows, on the stage' },
+      rules: { title: `Rules: what ${entry.name} always does`, line: `${ruleCount.total} ${ruleCount.total === 1 ? 'rule' : 'rules'}, each with how it is checked` },
+      tokens: { title: `Tokens: what ${entry.name} is made of`, line: `${spec.tokens.length} ${spec.tokens.length === 1 ? 'token' : 'tokens'}, each in light and dark` },
+      figma: { title: `Figma: find ${entry.name} in the library`, line: figma ? 'Each Figma property, and the prop it sets' : 'Open the set in the Figma library' },
+      changelog: { title: `Changelog: what changed in ${entry.name}`, line: '' },
+    }[to]
+    return (
+      <NextCard
+        className="pg-next"
+        href={href({ kind: 'component', id: entry.id, tab: to === 'playground' ? undefined : (to as PageTab) })}
+        title={words.title}
+        line={words.line || undefined}
+        onClick={(e) => {
+          if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return
+          e.preventDefault()
+          setLock(null)
+          toTabStart.current = true
+          goTo(to)
+        }}
+      />
+    )
+  }
   useEffect(() => {
     // Wait for the proof map, so focus lands on the list the reader will see.
     if (current !== 'rules' || !proofRule || !proofs.settled) return
@@ -280,7 +348,10 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
   // The address carries the settings (section 11), replaced, not pushed: no history entry per click.
   useEffect(() => {
     const q = writeLink(controls, v, initial, { implementation: impl?.id, defaultImplementation: implIds[0], stage, defaultStage, compare, width: frameWidth })
-    const next = `${href({ kind: 'component', id: entry.id, tab: tab })}${q ? `?${q}` : ''}`
+    // The section index's place (?section=) is kept beside the settings; a tab switch drops it.
+    const section = sectionOf(window.location.hash)
+    const query = [q, section ? new URLSearchParams({ section }).toString() : ''].filter(Boolean).join('&')
+    const next = `${href({ kind: 'component', id: entry.id, tab: tab })}${query ? `?${query}` : ''}`
     if (window.location.hash !== next) window.history.replaceState(window.history.state, '', next)
   })
 
@@ -342,13 +413,13 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
       </div>
 
       <div className="pg-tabs">
-        <Tabs value={current} onValueChange={(t) => { setLock(null); replaceRoute({ kind: 'component', id: entry.id, tab: t === 'playground' ? undefined : (t as PageTab) }) }}>
+        <Tabs size={narrowTabs ? 'regular' : 'large'} value={current} onValueChange={(t) => { setLock(null); goTo(t as 'playground' | PageTab) }}>
           <Tabs.List aria-label={`${entry.name} page`}>
             {tabs.map((t) => <Tabs.Trigger key={t.value} value={t.value} count={t.count}>{t.label}</Tabs.Trigger>)}
           </Tabs.List>
 
           <Tabs.Panel value="playground">
-            <div className={cn('pg', stage === 'full' && 'pg--full', (typing || expanded) && 'is-unpinned')}>
+            <div className={cn('pg', stage === 'full' && 'pg--full', (typing || expanded) && 'is-unpinned')} data-arrive="1">
               <div className="pg-main">
                 <div className="pg-toolbar">
                   <span className="pg-toolbar__group"><span className="pg-toolbar__label" aria-hidden="true">Stage</span>
@@ -468,13 +539,17 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
                 </CodeBar>
               )}
             </div>
+            {next('playground')}
           </Tabs.Panel>
 
           <Tabs.Panel value="rules">
+            <SectionIndex items={rulesIndex} ready={proofs.settled} />
             <div className="pg-rules">
               {proofs.map && (
                 <RulesFromProofs
                   map={proofs.map}
+                  show={show}
+                  onShow={setShow}
                   commit={COMMIT}
                   built={import.meta.env.VITE_VELA_BUILT}
                   // The spec's own lead-in to its constraints, the prose before the first bullet.
@@ -482,15 +557,18 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
                 />
               )}
               {rules.filter((s) => !(proofs.map && s.heading === 'Hard constraints')).map((s) => (
-                <div key={s.heading}>
-                  <h2 className="vela-h4 pg-h2">{s.heading}</h2>
+                <div key={s.heading} data-arrive="3">
+                  {/* A jump from the section index lands here, so the heading takes focus. */}
+                  <h2 id={`section-${slugOf(s.heading)}`} className="vela-h4 pg-h2" tabIndex={-1}>{s.heading}</h2>
                   <Markdown source={s.body} />
                 </div>
               ))}
             </div>
+            {next('rules')}
           </Tabs.Panel>
 
           <Tabs.Panel value="tokens">
+            <div data-arrive="1">
             <ScrollRegion label="Tokens, scrollable" className="pg-tablewrap">
               <table className="pg-table pg-table--tokens">
                 <thead><tr><th>Token</th><th>Light</th><th>Dark</th><th>Figma</th></tr></thead>
@@ -511,15 +589,20 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
               </table>
             </ScrollRegion>
             <p className="pg-p">{bound || entry.highlight ? 'Highlighted rows are bound for the current values.' : 'Every token this spec names, resolved for both themes.'}</p>
+            </div>
+            {next('tokens')}
           </Tabs.Panel>
 
           {figmaSet && (
             <Tabs.Panel value="figma">
+              <div data-arrive="1">
               <p className="pg-p">
                 <a href={figmaSet.url}>Open {entry.name} in the Figma library</a>
                 {' '}— the file is public, and everything in it is generated from the same token file and specs as this page ({LINKS.figma.replace('https://www.', '')}).
               </p>
               {figma ? <Markdown source={figma.body} /> : <p className="pg-p">No Figma mapping in this spec.</p>}
+              </div>
+              {next('figma')}
             </Tabs.Panel>
           )}
         </Tabs>

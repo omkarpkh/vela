@@ -46,6 +46,8 @@ body { margin: 0; background: var(--vela-bg-global); }
 .topbar { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: var(--vela-space-15); height: var(--site-topbar-height); padding: 0 var(--vela-space-20); background: var(--vela-bg-global); border-bottom: 1px solid var(--vela-border-subtle); }
 .topbar__menu { display: inline-flex; align-items: center; justify-content: center; width: var(--vela-control-height-35); height: var(--vela-control-height-35); border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4); background: transparent; color: var(--vela-text-default); cursor: pointer; padding: 0; transition: background-color var(--vela-duration-base) var(--vela-ease-standard); }
 @media (hover: hover) { .topbar__menu:hover { background: var(--vela-bg-hover); transition-duration: var(--vela-duration-fast); } }
+/* Pressed (slice 1): every page control shows its press at pointer down, in instant; nothing moves. */
+.topbar__menu:active { background: var(--vela-bg-selected); border-color: var(--vela-border-active); transition-duration: var(--vela-duration-instant); }
 /* GitHub, npm and Figma as Icon Button links (desktop). Figma's Brand Book asks for clear space equal
    to the mark's height, 20px, from any other element. Each 20px mark sits in a 35px box with no fill
    or border at rest or on hover, so 7.5px of its clear space is inside its own box; the space-15 gap
@@ -69,7 +71,9 @@ body { margin: 0; background: var(--vela-bg-global); }
 .sitenav__group { display: flex; flex-direction: column; }
 .sitenav__group h3 { margin: 0 0 var(--vela-space-5); padding: 0 var(--vela-space-10); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); letter-spacing: var(--vela-text-meta-tracking); text-transform: uppercase; font-weight: var(--vela-font-weight-semibold); color: var(--vela-text-default); }
 .sitenav__link { display: flex; align-items: center; min-height: var(--vela-control-height-35); box-sizing: border-box; padding: 0 var(--vela-space-10); border-radius: var(--vela-radius-4); color: var(--vela-text-default); text-decoration: none; font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height); transition: background-color var(--vela-duration-base) var(--vela-ease-standard); }
+.sitenav__link { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 @media (hover: hover) { .sitenav__link:hover { background: var(--vela-bg-hover); transition-duration: var(--vela-duration-fast); } }
+.sitenav__link:active { background: var(--vela-bg-selected); transition-duration: var(--vela-duration-instant); }
 .sitenav__link.is-active { background: var(--vela-bg-selected); color: var(--vela-text-link); font-weight: var(--vela-font-weight-semibold); }
 /* The navigation sits on --vela-bg-container, where de-emphasized text is 4.35:1 in light: a
    negative case in PAIRS. Everything on the container is text-default. */
@@ -195,6 +199,7 @@ body { margin: 0; background: var(--vela-bg-global); }
   mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M4 6l4 4 4-4' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/></svg>") center / contain no-repeat; }
 .sitenav__toggle[aria-expanded='false']::after { transform: rotate(-90deg); }
 @media (hover: hover) { .sitenav__toggle:hover { background: var(--vela-bg-hover); } }
+.sitenav__toggle:active { background: var(--vela-bg-selected); }
 .sitenav__tag { margin-left: auto; }
 .sitenav__link { gap: var(--vela-space-10); }
 /* A top-level heading already carries the nav's inset; its toggle adds none of its own. */
@@ -306,3 +311,4 @@ body { margin: 0; background: var(--vela-bg-global); }
 .copy-width__value > .copy-value { flex: 1 0 calc(20 * var(--vela-space-10)); min-width: 0; }
 .copy-page__details { margin: var(--vela-space-10) 0 0; }
 .copy-page__details summary { cursor: pointer; font-weight: var(--vela-font-weight-semibold); }
+.copy-page__details summary:active { background: var(--vela-bg-selected); }

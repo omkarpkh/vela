@@ -56,10 +56,14 @@
 .ov-ways { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--vela-space-15); }
 .ov-way { display: flex; flex-direction: column; gap: var(--vela-space-5); height: 100%; box-sizing: border-box; padding: var(--vela-space-15) var(--vela-space-20); border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4); color: var(--vela-text-default); text-decoration: none; transition: border-color var(--vela-duration-base) var(--vela-ease-standard); }
 .ov-way__title { color: var(--vela-text-link); font-weight: var(--vela-font-weight-semibold); }
+/* A card and a tag are page controls: pressed, the active edge lands at pointer down (slice 1). */
+.ov-way, .ov-tag { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 @media (hover: hover) {
   .ov-way:hover { border-color: var(--vela-border-default); transition-duration: var(--vela-duration-fast); }
   .ov-way:hover .ov-way__title { text-decoration: underline; }
 }
+/* After hover, so a press under the pointer shows. */
+.ov-way:active, .ov-tag:active { border-color: var(--vela-border-active); transition-duration: var(--vela-duration-instant); }
 
 /* New in, and Specified, not built yet: two columns. */
 .ov-news { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--vela-space-30); }
@@ -87,6 +91,7 @@
 }
 @media (forced-colors: active) {
   .ov-card, .ov-way, .ov-hero__panel { border-color: CanvasText; }
+  .ov-way:active, .ov-tag:active { border-color: Highlight; }
   /* The stills go; the panel keeps its own Canvas and edge, and the mark draws in CanvasText. */
   .ov-hero { background-image: none; }
 }
