@@ -227,6 +227,16 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   built.
 
 ### Changed
+- **Brand marks now use the interface's icon grey** (`--vela-brand-mark` points at `--vela-grey-700`
+  in light and `--vela-grey-300` in dark, the same values as `--vela-icon-strong`). The live header
+  showed GitHub's and Figma's marks, and the word "npm", in pure black, heavier than the icons beside
+  them; Omkar chose the grey so the three links carry no more weight than the interface's own icons.
+  GitHub's guidelines allow its mark in grey; Figma's view on a grey mono-line icon is asked in the
+  open email, and if Figma declines, the token points back at `--vela-black-pure` and white. The
+  rule `brand-mark-highest-contrast` is renamed `brand-mark-quiet-colour`, with the same check. Its
+  contrast, as a non-text graphic: 7.69 / 11.55 on the page, 6.82 / 10.30 on a container, 5.93 /
+  7.11 on the standard hover fill (light / dark).
+
 - **The site header's GitHub, npm and Figma links are Icon Button links** on a wide screen (Omkar's
   decision of 1 Nov 2026: the marks go live under Figma's Brand Book as written, without waiting for
   Figma's reply). GitHub's mark, npm's word and Figma's mark, each `size="regular"` with

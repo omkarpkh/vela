@@ -269,7 +269,7 @@ class VelaColors extends ThemeExtension<VelaColors> {
   /// `--vela-icon-on-brand` · Figma `icon/on-brand`
   final Color iconOnBrand;
   /// `--vela-brand-mark` · Figma `brand-mark/fill`
-  /// Brand Mark's fill: the owner's own black in the light theme and white in the dark (guidelines/components/brand-mark.md). The svg fills with currentColor and .vela-brand-mark sets color to this, so forced colours still win. Never a grey, a status colour or an owner's brand colour, and bound by Brand Mark only.
+  /// Brand Mark's fill: the same grey as --vela-icon-strong in both themes, so another company's mark sits as quietly as the interface's own icons (guidelines/components/brand-mark.md). GitHub allows its mark in grey; Figma's reply on grey is pending, and if it declines this points back at --vela-black-pure (light) and white (dark). The svg fills with currentColor and .vela-brand-mark sets color to this, so forced colours still win. Never a status colour or an owner's brand colour, and bound by Brand Mark and Icon Button's word only.
   final Color brandMark;
   /// `--vela-btn-primary-bg` · Figma `button/primary-bg`
   final Color btnPrimaryBg;
@@ -546,7 +546,7 @@ class VelaColors extends ThemeExtension<VelaColors> {
     iconSelected: VelaPrimitives.primary500,
     iconDisabled: VelaPrimitives.grey300,
     iconOnBrand: VelaPrimitives.white,
-    brandMark: VelaPrimitives.blackPure,
+    brandMark: VelaPrimitives.grey700,
     btnPrimaryBg: VelaPrimitives.primary500,
     btnPrimaryHoverBg: VelaPrimitives.primary600,
     btnPrimaryBorder: VelaPrimitives.primary500,
@@ -672,7 +672,7 @@ class VelaColors extends ThemeExtension<VelaColors> {
     iconSelected: VelaPrimitives.primary400,
     iconDisabled: VelaPrimitives.grey700,
     iconOnBrand: VelaPrimitives.white,
-    brandMark: VelaPrimitives.white,
+    brandMark: VelaPrimitives.grey300,
     btnPrimaryBg: VelaPrimitives.primary500,
     btnPrimaryHoverBg: VelaPrimitives.primary450,
     btnPrimaryBorder: VelaPrimitives.primary500,

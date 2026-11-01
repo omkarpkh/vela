@@ -116,7 +116,7 @@
   --vela-icon-on-brand: var(--vela-white);
 
   /* ---- Semantic: brand mark (another company's own mark; Brand Mark binds it, nothing else) ---- */
-  --vela-brand-mark: var(--vela-black-pure);
+  --vela-brand-mark: var(--vela-grey-700);
 
   /* ---- Semantic: button ---- */
   --vela-btn-primary-bg: var(--vela-primary-500);

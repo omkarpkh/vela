@@ -58,7 +58,7 @@
       "$value": "{primitives.grey-50}"
     },
     "brand-mark": {
-      "$value": "{primitives.white}"
+      "$value": "{primitives.grey-300}"
     },
     "text-de-emphasized": {
       "$value": "{primitives.grey-500}"

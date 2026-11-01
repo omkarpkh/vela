@@ -817,14 +817,14 @@ test.describe('slice 5 · phone and Appearance', () => {
     }
   })
 
-  test('the header marks are the owners\' black in light and white in dark; in forced colours they follow the link colour', async ({ page }) => {
+  test('the header marks are the interface\'s icon grey in both themes; in forced colours they follow the link colour', async ({ page }) => {
     await page.goto('/#/components/button')
     const banner = page.getByRole('banner')
     const colours = () => Promise.all(MARKS.map((m) => banner.getByRole('link', { name: m.name, exact: true }).locator(m.glyph).evaluate((el) => getComputedStyle(el).color)))
     await setTheme(page, 'light')
-    expect(await colours()).toEqual(['rgb(0, 0, 0)', 'rgb(0, 0, 0)', 'rgb(0, 0, 0)'])
+    expect(await colours()).toEqual(['rgb(73, 85, 90)', 'rgb(73, 85, 90)', 'rgb(73, 85, 90)'])
     await setTheme(page, 'dark')
-    expect(await colours()).toEqual(['rgb(255, 255, 255)', 'rgb(255, 255, 255)', 'rgb(255, 255, 255)'])
+    expect(await colours()).toEqual(['rgb(200, 208, 210)', 'rgb(200, 208, 210)', 'rgb(200, 208, 210)'])
     await page.emulateMedia({ forcedColors: 'active' })
     const linkText = await banner.evaluate((host) => { const p = document.createElement('i'); p.style.cssText = 'forced-color-adjust: none; color: LinkText'; host.appendChild(p); const v = getComputedStyle(p).color; p.remove(); return v })
     expect(await colours()).toEqual([linkText, linkText, linkText])

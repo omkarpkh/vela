@@ -102,7 +102,7 @@ Where the proofs are: the four compiler rules are fixtures in `scripts/verify-pa
 | Brand mark or word, every state | transparent | 1px transparent | `--vela-brand-mark` |
 
 **Amended 1 Nov 2026** (Omkar's decision: brand marks go live under Figma's Brand Book as written, without waiting for Figma's reply):
-- **With `brandMark` or `word`, the glyph is `--vela-brand-mark`** (the owner's black in light, white in dark), in every state. The word "npm" uses the same token, so the three read as one set. Never scaled.
+- **With `brandMark` or `word`, the glyph is `--vela-brand-mark`** (the interface's icon grey, the same as an icon's glyph), in every state. The word "npm" uses the same token, so the three read as one set. Never scaled.
 - **With `brandMark` or `word`, there is no hover fill and no pressed fill.** A fill box would sit inside Figma's clear space (equal to the mark's height, 20px), and GitHub and npm behave the same so the set is consistent. Hover and keyboard focus show the label tooltip; focus also shows the global focus ring (accessibility comes first; the ring shows only while focused). This is part of the press rule (`icon-button-hit-area`), so the rule count is unchanged.
 - The **host** provides Figma's clear space in its layout. The playground's header keeps 20px or more between the Figma mark and anything else (its e2e test measures it).
 

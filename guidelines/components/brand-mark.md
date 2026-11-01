@@ -1,19 +1,19 @@
 # Brand Mark
 
-Another company's own logo, drawn as its owner drew it, used only to link to that company's service: "Vela on GitHub", "Vela in Figma". It is a separate closed set, kept apart from Icon. It never moves, is always its owner's own black (white in the dark theme), and never stands for Vela itself.
+Another company's own logo, drawn as its owner drew it, used only to link to that company's service: "Vela on GitHub", "Vela in Figma". It is a separate closed set, kept apart from Icon. It never moves, sits in the interface's own icon grey, and never stands for Vela itself.
 
 **Status:** Experimental — specced, built and tested in the core entry; no Figma set yet (the builder, `scripts/figma/components/brand-mark.figma.js`, is ready and has not been run). Its consumer is [Icon Button](icon-button.md)'s `brandMark` glyph, and the playground's header links to GitHub and Figma through it.
 
 **Dependencies:** none (core).
 
-**Spec stage:** draft, 31 Oct 2026. Written after Omkar's decision (31 Oct), from the icon thread's input, amended the same day for the owners' files. Omkar said "go" on 1 Nov 2026 (15:13 IST). Amended on 1 Nov 2026: Omkar chose to follow Figma's Brand Book strictly, so the fill is the owner's own black or white, through `--vela-brand-mark`, and Figma's mark keeps its full clear space.
+**Spec stage:** draft, 31 Oct 2026. Written after Omkar's decision (31 Oct), from the icon thread's input, amended the same day for the owners' files. Omkar said "go" on 1 Nov 2026 (15:13 IST). Amended on 1 Nov 2026: Omkar chose to follow Figma's Brand Book strictly, so the fill is the owner's own black or white, through `--vela-brand-mark`, and Figma's mark keeps its full clear space. Amended again on 1 Nov 2026 (17:36 IST): the live header showed the marks heavier than the interface's own icons, so Omkar chose the interface's icon grey for `--vela-brand-mark`, within GitHub's allowance for grey; Figma's view on grey is asked in the same email.
 
 ## Intent
 
 The playground's header links to GitHub, npm and Figma. As glyph-only links, they need marks people recognise. Those marks belong to other companies, each with rules about how they may be used. Icon can't carry them:
 - **A different meaning.** An icon means a thing or an action in Vela. A brand mark means "go to that service".
 - **A different drawing.** Icon is Lucide strokes on a 24-unit grid, with the stroke from a token. Brand marks are filled shapes that their owners forbid redrawing.
-- **Different rules.** Icon's `tone` and stroke would let a caller recolour or restyle a mark, which both owners forbid. A mark is its owner's own black or white, never one of Vela's greys.
+- **Different rules.** Icon's `tone` and stroke would let a caller recolour or restyle a mark, which both owners forbid. A mark takes one colour, the interface's icon grey, set by the system and never by a caller.
 - **No motion.** Like Severity, Risk and Status marks, a brand mark never animates.
 
 **Decided by Omkar, 31 Oct 2026:**
@@ -23,7 +23,7 @@ The playground's header links to GitHub, npm and Figma. As glyph-only links, the
 **Limits:**
 - It shows which service a link goes to. It doesn't say what is there, so the link's name does that: "Vela on GitHub".
 - It is not a licence. Vela ships the owners' drawings under their terms. A product that uses BrandMark takes on the same terms.
-- **Released under Figma's Brand Book as written.** Figma's reply, when it comes, may relax the clear space.
+- **Released under Figma's Brand Book as written for clear space, and in the interface's icon grey.** GitHub allows its mark in grey ("white, black, or in few cases grey"). Figma's Brand Book rules out a grayscale version of its colour logo and doesn't say whether the mono-line icon may be grey; that question is with Figma. If Figma declines, `--vela-brand-mark` points back at the owners' black (`--vela-black-pure`) and white: one token change.
 - **Figma's mark keeps clear space equal to its height (20px) from any other element. The host's layout provides it.**
 - **Figma's mark is lighter.** It is a line drawing, lines about 1.2px wide at 20px. It still reads. Figma has no filled single-colour icon.
 
@@ -76,7 +76,7 @@ The package exports `BrandMark` and the types `BrandMarkProps`, `BrandMarkName` 
   [[rule: brand-mark-owner-drawing | runtime]]
 - **It names itself once, or not at all.** With `label`: `role="img"` and `aria-label`. With `decorative`: `aria-hidden="true"` and `focusable="false"`. Never both. Never a `<title>` inside the svg. [[rule: brand-mark-named-once | runtime]]
 - **It never moves.** No `transition`, `animation` or `transform` applies to `.vela-brand-mark` or anything inside it. A css check fails any such rule. Inside an Icon Button, the button's press scale doesn't reach it. [[rule: brand-mark-never-moves | browser]]
-- **The owner's own black or white, never a brand colour.** The mark is its owner's black in the light theme and white in the dark, through `--vela-brand-mark`. Never a grey, a status colour, or the owner's brand colours. The svg fills with `currentColor` and `.vela-brand-mark` sets `color` to the token, through no prop, so forced colours still win. A reviewer checks any host stylesheet that reaches the mark. [[rule: brand-mark-highest-contrast | convention]]
+- **One quiet colour, never a brand colour.** The mark is the interface's icon grey (`--vela-icon-strong`'s value) in both themes, through `--vela-brand-mark`, so another company's mark carries no more weight than the interface's own icons. Never a status colour or the owner's brand colours. The svg fills with `currentColor` and `.vela-brand-mark` sets `color` to the token, through no prop, so forced colours still win. A reviewer checks any host stylesheet that reaches the mark. [[rule: brand-mark-quiet-colour | convention]]
 - **Only to link to its owner.** A mark links to that owner's service, and to nothing else. Never Vela's own logo, never implies endorsement, never larger or more prominent than the product's own wordmark in the same view. Each owner's clear-space rule is met, or the owner has agreed otherwise in writing. Figma's mark keeps clear space equal to its height (20px) from any other element. The host's layout provides it. A reviewer checks this. [[rule: brand-mark-links-to-owner | convention]]
 
 **Proof count:** 1 compiler (1 fixture with seven rejections), 2 runtime (2 unit tests), 1 browser (a computed-style check, plus the css check), 2 convention — **6 rules, 4 with proofs.**
@@ -89,11 +89,11 @@ Where the proofs are: `brand-mark-closed` is the seven rejections in `scripts/ve
 |---|---|
 | Box, `regular` | `--vela-icon-size` (16px) |
 | Box, `large` | `--vela-icon-size-large` (20px) |
-| Colour | `--vela-brand-mark` — the owner's black (`--vela-black-pure`, #000000) in light, white (`--vela-white`) in dark |
+| Colour | `--vela-brand-mark`: the interface's icon grey, `--vela-grey-700` (#49555a) in light and `--vela-grey-300` (#c8d0d2) in dark, the same values as `--vela-icon-strong` |
 | Fill | `currentColor`, which is that colour |
 
-Contrast (non-text graphic, 3:1), light / dark: on page (`--vela-bg-global`, also the site header's background) 21.00 / 18.08; on container (`--vela-bg-container`) 18.62 / 16.13.
-**PAIRS:** `--vela-brand-mark` on `--vela-bg-global`, "Brand mark on page", and on `--vela-bg-container`, "Brand mark on container", both `ui`. **New tokens:** the semantic `--vela-brand-mark` (Figma `brand-mark/fill`), and the primitive `--vela-black-pure`, because Vela's `--vela-black` is #191d1f, not the owners' black.
+Contrast (non-text graphic, 3:1), light / dark: on page (`--vela-bg-global`, also the site header's background) 7.69 / 11.55; on container (`--vela-bg-container`) 6.82 / 10.30; on the standard hover fill 5.93 / 7.11.
+**PAIRS:** `--vela-brand-mark` on `--vela-bg-global`, "Brand mark on page", and on `--vela-bg-container`, "Brand mark on container", both `ui`. **New tokens:** the semantic `--vela-brand-mark` (Figma `brand-mark/fill`), and the primitive `--vela-black-pure`, because Vela's `--vela-black` is #191d1f, not the owners' black. Since 1 Nov 2026 the mark uses the icon grey; `--vela-black-pure` stays for the case where an owner asks for its black.
 
 ## Sizes
 
@@ -140,7 +140,7 @@ Library file **Vela Design System** → page `Brand Mark`. Proposed set "Brand M
 
 ## Anti-patterns
 - ❌ `<Icon name="github">` → there is no such icon.
-- ❌ A mark in the owner's brand colour, a grey, or Vela's own near-black → `--vela-brand-mark`, the owner's black or white.
+- ❌ A mark in the owner's brand colour, a status colour, or a colour set by the host → `--vela-brand-mark`, the interface's icon grey.
 - ❌ Figma at 16px → `large` only (will not compile).
 - ❌ The npm logo → the word "npm".
 - ❌ A hover lean, press scale or fade on the mark → it never moves.

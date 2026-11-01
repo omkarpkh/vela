@@ -1,7 +1,7 @@
 /* ------------------------------------------------------------- BrandMark -- */
 /* Another company's own drawing, filled with currentColor, in its own square viewBox. The svg carries
-   no width or height attribute; the two boxes are Icon's size tokens. The colour is the owner's own black
-   in light and white in dark, --vela-brand-mark, set here and through no prop; the fill stays
+   no width or height attribute; the two boxes are Icon's size tokens. The colour is the interface's icon
+   grey, --vela-brand-mark, set here and through no prop; the fill stays
    currentColor, so forced colours still win. It never moves: no transition, animation or transform
    reaches .vela-brand-mark or anything inside it (css:check, brand-mark-still). */
 .vela-brand-mark {

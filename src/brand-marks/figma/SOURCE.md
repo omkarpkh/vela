@@ -13,7 +13,7 @@ Figma's own file; canvas cropped to the mark; path unchanged.
   drawing: the two top counters wind the same way as the outline, so without it they would fill in.
   Nothing else in the file is used. Its `fill="black"` (and the white file's `fill="white"`) is kept
   as a colour, not as an attribute: Brand Mark fills with `currentColor` set to `--vela-brand-mark`,
-  pure black in the light theme and white in the dark.
+  the interface's icon grey (pure black and white until 1 Nov 2026).
 - **Use:** under Figma's trademark guidelines, to link to Figma. The Brand Book says: "Never present
   the icon in grayscale. Use the monoline icon instead."
 - **Clear space:** Brand Mark follows Figma's Brand Book as written (Omkar's choice, 1 Nov 2026):
