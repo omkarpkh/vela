@@ -556,3 +556,11 @@
   .shell-fold__toggle:active, .shell-more:active { outline: 1px solid Highlight; }
   .shell-more { border-color: ButtonText; }
 }
+
+/* ---------------------------------------------------- component thumbnails -- */
+/* Component thumbnails (demo/shell/ComponentThumb.tsx): the real component at its real size, in a
+   frame that clips it, so its words stay 12px or more. The frame's owner makes it inert. */
+.shell-thumb { display: flex; align-items: center; height: 100%; padding: var(--vela-space-10); pointer-events: none; }
+.shell-thumb > * { flex: 0 1 auto; min-width: 0; max-width: 100%; }
+.shell-thumb__row { display: inline-flex; align-items: center; gap: var(--vela-space-10); }
+.shell-thumb__col { display: inline-flex; flex-direction: column; gap: var(--vela-space-5); }

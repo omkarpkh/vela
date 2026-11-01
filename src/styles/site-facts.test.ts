@@ -3,7 +3,7 @@ import { readFileSync, readdirSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { rulesOf, proposalRulesOf, dependenciesFor, figmaSetFor, dateWords, builtLine } from '../../demo/playground/facts'
 import { statusOf } from '../../demo/playground/status'
-import { parseHash, href, sameRoute } from '../../demo/router'
+import { parseHash, href, sameRoute, isRouteHash } from '../../demo/router'
 
 // Playground slice 1 (playground spec, section 4): the contract facts grid reads only what the
 // repository already holds, and the page tabs have addresses that keep every old link working.
@@ -100,6 +100,15 @@ describe('page tab addresses', () => {
     expect(parseHash('#/components/button/nope')).toEqual({ kind: 'component', id: 'button' })
     expect(parseHash('#/components/button?v=1&variant=destructive')).toEqual({ kind: 'component', id: 'button' })
     expect(parseHash('#/components/button/rules?v=1')).toEqual({ kind: 'component', id: 'button', tab: 'rules' })
+  })
+
+  it('sends an address that names no page to Not found, never to the Overview; an anchor is not a route', () => {
+    expect(parseHash('')).toEqual({ kind: 'overview' })
+    expect(parseHash('#/')).toEqual({ kind: 'overview' })
+    expect(parseHash('#/firewall-rule?x=1')).toEqual({ kind: 'notfound', path: 'firewall-rule' })
+    expect(parseHash('#/settings/billing')).toEqual({ kind: 'notfound', path: 'settings/billing' })
+    expect(href({ kind: 'notfound', path: 'settings/billing' })).toBe('#/settings/billing')
+    expect([isRouteHash('#main'), isRouteHash('#/how'), isRouteHash('')]).toEqual([false, true, true])
   })
 
   it('treats a component tab as the same page, so its nav link stays current', () => {

@@ -24,6 +24,8 @@ export type Route =
   | { kind: 'how' }
   | { kind: 'status' }
   | { kind: 'doc'; id: 'changelog' | 'roadmap' | 'contributing' | 'accessibility' }
+  /** An address that names no page (slice 5 of the playground uplift): the page says what was asked for. */
+  | { kind: 'notfound'; path: string }
 
 export function parseHash(hash: string): Route {
   const parts = hash.replace(/^#\/?/, '').split('?')[0].split('/').filter(Boolean)
@@ -38,8 +40,16 @@ export function parseHash(hash: string): Route {
   if (parts[0] === 'status') return { kind: 'status' }
   if (parts[0] === 'changelog' || parts[0] === 'roadmap' || parts[0] === 'contributing' || parts[0] === 'accessibility')
     return { kind: 'doc', id: parts[0] }
-  return { kind: 'overview' }
+  // The Overview is the empty address; anything else that names no page is Not found, never the Overview.
+  if (parts.length === 0) return { kind: 'overview' }
+  return { kind: 'notfound', path: parts.join('/') }
 }
+
+/**
+ * A hash that is a route (`#/…`, or none). Anything else is an anchor inside the page, such as the
+ * skip link's `#main`, and leaves the route as it is.
+ */
+export const isRouteHash = (hash: string) => hash === '' || hash === '#' || hash.startsWith('#/')
 
 export const href = (r: Route): string =>
   r.kind === 'component' ? `#/components/${r.id}${r.tab ? `/${r.tab}` : ''}`
@@ -52,6 +62,7 @@ export const href = (r: Route): string =>
   : r.kind === 'how' ? '#/how'
   : r.kind === 'status' ? '#/status'
   : r.kind === 'doc' ? `#/${r.id}`
+  : r.kind === 'notfound' ? `#/${r.path}`
   : '#/'
 
 /** Same page: a component's tabs are one page, so its nav link stays current on every tab. */
@@ -69,9 +80,9 @@ export function replaceRoute(r: Route) {
 }
 
 export function useRoute(): Route {
-  const [route, setRoute] = useState<Route>(() => parseHash(window.location.hash))
+  const [route, setRoute] = useState<Route>(() => (isRouteHash(window.location.hash) ? parseHash(window.location.hash) : { kind: 'overview' }))
   useEffect(() => {
-    const onChange = () => setRoute(parseHash(window.location.hash))
+    const onChange = () => { if (isRouteHash(window.location.hash)) setRoute(parseHash(window.location.hash)) }
     window.addEventListener('hashchange', onChange)
     return () => window.removeEventListener('hashchange', onChange)
   }, [])
