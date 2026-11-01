@@ -245,3 +245,35 @@ describe('the copy group', () => {
     expect(screen.getByTestId('a')).toHaveTextContent('')
   })
 })
+
+// Slice 7 (s5-proposal, Copy): the three question cards and the strip under the live demo.
+describe('the Copy page opening: question cards and the facts strip', () => {
+  const opening = readPattern(copyMd).find((s) => s.n === 0)!.body
+
+  it("has a card for each of copy.md's three questions, each with its answer", async () => {
+    const { QUESTION_ANSWERS, questionsOf } = await import('../../demo/pages/CopyPattern')
+    const line = opening.split(/\n\s*\n/).find((b) => /^\*[^*].*\*$/.test(b.trim()))!
+    const questions = questionsOf(line)
+    expect(questions).toEqual(['Did it work?', 'Which one did I take?', 'Can I take it again?'])
+    // A reworded question in copy.md fails here, never shows a card with the wrong answer.
+    expect(Object.keys(QUESTION_ANSWERS)).toEqual(questions)
+    render(<CopyPattern />)
+    const cards = screen.getByRole('list', { name: 'Three questions the page answers' })
+    for (const q of questions) expect(cards).toHaveTextContent(`${q}${QUESTION_ANSWERS[q].answer}`)
+  })
+
+  it('reads the strip from the opening, and does not say those blocks twice', async () => {
+    const { openingFacts } = await import('../../demo/pages/CopyPattern')
+    const facts = openingFacts(opening)!
+    expect(facts.need).toBe('Copy Button. Copyable Value and CopyGroup. Both specified, neither built.')
+    expect(facts.cant).toBe('See the clipboard or clear it, mark a copied secret as sensitive in clipboard history, or tell where the person pastes.')
+    expect(facts.status).toBe('Experimental: the lowest status of its parts.')
+    render(<CopyPattern />)
+    const strip = document.querySelector('.copy-facts')!
+    expect([...strip.querySelectorAll('dt')].map((d) => d.textContent)).toEqual(['You need', "The page can't", 'Status'])
+    const words = document.getElementById('copy-s0')!.textContent!
+    expect(words).not.toMatch(/Limits\.|Carried out by|Pressure-tested|Approved by/)
+    // The rest of the opening is still there.
+    expect(words).toMatch(/Why a pattern, not only a component/)
+  })
+})

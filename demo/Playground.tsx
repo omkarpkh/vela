@@ -14,7 +14,8 @@ import { ScrollRegion } from './shell/ScrollRegion'
 import { StageBoundary, COMMIT, type Settings } from './shell/ErrorBoundary'
 import { StageWidth, WidthHandle, FLOOR, clampWidth } from './playground/StageWidth'
 import { useProofs, RulesTab, rulesLine } from './playground/Proofs'
-import { sectionOf } from './shell/SectionIndex'
+import { sectionOf, SectionIndex, type SectionLink } from './shell/SectionIndex'
+import { SpecSections, propsOf, statesOf, keyboardOf } from './playground/SpecSections'
 import { NextCard } from './shell/Card'
 import { Announcer, CopyMark } from './shell/CopyMark'
 import { searchFor } from './shell/Search'
@@ -34,6 +35,9 @@ const STAGE_OPTIONS = [
   { value: 'beside', label: 'Beside' },
   { value: 'full', label: 'Full width' },
 ] as const
+// The stage width's presets (slice 7, s5-tabs): Full, then a small tablet and WCAG 1.4.10's reflow
+// width. The slider and the field beside them set any width between.
+const WIDTH_PRESETS = [480, 320] as const
 // Compare splits the stage (section 5). Brands joins when a second brand exists (B4, B9): there is
 // none yet, so it is not offered.
 const COMPARE_OPTIONS = [
@@ -282,6 +286,7 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
     return (
       <NextCard
         className="pg-next"
+        still={entry.id}
         eyebrow={fromFigma ? 'Next' : undefined}
         href={href({ kind: 'component', id: entry.id, tab: to === 'playground' ? undefined : (to as PageTab) })}
         title={words.title}
@@ -316,6 +321,18 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
   const rangeItems = useMemo(() => entry.range?.items(controls) ?? [], [entry, controls])
   const range = rangeItems.length > 0 ? rangeAt(rangeItems, v, entry.locks, entry.constrain) : null
   const held = heldProps(entry.src, specControls, v, rangeItems)
+  // The Playground tab's sections (slice 7): the stage, the code, then the spec's Props, States and
+  // keyboard, each only when the spec has it. Four or more give the tab its "On this tab" index.
+  const specProps = useMemo(() => propsOf(spec), [spec])
+  const specStates = useMemo(() => statesOf(spec), [spec])
+  const specKeys = useMemo(() => keyboardOf(spec), [spec])
+  const playIndex: SectionLink[] = [
+    { id: 'stage', label: 'Stage' },
+    { id: 'use', label: 'Use it', target: `${codeId}-h` },
+    ...(specProps ? [{ id: 'props', label: 'Props', count: specProps.count }] : []),
+    ...(specStates ? [{ id: 'states', label: 'States', count: specStates.count }] : []),
+    ...(specKeys ? [{ id: 'keyboard', label: 'Keyboard' }] : []),
+  ]
   const levelOf = (rule: string) => entry.spec.match(new RegExp(`\\[\\[rule:\\s*${rule}\\s*\\|\\s*(\\w+)\\s*\\]\\]`))?.[1]
 
   // The address carries the settings (section 11), replaced, not pushed: no history entry per click.
@@ -388,6 +405,7 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
           </Tabs.List>
 
           <Tabs.Panel value="playground">
+            <SectionIndex items={playIndex} />
             {/* Slice 3 (s5-tabs, level 4): the stage leads. The real component sits only inside the
                 Stage part (a grey plate, a slab, a Live caption with its props, a region named "Live
                 demo"); the stage's own switches sit in its caption; the controls are beside it, set as
@@ -395,7 +413,7 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
             <div className={cn('pg', stage === 'full' && 'pg--full', (typing || expanded) && 'is-unpinned')}>
               <div className="pg-main">
                 <div className="pg-stagehead">
-                  <h2 className="vela-h3 pg-stagehead__title">Stage</h2>
+                  <h2 id="section-stage" className="vela-h3 pg-stagehead__title">Stage</h2>
                   <div className="pg-toolbar">
                     <span className="pg-toolbar__group"><span className="pg-toolbar__label" aria-hidden="true">Layout</span>
                     <Segments label="Layout" value={stage} options={STAGE_OPTIONS} onChange={(st) => { setStage(st); setAnnounce(`Stage updated: ${st === 'full' ? 'full width' : 'beside the controls'}`) }} />
@@ -417,7 +435,7 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
                     <>
                       <Toggle label="Reduced motion" size="tiny" checked={reduced} onChange={setReduced} />
                       {entry.containerResponsive && avail !== null && (
-                        <StageWidth min={wMin} max={wMax} width={frameWidth} onChange={setWidth} phone={phone} />
+                        <StageWidth min={wMin} max={wMax} width={frameWidth} onChange={setWidth} phone={phone} presets={WIDTH_PRESETS} />
                       )}
                       <button type="button" className="pg-expand vela-meta" aria-expanded={expanded} onClick={() => setExpanded((x) => !x)}>
                         Expand stage
@@ -550,6 +568,7 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
                 </CodeBar>
               )}
             </div>
+            <SpecSections name={entry.name} spec={spec} specHref={`https://github.com/omkarpkh/vela/blob/main/guidelines/components/${entry.file}`} />
             {next('playground')}
           </Tabs.Panel>
 

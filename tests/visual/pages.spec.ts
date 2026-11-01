@@ -6,6 +6,15 @@ import { setTheme } from '../theme'
 // group of 12) and Toast (27, the longest). The Linux baselines are written by the "Visual baselines" workflow, never on a
 // laptop. The titles never say "components ·", so the other widths' projects leave these alone.
 const THEMES = ['light', 'dark'] as const
+
+/**
+ * Slice 7: the Next cards and "Where it sits" show component stills, loaded lazily. A capture of a
+ * whole page never scrolls to them, so each is loaded first, and the picture waits for every one.
+ */
+async function stillsLoaded(page: Page) {
+  await page.evaluate(() => document.querySelectorAll<HTMLImageElement>('img[loading="lazy"]').forEach((i) => { i.loading = 'eager' }))
+  await expect.poll(() => page.evaluate(() => [...document.images].every((i) => i.complete && i.naturalWidth > 0))).toBe(true)
+}
 const PAGES = ['button', 'tabs', 'toast'] as const
 const TABS = ['playground', 'rules', 'tokens', 'figma'] as const
 
@@ -18,6 +27,7 @@ async function open(page: Page, id: string, tab: string, theme: string) {
   if (tab === 'rules') await expect(page.locator('.pg-summary__pass')).toBeVisible()
   // The stage's width is measured once it is on the page; the picture waits for the stage.
   if (tab === 'playground') await expect(page.getByRole('region', { name: 'Live demo', exact: true })).toBeVisible()
+  await stillsLoaded(page)
   await page.mouse.move(0, 0)
 }
 
@@ -50,6 +60,7 @@ for (const theme of THEMES) {
         await page.evaluate(() => document.fonts.ready)
         // The page's sections load with its spec; the picture waits for them.
         await expect(page.getByRole('navigation', { name: 'On this page' })).toBeVisible()
+        await stillsLoaded(page)
         await page.mouse.move(0, 0)
         // A whole page taller than the window scrolls while it is captured, and its section index marks
         // a new current section as it goes, so two captures never match. Make the window as tall as the

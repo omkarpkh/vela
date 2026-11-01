@@ -13,8 +13,13 @@
  *   width) to the width the stage gives. `undefined` means the full width.
  * - Only the frame moves: the stage keeps its size and place. Nothing animates.
  * - The slider is a native range input: a stand-in for Slider, which the kit doesn't have yet.
+ * - Presets (slice 7, s5-tabs "Width"): on a component page, Full, 480 and 320 lead as segments,
+ *   and the slider beside them, then the field, are the fine control. A preset as wide as the stage
+ *   or wider is not offered: it would be Full again. A width between presets marks none of them.
  */
 import { useId, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
+import { cn } from '../../src'
+import { Segments } from '../shell/Segments'
 
 export const STEP = 10
 export const PAGE_STEP = 50
@@ -23,7 +28,11 @@ export const FLOOR = 320
 
 export const clampWidth = (w: number, min: number, max: number) => Math.min(max, Math.max(min, Math.round(w)))
 
-export function StageWidth({ min, max, width, onChange, phone, marks }: {
+/** The segments' value: Full, or the preset the width sits on exactly, or none. */
+export const presetOf = (width: number | undefined, presets: readonly number[]) =>
+  width === undefined ? 'full' : presets.includes(width) ? String(width) : 'between'
+
+export function StageWidth({ min, max, width, onChange, phone, marks, presets }: {
   min: number
   max: number
   /** The chosen width, or undefined for the full width. */
@@ -32,15 +41,21 @@ export function StageWidth({ min, max, width, onChange, phone, marks }: {
   phone: boolean
   /** Widths worth stopping at, drawn as ticks on the slider (the Copy page's 160px and 280px). */
   marks?: number[]
+  /** Widths offered as segments after Full, widest first (the component page's 480 and 320). */
+  presets?: readonly number[]
 }) {
   const id = useId()
   const value = width ?? max
   const [draft, setDraft] = useState<string | null>(null)
   // A value at or past the stage's own width is the full width: nothing to narrow.
   const set = (w: number) => { const c = clampWidth(w, min, max); onChange(c >= max ? undefined : c) }
-  return (
-    <span className="pg-toolbar__group pg-width">
-      <label className="pg-toolbar__label" htmlFor={`${id}-n`}>Container width</label>
+  const offered = (presets ?? []).filter((p) => p >= min && p < max)
+  // No preset fits (a phone's stage is under 320): the field alone, with its own label.
+  const withPresets = offered.length > 0
+  // With presets, the segments' "Width" is the visible label and the field keeps its full name.
+  const field = (
+    <>
+      <label className={withPresets ? 'vela-sr-only' : 'pg-toolbar__label'} htmlFor={`${id}-n`}>Container width</label>
       <input
         id={`${id}-n`}
         className="pg-width__field"
@@ -62,6 +77,10 @@ export function StageWidth({ min, max, width, onChange, phone, marks }: {
         onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur() }}
       />
       <span className="pg-width__unit" aria-hidden="true">px</span>
+    </>
+  )
+  const slider = (
+    <>
       {!phone && (
         <input
           className="pg-width__slider"
@@ -82,6 +101,24 @@ export function StageWidth({ min, max, width, onChange, phone, marks }: {
           }}
         />
       )}
+    </>
+  )
+  return (
+    <span className={cn('pg-toolbar__group pg-width', withPresets && 'pg-width--presets')}>
+      {withPresets && (
+        <>
+          <span className="pg-toolbar__label" aria-hidden="true">Width</span>
+          <Segments
+            label="Width"
+            className="pg-width__presets"
+            value={presetOf(width, offered)}
+            options={[{ value: 'full', label: 'Full' }, ...offered.map((p) => ({ value: String(p), label: String(p) }))]}
+            onChange={(v) => { setDraft(null); onChange(v === 'full' ? undefined : Number(v)) }}
+          />
+        </>
+      )}
+      {/* With presets the slider follows the segments as the fine control, then the field. */}
+      {withPresets ? <>{slider}{field}</> : <>{field}{slider}</>}
       {!phone && marks && (
         <datalist id={`${id}-marks`}>{marks.map((m) => <option key={m} value={m} label={`${m}px`} />)}</datalist>
       )}

@@ -38,6 +38,7 @@ const HOSTS = [
 function Opening({ announce }: { announce: (m: string) => void }) {
   const s = section(0)
   const aside = questionOf(s.body)
+  const facts = openingFacts(s.body)
   // The opening's example is the page's lead: a stage, which says what the demo is made with. The
   // control is the site's own stand-in (demo/shell/CopyMorph.tsx), not a kit part (slice 4).
   return (
@@ -68,8 +69,88 @@ function Opening({ announce }: { announce: (m: string) => void }) {
           </Table.Body>
         </Table>
       </Stage>
-      <Words body={s.body} skip={(b) => b.trim() === aside} />
+      {aside && <QuestionCards line={aside} />}
+      {facts && <FactStrip facts={facts} />}
+      <Words body={s.body} skip={(b) => b.trim() === aside || !!facts?.blocks.has(b.trim())} />
     </section>
+  )
+}
+
+/**
+ * The three question cards (slice 7, s5-proposal "Copy"): the opening's question line, one card per
+ * question, each with the answer the live demo above shows, and that answer's mark. The questions
+ * are copy.md's; the answers are the site's short form of section 2's states, keyed by question, so a
+ * reworded question shows no card rather than a wrong answer (site-copy-page.test.tsx holds this).
+ */
+export const QUESTION_ANSWERS: Record<string, { answer: string; mark: 'check' | 'word' | 'copy' }> = {
+  'Did it work?': { answer: 'A tick, for a moment, where you pressed', mark: 'check' },
+  'Which one did I take?': { answer: 'The last one taken keeps the word', mark: 'word' },
+  'Can I take it again?': { answer: 'The mark is always there', mark: 'copy' },
+}
+
+/** The questions in the opening's italic line, "*Did it work? Which one … ?*". */
+export const questionsOf = (line: string) => (line.replace(/^\*|\*$/g, '').match(/[^?]+\?/g) ?? []).map((q) => q.trim())
+
+function QuestionCards({ line }: { line: string }) {
+  const cards = questionsOf(line).filter((q) => q in QUESTION_ANSWERS)
+  if (!cards.length) return null
+  return (
+    <ul className="copy-questions" aria-label="Three questions the page answers">
+      {cards.map((q) => {
+        const { answer, mark } = QUESTION_ANSWERS[q]
+        return (
+          <li key={q} className="copy-question">
+            <span className="copy-question__mark" aria-hidden="true">
+              {mark === 'word' ? <span className="copy-question__word">Copied</span> : <Icon name={mark} size="small" />}
+            </span>
+            <span className="copy-question__text">
+              <span className="copy-question__q">{q}</span>
+              <span className="copy-question__a">{answer}</span>
+            </span>
+          </li>
+        )
+      })}
+    </ul>
+  )
+}
+
+/**
+ * The strip under the cards (slice 7): what you need, what the page can't do, and the status, each
+ * read from the opening's own blocks ("Carried out by", "Limits", "Status"), which the strip then
+ * stands in for, so they are not said twice.
+ */
+export function openingFacts(body: string) {
+  const blocks = body.split(/\n\s*\n/).map((b) => b.trim())
+  const after = (lead: string) => {
+    const at = blocks.findIndex((b) => b.startsWith(lead))
+    if (at < 0) return null
+    const list = blocks[at + 1]?.startsWith('- ') ? blocks[at + 1] : ''
+    return { lead: blocks[at], list, items: list.split('\n').filter((l) => l.startsWith('- ')).map((l) => l.slice(2).trim()) }
+  }
+  const carried = after('**Carried out by**')
+  const limits = after('**Limits.**')
+  const status = after('**Status:**')
+  const word = status?.lead.match(/\*\*Status:\*\*\s*([A-Z][a-z]+)/)?.[1]
+  if (!carried || !limits || !word) return null
+  const parts = carried.items.map((i) => visible(i).replace(/[;.]$/, ''))
+  const cant = limits.items.map((i) => visible(i).replace(/^can't\s+/, '').replace(/\s*\([^)]*\)/g, '').replace(/[;.]$/, ''))
+  const listed = cant.length > 1 ? `${cant.slice(0, -1).join(', ')}, or ${cant[cant.length - 1]}` : cant[0] ?? ''
+  const lowest = status?.items.some((i) => /lowest status/.test(i))
+  return {
+    need: `${parts.join('. ')}.${/both specified/i.test(carried.lead) ? ' Both specified, neither built.' : ''}`,
+    cant: `${listed.charAt(0).toUpperCase()}${listed.slice(1)}.`,
+    status: `${word}${lowest ? ': the lowest status of its parts' : ''}.`,
+    blocks: new Set([carried.lead, carried.list, limits.lead, limits.list, status!.lead, status!.list].filter(Boolean)),
+  }
+}
+
+function FactStrip({ facts }: { facts: NonNullable<ReturnType<typeof openingFacts>> }) {
+  return (
+    <dl className="copy-facts">
+      <div className="copy-facts__cell"><dt>You need</dt><dd>{facts.need}</dd></div>
+      <div className="copy-facts__cell"><dt>The page can&apos;t</dt><dd>{facts.cant}</dd></div>
+      <div className="copy-facts__cell"><dt>Status</dt><dd>{facts.status}</dd></div>
+    </dl>
   )
 }
 

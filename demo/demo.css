@@ -305,6 +305,19 @@ body { margin: 0; background: var(--vela-bg-global); }
 .copy-page__parts { margin: var(--vela-space-10) 0 0; color: var(--vela-text-default); }
 .copy-page__settings { margin: 0; }
 .copy-section--opening { padding-top: 0; }
+/* Slice 7 (s5-proposal, Copy): under the live demo, the three questions as cards, each with the mark
+   that answers it; then one strip of three facts. Not links: nothing to press, so no pointer state. */
+.copy-questions { list-style: none; margin: var(--vela-space-30) 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, calc(10 * var(--vela-space-20))), 1fr)); gap: var(--vela-space-20); }
+.copy-question { display: flex; align-items: flex-start; gap: var(--vela-space-10); padding: var(--vela-space-15) var(--vela-space-20); border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4); background: var(--vela-bg-global); }
+.copy-question__mark { flex: none; display: inline-flex; align-items: center; min-height: var(--vela-text-body-line-height); color: var(--vela-icon-strong); }
+.copy-question__word { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); font-weight: var(--vela-font-weight-semibold); color: var(--vela-text-default); }
+.copy-question__text { display: flex; flex-direction: column; gap: var(--vela-space-5); min-width: 0; }
+.copy-question__q { font-weight: var(--vela-font-weight-semibold); color: var(--vela-text-heading); }
+.copy-question__a { color: var(--vela-text-default); }
+.copy-facts { margin: var(--vela-space-30) 0 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, calc(10 * var(--vela-space-20))), 1fr)); border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4); overflow: hidden; }
+.copy-facts__cell { padding: var(--vela-space-20); box-shadow: -1px 0 0 var(--vela-border-subtle); }
+.copy-facts dt { margin: 0 0 var(--vela-space-5); font-weight: var(--vela-font-weight-semibold); color: var(--vela-text-heading); }
+.copy-facts dd { margin: 0; color: var(--vela-text-default); }
 .copy-section:focus { outline: none; }
 .copy-pairs__title { margin: var(--vela-space-30) 0 var(--vela-space-15); }
 .copy-strip { display: flex; flex-wrap: wrap; align-items: stretch; gap: var(--vela-space-10); }
