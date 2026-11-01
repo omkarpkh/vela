@@ -1,4 +1,5 @@
 import { test, expect, type Locator, type Page } from '@playwright/test'
+import { setTheme } from '../theme'
 
 // Tabs overflow (guidelines/components/tabs.md, Overflow), on the playground's Tabs page with its ten
 // security tabs, at 412px wide: the width the failures were measured at on 30 Oct 2026 (4 of 10 tabs
@@ -374,7 +375,7 @@ test('the stage width handle shows the headless row losing tabs into "N more", a
   await field.press('Enter')
   await expect.poll(count).toBeGreaterThan(wide)
   await expect(more).toHaveText(/^\d+ more · 1 new$/)
-  await expect(more).toHaveAccessibleName(/^All tabs, \d+ hidden, 1 with new items$/)
+  await expect(more).toHaveAccessibleName(/^\d+ more, 1 new\. Show all tabs$/)
   const max = await field.getAttribute('max')
   await field.fill(max!)
   await field.press('Enter')
@@ -425,3 +426,26 @@ test('in forced colours the stuck open tab\'s edge is a gap of Canvas and one Ca
   expect(s.listBorder).toBe('none')
   expect(s.more).toEqual([canvasText, canvas])
 })
+
+// Label in Name (WCAG 2.5.3): the control's name starts with its visible words, in order. axe's
+// label-content-name-mismatch rule (off by default, on here as on the site's axe run) checks it on
+// the Tabs page with the control showing, news and all, in both themes.
+// [[rule: tabs-overflow-news-words]]
+for (const theme of ['Light', 'Dark'] as const) {
+  test(`axe: the Tabs page with the "N more" control showing, in ${theme.toLowerCase()}, has no WCAG A or AA violation, label in name included`, async ({ page }) => {
+    const { default: AxeBuilder } = await import('@axe-core/playwright')
+    await page.goto('/#/components/tabs?v=1&implementation=headless&w=412')
+    await setTheme(page, theme)
+    const more = page.locator('.vela-tabs__more').first()
+    await expect(more).toHaveText(/^\d+ more · 1 new$/)
+    await expect(more).toHaveAccessibleName(/^\d+ more, 1 new\. Show all tabs$/)
+    const results = await new AxeBuilder({ page })
+      .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
+      .options({ rules: { 'label-content-name-mismatch': { enabled: true } } })
+      .analyze()
+    expect(results.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`)).toEqual([])
+    // The rule really ran on the control: it is among the passes, not left out.
+    const ran = [...results.passes, ...results.incomplete].find((r) => r.id === 'label-content-name-mismatch')
+    expect(ran?.nodes.some((n) => n.html.includes('vela-tabs__more')), 'axe checked the control').toBe(true)
+  })
+}

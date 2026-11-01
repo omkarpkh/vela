@@ -109,9 +109,14 @@ const listItems = (items: RowItem[]): DropdownListItem[] =>
     .filter((i) => !i.disabled || i.selected)
     .map((i) => (i.selected ? { value: i.value, label: i.label, meta: 'open' } : i.unseen ? { value: i.value, label: i.label, meta: 'new' } : { value: i.value, label: i.label }))
 
-/** The control's spoken name: what the words say, in full. */
+/**
+ * The control's spoken name. It starts with its visible words, in order, so speech input can say
+ * what it sees (WCAG 2.5.3, Label in Name), then says what it does: "6 more, 1 new. Show all tabs".
+ * The dot between the words is decoration, hidden from assistive technology, so the visible text is
+ * "6 more 1 new" and sits inside the name as it reads.
+ */
 export const moreName = (hidden: number, news: number) =>
-  `All tabs, ${hidden} hidden${news > 0 ? `, ${news} with new items` : ''}`
+  `${hidden} more${news > 0 ? `, ${news} new` : ''}. Show all tabs`
 
 function TabList({ children, className, ...rest }: TabListProps) {
   const { moving, changes, settle, listProps } = useVelaTabs('List')
@@ -180,7 +185,7 @@ function TabList({ children, className, ...rest }: TabListProps) {
             <button type="button" className="vela-tabs__more" aria-label={moreName(row.hidden, row.unseenHidden)}>
               <span className="vela-tabs__more-label">
                 {row.hidden} more
-                {row.unseenHidden > 0 ? <span className="vela-tabs__more-news"> · {row.unseenHidden} new</span> : null}
+                {row.unseenHidden > 0 ? <span className="vela-tabs__more-news"> <span aria-hidden="true">·</span> {row.unseenHidden} new</span> : null}
               </span>
               <Icon name="chevron-down" tone="inherit" />
             </button>
