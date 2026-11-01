@@ -210,6 +210,9 @@ export const PAIRS = [
   // bg-selected. A link on the raised surface is text-default, underlined (4.35:1 in dark otherwise).
   ['--vela-text-link',    '--vela-bg-container', 'Link text on container',                  'text'],
   ['--vela-text-link',    '--vela-bg-selected',  'Site navigation, current page',           'text'],
+  // The site's section index (demo/shell/SectionIndex.tsx, slice 1 of the playground uplift): where you
+  // are is an ink line on the grey strip or rail, never teal, which is kept for choices. A UI mark, 3:1.
+  ['--vela-border-action', '--vela-bg-container', 'Site section index, the ink line on the strip', 'ui'],
   // Negative case: de-emphasized text on a container is 4.35:1 in light and fails. The site's
   // navigation and props panel used it; they now use text-default. Asserted below the minimum in
   // light so nobody reaches for it again; in dark it is 4.65:1.

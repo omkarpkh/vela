@@ -318,3 +318,157 @@
   .pm-replay:not([data-playing]):active .pm-ink { fill: Highlight; }
   .pm--hero .pm-finish { display: none; }
 }
+
+/* --------------------------------------------------------- section index -- */
+/* Section index (demo/shell/SectionIndex.tsx): stands in for an in-page index, which Vela does not
+   have. A gap, flagged, not a kit part (DESIGN.md, "Not in the kit"). Level 2 of the four kinds of
+   tab-like control (s5-tabs): links on a grey strip (or a rail) named "On this tab" or "On this
+   page"; where you are is an ink line, never teal, because it marks a place, not a choice. Text on
+   the strip is text-default (on --vela-bg-container de-emphasized text is 4.35:1 in light); the ink
+   line is --vela-border-action on --vela-bg-container, in PAIRS. A real border, so forced colours
+   keep it. The strip is one row that scrolls sideways rather than wraps, so its height is fixed and
+   what sticks above the content can be summed from tokens (playground.css). */
+.shell-index {
+  position: relative; display: flex; align-items: stretch; gap: var(--vela-space-20); box-sizing: border-box;
+  border-radius: var(--vela-radius-4); background: var(--vela-bg-container); color: var(--vela-text-default);
+  font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height);
+}
+.shell-index--strip { height: var(--vela-control-height-40); padding: 0 var(--vela-space-15); }
+.shell-index__name { flex: none; align-self: center; font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
+.shell-index__list { list-style: none; margin: 0; padding: 0; display: flex; gap: var(--vela-space-20); min-width: 0; overflow-x: auto; overflow-y: hidden; }
+.shell-index__list > li { display: flex; flex: none; }
+.shell-index__link {
+  display: inline-flex; align-items: center; box-sizing: border-box; white-space: nowrap;
+  border-top: var(--vela-stroke-2) solid transparent; border-bottom: var(--vela-stroke-2) solid transparent;
+  color: var(--vela-text-default); text-decoration: none; cursor: pointer; -webkit-tap-highlight-color: transparent;
+  transition: border-color var(--vela-duration-base) var(--vela-ease-standard);
+}
+/* The words keep the width they have in semibold, so the row never shifts as the place moves. */
+.shell-index__words { display: inline-flex; flex-direction: column; }
+.shell-index__words::after { content: attr(data-words) / ""; height: 0; overflow: hidden; visibility: hidden; font-weight: var(--vela-font-weight-semibold); }
+.shell-index__link[aria-current="location"] { font-weight: var(--vela-font-weight-semibold); border-bottom-color: var(--vela-border-action); }
+@media (hover: hover) {
+  .shell-index__link:not([aria-current="location"]):hover { border-bottom-color: var(--vela-border-default); transition-duration: var(--vela-duration-fast); }
+}
+/* Pressed: the ink line lands at pointer down, in instant, over the hover line. The jump is instant too. */
+.shell-index__link:active, .shell-index__link:not([aria-current="location"]):active { border-bottom-color: var(--vela-border-action); transition-duration: var(--vela-duration-instant); }
+.shell-index__toggle { display: none; }
+
+/* The rail: the same index for a page without page tabs, beside the content. The ink line is a start edge. */
+.shell-index--rail { flex-direction: column; gap: var(--vela-space-10); padding: var(--vela-space-15); }
+.shell-index--rail .shell-index__name { align-self: flex-start; }
+.shell-index--rail .shell-index__list { flex-direction: column; gap: 0; overflow: visible; }
+.shell-index--rail .shell-index__link,
+.shell-index.is-open .shell-index__link {
+  width: 100%; min-height: var(--vela-control-height-35); padding: 0 var(--vela-space-10);
+  border-top: 0; border-bottom: 0; border-inline-start: var(--vela-stroke-2) solid transparent;
+}
+.shell-index--rail .shell-index__link[aria-current="location"],
+.shell-index.is-open .shell-index__link[aria-current="location"] { border-inline-start-color: var(--vela-border-action); }
+@media (hover: hover) {
+  .shell-index--rail .shell-index__link:not([aria-current="location"]):hover,
+  .shell-index.is-open .shell-index__link:not([aria-current="location"]):hover { border-inline-start-color: var(--vela-border-default); }
+}
+.shell-index--rail .shell-index__link:not([aria-current="location"]):active,
+.shell-index.is-open .shell-index__link:not([aria-current="location"]):active { border-inline-start-color: var(--vela-border-action); transition-duration: var(--vela-duration-instant); }
+
+/* Narrow: one button that says where you are and opens the list over the content (sweep T43). */
+@media (max-width: 600px) {
+  .shell-index--strip, .shell-index--rail { flex-direction: row; height: var(--vela-control-height-40); padding: 0 var(--vela-space-15); gap: var(--vela-space-10); }
+  .shell-index--rail .shell-index__name { align-self: center; }
+  .shell-index__toggle {
+    display: inline-flex; flex: 1; min-width: 0; align-items: center; justify-content: space-between; gap: var(--vela-space-10);
+    padding: 0; border: 0; border-radius: var(--vela-radius-4); background: transparent; color: var(--vela-text-default);
+    font: inherit; font-weight: var(--vela-font-weight-semibold); text-align: start; cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color var(--vela-duration-base) var(--vela-ease-standard);
+  }
+  .shell-index__toggle:active { background: var(--vela-bg-hover); transition-duration: var(--vela-duration-instant); }
+  .shell-index__list { display: none; }
+  .shell-index.is-open .shell-index__list {
+    display: flex; flex-direction: column; gap: 0; overflow: visible;
+    position: absolute; top: 100%; left: 0; right: 0; z-index: 15; margin-top: var(--vela-space-5); padding: var(--vela-space-5) 0;
+    background: var(--vela-bg-container); border: 1px solid var(--vela-border-default); border-radius: var(--vela-radius-4);
+  }
+  .shell-index.is-open .shell-index__link { padding: 0 var(--vela-space-15); }
+}
+
+/* ----------------------------------------------------------------- stage -- */
+/* Stage (demo/shell/Stage.tsx): level 4, the live demo. A plate on --vela-bg-container, radius 8, a
+   slab on the page surface, and a caption with "Live" and the props on show. The plate's edge is
+   transparent until forced colours drop its fill; then it is CanvasText, so the frame survives. */
+.shell-stage {
+  display: flex; flex-direction: column; gap: var(--vela-space-15); min-width: 0; box-sizing: border-box;
+  padding: var(--vela-space-20) var(--vela-space-30) var(--vela-space-30);
+  border: 1px solid transparent; border-radius: var(--vela-radius-8);
+  background: var(--vela-bg-container); color: var(--vela-text-default);
+}
+.shell-stage__caption { display: flex; flex-wrap: wrap; align-items: center; gap: var(--vela-space-5) var(--vela-space-15); min-height: var(--vela-control-height-24); }
+.shell-stage__live {
+  display: inline-flex; align-items: center; padding: 0 var(--vela-space-10); border-radius: var(--vela-radius-4);
+  background: var(--vela-bg-global); color: var(--vela-text-default);
+  font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); font-weight: var(--vela-font-weight-semibold);
+}
+.shell-stage__props { min-width: 0; overflow-wrap: anywhere; font-family: var(--vela-font-family-mono); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
+.shell-stage__tools { display: flex; flex-wrap: wrap; align-items: center; gap: var(--vela-space-10) var(--vela-space-15); margin-inline-start: auto; }
+.shell-stage__slab { min-width: 0; padding: var(--vela-space-20); border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4); background: var(--vela-bg-global); color: var(--vela-text-default); }
+
+/* ----------------------------------------------------------------- cards -- */
+/* Card with thumbnail, and the Next card (demo/shell/Card.tsx). One link each. Rest: a subtle edge;
+   pointer: the default edge and the title underlined; pressed: the active edge at pointer down, in
+   instant. Nothing moves. The thumbnail well is --vela-bg-container, and its words are 12px or more. */
+.shell-card, .shell-next {
+  box-sizing: border-box; border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4);
+  background: var(--vela-bg-global); color: var(--vela-text-default); text-decoration: none; cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color var(--vela-duration-base) var(--vela-ease-standard);
+}
+.shell-card { display: flex; flex-direction: column; gap: var(--vela-space-10); height: 100%; padding: var(--vela-space-15); }
+.shell-card__thumb, .shell-next__thumb {
+  display: flex; align-items: center; justify-content: center; overflow: hidden; box-sizing: border-box;
+  padding: var(--vela-space-15); border-radius: var(--vela-radius-4); background: var(--vela-bg-container);
+  font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); pointer-events: none;
+}
+.shell-card__thumb { aspect-ratio: 16 / 9; }
+.shell-card__title, .shell-next__title { margin: 0; font-size: var(--vela-text-h4-size); line-height: var(--vela-text-h4-line-height); font-weight: var(--vela-font-weight-semibold); color: var(--vela-text-link); }
+.shell-card__line, .shell-next__line { font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height); color: var(--vela-text-default); }
+.shell-next { display: flex; align-items: center; gap: var(--vela-space-20); padding: var(--vela-space-15) var(--vela-space-20); }
+.shell-next__thumb { flex: none; width: calc(7 * var(--vela-space-20)); aspect-ratio: 4 / 3; }
+.shell-next__text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--vela-space-5); }
+.shell-next__eyebrow { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
+.shell-next__arrow { flex: none; color: var(--vela-text-link); }
+@media (hover: hover) {
+  .shell-card:hover, .shell-next:hover { border-color: var(--vela-border-default); transition-duration: var(--vela-duration-fast); }
+  .shell-card:hover .shell-card__title, .shell-next:hover .shell-next__title { text-decoration: underline; }
+}
+.shell-card:active, .shell-next:active { border-color: var(--vela-border-active); transition-duration: var(--vela-duration-instant); }
+@media (max-width: 600px) { .shell-next__thumb { display: none; } }
+
+/* --------------------------------------------------------------- arrival -- */
+/* The arrival (demo/shell/arrival.ts): first screen only, opacity only, on --vela-ease-out. The lead
+   over --vela-duration-base, then steps of --vela-duration-fast; done by 2 × fast + base. Keyframes,
+   because it plays from a state the page is never at rest in; never on a tab switch. */
+@keyframes shell-arrive { from { opacity: 0; } to { opacity: 1; } }
+[data-arriving] [data-arrive]:not([data-arrive-below]) { animation: shell-arrive var(--vela-duration-base) var(--vela-ease-out) both; }
+[data-arriving] [data-arrive="2"]:not([data-arrive-below]) { animation-delay: var(--vela-duration-fast); }
+[data-arriving] [data-arrive="3"]:not([data-arrive-below]) { animation-delay: calc(2 * var(--vela-duration-fast)); }
+@media (prefers-reduced-motion: reduce) { [data-arriving] [data-arrive] { animation: none; } }
+
+/* -------------------------------------------- forced colours: the new parts -- */
+/* The strip's fill and the plate's fill go, so each keeps an edge; the place is a CanvasText line,
+   a real border; a pressed card or index item is Highlight. */
+@media (forced-colors: active) {
+  .shell-index { border: 1px solid CanvasText; }
+  .shell-index__link { border-color: Canvas; }
+  .shell-index__link[aria-current="location"] { border-bottom-color: CanvasText; }
+  .shell-index--rail .shell-index__link[aria-current="location"],
+  .shell-index.is-open .shell-index__link[aria-current="location"] { border-inline-start-color: CanvasText; }
+  .shell-index__link:active { border-bottom-color: Highlight; }
+  .shell-index--rail .shell-index__link:active,
+  .shell-index.is-open .shell-index__link:active { border-inline-start-color: Highlight; }
+  .shell-index.is-open .shell-index__list { border-color: CanvasText; }
+  .shell-stage { border-color: CanvasText; }
+  .shell-stage__slab { border-color: CanvasText; }
+  .shell-card, .shell-next { border-color: CanvasText; }
+  .shell-card:active, .shell-next:active { border-color: Highlight; }
+}
