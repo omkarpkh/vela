@@ -556,10 +556,11 @@ test.describe('the workbench', () => {
     expect((await controls.boundingBox())!.y).toBeGreaterThan((await frame.boundingBox())!.y + (await frame.boundingBox())!.height - 1)
     await expect(page.locator('.pg-frame-label').first()).toContainText('Full width')
     // Kept for this component: a fresh visit without the link still opens Full width.
-    await page.goto('/#/components/toggle')
+    await page.goto('about:blank')
     await page.goto('/#/components/button')
     await expect(page.getByRole('group', { name: 'Stage' }).getByRole('button', { name: 'Full width' })).toHaveAttribute('aria-current', 'true')
-    // And only for that one.
+    // And only for that one. A fresh page first: a hash-only move can race the page's own replaceState.
+    await page.goto('about:blank')
     await page.goto('/#/components/toggle')
     await expect(page.getByRole('group', { name: 'Stage' }).getByRole('button', { name: 'Beside' })).toHaveAttribute('aria-current', 'true')
   })
