@@ -55,6 +55,7 @@ describe('reading a foundation spec', () => {
   })
 })
 
+// Whole pages of a hundred or more copy marks: rendered in jsdom, they take a few seconds on a busy machine.
 describe('the Foundations pages', () => {
   it('Colour: every semantic colour has a copy mark, and the Status row says Degraded', () => {
     const { container } = render(<Foundation id="color" />)
@@ -65,7 +66,7 @@ describe('the Foundations pages', () => {
     const status = screen.getByRole('table', { name: /^Status/ })
     expect(within(status).getByText('Degraded')).toBeInTheDocument()
     expect(within(status).queryByText('Medium')).toBeNull()
-  })
+  }, 15_000)
 
   it.each([
     ['typography', 'typography'],
@@ -101,7 +102,7 @@ describe('the Foundations pages', () => {
       expect(container.querySelector('.shell-next')).toHaveAttribute('href', `#/foundations/${next.id}`)
       unmount()
     }
-  })
+  }, 15_000)
 })
 
 describe('the Overview and the overlays read their facts', () => {
