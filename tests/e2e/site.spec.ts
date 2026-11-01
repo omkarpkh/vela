@@ -1649,7 +1649,10 @@ test.describe('the header logo', () => {
     await page.keyboard.press('Tab')
     const link = logo(page)
     await expect(link).toBeFocused()
-    const ring = await link.evaluate((a) => {
+    // Read the settled ring, not the first frame: right after the Tab the browser can still be
+    // painting the outline it gave the previous state (CI once read 3px, offset 0, another colour,
+    // and passed on retry), so poll until the computed ring is Vela's.
+    const ring = () => link.evaluate((a) => {
       const cs = getComputedStyle(a)
       const probe = document.createElement('i')
       probe.style.color = 'var(--vela-focus-ring-color)'
@@ -1663,7 +1666,7 @@ test.describe('the header logo', () => {
       })
       return { style: cs.outlineStyle, width: cs.outlineWidth, offset: cs.outlineOffset, colour: cs.outlineColor === token, inside }
     })
-    expect(ring).toEqual({ style: 'solid', width: '2px', offset: '2px', colour: true, inside: true })
+    await expect.poll(ring).toEqual({ style: 'solid', width: '2px', offset: '2px', colour: true, inside: true })
   })
 
   test('the header mark never animates, while the Overview hero pulses once', async ({ page }) => {
