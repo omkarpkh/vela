@@ -28,6 +28,35 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   the same tags, proofs and proof map, and prints each contract's count. It also no longer stops a
   Hard constraints section at its first capital Z: `\Z` is not an end-of-input anchor in JavaScript,
   and the grammar's `timeZone` was cutting its rules short. No component spec's count changed.
+- **Site: a new Overview, the site's home (`#/`)**, approved by Omkar on 1 Nov 2026 from the
+  playground thread's drawing. A hero with the name, the claim, the install line with its Copy
+  button, and two calls to action (Browse components, the one primary; Open the Figma library);
+  *Check it yourself*, five numbers each with the link to its proof; *Built for security
+  products*, the three taxonomies shown with their own components and words; *Ways in*, six
+  cards; *New in* the current version and *Specified, not built yet*, side by side; and a footer
+  to the Roadmap, Governance, the Changelog and the MIT licence. The mark and the background
+  behind the hero come in a second pass; the hero keeps an empty slot for the mark.
+  - **No number on it is typed by hand.** The rules are counted from the specs' rule tags (the
+    same 212 `npm run rules:check` counts), the checks from `demo/checks.json`, the contrast pairs
+    from `PAIRS`, the runtime dependencies from `package.json`, the components from the catalog,
+    the proposals from `guidelines/proposals/`, the taxonomy sizes from the kit's own types, and
+    the version, release date and highlights from `package.json` and this file. A small Vite
+    plugin, `scripts/vite-site-facts.mjs`, counts what the browser can't (the pairs, the
+    dependencies, the release). Every counted value is marked `data-generated`, and a unit test
+    renders the page, takes those away and the install line, and fails on any digit left
+    (`src/styles/site-overview.test.tsx`). The stamp names the commit and the day the site was
+    built.
+  - **Two shell parts, each naming a gap in the kit:** `demo/shell/ActionLink.tsx`, a link with a
+    Button's weight (the Button spec sends navigation to a link, and the kit has no link styled as
+    an action), and `demo/shell/SeverityTag.tsx`, the Contextual Alert's look on one line (the kit
+    has no small severity element, and six alerts would be six live regions). Both draw only pairs
+    `PAIRS` already asserts; no pair is new.
+  - **Release highlights.** Each release section in this file now opens with a `**Highlights:**`
+    list of three, starting with 0.15.0, and the Overview shows them. `RELEASING.md` gains the step
+    that writes them, and `npm test` fails while the current version's section has none.
+  - e2e: the Overview's headings, every link's target, its Copy button, its layout at its own
+    widths and no sideways scroll at 320px; All states renders the gallery; axe runs on both
+    pages, in both themes. 1257 checks (was 1233): 991 unit and contract, 193 e2e.
 - **Patterns: a new area, `guidelines/patterns/`, and its first page, Copy** (`copy.md`, with nine
   figures in `copy/`). A pattern records the decisions a component can't make alone: who may read
   a secret, where the "last copied" mark lives, whether a row is clickable, whether the page copies
@@ -50,6 +79,14 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   built.
 
 ### Changed
+- **Site: the gallery that was the Overview is now All states (`#/states`)**, the last link in
+  Start, its own chunk, titled "All states · Vela Design System". Its sections are unchanged, and
+  the visual tests open it there: the screenshots are named by the tests' own arguments, so the
+  committed baselines keep their names. Its header line now says the theme is set in Appearance,
+  not the top bar, and its contrast-pair count is counted (it said 48; there are 98); its eyebrow
+  says Start. Search still leaves Start pages out, All states with them.
+- **`RELEASING.md`: the changelog step comes before the gate** (now steps 3 and 4), because the
+  gate's unit tests read the release's highlights.
 - **Patterns, Copy: paragraphs split to fit the site's 240-character limit** (from the icon thread).
   The opening paragraph is split between its two sentences. The Status paragraph is now a short
   line, with the status rule and the pressure-test note as two bullets under it and a blank line
@@ -223,7 +260,21 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   (`verdict-lesson-named` · runtime): 29 rules, 23 with proofs. The nine proposals now plan 216
   rules, 174 with proofs.
 
+### Fixed
+- **Status Indicator: a labelled indicator had no accessible name.** With a visible `label` it
+  still carried `role="img"`, and an image takes its name only from `aria-label`, so axe reported
+  it (`role-img-alt`) and a screen reader could skip it. With a label it now has no role and its
+  text is read as text, as its spec says ("the visible text is the accessible name"); with no
+  label it is still an image named for its status. Found by axe on the new Overview and All
+  states pages.
+
 ## [0.15.0] — 2026-10-31
+
+**Highlights:**
+
+- Dropdown List's unavailable items now say why, with a written reason.
+- The lock icon means "can't be changed here", always with the reason beside it.
+- Motion is decided: Toasts stack, and popovers and tooltips grow from what opened them.
 
 ### Changed
 - **Icon: `lock` means "can't be changed or chosen here, for a reason written beside it"**,

@@ -1209,8 +1209,117 @@ test.describe('the Filter Grammar page', () => {
   })
 })
 
+// The Overview, redesigned (1 Nov 2026), and All states, the gallery that was the Overview. The
+// numbers themselves are held to their sources in src/styles/site-overview.test.tsx; these check the
+// page in a browser: its outline, where each link goes, the Copy button and the layout.
+test.describe('the Overview', () => {
+  test('one h1, then the sections as h2, then the cards as h3', async ({ page }) => {
+    await page.goto('/')
+    const main = page.getByRole('main')
+    await expect(main.getByRole('heading', { level: 1 })).toHaveText(['Vela Design System'])
+    await expect(page).toHaveTitle('Overview · Vela Design System')
+    await expect(main.getByRole('heading', { level: 2 })).toHaveText(['Check it yourself', 'Built for security products', 'Ways in', /^New in \d+\.\d+\.\d+$/, 'Specified, not built yet'])
+    await expect(main.getByRole('heading', { level: 3 })).toHaveText([/^Severity · 6$/, /^Status · 5$/, /^Risk · 3$/, 'Components', 'Patterns', 'Foundations', 'Rules', 'Figma library', 'All states'])
+    await expect(main.locator('h4, h5, h6')).toHaveCount(0)
+    // Each taxonomy is shown with its own words, never another's.
+    await expect(main.locator('[data-severity]')).toHaveText(['Success', 'Info', 'Warning', 'Minor', 'Major', 'Critical'])
+    await expect(main.locator('.vela-status')).toHaveText(['Status unknown', 'Healthy', 'Warning', 'Degraded', 'Unhealthy'])
+    await expect(main.locator('.vela-risk')).toHaveText(['Low', 'Medium', 'High'])
+  })
+
+  test('every link opens what it names', async ({ page }) => {
+    await page.goto('/')
+    const main = page.getByRole('main')
+    const link = (name: string | RegExp) => main.getByRole('link', { name, exact: typeof name === 'string' })
+    const sha = /\/blob\/([0-9a-f]{7,40}|main)\//
+    // Off the site: the repository at the built commit, the Figma library the header links to.
+    await expect(link('See package.json')).toHaveAttribute('href', new RegExp(`^https://github\\.com/omkarpkh/vela${sha.source}package\\.json$`))
+    await expect(link('See the pairs')).toHaveAttribute('href', new RegExp(`^https://github\\.com/omkarpkh/vela${sha.source}scripts/contrast-core\\.mjs#L\\d+$`))
+    const figma = await page.getByRole('banner').getByRole('link', { name: 'Figma' }).getAttribute('href')
+    await expect(link('Open the Figma library')).toHaveAttribute('href', figma!)
+    await expect(link(/^Figma library/)).toHaveAttribute('href', figma!)
+    await expect(link('Governance')).toHaveAttribute('href', 'https://github.com/omkarpkh/vela/blob/main/GOVERNANCE.md')
+    await expect(link('MIT licence')).toHaveAttribute('href', 'https://github.com/omkarpkh/vela/blob/main/LICENSE')
+    // On the site: each opens the page it names.
+    const opens: [string | RegExp, string, string | RegExp][] = [
+      ['Browse components', '#/status', 'Component status'],
+      ['See the rules', '#/components/button/rules', 'Button'],
+      ['How they run', '#/how', 'One file, five targets'],
+      ['See the status', '#/status', 'Component status'],
+      [/^Components \d+ built/, '#/status', 'Component status'],
+      [/^Patterns/, '#/patterns/copy', 'Copy'],
+      [/^Foundations/, '#/foundations/color', 'Colour'],
+      [/^Rules Every rule/, '#/components/button/rules', 'Button'],
+      [/^All states/, '#/states', 'Every component, every state'],
+      ['All changes', '#/changelog', 'Changelog'],
+      ['Roadmap', '#/roadmap', 'Roadmap'],
+      ['Changelog', '#/changelog', 'Changelog'],
+      ['Evidence Locker', '#/proposals/evidence-locker', 'Evidence Locker'],
+    ]
+    for (const [name, to, h1] of opens) {
+      await page.goto('/')
+      await expect(link(name), String(name)).toHaveAttribute('href', to)
+      await link(name).click()
+      await expect(page.getByRole('main').getByRole('heading', { level: 1 }), String(name)).toHaveText(h1)
+    }
+    await page.goto('/#/components/button/rules')
+    await expect(page.getByRole('tab', { name: /^Rules/ })).toHaveAttribute('aria-selected', 'true')
+  })
+
+  test('Copy copies the install command, and says so', async ({ page, context }) => {
+    await context.grantPermissions(['clipboard-read', 'clipboard-write'])
+    await page.goto('/')
+    const main = page.getByRole('main')
+    await expect(main.locator('code', { hasText: 'npm install' })).toHaveText('npm install @omkarux/vela')
+    await main.getByRole('button', { name: 'Copy install command' }).click()
+    await expect(main.getByRole('status').filter({ hasText: 'Copied' })).toHaveText('Copied install command')
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('npm install @omkarux/vela')
+  })
+
+  test('the layout follows its own width: five facts, then two, and never sideways at 320', async ({ page }) => {
+    const across = (selector: string) => page.locator(selector).evaluateAll((els) => new Set(els.map((e) => Math.round(e.getBoundingClientRect().top))).size)
+    const columns = (selector: string) => page.locator(selector).evaluate((el) => getComputedStyle(el).gridTemplateColumns.split(' ').length)
+    await page.setViewportSize({ width: 1440, height: 900 })
+    await page.goto('/')
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+    expect(await across('.ov-fact'), 'facts: one row').toBe(1)
+    expect(await columns('.ov-cards'), 'security cards').toBe(3)
+    expect(await columns('.ov-ways'), 'ways in').toBe(3)
+    expect(await columns('.ov-news'), 'new and specified').toBe(2)
+    // 700px: the content column is under 760.
+    await page.setViewportSize({ width: 700, height: 900 })
+    expect(await across('.ov-fact'), 'facts: three rows of two, then one').toBe(3)
+    expect(await page.locator('.ov-fact').last().evaluate((el) => getComputedStyle(el).gridColumnStart)).toBe('1')
+    expect(await columns('.ov-cards')).toBe(1)
+    expect(await columns('.ov-ways')).toBe(2)
+    expect(await columns('.ov-news')).toBe(1)
+    // 500px: under 520.
+    await page.setViewportSize({ width: 500, height: 900 })
+    expect(await columns('.ov-ways')).toBe(1)
+    expect(await page.locator('.ov-hero').evaluate((el) => getComputedStyle(el).flexDirection)).toBe('column')
+    for (const width of [320, 390]) {
+      await page.setViewportSize({ width, height: 900 })
+      expect(await noSidewaysScroll(page), `${width}px`).toBe(true)
+    }
+  })
+})
+
+test.describe('All states', () => {
+  test('the gallery that was the Overview is at #/states, last in Start', async ({ page }) => {
+    await page.goto('/#/states')
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Every component, every state')
+    await expect(page).toHaveTitle('All states · Vela Design System')
+    for (const name of ['Button', 'Toggle', 'Input', 'Contextual Alert', 'Status Indicator', 'Risk Pill', 'Tabs', 'Tokens'])
+      await expect(page.locator('section.demo-section', { has: page.getByRole('heading', { name, exact: true }) }), name).toBeVisible()
+    const start = page.getByRole('navigation', { name: 'Site' }).locator('.sitenav__group', { has: page.getByRole('heading', { level: 3, name: 'Start' }) })
+    await expect(start.getByRole('link')).toHaveText(['Overview', 'How it is made', 'All states'])
+    await expect(start.getByRole('link', { name: 'All states' })).toHaveAttribute('aria-current', 'page')
+    expect(await noSidewaysScroll(page)).toBe(true)
+  })
+})
+
 test.describe('axe', () => {
-  for (const path of ['/#/components/button', '/#/components/tabs', '/#/components/dropdown-list', '/#/proposals/evidence-locker', '/#/patterns/copy', '/#/foundations/filter-grammar'])
+  for (const path of ['/#/', '/#/states', '/#/components/button', '/#/components/tabs', '/#/components/dropdown-list', '/#/proposals/evidence-locker', '/#/patterns/copy', '/#/foundations/filter-grammar'])
     for (const theme of ['Light', 'Dark'] as const)
       test(`${path} in ${theme.toLowerCase()} has no WCAG A or AA violation`, async ({ page }) => {
         const { default: AxeBuilder } = await import('@axe-core/playwright')

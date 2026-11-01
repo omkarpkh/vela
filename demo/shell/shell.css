@@ -239,3 +239,34 @@
 /* A still frame of the morph (the Copy page's keyframe strip): not a control, so no pointer or hover. */
 .shell-cm--still { cursor: default; }
 @media (hover: hover) { .shell-cm--still:hover { background: transparent; } }
+
+/* ------------------------------------------------- SeverityTag (Overview) -- */
+/* The Contextual Alert's four severity roles on a one-line tag, the Risk Pill's height. Every pair
+   is one PAIRS asserts for the alert: the text and the glyph on the severity background. */
+.shell-severity { display: inline-flex; align-items: center; gap: var(--vela-space-5); box-sizing: border-box; height: var(--vela-control-height-24); padding: 0 var(--vela-space-10); border: 1px solid; border-radius: var(--vela-radius-3); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); letter-spacing: var(--vela-text-meta-tracking); white-space: nowrap; }
+.shell-severity__glyph { flex: none; width: var(--vela-icon-size-small); height: var(--vela-icon-size-small); }
+.shell-severity--success  { background: var(--vela-bg-severity-success);  border-color: var(--vela-border-severity-success);  color: var(--vela-text-severity-success); }
+.shell-severity--info     { background: var(--vela-bg-severity-info);     border-color: var(--vela-border-severity-info);     color: var(--vela-text-severity-info); }
+.shell-severity--warning  { background: var(--vela-bg-severity-warning);  border-color: var(--vela-border-severity-warning);  color: var(--vela-text-severity-warning); }
+.shell-severity--minor    { background: var(--vela-bg-severity-minor);    border-color: var(--vela-border-severity-minor);    color: var(--vela-text-severity-minor); }
+.shell-severity--major    { background: var(--vela-bg-severity-major);    border-color: var(--vela-border-severity-major);    color: var(--vela-text-severity-major); }
+.shell-severity--critical { background: var(--vela-bg-severity-critical); border-color: var(--vela-border-severity-critical); color: var(--vela-text-severity-critical); }
+.shell-severity--success  .shell-severity__glyph { color: var(--vela-icon-severity-success); }
+.shell-severity--info     .shell-severity__glyph { color: var(--vela-icon-severity-info); }
+.shell-severity--warning  .shell-severity__glyph { color: var(--vela-icon-severity-warning); }
+.shell-severity--minor    .shell-severity__glyph { color: var(--vela-icon-severity-minor); }
+.shell-severity--major    .shell-severity__glyph { color: var(--vela-icon-severity-major); }
+.shell-severity--critical .shell-severity__glyph { color: var(--vela-icon-severity-critical); }
+@media (forced-colors: active) { .shell-severity { border-color: CanvasText; } }
+
+/* -------------------------------------------------- ActionLink (Overview) -- */
+/* A link with a Button's weight: the regular Button's height, padding and type, and its tokens. */
+.shell-action { display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; min-height: var(--vela-control-height-35); padding: 0 var(--vela-space-15); border: 1px solid; border-radius: var(--vela-radius-4); font-family: var(--vela-font-family-primary); font-weight: var(--vela-font-weight-regular); font-size: var(--vela-text-button-regular-size); line-height: var(--vela-text-button-regular-line-height); text-decoration: none; transition: background-color var(--vela-duration-base) var(--vela-ease-standard), border-color var(--vela-duration-base) var(--vela-ease-standard); }
+.shell-action--primary { background: var(--vela-btn-primary-bg); border-color: var(--vela-btn-primary-border); color: var(--vela-btn-primary-text); }
+.shell-action--secondary { background: transparent; border-color: var(--vela-btn-hollow-primary-border); color: var(--vela-btn-hollow-primary-text); }
+@media (hover: hover) {
+  .shell-action:hover { transition-duration: var(--vela-duration-fast); }
+  .shell-action--primary:hover { background: var(--vela-btn-primary-hover-bg); border-color: var(--vela-btn-primary-hover-bg); }
+  .shell-action--secondary:hover { background: var(--vela-btn-hollow-hover-bg); }
+}
+@media (forced-colors: active) { .shell-action { border-color: LinkText; color: LinkText; } }

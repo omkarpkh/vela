@@ -13,6 +13,8 @@ import { GROUPS } from './playground/catalog'
 // One chunk per page, loaded when it is opened (playground spec, B8). The shell — header, nav,
 // search — stays in the first chunk; a page's components, its spec and its stage code do not.
 const Overview = lazy(() => import('./pages/Overview').then((m) => ({ default: m.Overview })))
+// The gallery the visual baselines are taken from ("All states", #/states), the Overview until 1 Nov 2026.
+const States = lazy(() => import('./pages/States').then((m) => ({ default: m.States })))
 const Foundation = lazy(() => import('./pages/Foundation').then((m) => ({ default: m.Foundation })))
 const Status = lazy(() => import('./pages/Status').then((m) => ({ default: m.Status })))
 const Adopt = lazy(() => import('./Adopt').then((m) => ({ default: m.Adopt })))
@@ -90,6 +92,7 @@ const titleFor = (r: Route) =>
   : r.kind === 'proposal' ? PROPOSALS.find((p) => p.id === r.id)?.title
   : r.kind === 'pattern' ? PATTERNS.find((p) => p.id === r.id)?.title
   : r.kind === 'foundation' ? FOUNDATIONS.find((f) => f.id === r.id)?.title
+  : r.kind === 'states' ? 'All states'
   : r.kind === 'adopt' ? 'Adopt without rewrite'
   : r.kind === 'motion' ? 'Motion review'
   : r.kind === 'how' ? 'How it is made'
@@ -154,9 +157,10 @@ export function App() {
 
       <div className="shell__body">
         <nav id="site-nav" className="sitenav" aria-label="Site" onKeyDown={(e) => { if (e.key === 'Escape') setNavOpen(false) }}>
-          <NavGroup title="Start" holdsCurrent={route.kind === 'overview' || route.kind === 'how'}>
+          <NavGroup title="Start" holdsCurrent={route.kind === 'overview' || route.kind === 'how' || route.kind === 'states'}>
             <NavLink to={{ kind: 'overview' }} current={route}>Overview</NavLink>
             <NavLink to={{ kind: 'how' }} current={route}>How it is made</NavLink>
+            <NavLink to={{ kind: 'states' }} current={route}>All states</NavLink>
           </NavGroup>
           {foundations.length > 0 && (
             <NavGroup title="Foundations" holdsCurrent={route.kind === 'foundation'}>
@@ -208,6 +212,7 @@ export function App() {
         <main id="main" className="content">
           <Suspense fallback={<p className="vela-meta site-loading">Loading this page…</p>}>
           {route.kind === 'overview' && <Overview />}
+          {route.kind === 'states' && <States />}
           {route.kind === 'component' && <Playground key={route.id} id={route.id} tab={route.tab} />}
           {route.kind === 'proposal' && <Proposal key={route.id} id={route.id} />}
           {route.kind === 'pattern' && (route.id === 'copy' ? <CopyPattern /> : <p className="vela-body">No pattern called “{route.id}”.</p>)}

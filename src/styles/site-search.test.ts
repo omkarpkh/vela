@@ -48,7 +48,7 @@ describe('search', () => {
   })
 
   it('never returns Start, Project or Demos pages', () => {
-    for (const q of ['overview', 'changelog', 'roadmap', 'adopt', 'motion review', 'status'])
+    for (const q of ['overview', 'all states', 'changelog', 'roadmap', 'adopt', 'motion review', 'status'])
       expect(search(index, q).map((h) => h.item.kind).filter((k) => !['component', 'missing', 'proposal', 'foundation', 'rule'].includes(k))).toEqual([])
     expect(search(index, 'changelog')).toEqual([])
   })

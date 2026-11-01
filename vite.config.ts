@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { specFactsPlugin } from './scripts/vite-spec-facts.mjs'
+import { siteFactsPlugin } from './scripts/vite-site-facts.mjs'
 import dts from 'vite-plugin-dts'
 
 export default defineConfig({
@@ -8,6 +9,8 @@ export default defineConfig({
     react(),
     // For the site's tests: the nav and search read specs through ?facts (playground spec, B8).
     specFactsPlugin(),
+    // And the Overview reads the counts the browser can't make (contrast pairs, the release) from here.
+    siteFactsPlugin(),
     dts({
       tsconfigPath: './tsconfig.types.json',
       include: ['src'],
