@@ -227,6 +227,43 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   built.
 
 ### Changed
+- **Site, slice 1 of the playground uplift: the shell** (Omkar's decision of 1 Nov 2026 to go live
+  slice by slice). Shared parts only; no page is redesigned yet.
+  - **Page tabs at `size="large"`** on every component page, the clearest mark of the page's own
+    tabs; under 480px they are `regular` and scroll sideways, as Tabs does.
+  - **A section index**, a site shell part standing in for an in-page index, which Vela does not
+    have (flagged in `shell.css` and `SectionIndex.tsx`, not added to the kit). Links on a grey
+    strip named "On this tab" (or a rail named "On this page", for pages without page tabs); where
+    you are is `aria-current="location"` and an ink line, `--vela-border-action`, never teal. A jump
+    is instant and moves focus to the section's heading. A link writes `?section=` with
+    `replaceState`, so Back leaves the page, not the section, and a reload keeps the place; a shared
+    link's settings ignore it. Under 600px it is one button that says where you are and opens the
+    list. It is drawn only for four sections or more. Wired today on the Rules tab, with the tab's
+    current groups as its links.
+  - **What sticks**: on a tab with an index, the page tabs and the strip stick under the header, and
+    `scroll-padding-top` is their sum, from tokens, so a focused row or a heading is never under
+    them; under 561 CSS px tall (200% zoom on a laptop) only the header sticks.
+  - **A stage** (a plate on the container, radius 8, a slab, a "Live" caption with the props on
+    show, a region named "Live demo"), **a card with a thumbnail** and **a Next card**. The Next
+    card ends each component tab with the way on; the stage and the card ship with their tests and
+    are used by later slices, because neither is a drop in for today's playground stage or the
+    Overview's Ways in.
+  - **A pressed state on every page control**: the selected mark lands at pointer down in
+    `--vela-duration-instant`, and nothing moves.
+  - **The arrival**: once per page, first screen only, opacity only, the lead over
+    `--vela-duration-base` on `--vela-ease-out` and then steps of `--vela-duration-fast`, done by
+    420ms; off under reduced motion, and never on a tab switch.
+  - **All states leaves the menu and the Overview's Ways in**; `#/states` stays, as the visual
+    baselines' page.
+  - **Checks.** `npm run css:check` gains two site rules, neither waivable: `pressed-state`, every
+    page control (a selector that sets `cursor: pointer`) has a pressed rule beside it, and
+    `shadow-meaning`, a state drawn as a `box-shadow` is restated for forced colours, which drop
+    every shadow. One new contrast pair, the ink line on the strip (6.82:1 light, 4.65:1 dark, 3:1
+    needed). No new token and no new site waiver (still 20). Four e2e tests: section links keep Back
+    and reload; at 720 by 450 only the header sticks and a focused row lands below it; forced colours
+    keep a border, not a shadow, on the index's place and the chosen segment; every copy mark is at
+    least 24 by 24. The Overview and All states tests follow the menu change. 1500 checks (was 1477): 1202 unit (was
+    1183), 225 e2e (was 221).
 - **Brand marks now use the interface's icon grey** (`--vela-brand-mark` points at `--vela-grey-700`
   in light and `--vela-grey-300` in dark, the same values as `--vela-icon-strong`). The live header
   showed GitHub's and Figma's marks, and the word "npm", in pure black, heavier than the icons beside
