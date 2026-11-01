@@ -6,6 +6,13 @@
     <title>Vela Design System</title>
     <!-- Vela's favicon: a copy of brand/vela-favicon-16.svg (a unit test holds the two identical). -->
     <link rel="icon" type="image/svg+xml" href="%BASE_URL%favicon.svg" />
+    <!-- The home-screen tile: brand/vela-app-icon.svg at 180px (npm run brand:touch-icon; a unit test
+         ties the PNG to the SVG). No mask-icon: it needs a one-colour drawing brand/ does not have. -->
+    <link rel="apple-touch-icon" href="%BASE_URL%apple-touch-icon.png" />
+    <!-- The browser's bar matches the header: --vela-bg-global, white in light and grey-950 in dark
+         (a unit test holds both to the tokens). -->
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#11171a" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet" />

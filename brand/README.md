@@ -22,10 +22,15 @@ the guidelines, the site source, this folder, `README.md` and `llms.txt` for bot
 | Avatar | 24 to 40px, in its teal tile | `vela-avatar-24.svg` |
 | Hero, on dark | 96px and up, untiled | `vela-hero-96plus.svg` (white, with the light ramp and a soft glow) |
 | Hero, on light | 96px and up, untiled | `vela-hero-96plus-light.svg` (primary-500 only, no ramp, no glow) |
-| App icon | where a platform needs a tile | `vela-app-icon.svg` (the white hero on the teal tile; an asset, not a component) |
+| App icon | where a platform needs a tile | `vela-app-icon.svg` (the white hero on the teal tile; an asset, not a component; the site's `apple-touch-icon.png` is it at 180px, `npm run brand:touch-icon`) |
 | Mood | the Overview background | `mood-o.frag.glsl` (a WebGL 2 fragment shader) |
 
 The core marks are drawn in `currentColor`. Set the colour from the table below.
+
+**Where the site uses them.** The header: core-24, beside the name, one link to the Overview,
+primary-500 on light and primary-300 on dark, never pulsing. The Overview: the hero, which pulses
+once. The favicon and the home-screen tile: the favicon and the app icon, in their tile. The
+`README.md` title: the two heroes, by the reader's colour scheme.
 
 ## Colours
 
@@ -39,6 +44,7 @@ asserted in `PAIRS` (`scripts/contrast-core.mjs`), and the 75% ring in `src/styl
 | primary-500 (`--vela-primary-500`, #0a6c7d) | white | 6.08:1 |
 | primary-500 | grey-50 (`--vela-grey-50`) | 5.75:1 |
 | primary-300 (`--vela-primary-300`) | grey-900 (`--vela-grey-900`) | 7.05:1 |
+| primary-300 | grey-950 (`--vela-grey-950`, the site's dark page) | 7.91:1 |
 | the hero's outer ring: white at 75% | primary-500 | 4.17:1 |
 | the hero's outer ring: primary-500 at 75% | white | 3.61:1 |
 
