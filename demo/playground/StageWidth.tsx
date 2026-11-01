@@ -50,10 +50,12 @@ export function StageWidth({ min, max, width, onChange, phone, marks, presets }:
   // A value at or past the stage's own width is the full width: nothing to narrow.
   const set = (w: number) => { const c = clampWidth(w, min, max); onChange(c >= max ? undefined : c) }
   const offered = (presets ?? []).filter((p) => p >= min && p < max)
+  // No preset fits (a phone's stage is under 320): the field alone, with its own label.
+  const withPresets = offered.length > 0
   // With presets, the segments' "Width" is the visible label and the field keeps its full name.
   const field = (
     <>
-      <label className={presets ? 'vela-sr-only' : 'pg-toolbar__label'} htmlFor={`${id}-n`}>Container width</label>
+      <label className={withPresets ? 'vela-sr-only' : 'pg-toolbar__label'} htmlFor={`${id}-n`}>Container width</label>
       <input
         id={`${id}-n`}
         className="pg-width__field"
@@ -102,8 +104,8 @@ export function StageWidth({ min, max, width, onChange, phone, marks, presets }:
     </>
   )
   return (
-    <span className={cn('pg-toolbar__group pg-width', presets && 'pg-width--presets')}>
-      {presets && (
+    <span className={cn('pg-toolbar__group pg-width', withPresets && 'pg-width--presets')}>
+      {withPresets && (
         <>
           <span className="pg-toolbar__label" aria-hidden="true">Width</span>
           <Segments
@@ -116,7 +118,7 @@ export function StageWidth({ min, max, width, onChange, phone, marks, presets }:
         </>
       )}
       {/* With presets the slider follows the segments as the fine control, then the field. */}
-      {presets ? <>{slider}{field}</> : <>{field}{slider}</>}
+      {withPresets ? <>{slider}{field}</> : <>{field}{slider}</>}
       {!phone && marks && (
         <datalist id={`${id}-marks`}>{marks.map((m) => <option key={m} value={m} label={`${m}px`} />)}</datalist>
       )}

@@ -73,7 +73,7 @@ export function SpecSections({ name, spec, specHref }: SpecSectionsProps) {
       {props && (
         <section className="pg-spec__section" aria-labelledby="section-props">
           <h2 id="section-props" className="vela-h3">Props</h2>
-          <p className="pg-p">{name}'s Props table, as <a href={specHref}>the spec</a> writes it. Nothing outside it exists.</p>
+          <p className="pg-p">Every prop {name} has, as <a href={specHref}>the spec</a> writes it. Nothing outside this table exists.</p>
           <Markdown source={undash(props.table)} />
         </section>
       )}
