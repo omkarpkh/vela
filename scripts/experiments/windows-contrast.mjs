@@ -21,6 +21,8 @@ async function shoot(label, launch, emulate) {
   try { browser = await chromium.launch(launch) } catch (e) { report.runs.push({ label, error: String(e.message || e).split('\n')[0] }); return }
   const context = await browser.newContext({ viewport: { width: 1280, height: 800 }, ...(emulate ?? {}) })
   const page = await context.newPage()
+  // Playwright emulates forced-colors: none by default; null hands it back to the system.
+  if (!emulate) await page.emulateMedia({ forcedColors: null, colorScheme: null })
   for (const [name, hash] of pages) {
     await page.goto('about:blank')
     await page.goto(base + hash)
