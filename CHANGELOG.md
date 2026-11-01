@@ -421,6 +421,37 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   text is read as text, as its spec says ("the visible text is the accessible name"); with no
   label it is still an image named for its status. Found by axe on the new Overview and All
   states pages.
+- **Site: plain links were the browser's blue and purple** (Fix 0 of the site evaluation). One
+  rule in `demo/demo.css` makes every link in the site the link token, `--vela-text-link`, when
+  unvisited, visited, hovered, focused and pressed; visited is never purple. The selector sits
+  inside `:where()`, so it weighs nothing: every link that already has its own style (`.pg-lock a`,
+  the navigation, cards, the action links) keeps it, and a before-and-after check of every link on
+  every page, in both themes, changed only the ones that had been the browser's. They keep their
+  underline: they sit in running text and tables, where the link token is 1.27:1 against body text
+  in light and 2.03:1 in dark, so colour alone can't mark them. The search dialog's "Browse all
+  components" sits on the raised surface, where the link token is 4.35:1 in dark: it is default
+  text, underlined, as in `.pg-lock`. Two pairs join `PAIRS`: link text on a container (the
+  playground's skip link) and on `bg-selected` (the current page in the navigation), both passing
+  in both themes. e2e: on Status, All states and Not found, a plain link is the token's colour,
+  underlined, at rest and hovered, in light and in dark.
+- **Site: the Motion review's curve chart told its curves apart by colour alone**, and two of them
+  were greys 1.57:1 apart. Each curve is now named on the chart, in its own colour, where it is
+  alone (the three meet at the end value), and `ease-standard` is also dashed. e2e: the three
+  names are inside the chart and clear of each other.
+- **Site: How it is made said "52 contrast pairs"**; there are 109. It now reads the count from the
+  build (`virtual:vela-site-facts`), as the Overview and All states do. All states' "7 components"
+  is now the length of the list of components the page shows, and a section's title must come from
+  that list. A unit test holds both, and fails on any hand-typed count of pairs under `demo/`.
+- **Site: the fourth status was called "Medium" on All states.** "Medium" is the middle of the risk
+  score; the Status Indicator calls its `medium` status **Degraded** (`status-indicator.md`, rule
+  `status-medium-is-degraded`). All states and the Overview now read each status's word from the
+  component's own labels (`STATUS_LABELS`, exported from the component's module, not from the
+  package), so the words can't be typed differently again. The Colour foundation now says that
+  `medium` is a token and prop name only, shown as Degraded. No token or prop is renamed. All
+  states also takes its severity, status and risk lists from the compiler-checked ones the
+  Overview uses. The Status Indicator section's visual baselines change ("Status unknown" and
+  "Degraded" in place of "Unknown" and "Medium") and are rewritten by the Visual baselines
+  workflow. 1416 checks (was 1400): 1133 unit and contract, 210 e2e.
 
 ## [0.15.0] — 2026-10-31
 

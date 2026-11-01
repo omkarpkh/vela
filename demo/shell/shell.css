@@ -116,6 +116,8 @@
 .shell-search__sign { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
 .shell-search__empty { padding: var(--vela-space-15) var(--vela-space-20); font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height); }
 .shell-search__empty p { margin: 0 0 var(--vela-space-5); }
+/* The dialog is the raised surface, where the link token is 4.35:1 in dark: default text, underlined, as in .pg-lock. */
+.shell-search__empty a { color: var(--vela-text-default); text-decoration: underline; }
 .shell-search__foot { display: flex; flex-wrap: wrap; gap: var(--vela-space-10) var(--vela-space-20); padding: var(--vela-space-10) var(--vela-space-15); border-top: 1px solid var(--vela-border-subtle); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
 @media (forced-colors: active) {
   .shell-search__option[aria-selected='true'] { forced-color-adjust: none; background: Highlight; color: HighlightText; }

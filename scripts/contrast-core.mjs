@@ -199,6 +199,12 @@ export const PAIRS = [
   // rest it is body text on the page or the container; selected, body text on bg-selected with the
   // active border on it (both above).
   ['--vela-text-default', '--vela-bg-hover',     'Site segment label, hovered',             'text'],
+  // The site's plain links (demo.css, "links") are the link token in every state. On the page they
+  // are "Link text", above. On a container: the playground's skip link, which sits on the stage's
+  // container surface when focused. The current page in the navigation is the link token on
+  // bg-selected. A link on the raised surface is text-default, underlined (4.35:1 in dark otherwise).
+  ['--vela-text-link',    '--vela-bg-container', 'Link text on container',                  'text'],
+  ['--vela-text-link',    '--vela-bg-selected',  'Site navigation, current page',           'text'],
   // Negative case: de-emphasized text on a container is 4.35:1 in light and fails. The site's
   // navigation and props panel used it; they now use text-default. Asserted below the minimum in
   // light so nobody reaches for it again; in dark it is 4.65:1.

@@ -49,29 +49,48 @@ function bezier([x1, y1, x2, y2]: number[]) {
   }
 }
 
+// Each curve is named where it is drawn, not by colour in a key: ease-standard and ease-out were two
+// greys 1.57:1 apart. The three meet at the end value, so a name at the end would sit on the others;
+// each name goes where its curve is alone. `at` is a point in the chart's own terms (x: the share of
+// the duration, v: progress) and `above` hangs the name over that point instead of under it.
+// ease-standard is also dashed, so the two greys differ by more than their tone.
 function Curves() {
   const W = 320, H = 160, PAD = 12
-  const top = 1.06
+  const top = 1.2   // headroom above the end value, for the spring's name over its overshoot
+  const px = (x: number) => PAD + x * (W - 2 * PAD)
+  const py = (v: number) => H - PAD - (v / top) * (H - 2 * PAD)
   const path = (f: (x: number) => number) =>
     Array.from({ length: 121 }, (_, i) => i / 120)
-      .map((x, i) => `${i ? 'L' : 'M'}${(PAD + x * (W - 2 * PAD)).toFixed(1)},${(H - PAD - (f(x) / top) * (H - 2 * PAD)).toFixed(1)}`)
+      .map((x, i) => `${i ? 'L' : 'M'}${px(x).toFixed(1)},${py(f(x)).toFixed(1)}`)
       .join(' ')
-  const y1 = H - PAD - (1 / top) * (H - 2 * PAD)
   const curves = [
-    { name: 'ease-standard', cls: 'motion-curve--standard', f: bezier(bezierOf('ease-standard')) },
-    { name: 'ease-out', cls: 'motion-curve--out', f: bezier(bezierOf('ease-out')) },
-    { name: 'ease-spring', cls: 'motion-curve--spring', f: (x: number) => springAt(SPRING, (x * SPRING.durationMs) / 1000) },
+    // Slow at both ends: named under its curve, where the other two have already passed.
+    { name: 'ease-standard', cls: 'motion-curve--standard', f: bezier(bezierOf('ease-standard')), at: { x: 0.36, v: 0.5 }, above: false },
+    // Fast at the start: named over its curve at the left, the highest of the three there.
+    { name: 'ease-out', cls: 'motion-curve--out', f: bezier(bezierOf('ease-out')), at: { x: 0.06, v: 0.74 }, above: true },
+    // The only one that passes the end value: named over the end rule, where it overshoots.
+    { name: 'ease-spring', cls: 'motion-curve--spring', f: (x: number) => springAt(SPRING, (x * SPRING.durationMs) / 1000), at: { x: 0.52, v: 1.04 }, above: true },
   ]
   return (
     <figure className="motion-curves">
-      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Progress over time for ease-standard, ease-out and the spring">
-        <line className="motion-curve__rule" x1={PAD} x2={W - PAD} y1={y1} y2={y1} />
-        <line className="motion-curve__rule" x1={PAD} x2={W - PAD} y1={H - PAD} y2={H - PAD} />
-        {curves.map((c) => <path key={c.name} className={`motion-curve ${c.cls}`} d={path(c.f)} />)}
-      </svg>
+      <div className="motion-curves__plot">
+        <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Progress over time for ease-standard, ease-out and the spring">
+          <line className="motion-curve__rule" x1={PAD} x2={W - PAD} y1={py(1)} y2={py(1)} />
+          <line className="motion-curve__rule" x1={PAD} x2={W - PAD} y1={H - PAD} y2={H - PAD} />
+          {curves.map((c) => <path key={c.name} className={`motion-curve ${c.cls}`} d={path(c.f)} />)}
+        </svg>
+        {/* Text over the drawing rather than in it, so a name stays at the meta size however wide the
+            chart is drawn. The SVG's own name already says all three, so these are not read twice. */}
+        {curves.map((c) => (
+          <span key={c.name} aria-hidden="true" data-curve={c.name}
+            className={`motion-curve__label ${c.cls}${c.above ? ' motion-curve__label--above' : ''}`}
+            style={{ left: `${(px(c.at.x) / W) * 100}%`, top: `${(py(c.at.v) / H) * 100}%` }}>
+            {c.name}
+          </span>
+        ))}
+      </div>
       <figcaption className="vela-meta">
-        {curves.map((c) => <span key={c.name} className={`motion-key ${c.cls}`}>{c.name}</span>)}
-        <span>Time runs left to right across the whole duration; the upper rule is the end value.</span>
+        Time runs left to right across the whole duration; the upper rule is the end value.
       </figcaption>
     </figure>
   )

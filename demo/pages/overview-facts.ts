@@ -12,13 +12,14 @@
  *   built      the components in the catalog, one per spec in guidelines/components/.
  *   specified  the proposals in guidelines/proposals/README.md, as the site's PROPOSALS lists them.
  *   taxonomies the kit's own Severity, Status and Risk types: each list below must hold every
- *              value of its type, or this file does not compile.
+ *              value of its type, or this file does not compile. All states reads them too.
  *   release    package.json's version, its date and its highlights from CHANGELOG.md.
  *   stamp      the commit and the date the site was built (vite.demo.config.ts), as the Rules tab says them.
  *   mood       the stills behind the hero, named with the release seed of package.json's version
  *              (MOOD_SEED, counted at build time), so a new minor version asks for its own stills.
  */
 import type { Severity, Status, Risk } from '../../src'
+import { STATUS_LABELS } from '../../src/components/StatusIndicator/StatusIndicator'
 import { CATALOG } from '../playground/catalog'
 import { PROPOSALS } from '../playground/proposals'
 import { rulesOf, dateWords } from '../playground/facts'
@@ -40,17 +41,12 @@ export const STATUSES = every<Status>()(['unknown', 'healthy', 'warning', 'mediu
 export const RISKS = every<Risk>()(['low', 'medium', 'high'])
 
 /**
- * The Status Indicator's own words for each status (its text alternative when it has no label).
- * The page shows them as the visible label, so the word on the page is the word a screen reader
- * hears from a bare dot; a unit test renders the component and holds the two together.
+ * The Status Indicator's own words for each status (its text alternative when it has no label),
+ * read from the component, not typed again here. The Overview and All states show them as the visible
+ * label, so the word on the page is the word a screen reader hears from a bare dot: `medium` is
+ * "Degraded", never "Medium", which is a risk word.
  */
-export const STATUS_WORDS: Record<Status, string> = {
-  unknown: 'Status unknown',
-  healthy: 'Healthy',
-  warning: 'Warning',
-  medium: 'Degraded',
-  unhealthy: 'Unhealthy',
-}
+export const STATUS_WORDS = STATUS_LABELS
 
 const tags = CATALOG.map((e) => rulesOf(e.spec))
 const count = (level: string) => tags.reduce((n, r) => n + (r.byLevel.find((l) => l.level === level)?.count ?? 0), 0)
