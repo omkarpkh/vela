@@ -1,0 +1,20 @@
+SPI_SETHIGHCONTRAST returned True (error 203)
+
+Flags                                   : 1
+High Contrast Scheme                    : High Contrast #2
+Previous High Contrast Scheme MUI Value : High Contrast #2
+Previous High Contrast Scheme MUI Ptr   : @themeui.dll,-851
+LastUpdatedThemeId                      : 3
+PSPath                                  : Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Control Panel\Accessibility\HighContrast
+PSParentPath                            : Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Control Panel\Accessibility
+PSChildName                             : HighContrast
+PSDrive                                 : HKCU
+PSProvider                              : Microsoft.PowerShell.Core\Registry
+
+
+hc1.theme
+hc2.theme
+hcblack.theme
+hcwhite.theme
+
+Session: 2, interactive: True
