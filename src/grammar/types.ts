@@ -157,8 +157,6 @@ export type LeftOutOptions = { now?: Date }
 
 /** The readback's words. Every one has an English default; pass any of them to translate. */
 export type ReadbackStrings = {
-  /** The locale `Intl.DateTimeFormat` writes times in. */
-  locale: string
   /** Each operator's words: "is one of", "is a subdomain of", "is at least". */
   operators: { [O in Operator]: string }
   /** A group's join words, and the word that ends a list of values. */
@@ -197,6 +195,8 @@ export type ReadbackStringsInput = Partial<Omit<ReadbackStrings, 'operators' | '
 export type ReadbackOptions = {
   now?: Date
   timeZone?: string
+  /** BCP 47. The locale `Intl.DateTimeFormat` writes times in, and capitals are made in. Default "en-GB". */
+  locale?: string
   strings?: ReadbackStringsInput
   markTrust?: boolean
   full?: boolean

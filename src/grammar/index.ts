@@ -5,7 +5,7 @@ export { parseQuery, queryToText } from './parse'
 export { validateQuery, normalise } from './check'
 export { readback } from './readback'
 export { evaluate } from './evaluate'
-export { leftOutQuery } from './left-out'
+export { leftOutQuery, LeftOutNotExpressible } from './left-out'
 export type {
   Fields,
   FieldName,

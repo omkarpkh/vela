@@ -77,6 +77,7 @@ export {
   readback,
   evaluate,
   leftOutQuery,
+  LeftOutNotExpressible,
 } from './grammar'
 export type {
   Fields,
