@@ -59,8 +59,8 @@ link to each, and the number of automated checks, written by the test runners ra
 | **Dependencies** | None in the core entry. `react` / `react-dom` are peers (18.3 or 19). The `/headless` entry needs one optional peer, `@base-ui/react` 1.9.x (MIT) |
 | **Icons** | 50 curated [Lucide](https://lucide.dev) 1.63.0 glyphs (ISC; a subset from Feather, MIT), compiled into the core entry at build time — no icon dependency, `lucide` is a devDependency only. The ISC notice ships in [`NOTICE`](NOTICE) |
 | **Format** | ESM, `preserveModules` for tree-shaking, full `.d.ts` |
-| **Tests** | 1632 automated checks — 1268 unit and contract (113 contrast pairs, each asserted in both themes), 361 browser (98 screenshots: 68 at four widths, 24 of the component tabs and 6 of the proposal and pattern pages at 1440, 261 playground, 2 docs), 3 Flutter — counted by `npm run checks` |
-| **Packed size** | 311.2 kB, 266 files (the Filter Grammar's modules and their .d.ts are most of the growth since 0.15.0), as `npm run verify` measures it (README and CHANGELOG ship in the tarball, so this moves when they do) |
+| **Tests** | 1671 automated checks — 1283 unit and contract (114 contrast pairs, each asserted in both themes), 385 browser (104 screenshots: 68 at four widths, 24 of the component tabs, 6 of the proposal and pattern pages and 6 of the doc pages at 1440, 279 playground, 2 docs), 3 Flutter — counted by `npm run checks` |
+| **Packed size** | 313.0 kB, 266 files (the Filter Grammar's modules and their .d.ts are most of the growth since 0.15.0), as `npm run verify` measures it (README and CHANGELOG ship in the tarball, so this moves when they do) |
 
 ## The three ideas worth stealing
 
@@ -155,7 +155,7 @@ document.documentElement.removeAttribute('data-theme')        // follow the OS
 
 ```bash
 npm run dev        # demo showcase at localhost:5174
-npm test           # 1268 unit and contract tests, of 1632 checks in all — the numbers are generated into demo/checks.json
+npm test           # 1283 unit and contract tests, of 1671 checks in all — the numbers are generated into demo/checks.json
 npm run checks     # counts every automated check into demo/checks.json (diffed in verify)
 npm run contrast   # WCAG report for both themes
 npm run verify     # tokens:check + icons:check + rules:check + typecheck + tests + checks:check + build + pack-and-consume gate

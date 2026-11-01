@@ -399,6 +399,60 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     follow the new page. Six new visual baselines, Evidence Locker, Verdict Card and
     Copy in both themes at 1440, written by the Visual baselines workflow. 1632 checks (was 1583):
     1268 unit (was 1241), 98 screenshots (was 92), 261 e2e (was 245).
+- **Site, slice 5 of the playground uplift: How it is made, Component status, Not found and the
+  project documents** (s5-site-map, "Doc page", "Status" and "Not found"; Omkar's comment on How it is
+  made, 1 Nov 2026: "looks like a wireframe and boring document").
+  - **How it is made, as four ideas, one per screen, in order:** a change is written once (the link
+    colour as the token file writes it, light and dark, shown in each theme by the same semantic
+    token); it becomes five outputs (the file, a trunk, a spine, a branch into each output); each
+    output is checked (the total, the kinds, and what checks each output, the Figma library said
+    plainly to be read back after each sync, not on every change); only then does it ship
+    (proposed, checked, shipped). The table of scripts and files moves into a fold, "Where each comes
+    from", closed. A rail indexes the four ideas. Every number is read from the build: the check
+    counts from `demo/checks.json`, the colour pairs from `contrast-core.mjs`, the token count and
+    the example from the token file.
+  - **The landing.** Each idea lands once, as the reader reaches it: its parts arrive in order along
+    its own arrows (the spine grows from the trunk outwards, so the middle output is reached first),
+    each part on a motion token (120 to 240ms), opacity and transform only, on `--vela-ease-out`, so
+    nothing loops, overshoots or bounces; the tree is done by 1020ms. With reduced motion, or when
+    the address asks for a section, nothing waits: everything is simply there. Lines are borders, so
+    forced colours keep them.
+  - **Component status** is one table of every component, in the navigation's order: its picture
+    (the real component at its real size, inert and hidden from assistive technology; the four
+    overlays and Toast open over the page, so they have none, and the page says so), its label in
+    words, and what still stands before it is Approved, in the spec's own words with no file path.
+    What each label promises is written once, as the table's key, with its count, instead of once per
+    row; the repeated Figma link goes.
+  - **Not found** answers any address that names no page, and any component, proposal, pattern or
+    foundation that does not exist, instead of showing the Overview. It says what was asked for,
+    opens Search on the words typed, and names the closest parts by meaning, through the catalogue's
+    names and aliases (`nearest` in `search.ts`): "modal-window" finds Dialog, also called modal; a
+    slip of spelling finds its part ("buton"); a word of the name in a spec's prose does not count,
+    so "firewall-rule" no longer suggests Text Area and Toggle, and the page flags the gap ("Vela has
+    no Firewall Rule") with a component request on GitHub. A name that is planned shows as not in
+    Vela yet, with the part to use today. Every component and the proposals are one click away. A
+    hash that is not a route (the skip link's `#main`) no longer changes the page.
+  - **The project documents** (Changelog, Roadmap, Contributing, Accessibility, and the Filter
+    Grammar contract) render with no markdown leak: links are links whatever their words hold, one
+    level of bullets nests, code spans keep every character (double backticks, a rule tag written
+    as code, a pipe inside a table cell), and every dash goes through the display layer. A document
+    with four sections or more has a rail of its own headings. The Roadmap leads with its phases,
+    read from its headings, the one in progress named in words, each a link to its section. A table
+    that scrolls sideways in a document carries an edge cue.
+  - **The footer** says "No runtime dependencies · Light and dark · Contrast checked to WCAG 2.1 AA
+    on every change", in a reader's words. The CI workflow runs the contrast test on every pull
+    request and every push to main, so the claim holds.
+  - **Checks.** One new contrast pair (the words in Not found's search field, `--vela-text-default`
+    on `--vela-control-bg`: 7.69:1 light, 10.30:1 dark); 114 pairs. No new token; one site waiver
+    fewer (19: the old diagram's width). 15 more unit tests: `site-docs.test.tsx` (links, code
+    spans, nesting, table cells, every project document free of markdown marks, the rail and the
+    phases from the headings, Status's words) and the Not found matcher and router. Eighteen e2e
+    tests (`uplift slice 5 · doc pages`: the four ideas and their numbers, the landing's timing, the
+    Status table and its key, Not found for "firewall-rule" and the rest, the documents, the footer,
+    390 wide, and axe on five pages in both themes); the How it is made and Not found tests follow the
+    new pages. Six new visual baselines, How it is made, Component status and Not found in both
+    themes at 1440, written by the Visual baselines workflow. 1671 checks (was 1632): 1283 unit (was
+    1268), 104 screenshots (was 98), 279 e2e (was 261).
 - **Brand marks now use the interface's icon grey** (`--vela-brand-mark` points at `--vela-grey-700`
   in light and `--vela-grey-300` in dark, the same values as `--vela-icon-strong`). The live header
   showed GitHub's and Figma's marks, and the word "npm", in pure black, heavier than the icons beside

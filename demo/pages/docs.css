@@ -1,0 +1,232 @@
+/* ------------------------------------------------------------------ doc pages -- */
+/* The doc pages (slice 5 of the playground uplift): How it is made, Component status, Not found and
+   the project documents. Site CSS: semantic tokens only, units on the token, hover only where hover
+   exists, a pressed rule for every control, nothing that carries meaning drawn only as a shadow.
+   Sections sit 60 apart, cards 20 apart. Pictures are the real component or real text, never a hand
+   drawing; their words are 12px or more. */
+
+/* ------------------------------------------------------------ How it is made -- */
+.how__lede { margin: 0; color: var(--vela-text-default); }
+.how__page { margin-top: var(--vela-space-40); }
+.how__steps { display: flex; flex-direction: column; gap: var(--vela-space-60); }
+
+.how-step { container: how-step / inline-size; display: flex; flex-direction: column; gap: var(--vela-space-25); min-width: 0; }
+.how-step__head { display: flex; align-items: flex-start; gap: var(--vela-space-15); }
+.how-step__head h2 { margin: 0; scroll-margin-top: var(--vela-space-20); }
+.how-step__head h2:focus { outline: none; }
+.how-step__head h2:focus-visible { outline: var(--vela-focus-ring-width) solid var(--vela-focus-ring-color); outline-offset: var(--vela-focus-ring-offset); }
+.how-step__n {
+  flex: none; font-family: var(--vela-font-family-display); font-size: var(--vela-text-h1-size); line-height: var(--vela-text-h1-line-height);
+  font-weight: var(--vela-font-weight-light); color: var(--vela-text-de-emphasized); min-width: var(--vela-space-25);
+}
+.how-step__line { margin: var(--vela-space-5) 0 0; max-width: 64ch; color: var(--vela-text-default); }
+
+/* 1 · The file */
+.how-file { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: var(--vela-space-20); margin: 0; align-items: start; }
+.how-file figcaption { grid-column: 1 / -1; margin: 0; color: var(--vela-text-de-emphasized); }
+.how-file__card { display: flex; flex-direction: column; gap: var(--vela-space-10); padding: var(--vela-space-20); border: 1px solid var(--vela-border-active); border-radius: var(--vela-radius-4); background: var(--vela-bg-container); color: var(--vela-text-default); }
+.how-file__name { margin: 0; display: flex; flex-wrap: wrap; gap: var(--vela-space-5) var(--vela-space-10); align-items: baseline; font-weight: var(--vela-font-weight-semibold); }
+.how-file__name span { font-weight: var(--vela-font-weight-regular); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); }
+.how-file__code { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; font-family: var(--vela-font-family-mono); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
+.how-file__code--dark { padding-top: var(--vela-space-10); border-top: 1px solid var(--vela-border-subtle); }
+.how-file__looks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--vela-space-10); }
+/* Each look is its own theme: the subtree re-points the same semantic token, as a product would. */
+.how-file__look { display: flex; align-items: center; gap: var(--vela-space-15); padding: var(--vela-space-15) var(--vela-space-20); border: 1px solid var(--vela-border-default); border-radius: var(--vela-radius-4); background: var(--vela-bg-global); color: var(--vela-text-default); }
+.how-file__swatch { flex: none; width: var(--vela-control-height-24); height: var(--vela-control-height-24); border-radius: var(--vela-radius-4); background: var(--vela-text-link); }
+.how-file__link { color: var(--vela-text-link); text-decoration: underline; }
+
+/* 2 · The tree: the file, a trunk, a spine, a branch into each output. Lines are borders, so forced colours keep them. */
+.how-tree { display: grid; grid-template-columns: calc(11 * var(--vela-space-20)) calc(2 * var(--vela-space-20)) minmax(0, calc(17 * var(--vela-space-20))); align-items: center; margin: 0; }
+.how-tree__source { display: flex; flex-direction: column; gap: var(--vela-space-5); padding: var(--vela-space-15) var(--vela-space-20); border: 1px solid var(--vela-border-active); border-radius: var(--vela-radius-4); background: var(--vela-bg-container); color: var(--vela-text-default); }
+.how-tree__source span, .how-tree__card span, .how-gate__card span { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); }
+.how-tree__trunk { display: block; border-top: 1px solid var(--vela-border-default); transform-origin: left center; }
+.how-tree__outputs { position: relative; list-style: none; margin: 0; padding: 0 0 0 var(--vela-space-30); display: flex; flex-direction: column; gap: var(--vela-space-10); }
+.how-tree__outputs::before { content: ""; position: absolute; left: 0; top: calc(var(--vela-control-height-60) / 2); bottom: calc(var(--vela-control-height-60) / 2); border-left: 1px solid var(--vela-border-default); transform-origin: center; }
+.how-tree__out { position: relative; }
+.how-tree__branch { position: absolute; left: calc(-1 * var(--vela-space-30)); top: 50%; width: var(--vela-space-30); border-top: 1px solid var(--vela-border-default); transform-origin: left center; }
+/* The arrowhead, at the branch's end, drawn with it. */
+.how-tree__branch::after { content: ""; position: absolute; right: 0; top: calc(-1 * var(--vela-space-5)); border-block: var(--vela-space-5) solid transparent; border-inline-start: var(--vela-space-5) solid var(--vela-border-default); }
+.how-tree__card { display: flex; flex-direction: column; justify-content: center; gap: 0; height: var(--vela-control-height-60); padding: 0 var(--vela-space-15); border: 1px solid var(--vela-border-default); border-radius: var(--vela-radius-4); background: var(--vela-bg-global); color: var(--vela-text-default); }
+.how-tree__card strong, .how-tree__source strong, .how-gate__card strong { color: var(--vela-text-heading); font-weight: var(--vela-font-weight-semibold); }
+.how-tree__source strong { color: var(--vela-text-default); }
+.how-tree__card span, .how-gate__card span { color: var(--vela-text-de-emphasized); }
+@container how-step (max-width: 640px) {
+  .how-tree { display: block; }
+  .how-tree__trunk { display: none; }
+  .how-tree__outputs { margin-top: var(--vela-space-10); margin-left: var(--vela-space-20); }
+  .how-tree__outputs::before { top: calc(-1 * var(--vela-space-10)); transform-origin: top center; }
+}
+
+/* 3 · The checks */
+.how-checks { display: flex; flex-direction: column; gap: var(--vela-space-20); }
+.how-checks__total { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--vela-space-5) var(--vela-space-15); margin: 0; color: var(--vela-text-default); font-size: var(--vela-text-h4-size); line-height: var(--vela-text-h4-line-height); }
+.how-checks__number { font-family: var(--vela-font-family-display); font-size: calc(2 * var(--vela-text-h1-size)); line-height: 1; color: var(--vela-text-heading); }
+.how-checks__kinds { margin: 0; padding-left: var(--vela-space-20); display: flex; flex-direction: column; gap: var(--vela-space-5); max-width: 72ch; color: var(--vela-text-default); }
+.how-checks__outputs { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(calc(12 * var(--vela-space-20)), 1fr)); gap: var(--vela-space-10) var(--vela-space-20); }
+.how-checks__output { display: flex; align-items: flex-start; gap: var(--vela-space-10); padding: var(--vela-space-15); border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4); color: var(--vela-text-default); }
+.how-checks__output strong { display: block; color: var(--vela-text-heading); }
+.how-checks__tick { flex: none; color: var(--vela-icon-strong); }
+
+/* 4 · The gate */
+.how-gate { list-style: none; margin: 0; padding: 0; display: flex; align-items: stretch; gap: var(--vela-space-40); }
+.how-gate__node { position: relative; flex: 1 1 0; display: flex; min-width: 0; }
+/* The wire sits in the gap before its card, so every card is the same width. */
+.how-gate__wire { position: absolute; right: 100%; top: 50%; width: var(--vela-space-40); border-top: 1px solid var(--vela-border-default); transform-origin: left center; }
+.how-gate__wire::after { content: ""; position: absolute; right: 0; top: calc(-1 * var(--vela-space-5)); border-block: var(--vela-space-5) solid transparent; border-inline-start: var(--vela-space-5) solid var(--vela-border-default); }
+.how-gate__card { flex: 1; display: flex; flex-direction: column; gap: var(--vela-space-5); padding: var(--vela-space-15); border: 1px solid var(--vela-border-default); border-radius: var(--vela-radius-4); background: var(--vela-bg-global); color: var(--vela-text-default); }
+.how-gate__node:last-child .how-gate__card { border-color: var(--vela-border-active); }
+.how-gate__links { margin: 0; color: var(--vela-text-default); }
+@media (max-width: 720px) {
+  .how-gate { flex-direction: column; gap: var(--vela-space-25); }
+  .how-gate__wire { right: auto; left: var(--vela-space-20); top: auto; bottom: 100%; width: 0; height: var(--vela-space-25); border-top: 0; border-left: 1px solid var(--vela-border-default); transform-origin: top center; }
+  .how-gate__wire::after { display: none; }
+  .how-file { grid-template-columns: minmax(0, 1fr); }
+}
+
+.how-scroll { overflow-x: auto; }
+.how-table { width: 100%; border-collapse: collapse; font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); }
+.how-table th, .how-table td { text-align: left; vertical-align: top; padding: var(--vela-space-10) var(--vela-space-10) var(--vela-space-10) 0; border-bottom: 1px solid var(--vela-border-subtle); }
+.how-table thead th { color: var(--vela-text-de-emphasized); font-weight: var(--vela-font-weight-regular); }
+.how-table th[scope="row"] { white-space: nowrap; font-weight: var(--vela-font-weight-semibold); }
+.how-table code { font-family: var(--vela-font-family-mono); font-size: var(--site-code-size); }
+
+/* The landing (demo/pages/How.tsx, useLanding). A step waits until it is reached, then plays once: its
+   parts land in order along its arrows, each on a motion token, opacity and transform only, on
+   --vela-ease-out, so nothing overshoots, loops or bounces. `--n` is a part's place on its step's
+   timeline. With reduced motion the step never waits: everything is simply there. */
+@keyframes how-land { from { opacity: 0; } to { opacity: 1; } }
+@keyframes how-draw-x { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes how-draw-y { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+
+[data-how="wait"] .how-land { opacity: 0; }
+[data-how="wait"] .how-tree__trunk, [data-how="wait"] .how-tree__branch, [data-how="wait"] .how-gate__wire { transform: scaleX(0); }
+[data-how="wait"] .how-tree__outputs::before { transform: scaleY(0); }
+
+/* 1 and 3: one fast step apart. */
+[data-how="play"] .how-land { animation: how-land var(--vela-duration-base) var(--vela-ease-out) both; animation-delay: calc(var(--n, 0) * var(--vela-duration-fast)); }
+/* 2: the file, then the trunk, then the spine from the middle out, then each branch and its output as the spine reaches it. */
+[data-how="play"] .how-tree__trunk { animation: how-draw-x var(--vela-duration-travel) var(--vela-ease-out) both; animation-delay: var(--vela-duration-base); }
+[data-how="play"] .how-tree__outputs::before { animation: how-draw-y var(--vela-duration-travel) var(--vela-ease-out) both; animation-delay: calc(var(--vela-duration-base) + var(--vela-duration-travel)); }
+[data-how="play"] .how-tree__branch { animation: how-draw-x var(--vela-duration-fast) var(--vela-ease-out) both; animation-delay: calc(var(--vela-duration-base) + var(--vela-duration-travel) + (1 + var(--n)) * var(--vela-duration-fast) / 2); }
+[data-how="play"] .how-tree__card { animation-delay: calc(var(--vela-duration-base) + var(--vela-duration-travel) + (3 + var(--n)) * var(--vela-duration-fast) / 2); }
+/* 4: a card, the wire to the next, the next card. */
+[data-how="play"] .how-gate__card { animation-delay: calc(var(--n) / 2 * (var(--vela-duration-base) + var(--vela-duration-travel))); }
+[data-how="play"] .how-gate__wire { animation: how-draw-x var(--vela-duration-travel) var(--vela-ease-out) both; animation-delay: calc(var(--vela-duration-base) + (var(--n) - 1) / 2 * (var(--vela-duration-base) + var(--vela-duration-travel))); }
+@media (max-width: 720px) {
+  [data-how="wait"] .how-gate__wire { transform: scaleY(0); }
+  [data-how="play"] .how-gate__wire { animation-name: how-draw-y; }
+}
+@container how-step (max-width: 640px) {
+  [data-how="play"] .how-tree__outputs::before { animation-delay: var(--vela-duration-base); }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-how] .how-land, [data-how] .how-tree__trunk, [data-how] .how-tree__branch, [data-how] .how-gate__wire, [data-how] .how-tree__outputs::before { animation: none; opacity: 1; transform: none; }
+}
+@media print {
+  [data-how] .how-land, [data-how] .how-tree__trunk, [data-how] .how-tree__branch, [data-how] .how-gate__wire, [data-how] .how-tree__outputs::before { animation: none; opacity: 1; transform: none; }
+}
+@media (forced-colors: active) {
+  .how-tree__trunk, .how-tree__branch, .how-gate__wire, .how-tree__outputs::before { border-color: CanvasText; }
+  .how-tree__branch::after, .how-gate__wire::after { border-inline-start-color: CanvasText; }
+  .how-file__swatch { forced-color-adjust: none; }
+}
+
+/* --------------------------------------------------------- Component status -- */
+.status__lede { margin: 0; color: var(--vela-text-default); }
+.status__key { margin: var(--vela-space-30) 0 var(--vela-space-30); display: flex; flex-direction: column; gap: var(--vela-space-15); max-width: calc(50 * var(--vela-space-20)); }
+.status__key h2 { margin: 0; }
+.status__labels { margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(calc(10 * var(--vela-space-20)), 1fr)); gap: var(--vela-space-15) var(--vela-space-20); }
+.status__label { display: flex; flex-direction: column; gap: var(--vela-space-5); padding: var(--vela-space-15); border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4); }
+.status__label dt { margin: 0; display: flex; align-items: center; gap: var(--vela-space-10); }
+.status__label dd { margin: 0; font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
+.status__count { font-weight: var(--vela-font-weight-semibold); color: var(--vela-text-heading); }
+.status__more, .status__foot { margin: 0; color: var(--vela-text-default); }
+.status__foot { margin-top: var(--vela-space-15); max-width: 72ch; }
+.status-scroll { position: relative; overflow-x: auto; }   /* positioned, so its visually hidden words are clipped with the table and never widen the page */
+.status-table { width: 100%; border-collapse: collapse; font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height); }
+.status-table th, .status-table td { text-align: left; vertical-align: middle; padding: var(--vela-space-10) var(--vela-space-15) var(--vela-space-10) 0; border-bottom: 1px solid var(--vela-border-subtle); }
+.status-table thead th { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); font-weight: var(--vela-font-weight-semibold); color: var(--vela-text-de-emphasized); border-bottom-color: var(--vela-border-default); }
+.status-table tbody th { font-weight: var(--vela-font-weight-semibold); white-space: nowrap; }
+.status-table__group { display: block; font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); font-weight: var(--vela-font-weight-regular); color: var(--vela-text-de-emphasized); }
+.status-table__pic { width: calc(12 * var(--vela-space-20)); }
+.status-table__note { max-width: 48ch; font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
+.status-table__thumb { width: calc(12 * var(--vela-space-20)); height: var(--vela-space-80); overflow: hidden; border-radius: var(--vela-radius-4); }
+
+/* ---------------------------------------------------------------- Not found -- */
+.nf { display: flex; flex-direction: column; gap: var(--vela-space-30); }
+.nf__asked { margin: 0; color: var(--vela-text-default); }
+.nf__asked code { font-family: var(--vela-font-family-mono); font-size: var(--site-code-size); overflow-wrap: anywhere; }
+.nf__section { display: flex; flex-direction: column; gap: var(--vela-space-15); }
+.nf__section h2 { margin: 0; }
+/* The words typed, in a field that opens Search on them. It looks like the header's Search because it is the same act. */
+.nf-search {
+  display: flex; align-items: center; gap: var(--vela-space-10); width: 100%; max-width: calc(30 * var(--vela-space-20)); height: var(--vela-control-height-40); padding: 0 var(--vela-space-15);
+  border: 1px solid var(--vela-control-border); border-radius: var(--vela-radius-4); background: var(--vela-control-bg); color: var(--vela-text-default);
+  font: inherit; font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height); text-align: start; cursor: pointer; -webkit-tap-highlight-color: transparent;
+  transition: border-color var(--vela-duration-base) var(--vela-ease-standard);
+}
+.nf-search .vela-icon { flex: none; color: var(--vela-icon-default); }
+@media (hover: hover) { .nf-search:hover { border-color: var(--vela-control-border-hover); transition-duration: var(--vela-duration-fast); } }
+.nf-search:active { border-color: var(--vela-border-active); transition-duration: var(--vela-duration-instant); }
+.nf-cards { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(calc(13 * var(--vela-space-20)), 1fr)); gap: var(--vela-space-20); }
+.nf-card, .nf-gap { display: flex; flex-direction: column; gap: var(--vela-space-5); height: 100%; padding: var(--vela-space-15); border-radius: var(--vela-radius-4); color: var(--vela-text-default); }
+.nf-card { border: 1px solid var(--vela-border-subtle); text-decoration: none; -webkit-tap-highlight-color: transparent; transition: border-color var(--vela-duration-base) var(--vela-ease-standard); }
+.nf-card__thumb { height: var(--vela-space-80); margin-bottom: var(--vela-space-5); overflow: hidden; border-radius: var(--vela-radius-4); background: var(--vela-bg-container); }
+.nf-card__title { margin: 0; font-weight: var(--vela-font-weight-semibold); color: var(--vela-text-heading); }
+.nf-card__line { margin: 0; font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
+@media (hover: hover) {
+  .nf-card:hover { border-color: var(--vela-border-default); transition-duration: var(--vela-duration-fast); }
+  .nf-card:hover .nf-card__title { text-decoration: underline; }
+}
+.nf-card:active { border-color: var(--vela-border-active); transition-duration: var(--vela-duration-instant); }
+/* A gap is dashed: the part it names is not built, and the edge says so before the words do. */
+.nf-gap { border: 1px dashed var(--vela-border-default); }
+.nf-gap a { display: inline-flex; align-items: center; gap: var(--vela-space-5); align-self: flex-start; margin-top: var(--vela-space-5); }
+.nf-gap--wide { max-width: calc(30 * var(--vela-space-20)); height: auto; }
+.nf__ways { max-width: calc(44 * var(--vela-space-20)); display: grid; grid-template-columns: repeat(auto-fill, minmax(calc(16 * var(--vela-space-20)), 1fr)); gap: var(--vela-space-20); }
+@media (forced-colors: active) {
+  .nf-card, .nf-gap, .nf-search { border-color: CanvasText; }
+  .nf-card:active, .nf-search:active { border-color: Highlight; }
+}
+
+/* ------------------------------------------------------------ project documents -- */
+.doc-page .shell-railpage { margin-top: var(--vela-space-10); }
+.doc__body .pg-list--sub { margin-top: var(--vela-space-5); }
+.doc__body h2:focus { outline: none; }
+.doc__body h2:focus-visible { outline: var(--vela-focus-ring-width) solid var(--vela-focus-ring-color); outline-offset: var(--vela-focus-ring-offset); }
+/* A table wider than the column scrolls inside its own region; the edge it can scroll towards carries
+   a soft cue, drawn by backgrounds that travel with the content (local) over ones that stay (scroll),
+   so the cue fades out as that edge is reached. Words, focus and the region's name carry it too. */
+.doc__body .pg-tablewrap[data-scrolls="true"] {
+  background:
+    linear-gradient(to right, var(--vela-bg-global), transparent) left center / var(--vela-space-40) 100% no-repeat local,
+    linear-gradient(to left, var(--vela-bg-global), transparent) right center / var(--vela-space-40) 100% no-repeat local,
+    linear-gradient(to right, var(--vela-border-default), transparent) left center / var(--vela-space-10) 100% no-repeat scroll,
+    linear-gradient(to left, var(--vela-border-default), transparent) right center / var(--vela-space-10) 100% no-repeat scroll;
+}
+
+/* The Roadmap's phases: one line, a stop per phase, the one in progress filled and named in words. */
+.doc-phases { margin: var(--vela-space-30) 0 var(--vela-space-20); display: flex; flex-direction: column; gap: var(--vela-space-10); }
+.doc-phases__list { list-style: none; margin: 0; padding: 0; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: var(--vela-space-10); }
+.doc-phases__phase { position: relative; display: flex; flex-direction: column; gap: var(--vela-space-10); min-width: 0; }
+/* The line runs through every stop, to the next phase. */
+.doc-phases__phase::before { content: ""; position: absolute; left: 0; right: calc(-1 * var(--vela-space-10)); top: calc(var(--vela-icon-12) / 2); border-top: 1px solid var(--vela-border-default); }
+.doc-phases__phase:last-child::before { right: 0; }
+.doc-phases__dot { position: relative; width: var(--vela-icon-12); height: var(--vela-icon-12); border: 1px solid var(--vela-border-default); border-radius: var(--vela-radius-3); background: var(--vela-bg-global); }
+.doc-phases__phase.is-now .doc-phases__dot { border-color: var(--vela-icon-strong); background: var(--vela-icon-strong); }
+.doc-phases__link { display: flex; flex-direction: column; align-items: flex-start; gap: var(--vela-space-5); padding: var(--vela-space-5); margin: calc(-1 * var(--vela-space-5)); border-radius: var(--vela-radius-4); color: var(--vela-text-default); text-decoration: none; -webkit-tap-highlight-color: transparent; transition: background-color var(--vela-duration-base) var(--vela-ease-standard); }
+.doc-phases__number { font-weight: var(--vela-font-weight-semibold); color: var(--vela-text-heading); }
+.doc-phases__name { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); }
+@media (hover: hover) { .doc-phases__link:hover .doc-phases__number { text-decoration: underline; } }
+.doc-phases__link:active { background: var(--vela-bg-selected); transition-duration: var(--vela-duration-instant); }
+@media (max-width: 720px) {
+  .doc-phases__list { grid-auto-flow: row; grid-auto-columns: auto; }
+  .doc-phases__phase { flex-direction: row; align-items: flex-start; }
+  .doc-phases__phase::before { display: none; }
+  .doc-phases__dot { flex: none; margin-top: var(--vela-space-5); }
+}
+@media (forced-colors: active) {
+  .doc-phases__phase::before, .doc-phases__dot { border-color: CanvasText; }
+  .doc-phases__phase.is-now .doc-phases__dot { background: CanvasText; forced-color-adjust: none; }
+  .doc-phases__link:active { outline: 1px solid Highlight; }
+}

@@ -236,6 +236,9 @@ export const PAIRS = [
   ['--vela-icon-default', '--vela-control-bg', 'Site search button glyph', 'ui'],
   ['--vela-icon-default', '--vela-bg-raised', 'Site search dialog glyph', 'ui'],
   ['--vela-border-active', '--vela-bg-raised-hover', 'Site search active result edge', 'ui'],
+  // Not found (demo/pages/NotFound.tsx, slice 5 of the playground uplift): the words the reader typed,
+  // in a field that opens Search on them. They are the field's value, not a placeholder.
+  ['--vela-text-default', '--vela-control-bg', 'Not found search field words', 'text'],
   // Vela's own logo, the Pulse mark (brand/README.md). Brand assets are images, not interface, so
   // they are the one place primitives are named directly (DESIGN.md); these are the colours the
   // files in brand/ are drawn in. The squircle tile and app icon: a white mark on primary-500. The

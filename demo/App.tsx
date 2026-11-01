@@ -25,6 +25,8 @@ const Motion = lazy(() => import('./pages/Motion').then((m) => ({ default: m.Mot
 const Proposal = lazy(() => import('./pages/Proposal').then((m) => ({ default: m.Proposal })))
 // The Copy pattern page is its own chunk, and nothing else imports it.
 const CopyPattern = lazy(() => import('./pages/CopyPattern').then((m) => ({ default: m.CopyPattern })))
+// Any address that names no page (slice 5 of the playground uplift).
+const NotFound = lazy(() => import('./pages/NotFound').then((m) => ({ default: m.NotFound })))
 
 
 function NavLink({ to, current, tag, children }: { to: Route; current: Route; tag?: string; children: React.ReactNode }) {
@@ -103,7 +105,8 @@ function SiteLinks({ className }: { className: string }) {
 }
 
 const titleFor = (r: Route) =>
-  r.kind === 'component' ? COMPONENTS.find((c) => c.id === r.id)?.title
+  missingIn(r) ? 'Not found'
+  : r.kind === 'component' ? COMPONENTS.find((c) => c.id === r.id)?.title
   : r.kind === 'proposal' ? PROPOSALS.find((p) => p.id === r.id)?.title
   : r.kind === 'pattern' ? PATTERNS.find((p) => p.id === r.id)?.title
   : r.kind === 'foundation' ? FOUNDATIONS.find((f) => f.id === r.id)?.title
@@ -113,7 +116,19 @@ const titleFor = (r: Route) =>
   : r.kind === 'how' ? 'How it is made'
   : r.kind === 'status' ? 'Component status'
   : r.kind === 'doc' ? DOCS.find((d) => d.id === r.id)?.title
+  : r.kind === 'notfound' ? 'Not found'
   : 'Overview'
+
+/** The Not found page's props when the route names nothing: the address, the name that missed, and its area. */
+function missingIn(r: Route): { asked: string; name: string; area: 'component' | 'proposal' | 'pattern' | 'foundation' | 'page' } | null {
+  const asked = href(r).replace(/^#\//, '')
+  if (r.kind === 'notfound') return { asked: r.path, name: r.path.split('/').pop() ?? r.path, area: 'page' }
+  if (r.kind === 'component' && !COMPONENTS.some((c) => c.id === r.id)) return { asked, name: r.id, area: 'component' }
+  if (r.kind === 'proposal' && !PROPOSALS.some((p) => p.id === r.id)) return { asked, name: r.id, area: 'proposal' }
+  if (r.kind === 'pattern' && !PATTERNS.some((p) => p.id === r.id)) return { asked, name: r.id, area: 'pattern' }
+  if (r.kind === 'foundation' && !FOUNDATIONS.some((f) => f.id === r.id)) return { asked, name: r.id, area: 'foundation' }
+  return null
+}
 
 export function App() {
   const route = useRoute()
@@ -143,6 +158,8 @@ export function App() {
   const components = COMPONENTS
   const foundations = FOUNDATIONS
   const proposals = PROPOSALS
+  // An address in a known area that names nothing there is Not found too, and says what it was meant to be.
+  const missing = missingIn(route)
 
   return (
     <div className={cn('vela-root shell', !navOpen && 'shell--nav-closed')}>
@@ -232,18 +249,21 @@ export function App() {
           <Suspense fallback={<p className="vela-meta site-loading">Loading this page…</p>}>
           {route.kind === 'overview' && <Overview theme={resolved} />}
           {route.kind === 'states' && <States />}
-          {route.kind === 'component' && <Playground key={route.id} id={route.id} tab={route.tab} />}
-          {route.kind === 'proposal' && <Proposal key={route.id} id={route.id} />}
-          {route.kind === 'pattern' && (route.id === 'copy' ? <CopyPattern /> : <p className="vela-body">No pattern called “{route.id}”.</p>)}
-          {route.kind === 'foundation' && <Foundation id={route.id} />}
+          {missing && <NotFound key={missing.asked} {...missing} />}
+          {!missing && route.kind === 'component' && <Playground key={route.id} id={route.id} tab={route.tab} />}
+          {!missing && route.kind === 'proposal' && <Proposal key={route.id} id={route.id} />}
+          {!missing && route.kind === 'pattern' && <CopyPattern />}
+          {!missing && route.kind === 'foundation' && <Foundation id={route.id} />}
           {route.kind === 'adopt' && <Adopt mode={theme} />}
           {route.kind === 'motion' && <Motion />}
           {route.kind === 'how' && <How />}
           {route.kind === 'status' && <Status />}
           {route.kind === 'doc' && <Doc key={route.id} id={route.id} />}
           </Suspense>
+          {/* In a reader's words (Omkar, 1 Nov 2026): no "ESM", no "CI". The contrast claim holds because
+              the CI workflow runs the contrast test on every pull request and every push to main. */}
           <footer className="demo-footer vela-meta">
-            Zero runtime dependencies · ESM · light + dark · WCAG 2.1 AA asserted in CI
+            No runtime dependencies · Light and dark · Contrast checked to WCAG 2.1 AA on every change
           </footer>
         </main>
       </div>

@@ -8,7 +8,7 @@ import { installFor } from './playground/install'
 import { statusOf } from './playground/status'
 import { rulesOf } from './playground/facts'
 import { replaceRoute, href, parseHash, type PageTab } from './router'
-import { buildIndex, closest } from './playground/search'
+import { NotFound } from './pages/NotFound'
 import { Segments } from './shell/Segments'
 import { ScrollRegion } from './shell/ScrollRegion'
 import { StageBoundary, COMMIT, type Settings } from './shell/ErrorBoundary'
@@ -85,23 +85,9 @@ export function Playground({ id, tab }: { id: string; tab?: PageTab }) {
   return <PlaygroundFor entry={entry} tab={tab} />
 }
 
-/** A link to a component that doesn't exist (playground spec, section 7): the closest names, by search. */
+/** A link to a component that doesn't exist: the site's Not found page (App sends it there first). */
 function Unknown({ name }: { name: string }) {
-  const near = useMemo(() => closest(buildIndex(), name), [name])
-  return (
-    <article className="pg-unknown">
-      <h1 className="vela-h2">There's no component called “{name}”.</h1>
-      {near.length > 0 && (
-        <>
-          <p className="vela-body">The closest names:</p>
-          <ul className="pg-list">
-            {near.map((i) => <li key={i.id}><a href={i.href}>{i.title}</a></li>)}
-          </ul>
-        </>
-      )}
-      <p className="vela-body"><a href="#/status">Browse all components</a></p>
-    </article>
-  )
+  return <NotFound asked={`components/${name}`} name={name} area="component" />
 }
 
 /** A media query's answer, kept current. */

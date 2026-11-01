@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { buildIndex, search, closest, MISSING, missingTag } from '../../demo/playground/search'
+import { buildIndex, search, closest, nearest, MISSING, missingTag } from '../../demo/playground/search'
 import { REGISTRY, GROUPS } from '../../demo/playground/registry'
 
 // Playground slice 3 (playground spec, sections 2 and 10): search over titles, aliases and the
@@ -68,6 +68,23 @@ describe('search', () => {
   it('suggests the closest components for an unknown link, by a word or by spelling', () => {
     expect(closest(index, 'modal-window').map((i) => i.title)).toEqual(['Dialog'])
     expect(closest(index, 'buton')[0].title).toBe('Button')
+  })
+
+  // Slice 5 of the playground uplift: Not found names the closest parts by meaning, through the
+  // catalogue's names and aliases, and flags the gap when there are none.
+  it('Not found: by meaning, through an alias; a slip of spelling; and nothing, said plainly', () => {
+    const titles = (q: string) => nearest(index, q).parts.map((i) => i.title)
+    expect(nearest(index, 'modal-window')).toMatchObject({ words: 'modal window', how: 'meaning' })
+    expect(titles('modal-window')).toEqual(['Dialog'])
+    expect(titles('data-grid')[0]).toBe('Table')
+    expect(nearest(index, 'buton')).toMatchObject({ how: 'spelling' })
+    expect(titles('buton')[0]).toBe('Button')
+    // A word of the name in a "When to use" line is not meaning: no Text Area for a firewall rule.
+    const firewall = nearest(index, 'firewall-rule')
+    expect(firewall).toMatchObject({ words: 'firewall rule', how: 'none', parts: [], gaps: [] })
+    expect(titles('firewall-rule')).not.toContain('Text Area')
+    // A name Vela has not built yet is a gap, with the part to use today.
+    expect(nearest(index, 'select').gaps.map((i) => i.title)).toContain('Select List')
   })
 
   // Playground spec v1.2, section 10: Vela-less names answer "not in Vela yet" with the nearest

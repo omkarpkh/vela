@@ -148,6 +148,59 @@ export function search(index: Item[], query: string, limit = 10): Hit[] {
   return hits.filter((h) => h.item.kind !== 'rule' || ++rules <= 3).slice(0, limit)
 }
 
+/** Levenshtein distance between two strings. */
+function distance(a: string, b: string) {
+  const d = Array.from({ length: a.length + 1 }, (_, i) => [i, ...Array(b.length).fill(0)])
+  for (let j = 1; j <= b.length; j++) d[0][j] = j
+  for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++)
+    d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1))
+  return d[a.length][b.length]
+}
+
+export interface Nearest {
+  /** The words the reader typed, as words: "firewall-rule" is "firewall rule". */
+  words: string
+  /** How the matches were found: by a name or an alias (meaning), by a slip of spelling, or not at all. */
+  how: 'meaning' | 'spelling' | 'none'
+  /** Up to three parts that exist, closest first. */
+  parts: Item[]
+  /** What the words name that is not in Vela yet (a missing component), each with the part to use today. */
+  gaps: Item[]
+}
+
+/**
+ * The closest parts to an address that went nowhere (Not found, slice 5 of the playground uplift).
+ * By meaning first: the words, whole and then one by one, against every name and alias in the
+ * catalogue and the list of what is not in Vela yet. A "When to use" line counts only for the whole
+ * name ("incident note" finds Text Area), never for one word of it, so "firewall-rule" does not send
+ * a reader to Text Area because its spec mentions "a rule description". Then spelling, but only for a
+ * slip (a quarter of the letters or fewer), so a long name never lands on whatever is nearest.
+ * Nothing found is an answer too: the page flags the gap.
+ */
+export function nearest(index: Item[], asked: string): Nearest {
+  const words = norm(asked)
+  const parts: Item[] = []
+  const gaps: Item[] = []
+  const add = (list: Item[], i: Item) => { if (!list.some((x) => x.id === i.id)) list.push(i) }
+  const tries = [words, ...words.split(' ').filter((w) => w.length >= 3 && w !== words)]
+  tries.forEach((q, n) => {
+    for (const h of search(index, q, 20)) {
+      if (h.score <= USES && (n > 0 || h.score < USES)) continue
+      if (h.item.kind === 'component') add(parts, h.item)
+      else if (h.item.kind === 'missing') add(gaps, h.item)
+    }
+  })
+  if (parts.length || gaps.length) return { words, how: 'meaning', parts: parts.slice(0, 3), gaps: gaps.slice(0, 2) }
+  const slip = Math.max(1, Math.floor(words.length / 4))
+  const near = index.filter((i) => i.kind === 'component')
+    .map((i) => ({ i, d: Math.min(distance(words, norm(i.title)), ...i.aliases.map((a) => distance(words, norm(a)))) }))
+    .filter((x) => x.d <= slip)
+    .sort((a, b) => a.d - b.d)
+    .slice(0, 3)
+    .map((x) => x.i)
+  return { words, how: near.length ? 'spelling' : 'none', parts: near, gaps: [] }
+}
+
 /** Up to three components closest to a name that matched none, for an unknown component link. */
 export function closest(index: Item[], name: string): Item[] {
   const q = norm(name)

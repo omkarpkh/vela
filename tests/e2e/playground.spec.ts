@@ -1408,11 +1408,14 @@ test('the menu button collapses the navigation, and there is no second find box 
 
 test('"How it is made" lists the token file, five generated targets and a generated check count', async ({ page }) => {
   await page.goto('/#/how')
-  await expect(page.getByRole('heading', { level: 1, name: 'One file, five targets' })).toBeVisible()
+  await expect(page.getByRole('heading', { level: 1, name: 'How it is made' })).toBeVisible()
+  // The detail is folded (slice 5 of the playground uplift); it opens on its heading.
+  await page.getByRole('button', { name: /^Where each comes from/ }).click()
   const table = page.getByRole('table', { name: 'Generated targets' })
   await expect(table.getByRole('row')).toHaveCount(7)
   await expect(table.getByRole('link', { name: 'open the library' })).toHaveAttribute('href', /figma\.com\/design/)
-  await expect(page.getByRole('heading', { level: 2, name: /^\d{2,} automated checks on every change$/ })).toBeVisible()
+  await expect(page.getByText(/^automated checks on every change$/)).toBeVisible()
+  await expect(page.locator('.how-checks__number')).toHaveText(/^\d{3,}$/)
 })
 
 // The selector matters: `.vela-btn` alone first matches a theme toggle in the playground's
