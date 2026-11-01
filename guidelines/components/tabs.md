@@ -95,8 +95,9 @@ and the fifth. Each says whether the core keeps it ("both") or only the headless
   no sticky tab: it scrolls the open tab wholly into view whenever it opens, and a person scrolling
   the row can still move it out (the gap named under *Overflow*). [[rule: tabs-overflow-open-tab-in-view | browser]]
 - **A clicked or focused tab ends wholly in view, focus ring included (both).** Clicked while
-  partly hidden, or reached by the arrow keys, Home or End, the tab and the left and right of its
-  ring end inside the row, clear of the fades and of the stuck open tab. The row moves as little as
+  partly hidden, or reached by the arrow keys, Home or End, the tab and its whole ring end inside
+  the row, clear of the fades and of the stuck open tab. The ring is never clipped, at the top, the
+  bottom or either end of the row: the list reaches the ring's width past the tabs on every side. The row moves as little as
   it can, and never while a pointer is still down on it, so the click lands on the tab it started
   on. [[rule: tabs-overflow-reveal-whole | browser]]
 - **When tabs are hidden, a visible cue says so (both).** The edge where more tabs are fades; on the
@@ -143,11 +144,21 @@ and the fifth. Each says whether the core keeps it ("both") or only the headless
 
 Trigger rest `--vela-text-de-emphasized`; hover `--vela-text-default` (an unselected trigger only:
 the selected one keeps `--vela-text-link` under the pointer); selected `--vela-text-link` with a
-2px `--vela-border-active` underline. List rule `--vela-border-subtle`, 1px, drawn inside the
-list (an inset shadow) so the underline lies over it without being clipped. The list scrolls
-sideways only (`overflow-x: auto; overflow-y: hidden`). In forced colours: the selected label and
-underline `Highlight`, other labels `CanvasText`, disabled `GrayText`, the list rule a
-`CanvasText` border, the focus ring `Highlight`.
+2px `--vela-border-active` underline. List rule `--vela-border-subtle`, 1px, along the tabs'
+bottom edge, so the underline lies over it without being clipped. The list scrolls sideways only
+(`overflow-x: auto; overflow-y: hidden`). In forced colours: the selected label and underline
+`Highlight`, other labels `CanvasText`, disabled `GrayText`, the list rule `CanvasText` one pixel
+below the tabs, the focus ring `Highlight`.
+
+**The focus ring's room.** A scroller clips at its padding box, and the ring lies outside its tab
+(`--vela-focus-ring-width` plus `--vela-focus-ring-offset`, 4px). So the list has that much padding
+on every side and gives it back as a negative margin: the ring of any tab, at the top, the bottom
+and either end of the row, is inside the box, while the tabs, the row's height and its baseline stay
+where they were. The list rule therefore can't be the list's border or an inset shadow, which lie at
+the box's edge: it is a `::before` as wide as the tabs' row, on its bottom edge, sticky at the start
+so it stays put while the tabs scroll, and taking no room in the row. On the headless row the row
+draws the rule instead. A host that styles the list (the site's sticky page tabs) styles that
+larger box: it sticks a ring's width higher and paints its background on the content box.
 
 The hover preview, **the Seed**: a soft-ended bar in the underline's 2px slot (`--vela-stroke-2`),
 in `--vela-border-active` at `--vela-opacity-preview` (0.55), a third of the tab wide and never
@@ -323,13 +334,9 @@ platform draws one (classic scrollbars on Windows), so hiding it would remove a 
 It is not relied on: overlay scrollbars (macOS, phones, a headless browser) show only while scrolling.
 The headless row hides it, because its control is the cue and its row is one line high.
 
-**The focus ring at the row's top and bottom, and at the core row's two ends.** The row is a
-scroller, so it clips what lies outside its box. Today, in both implementations, that cuts the top
-and bottom of a focused tab's ring (the ring lies 4px outside the tab, and the tab is as tall as the
-row), and on the core row the outer side of the ring of the first or last tab. The headless row
-reaches a ring's width past its ends while tabs are hidden, so its ends are clear. Fixing the top and
-bottom changes the list's box, which hosts style (the site's sticky page tabs do), so it is left for
-a decision rather than done here; `tabs-overflow-reveal-whole` is about the ring's left and right.
+**The focus ring is never clipped** (see *Token bindings*, The focus ring's room). Until 2 Nov 2026
+the scroller cut the top and bottom of every focused tab's ring, and on the core row the outer side
+of the first or last tab's; the list now reaches the ring's width past the tabs on every side.
 
 ## Implementations
 
