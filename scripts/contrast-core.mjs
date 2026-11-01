@@ -213,6 +213,17 @@ export const PAIRS = [
   ['--vela-icon-default', '--vela-control-bg', 'Site search button glyph', 'ui'],
   ['--vela-icon-default', '--vela-bg-raised', 'Site search dialog glyph', 'ui'],
   ['--vela-border-active', '--vela-bg-raised-hover', 'Site search active result edge', 'ui'],
+  // Vela's own logo, the Pulse mark (brand/README.md). Brand assets are images, not interface, so
+  // they are the one place primitives are named directly (DESIGN.md); these are the colours the
+  // files in brand/ are drawn in. The squircle tile and app icon: a white mark on primary-500. The
+  // mark on its own: primary-500 on white and on grey-50 (light surfaces), primary-300 on grey-900
+  // (dark). Graphics, so 3:1. Primitives do not change with the theme, so both themes measure the
+  // same. The hero's outer ring at 75% opacity is a composite no token holds: it is asserted in
+  // src/styles/contrast.test.ts with composite() below.
+  ['--vela-white',       '--vela-primary-500', 'Logo: white mark on the primary-500 tile',   'ui'],
+  ['--vela-primary-500', '--vela-white',       'Logo: primary-500 mark on white',            'ui'],
+  ['--vela-primary-500', '--vela-grey-50',     'Logo: primary-500 mark on grey-50',          'ui'],
+  ['--vela-primary-300', '--vela-grey-900',    'Logo: primary-300 mark on grey-900 (dark)',  'ui'],
   // The Tabs hover preview (the Seed, guidelines/components/tabs.md) is deliberately NOT a pair, like
   // the Tooltip's edge above. It is --vela-border-active drawn at --vela-opacity-preview (0.55) over
   // the surface: 2.46:1 on the page and 2.34:1 on a container in light, 2.59:1 and 2.48:1 in dark,
@@ -223,6 +234,16 @@ export const PAIRS = [
   // token), and touch and keyboard users, who never see the Seed, lose nothing. Reaching 3:1 would
   // take a strength of 0.64 to 0.70 depending on theme and surface; the decided strength is 0.55.
 ]
+
+/**
+ * `fg` drawn at `alpha` over `bg`, composited per channel in sRGB the way a browser paints it, and
+ * rounded to the 8-bit colour that reaches the screen. For a graphic drawn at an opacity, such as
+ * the hero logo's outer ring.
+ */
+export function composite(fgHex, bgHex, alpha) {
+  const [f, b] = [toRgb(fgHex), toRgb(bgHex)]
+  return '#' + f.map((c, i) => Math.round(alpha * c + (1 - alpha) * b[i]).toString(16).padStart(2, '0')).join('')
+}
 
 export const THRESHOLD = { text: 4.5, ui: 3.0 }
 

@@ -42,6 +42,7 @@
     "guidelines",
     "!guidelines/proposals",
     "!guidelines/patterns",
+    "!brand",
     "README.md",
     "CHANGELOG.md",
     "LICENSE",

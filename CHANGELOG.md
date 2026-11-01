@@ -57,6 +57,27 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   - e2e: the Overview's headings, every link's target, its Copy button, its layout at its own
     widths and no sideways scroll at 320px; All states renders the gallery; axe runs on both
     pages, in both themes. 1257 checks (was 1233): 991 unit and contract, 193 e2e.
+- **Vela's brand groundwork (R31, part one): the pulse tokens, the release seed, the logo contrast
+  pairs and a wording lint.** Approved by Omkar on 1 November.
+  - Two tokens for the hero logo only: `--vela-duration-brand-pulse` (900ms) and
+    `--vela-delay-brand-pulse-outer` (120ms), in CSS and Dart. They are the one exception to the
+    under-300ms rule (`guidelines/foundations/motion.md`, "The brand pulse exception"): hero only,
+    once per visit, never under reduced motion, never at 32px or below, never in anything built
+    with Vela. A unit test fails if any file under `src/` binds them.
+  - `markSeed(version)` in `scripts/brand/mark-seed.mjs` (not in the package): the lobes and step
+    that seed a release's brand stills, fixed by the major and minor numbers. `applySeed` writes a
+    seed into the stored shader at load time, so the shader itself is never edited.
+  - Four logo pairs in `PAIRS`, as graphics (3:1), by primitive name: white on primary-500
+    (6.08:1), primary-500 on white (6.08:1), primary-500 on grey-50 (5.75:1) and primary-300 on
+    grey-900 (7.05:1). The hero's outer ring at 75% opacity is measured as a composite: white over
+    primary-500 at 4.17:1, primary-500 over white at 3.61:1.
+  - A wording lint (`src/styles/wording.test.ts`): no sentence in the guidelines, the site source,
+    `README.md`, `brand/` or `llms.txt` calls the logo a seal, or names the logo, the Pulse mark
+    or the mood background together with "secure", "security", "trusted", "verified" or
+    "certified".
+  - `DESIGN.md`: brand assets are the one place primitives are named directly, because they are
+    images, not interface. `NOTICE`: the hash function in `brand/mood-o.frag.glsl` is after Dave
+    Hoskins (MIT). `brand/` is kept out of the npm package, and `verify-pack` checks it.
 - **Patterns: a new area, `guidelines/patterns/`, and its first page, Copy** (`copy.md`, with nine
   figures in `copy/`). A pattern records the decisions a component can't make alone: who may read
   a secret, where the "last copied" mark lives, whether a row is clickable, whether the page copies

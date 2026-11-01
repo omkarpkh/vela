@@ -8,7 +8,7 @@ all. A claim without its method is a boast; each line below carries its method.
 
 | Check | How | Where |
 |---|---|---|
-| Text and UI contrast | 48 colour pairs resolved from the generated CSS and measured with the WCAG 2.1 formula, 4.5:1 for text and 3:1 for UI, in both themes — 96 assertions. A new colour pair that is not in the list is unverified, and the rule says so. | `scripts/contrast-core.mjs`, `src/styles/contrast.test.ts` |
+| Text and UI contrast | 102 colour pairs resolved from the generated CSS and measured with the WCAG 2.1 formula, 4.5:1 for text and 3:1 for UI, in both themes — 204 assertions, plus the logo's outer ring at 75% opacity, measured as a composite. A new colour pair that is not in the list is unverified, and the rule says so. | `scripts/contrast-core.mjs`, `src/styles/contrast.test.ts` |
 | Hover states keep contrast | The four button hover pairs are in the same list, because hover once passed only for buttons sitting still. | `scripts/contrast-core.mjs` |
 | Dark mode re-points semantics only | A raw colour in the dark overlay fails a test; every dark value is an alias to a primitive the light theme also uses. | `src/styles/tokens.test.ts` |
 | Closed prop sets | Seventeen hand-written misuse fixtures must fail to compile against the published type declarations — a label-less toggle or input, an invented size, a severity used as a status or as a risk. | `scripts/verify-pack.mjs` |

@@ -1251,6 +1251,10 @@ abstract final class VelaMotion {
   static const Duration delayPreview = Duration(milliseconds: 80);
   /// How long a Toast that times out (success or info, with no action) stays before it leaves. A dwell, not an animation: the reduced-motion collapse never touches it, and the timer pauses while the region is hovered or holds focus. Warnings and any toast with an action never time out.
   static const Duration durationToast = Duration(milliseconds: 6000);
+  /// The hero logo only: the pulse of the Pulse mark in the site's Overview hero, played once per visit. The one exception to the under-300ms rule. Never on in-app navigation, never under reduced motion, never at 32px or below, and never bound by a component or by anything a consumer builds with Vela.
+  static const Duration durationBrandPulse = Duration(milliseconds: 900);
+  /// The hero logo only: how long after the pulse starts the outer ring of the Pulse mark joins it. Part of the same one-off hero moment as duration-brand-pulse, with the same limits: hero only, once per visit, never under reduced motion, never in a component.
+  static const Duration delayBrandPulseOuter = Duration(milliseconds: 120);
   /// For things that change or move while on screen: a hover colour, a press, a knob sliding. Never a bare ease. Things that enter take ease-out; the spring is only for the moments a spec names.
   static const Cubic easeStandard = Cubic(0.2, 0, 0.2, 1);
   /// For things that enter. Starts at four times the average speed, so the first frame already shows movement, then slows to rest with no overshoot.

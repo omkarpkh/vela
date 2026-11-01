@@ -53,7 +53,8 @@ Three rules follow, and all three are checked by `scripts/check-css.mjs` in `npm
   line-height.
 - **No primitives in component CSS.** `var(--vela-grey-700)` in `src/components/**` fails the
   build; the one exception a spec may record is a role no semantic covers, and that is a
-  reason to add the semantic, not to bind the primitive.
+  reason to add the semantic, not to bind the primitive. Vela's own brand assets (`brand/`) are the one
+  place primitives are named directly, because they are images, not interface.
 - **No raw values.** No hex, no `rgb()`/`hsl()`/`oklch()`, no CSS named colour (`transparent`
   and `currentColor` defer to the cascade and are fine), no bare `px`/`rem`/`em`. `0`, a `1px`
   hairline on a border/outline/inset/margin property, percentages and unitless numbers pass. A
