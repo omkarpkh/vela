@@ -253,6 +253,9 @@ export const PAIRS = [
   ['--vela-primary-500', '--vela-white',       'Logo: primary-500 mark on white',            'ui'],
   ['--vela-primary-500', '--vela-grey-50',     'Logo: primary-500 mark on grey-50',          'ui'],
   ['--vela-primary-300', '--vela-grey-900',    'Logo: primary-300 mark on grey-900 (dark)',  'ui'],
+  // The site header's logo (demo/App.tsx) sits on the page, bg-global: white in light, which is the
+  // primary-500 pair above, and grey-950 in dark.
+  ['--vela-primary-300', '--vela-grey-950',    'Logo: primary-300 mark on grey-950 (the dark header)', 'ui'],
   // The Overview's hero (demo/shell/ProductMark.tsx) sits on the mood still, not on a token. The
   // light still's tones are named by hex: its base #f7f9f9, then #eef2f2 and #dde3e4 toward the
   // corners (brand/README.md, "The mood"). The light hero is primary-500 on them, and primary-600

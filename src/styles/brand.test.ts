@@ -3,6 +3,7 @@ import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { createHash } from 'node:crypto'
 import { markSeed, applySeed, seedLabel } from '../../scripts/brand/mark-seed.mjs'
+import { loadThemes, resolve as tokenValue } from '../../scripts/contrast-core.mjs'
 
 const root = resolve(process.cwd())
 
@@ -105,6 +106,57 @@ describe('the favicon', () => {
 
   it('is linked from the site, through the base path', () => {
     expect(readFileSync(join(root, 'demo/index.html'), 'utf8')).toContain('<link rel="icon" type="image/svg+xml" href="%BASE_URL%favicon.svg" />')
+  })
+
+  it('is the core-16 mark in the squircle tile, the README\'s path', () => {
+    expect(readFileSync(join(root, 'brand/vela-favicon-16.svg'), 'utf8')).toContain('<path d="M16 0C28.6 0 32 3.4 32 16S28.6 32 16 32 0 28.6 0 16 3.4 0 16 0Z" fill="#0a6c7d"/>')
+  })
+})
+
+// The home-screen tile (npm run brand:touch-icon): brand/vela-app-icon.svg rendered at 180px, never
+// redrawn. The PNG names the SVG it came from by its SHA-256, so a changed app icon fails here until
+// the script is run again.
+describe('the apple-touch-icon', () => {
+  const png = readFileSync(join(root, 'demo/public/apple-touch-icon.png'))
+  /** Every chunk of the PNG, by type, with its data. */
+  const chunks = () => {
+    const out: { type: string; data: Buffer }[] = []
+    for (let i = 8; i < png.length;) {
+      const n = png.readUInt32BE(i)
+      out.push({ type: png.toString('latin1', i + 4, i + 8), data: png.subarray(i + 8, i + 8 + n) })
+      i += 12 + n
+    }
+    return out
+  }
+
+  // Full bleed, with no transparency: iOS fills transparent pixels with black and rounds the corners
+  // itself, so the icon is the tile's teal to every edge (truecolour, no alpha channel).
+  it('is a 180 × 180 PNG, full bleed, with no alpha channel', () => {
+    expect(png.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))).toBe(true)
+    const ihdr = chunks()[0]
+    expect(ihdr.type).toBe('IHDR')
+    expect([ihdr.data.readUInt32BE(0), ihdr.data.readUInt32BE(4), ihdr.data[9]]).toEqual([180, 180, 2])
+  })
+
+  it('was rendered from the app icon as it is now', () => {
+    const text = chunks().filter((c) => c.type === 'tEXt').map((c) => c.data.toString('latin1').split('\0'))
+    const sha = createHash('sha256').update(readFileSync(join(root, 'brand/vela-app-icon.svg'))).digest('hex')
+    expect(text).toContainEqual(['vela-source-sha256', sha])
+  })
+
+  it('is small, and linked from the site through the base path', () => {
+    expect(png.length).toBeLessThan(20 * 1024)
+    expect(readFileSync(join(root, 'demo/index.html'), 'utf8')).toContain('<link rel="apple-touch-icon" href="%BASE_URL%apple-touch-icon.png" />')
+  })
+})
+
+// The browser's bar matches the header, which is --vela-bg-global, in each theme.
+describe('theme-color', () => {
+  it('is bg-global in light and in dark', () => {
+    const { light, dark } = loadThemes()
+    const html = readFileSync(join(root, 'demo/index.html'), 'utf8')
+    expect(html).toContain(`<meta name="theme-color" media="(prefers-color-scheme: light)" content="${tokenValue(light, '--vela-bg-global')}" />`)
+    expect(html).toContain(`<meta name="theme-color" media="(prefers-color-scheme: dark)" content="${tokenValue(dark, '--vela-bg-global')}" />`)
   })
 })
 

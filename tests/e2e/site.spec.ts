@@ -1574,6 +1574,163 @@ test.describe('Product Mark: the Overview hero and its pulse', () => {
   }
 })
 
+// The header logo (the logo states Omkar approved on 1 Nov 2026): the 24px mark, the name and the
+// version, one link to the Overview (demo/App.tsx). Its props and the colour rule are unit tests
+// (src/styles/site-product-mark.test.tsx); these are the states, read in a browser. The header has
+// no visual baseline: every baseline is a section, a column or <main>.
+test.describe('the header logo', () => {
+  const logo = (page: Page) => page.getByRole('banner').getByRole('link', { name: 'Vela Design System', exact: true })
+
+  test('one link named "Vela Design System", the mark and the version hidden from it, current on the Overview only', async ({ page }) => {
+    await page.goto('/#/components/button')
+    const link = logo(page)
+    await expect(link).toBeVisible()
+    await expect(link).toHaveAttribute('href', '#/')
+    await expect(link).not.toHaveAttribute('aria-current')
+    await expect(link.locator('svg.pm')).toHaveAttribute('aria-hidden', 'true')
+    await expect(link.locator('svg.pm')).toHaveClass(/pm--regular/)
+    await expect(link.locator('.brand__meta')).toHaveAttribute('aria-hidden', 'true')
+    await expect(link.locator('.brand__meta')).toBeVisible()
+    await expect(link.getByRole('img')).toHaveCount(0)
+    // A press goes home.
+    await link.click()
+    await expect(page.getByRole('main').getByRole('heading', { level: 1 })).toHaveText('Vela Design System')
+    await expect(link).toHaveAttribute('aria-current', 'page')
+    // On the Overview a press goes back to the top, and stays there.
+    await page.setViewportSize({ width: 1440, height: 500 })
+    await page.mouse.wheel(0, 2000)
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
+    await link.click()
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0)
+    await expect(link).toHaveAttribute('aria-current', 'page')
+    expect(new URL(page.url()).hash).toMatch(/^(#\/?)?$/)
+    // The name is the same on a phone, where only "Vela" shows.
+    await page.setViewportSize({ width: 390, height: 844 })
+    await expect(logo(page)).toBeVisible()
+    await expect(logo(page).locator('.brand__rest')).toHaveCSS('clip-path', 'inset(50%)')
+  })
+
+  test('the mark is primary-500 in light and primary-300 in dark, 24px, five pixels from the name', async ({ page }) => {
+    await page.goto('/#/components/button')
+    const mark = logo(page).locator('svg.pm')
+    await setTheme(page, 'light')
+    await expect(mark).toHaveCSS('color', 'rgb(10, 108, 125)')
+    await setTheme(page, 'dark')
+    await expect(mark).toHaveCSS('color', 'rgb(95, 184, 201)')
+    const [m, n] = await Promise.all([mark.boundingBox(), logo(page).locator('.brand__name').boundingBox()])
+    expect([m!.width, m!.height]).toEqual([24, 24])
+    expect(Math.round(n!.x - (m!.x + m!.width))).toBe(5)
+  })
+
+  test('hover underlines the name only; the mark and the version do not change', async ({ page }) => {
+    await page.goto('/#/components/button')
+    const link = logo(page)
+    const look = () => link.evaluate((a) => {
+      const cs = (s: string) => getComputedStyle(a.querySelector(s)!)
+      return {
+        link: getComputedStyle(a).textDecorationLine, name: cs('.brand__name').textDecorationLine, meta: cs('.brand__meta').textDecorationLine,
+        mark: [cs('.pm').color, cs('.pm').transform, cs('.pm').opacity], metaColour: cs('.brand__meta').color,
+      }
+    })
+    await page.mouse.move(700, 600)
+    const rest = await look()
+    expect([rest.link, rest.name, rest.meta]).toEqual(['none', 'none', 'none'])
+    await link.locator('.pm').hover()
+    await expect.poll(async () => (await look()).name).toBe('underline')
+    const hover = await look()
+    expect([hover.link, hover.meta]).toEqual(['none', 'none'])
+    expect(hover.mark).toEqual(rest.mark)
+    expect(hover.metaColour).toBe(rest.metaColour)
+  })
+
+  test('the focus ring wraps the whole lockup: 2px, offset 2px, the focus ring colour', async ({ page }) => {
+    await page.goto('/#/components/button')
+    await page.getByRole('banner').getByRole('button', { name: /navigation$/ }).focus()
+    await page.keyboard.press('Tab')
+    const link = logo(page)
+    await expect(link).toBeFocused()
+    const ring = await link.evaluate((a) => {
+      const cs = getComputedStyle(a)
+      const probe = document.createElement('i')
+      probe.style.color = 'var(--vela-focus-ring-color)'
+      a.appendChild(probe)
+      const token = getComputedStyle(probe).color
+      probe.remove()
+      const r = a.getBoundingClientRect()
+      const inside = [...a.querySelectorAll('.pm, .brand__name, .brand__meta')].every((el) => {
+        const b = el.getBoundingClientRect()
+        return b.left >= r.left && b.right <= r.right && b.top >= r.top && b.bottom <= r.bottom
+      })
+      return { style: cs.outlineStyle, width: cs.outlineWidth, offset: cs.outlineOffset, colour: cs.outlineColor === token, inside }
+    })
+    expect(ring).toEqual({ style: 'solid', width: '2px', offset: '2px', colour: true, inside: true })
+  })
+
+  test('the header mark never animates, while the Overview hero pulses once', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'no-preference' })
+    await page.addInitScript(() => {
+      const w = window as unknown as { __anim: { header: number; hero: number } }
+      w.__anim = { header: 0, hero: 0 }
+      document.addEventListener('animationstart', (e) => {
+        const el = e.target as Element
+        if (el.closest?.('.topbar .brand')) w.__anim.header += 1
+        if (el.closest?.('.ov-hero')) w.__anim.hero += 1
+      }, true)
+    })
+    await page.goto('/')
+    await expect.poll(() => page.evaluate(() => (window as unknown as { __anim: { hero: number } }).__anim.hero)).toBeGreaterThan(0)
+    await logo(page).hover()
+    await logo(page).click()
+    await page.waitForTimeout(1200)
+    expect(await page.evaluate(() => (window as unknown as { __anim: { header: number } }).__anim.header)).toBe(0)
+    const names = await logo(page).locator('svg.pm, svg.pm *').evaluateAll((els) => [...new Set(els.map((e) => getComputedStyle(e).animationName))])
+    expect(names).toEqual(['none'])
+    await expect(logo(page).locator('[data-playing], .pm-ring, button')).toHaveCount(0)
+  })
+
+  test('forced colours: the name and the mark are LinkText, and the focus ring is still an outline', async ({ page }) => {
+    await page.emulateMedia({ forcedColors: 'active' })
+    await page.goto('/#/components/button')
+    const banner = page.getByRole('banner')
+    const linkText = await banner.evaluate((host) => { const p = document.createElement('i'); p.style.cssText = 'forced-color-adjust: none; color: LinkText'; host.appendChild(p); const v = getComputedStyle(p).color; p.remove(); return v })
+    const link = logo(page)
+    await expect(link.locator('.brand__name')).toHaveCSS('color', linkText)
+    await expect(link.locator('svg.pm')).toHaveCSS('color', linkText)
+    // The mark is drawn in currentColor, so its strokes follow.
+    await expect(link.locator('svg.pm circle')).toHaveCSS('fill', linkText)
+    await banner.getByRole('button', { name: /navigation$/ }).focus()
+    await page.keyboard.press('Tab')
+    await expect(link).toBeFocused()
+    await expect(link).toHaveCSS('outline-style', 'solid')
+    await expect(link).toHaveCSS('outline-width', '2px')
+  })
+
+  test('at 390 the menu button, the mark with "Vela", Search and Appearance all fit, with no overlap', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.goto('/#/components/button')
+    await page.evaluate(() => document.fonts.ready)
+    const banner = page.getByRole('banner')
+    const parts = [
+      banner.getByRole('button', { name: 'Show navigation' }),
+      logo(page),
+      banner.getByRole('button', { name: 'Search', exact: true }),
+      banner.getByRole('button', { name: 'Appearance', exact: true }),
+    ]
+    const boxes = []
+    for (const p of parts) { await expect(p).toBeVisible(); boxes.push((await p.boundingBox())!) }
+    // Left to right, apart, inside the window, and inside the bar's height.
+    for (let i = 1; i < boxes.length; i++) expect(boxes[i].x, `part ${i}`).toBeGreaterThanOrEqual(boxes[i - 1].x + boxes[i - 1].width)
+    for (const b of boxes) { expect(b.x).toBeGreaterThanOrEqual(0); expect(b.x + b.width).toBeLessThanOrEqual(390); expect(b.y).toBeGreaterThanOrEqual(0); expect(b.y + b.height).toBeLessThanOrEqual(56) }
+    // The quarter-width clear space (6px) round the mark, to the menu button.
+    const mark = (await logo(page).locator('svg.pm').boundingBox())!
+    expect(mark.x - (boxes[0].x + boxes[0].width)).toBeGreaterThanOrEqual(6)
+    await expect(logo(page).locator('.brand__name')).toHaveText('Vela Design System')
+    await expect(logo(page).locator('.brand__meta')).toBeHidden()
+    expect(Math.round((await logo(page).locator('.brand__name').boundingBox())!.width)).toBeLessThan(40)
+    expect(await noSidewaysScroll(page)).toBe(true)
+  })
+})
+
 test.describe('All states', () => {
   // It left the menu on 1 Nov 2026 (slice 1 of the playground uplift), and stays at its address as the
   // visual baselines' page.

@@ -1,4 +1,10 @@
-# Vela
+<h1>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="brand/vela-hero-96plus.svg">
+    <img src="brand/vela-hero-96plus-light.svg" alt="" width="96" height="96" align="middle">
+  </picture>
+  Vela Design System
+</h1>
 
 [![CI](https://img.shields.io/github/actions/workflow/status/omkarpkh/vela/ci.yml?branch=main&label=CI)](https://github.com/omkarpkh/vela/actions/workflows/ci.yml)
 [![npm](https://img.shields.io/npm/v/%40omkarux%2Fvela?label=npm)](https://www.npmjs.com/package/@omkarux/vela)
@@ -59,8 +65,8 @@ link to each, and the number of automated checks, written by the test runners ra
 | **Dependencies** | None in the core entry. `react` / `react-dom` are peers (18.3 or 19). The `/headless` entry needs one optional peer, `@base-ui/react` 1.9.x (MIT) |
 | **Icons** | 50 curated [Lucide](https://lucide.dev) 1.63.0 glyphs (ISC; a subset from Feather, MIT), compiled into the core entry at build time — no icon dependency, `lucide` is a devDependency only. The ISC notice ships in [`NOTICE`](NOTICE) |
 | **Format** | ESM, `preserveModules` for tree-shaking, full `.d.ts` |
-| **Tests** | 1714 automated checks — 1303 unit and contract (115 contrast pairs, each asserted in both themes), 408 browser (110 screenshots: 68 at four widths, 24 of the component tabs, 6 of the proposal and pattern pages, 6 of the doc pages and 6 of the Overview and two foundations at 1440, 296 playground, 2 docs), 3 Flutter — counted by `npm run checks` |
-| **Packed size** | 314.6 kB, 266 files (the Filter Grammar's modules and their .d.ts are most of the growth since 0.15.0), as `npm run verify` measures it (README and CHANGELOG ship in the tarball, so this moves when they do) |
+| **Tests** | 1731 automated checks — 1313 unit and contract (116 contrast pairs, each asserted in both themes), 415 browser (110 screenshots: 68 at four widths, 24 of the component tabs, 6 of the proposal and pattern pages, 6 of the doc pages and 6 of the Overview and two foundations at 1440, 303 playground, 2 docs), 3 Flutter — counted by `npm run checks` |
+| **Packed size** | 315.7 kB, 266 files (the Filter Grammar's modules and their .d.ts are most of the growth since 0.15.0), as `npm run verify` measures it (README and CHANGELOG ship in the tarball, so this moves when they do) |
 
 ## The three ideas worth stealing
 
@@ -155,7 +161,7 @@ document.documentElement.removeAttribute('data-theme')        // follow the OS
 
 ```bash
 npm run dev        # demo showcase at localhost:5174
-npm test           # 1303 unit and contract tests, of 1714 checks in all — the numbers are generated into demo/checks.json
+npm test           # 1313 unit and contract tests, of 1731 checks in all — the numbers are generated into demo/checks.json
 npm run checks     # counts every automated check into demo/checks.json (diffed in verify)
 npm run contrast   # WCAG report for both themes
 npm run verify     # tokens:check + icons:check + rules:check + typecheck + tests + checks:check + build + pack-and-consume gate
