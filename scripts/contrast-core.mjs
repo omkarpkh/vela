@@ -213,6 +213,9 @@ export const PAIRS = [
   // The site's section index (demo/shell/SectionIndex.tsx, slice 1 of the playground uplift): where you
   // are is an ink line on the grey strip or rail, never teal, which is kept for choices. A UI mark, 3:1.
   ['--vela-border-action', '--vela-bg-container', 'Site section index, the ink line on the strip', 'ui'],
+  // The Foundations pages' specimens (slice 6 of the playground uplift): a spacing bar, a size box, a
+  // radius tile's edge, a curve and the dot that plays it, drawn in the ink on the page. A UI mark, 3:1.
+  ['--vela-border-action', '--vela-bg-global',    'Site foundation specimen marks on the page',   'ui'],
   // Negative case: de-emphasized text on a container is 4.35:1 in light and fails. The site's
   // navigation and props panel used it; they now use text-default. Asserted below the minimum in
   // light so nobody reaches for it again; in dark it is 4.65:1.
