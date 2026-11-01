@@ -12,23 +12,26 @@ import { measureRow, revealScroll, inViewWithRing, type RowInput, type RowTab } 
 // is in tests/e2e/playground.spec.ts.
 
 const tab = (width: number, extra: Partial<RowTab> = {}): RowTab => ({ width, selected: false, disabled: false, unseen: false, ...extra })
-/** Ten 80px tabs with a 20px gap (980px of tabs), in a 300px row; the second is open. */
+/**
+ * Ten 80px tabs with a 20px gap (980px of tabs), in a 300px row; the second is open. The scroller has
+ * the focus ring's 4px of padding at each end, so it is 308px wide and the first tab starts at 4.
+ */
 const row = (patch: Partial<RowInput> = {}): RowInput => ({
   tabs: Array.from({ length: 10 }, (_, i) => tab(80, { selected: i === 1 })),
-  view: 300, scroll: 0, padStart: 0, gap: 20, ring: 4, fade: 20, room: 300, sticky: false,
+  view: 308, scroll: 0, padStart: 4, gap: 20, ring: 4, fade: 20, room: 300, sticky: false,
   ...patch,
 })
 
 describe('Tabs overflow: the row arithmetic', () => {
   // [[rule: tabs-overflow-count-measured]]
   it('counts the tabs not wholly in view: cut by an edge or under a fade, whatever the scroll', () => {
-    // 0–80, 100–180 and 200–280 are clear of the end fade (280–300); 300–380 is past the edge.
+    // 4–84, 104–184 and 204–284 are clear of the end fade (288–308); 304–384 is past the edge.
     const r = measureRow(row())
     expect(r.overflow).toBe(true)
     expect(r.tabs.map((t) => t.hidden)).toEqual([false, false, false, true, true, true, true, true, true, true])
     expect(r.hiddenCount).toBe(7)
-    // One pixel narrower and the third tab runs into the fade: it is hidden too, though it is on screen.
-    expect(measureRow(row({ view: 299, room: 299 })).hiddenCount).toBe(8)
+    // A few pixels narrower and the third tab runs into the fade: it is hidden too, though it is on screen.
+    expect(measureRow(row({ view: 303, room: 295 })).hiddenCount).toBe(8)
     // Scrolled to the end: the start fade is drawn and the first tabs are the hidden ones.
     const end = measureRow(row({ scroll: 680 }))
     expect([end.moreStart, end.moreEnd]).toEqual([true, false])
@@ -50,7 +53,8 @@ describe('Tabs overflow: the row arithmetic', () => {
   it('fades only the tabs that reach an edge where more tabs are, with a mask, never the row', () => {
     const r = measureRow(row({ scroll: 300 }))
     // The tab at 300–380 is at the start edge (0–80 on screen) under the start fade (0–20).
-    expect(r.tabs[3].fade).toMatch(/^linear-gradient\(to right, transparent 0px, currentColor 20px, currentColor/)
+    // Scrolled 300, it sits at 4–84 on screen: transparent at the edge (4px before it), opaque at 20px.
+    expect(r.tabs[3].fade).toMatch(/^linear-gradient\(to right, transparent -4px, currentColor 16px, currentColor/)
     // A tab clear of both fades has no mask.
     expect(r.tabs[4].fade).toBe('none')
   })
@@ -67,7 +71,7 @@ describe('Tabs overflow: the row arithmetic', () => {
     // Scrolled back to the start with the open tab far along: it sticks at the end instead.
     const far = measureRow(row({ sticky: true, padStart: 4, tabs: Array.from({ length: 10 }, (_, i) => tab(80, { selected: i === 8 })) }))
     expect(far.stuck).toBe('end')
-    expect(far.tabs[8]).toMatchObject({ hidden: false, fade: 'none', start: 300 - 4 - 80 })
+    expect(far.tabs[8]).toMatchObject({ hidden: false, fade: 'none', start: 308 - 4 - 80 })
     // The core never sticks: the open tab can be scrolled out of view, the gap the spec names.
     expect(measureRow(row({ scroll: 400 })).stuck).toBeNull()
     expect(measureRow(row({ scroll: 400 })).tabs[1].hidden).toBe(true)
@@ -105,8 +109,9 @@ describe('Tabs overflow: revealing a tab', () => {
   it('moves the row as little as it can, and not at all when the tab is already in view', () => {
     expect(revealScroll(row(), 0)).toBe(0)
     expect(revealScroll(row(), 1)).toBe(0)
-    // Tab 2 is 200–280: clear of the end fade with its ring means its end at 300 - 20 - 4.
-    expect(revealScroll(row(), 2)).toBe(280 + 4 + 20 - 300)
+    expect(revealScroll(row(), 2)).toBe(0)
+    // Tab 3 is 304–384: clear of the end fade with its ring means its end at 308 - 20 - 4.
+    expect(revealScroll(row(), 3)).toBe(384 + 4 + 20 - 308)
   })
 
   it('on the headless row, clears the stuck open tab as well', () => {

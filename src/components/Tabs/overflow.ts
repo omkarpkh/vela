@@ -176,15 +176,15 @@ export function measureRow(input: RowInput): RowResult {
 
 /**
  * Whether tab `j` is wholly in view at this result, its focus ring included: inside the window, clear
- * of the fades and of a stuck open tab. At an end of the row the ring's outer side lies outside the
- * scroller, which clips it, and no scroll can change that (tabs.md, Overflow, names the gap).
+ * of the fades and of a stuck open tab. The scroller's padding is the ring's room, so at either end
+ * of the row the ring fits too.
  */
 export function inViewWithRing(result: RowResult, input: RowInput, j: number): boolean {
   const t = result.tabs[j]
   if (!t) return false
   const w = input.tabs[j].width
-  const startOk = t.start - (result.moreStart ? input.ring : 0) >= result.winStart - EPS
-  const endOk = t.start + w + (result.moreEnd ? input.ring : 0) <= result.winEnd + EPS
+  const startOk = t.start - input.ring >= result.winStart - EPS
+  const endOk = t.start + w + input.ring <= result.winEnd + EPS
   return startOk && endOk
 }
 
@@ -254,7 +254,9 @@ export function readRow(list: HTMLElement, row: HTMLElement | null, sticky: bool
     gap: px(cs.columnGap),
     ring: px(cs.getPropertyValue('--vela-focus-ring-width')) + px(cs.getPropertyValue('--vela-focus-ring-offset')),
     fade: px(cs.getPropertyValue('--vela-space-20')),
-    room: row ? row.clientWidth : list.clientWidth,
+    // The width the tabs have: the row's (headless), or the list's inside its padding, which is
+    // only the focus ring's room (core).
+    room: row ? row.clientWidth : list.clientWidth - px(cs.paddingLeft) - px(cs.paddingRight),
     sticky,
   }
 }

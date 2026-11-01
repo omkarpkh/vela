@@ -3,15 +3,31 @@
 
 .vela-tabs__list {
   display: flex; align-items: stretch; gap: var(--vela-space-20);
-  /* The list rule is drawn inside the padding box, as an inset shadow, so the 2px selected
-     underline can lie over its bottom pixel without leaving the box. A scroll container clips at
-     its padding box: while the rule was a border outside it, the underline's lower pixel (which
-     overlapped that border) was clipped and the underline rendered 1px. The shadow is fixed to the
-     list's box, so the rule stays put while the tabs scroll over it. */
-  box-shadow: inset 0 -1px 0 var(--vela-border-subtle);
+  /* A scroll container clips at its padding box, and a focus ring lies outside its tab (its width
+     plus its offset). So the list reaches that far past the tabs on every side, as padding, and
+     gives the same back as a negative margin: the ring of any tab, at the top, the bottom and either
+     end of the row, is inside the box and never clipped, while the tabs, the row's height and its
+     baseline stay exactly where they were. */
+  padding: calc(var(--vela-focus-ring-width) + var(--vela-focus-ring-offset));
+  margin: calc(-1 * (var(--vela-focus-ring-width) + var(--vela-focus-ring-offset)));
   /* Scroll sideways only: with overflow-y left to follow overflow-x (auto), a touch browser drew a
      stray vertical scrollbar at the list's end. */
   overflow-x: auto; overflow-y: hidden;
+}
+/* The list rule: 1px of --vela-border-subtle along the tabs' bottom edge, under the 2px selected
+   underline, which lies over its pixel. It can't be the list's own border or an inset shadow, which
+   sit at the box's edge, a ring's reach below the tabs. So it is a pseudo-element as wide as the
+   tabs' row (the content box), on the content's bottom edge, sticky at the start so it stays put
+   while the tabs scroll over it, and taking no room in the row: its negative end margin gives back
+   its width and the gap after it. Painted first, so every tab and its underline lie over it. */
+.vela-tabs__list::before {
+  content: '';
+  flex: none; align-self: flex-end;
+  position: sticky; inset-inline-start: 0;
+  inline-size: 100%;
+  margin-inline-end: calc(-100% - var(--vela-space-20));
+  border-bottom: 1px solid var(--vela-border-subtle);
+  pointer-events: none;
 }
 
 .vela-tabs__trigger {
@@ -133,17 +149,12 @@
 }
 .vela-tabs__row > .vela-tabs__list {
   flex: 1 1 auto; min-width: 0;
-  box-shadow: none;
   scrollbar-width: none;
 }
 .vela-tabs__row > .vela-tabs__list::-webkit-scrollbar { display: none; }
-/* With tabs hidden, the scroller reaches a focus ring's width past the row at each side, so a tab's
-   ring at either end of the row, and the stuck open tab's, are never clipped. The tabs stay where
-   they were. */
-.vela-tabs__row[data-vela-overflow] > .vela-tabs__list {
-  padding-inline: calc(var(--vela-focus-ring-width) + var(--vela-focus-ring-offset));
-  margin-inline: calc(-1 * (var(--vela-focus-ring-width) + var(--vela-focus-ring-offset)));
-}
+/* The row draws the rule, so the list doesn't. The list still reaches a ring's width past the row
+   on every side (its padding and negative margin above), so no ring is clipped. */
+.vela-tabs__row > .vela-tabs__list::before { display: none; }
 /* The open tab never leaves view: it sticks to the edge it would leave by, above the tabs that pass
    under it. Those fade out where they meet it (their mask). A sticky box keeps inside the scroller's
    padding, so with the padding above it stands its focus ring's reach in from the edge. */
@@ -191,14 +202,15 @@
    tab drew an underline in the text colour and the selected tab could not be told apart. Here the
    triggers keep their own colours (forced-color-adjust: none) and use system colours only:
    the selected tab is the one in Highlight, with a Highlight underline; the others carry no
-   underline; a disabled tab is GrayText; focus stays a Highlight ring. The list rule becomes a
-   CanvasText border below the padding box (the shadow is gone), which the underline no longer
-   overlaps, so nothing is clipped. The Seed must not borrow Highlight, or preview and selection
+   underline; a disabled tab is GrayText; focus stays a Highlight ring. The list rule is CanvasText,
+   one pixel below the underline's slot, so the two never merge. The Seed must not borrow Highlight, or preview and selection
    collapse into one mark: it is a solid 1px CanvasText line at its own length, so it differs from
    the selection in colour, weight and length, with no mask (an image there is removed). The line is
    the selection, so it is Highlight. */
 @media (forced-colors: active) {
-  .vela-tabs__list { border-bottom: 1px solid CanvasText; }
+  /* The list rule is CanvasText and one pixel lower, below the underline's slot, so the two never
+     overlap; the list's padding holds it, so the row is no taller. */
+  .vela-tabs__list::before { border-bottom-color: CanvasText; margin-block-end: -1px; }
   .vela-tabs__trigger { forced-color-adjust: none; color: CanvasText; border-bottom-color: transparent; }
   .vela-tabs__trigger[aria-selected='true'] { color: Highlight; border-bottom-color: Highlight; }
   .vela-tabs__list[data-vela-moving] .vela-tabs__trigger[aria-selected='true'] { border-bottom-color: transparent; }
@@ -237,8 +249,9 @@
                 calc(-1 * var(--vela-space-10)) 0 0 Canvas,
                 calc(-1 * var(--vela-space-10) - 1px) 0 0 CanvasText;
   }
-  .vela-tabs__row { border-bottom: 1px solid CanvasText; }
-  .vela-tabs__row > .vela-tabs__list { border-bottom: none; }
+  /* The row's rule: CanvasText, one pixel below the tabs as the list's is, drawn outside the row so
+     it is no taller. The row keeps its own colours for it; everything in it sets its own. */
+  .vela-tabs__row { forced-color-adjust: none; box-shadow: 0 1px 0 CanvasText; }
   .vela-tabs__more { forced-color-adjust: none; color: CanvasText; border-bottom-color: Canvas; }
   .vela-tabs__more-news { color: CanvasText; }
   .vela-root .vela-tabs__more:focus-visible { outline-color: Highlight; }
