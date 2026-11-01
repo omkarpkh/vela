@@ -197,6 +197,31 @@ describe('the CSS checker', () => {
     expect(lintCss('.vela-brand-mark { transform: none; } /* vela-allow: just this once */').findings.map((f) => f.waived)).toEqual([false])
   })
 
+  // Slice 1 of the playground uplift: the site's own two rules, neither waivable.
+  it('site: every page control (cursor: pointer) has a pressed rule beside it', () => {
+    const site = (css: string) => lintCss(css, { site: true }).findings.filter((f) => f.rule === 'pressed-state').map((f) => f.value)
+    expect(site('.seg { cursor: pointer; }')).toEqual(['.seg'])
+    expect(site('.seg { cursor: pointer; } .seg:not(.is-locked):active { background: var(--vela-bg-selected); }')).toEqual([])
+    expect(site('.a, .b summary { cursor: pointer; } .a:active { color: inherit; }')).toEqual(['.b summary'])
+    // A component's own press response counts; another control's does not.
+    expect(site('.cm { cursor: pointer; } .cm[data-press] .glyph { transform: scale(0.88); }')).toEqual([])
+    expect(site('.card { cursor: pointer; } .cards:active { color: inherit; }')).toEqual(['.card'])
+    // Not a control, and not the kit: the component stylesheets are held by their own press rules.
+    expect(site('.handle { cursor: ew-resize; }')).toEqual([])
+    expect(lintCss('.seg { cursor: pointer; }').findings).toEqual([])
+    expect(lintCss('.seg { cursor: pointer; } /* vela-allow: no */', { site: true }).findings.map((f) => f.waived)).toEqual([false])
+  })
+
+  it('site: a state drawn as a box-shadow is restated for forced colours, which drop every shadow', () => {
+    const site = (css: string) => lintCss(css, { site: true }).findings.filter((f) => f.rule === 'shadow-meaning').map((f) => f.value)
+    expect(site('.seg[aria-current="true"] { box-shadow: inset 0 0 0 1px var(--vela-border-active); }')).toEqual(['.seg[aria-current="true"]'])
+    expect(site(`.seg[aria-current="true"] { box-shadow: inset 0 0 0 1px var(--vela-border-active); }
+      @media (forced-colors: active) { .seg[aria-current='true'] { border-color: Highlight; } }`)).toEqual([])
+    expect(site('.row.is-changed, .row:active { box-shadow: inset var(--vela-stroke-2) 0 0 var(--vela-border-active); } @media (forced-colors: active) { .row.is-changed { border-color: Highlight; } }')).toEqual(['.row:active'])
+    // A hairline that marks no state, and a shadow taken away, carry no meaning.
+    expect(site('.cell { box-shadow: 1px 0 0 var(--vela-border-subtle); } .a:hover { box-shadow: none; }')).toEqual([])
+  })
+
   it('honours an inline waiver with a reason, reports it, and rejects one without', () => {
     const r = lintCss('.a { width: 34px; height: 20px; } /* vela-allow: needs sizing token, tracked in Phase 0 */')
     expect(r.findings.map((f) => f.waived)).toEqual([true, true])

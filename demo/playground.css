@@ -101,6 +101,7 @@
 .pg-select-wrap { position: relative; display: block; }
 .pg-select { width: 100%; height: var(--vela-control-height-35); border: 1px solid var(--vela-control-border); border-radius: var(--vela-radius-4); background: var(--vela-control-bg); color: var(--vela-text-default); padding: 0 calc(var(--vela-space-10) + var(--vela-icon-16) + var(--vela-space-10)) 0 var(--vela-space-10); font: inherit; font-size: var(--vela-text-body-size); appearance: none; -webkit-appearance: none; cursor: pointer; }
 .pg-select-wrap::after { content: ''; position: absolute; right: var(--vela-space-10); top: 50%; width: var(--vela-icon-16); height: var(--vela-icon-16); transform: translateY(-50%); pointer-events: none; background: var(--vela-icon-default); -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M4 6l4 4 4-4' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/></svg>") center / contain no-repeat; mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M4 6l4 4 4-4' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/></svg>") center / contain no-repeat; }
+.pg-select:active { border-color: var(--vela-control-border-active); }
 .pg-select:disabled { color: var(--vela-text-inactive); background: var(--vela-control-bg-disabled); cursor: not-allowed; }
 .pg-select:focus-visible { outline: var(--vela-focus-ring-width) solid var(--vela-focus-ring-color); outline-offset: var(--vela-focus-ring-offset); }
 .pg-booleans { display: flex; flex-direction: column; gap: var(--vela-space-10); padding-top: var(--vela-space-5); }
@@ -251,6 +252,7 @@
   }
   .pg-expand[aria-expanded="true"] { background: var(--vela-bg-selected); border-color: var(--vela-border-active); }
 }
+.pg-expand:active { background: var(--vela-bg-selected); border-color: var(--vela-border-active); }
 @media (forced-colors: active) { .pg-expand { border-color: ButtonText; } }
 
 /* ----------------------------------------------------- the stage width -- */
@@ -298,6 +300,7 @@
   border: none; background: none; color: var(--vela-text-link); font: inherit; font-size: var(--vela-text-meta-size);
   text-decoration: underline; cursor: pointer;
 }
+.pg-rule__action:active { background: var(--vela-bg-selected); }
 .pg-rule__where { margin: 0; font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); overflow-wrap: anywhere; }
 .pg-rule__try { display: flex; flex-direction: column; gap: var(--vela-space-5); }
 .pg-rule__try[hidden] { display: none; }

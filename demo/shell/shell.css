@@ -25,6 +25,15 @@
   box-shadow: inset 0 0 0 1px var(--vela-border-active);   /* vela-allow: the second pixel of the 2px selected edge, a hairline drawn inside so selecting never changes a segment's width */
 }
 
+/* Pressed (slice 1): the selected mark lands at pointer down, in instant, and nothing moves. A
+   locked value never presses, and the chosen one is already marked. */
+.shell-segment { -webkit-tap-highlight-color: transparent; }
+.shell-segment:not(.is-locked):not([aria-current="true"]):active {
+  background: var(--vela-bg-selected); border-color: var(--vela-border-active);
+  box-shadow: inset 0 0 0 1px var(--vela-border-active);
+  transition-duration: var(--vela-duration-instant);
+}
+
 /* Locked (specs/segmented-control.md): default text, never faded; a dashed inset edge; no hover fill
    and no press, because it can't be chosen. Its reason is read with it, not shown. */
 .shell-segment.is-locked { border-style: dashed; cursor: not-allowed; gap: var(--vela-space-5); }
@@ -45,6 +54,7 @@
     border: var(--vela-stroke-2) solid CanvasText;
     box-shadow: none;
   }
+  .shell-segment:not(.is-locked):not([aria-current="true"]):active { border-color: Highlight; }
 }
 
 /* ------------------------------------------------------ error boundaries -- */
@@ -59,6 +69,7 @@
 }
 .shell-error__lead { margin: 0; max-width: 64ch; }
 .shell-error__details summary { cursor: pointer; color: var(--vela-text-link); }
+.shell-error__details summary:active { background: var(--vela-bg-selected); }
 .shell-error__text {
   margin: var(--vela-space-10) 0 0; padding: var(--vela-space-10) var(--vela-space-15);
   border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4);
@@ -90,6 +101,7 @@
 .shell-search-button.is-compact { justify-content: center; padding: 0; color: var(--vela-text-default); }
 .shell-search-button svg { flex: none; color: var(--vela-icon-default); }
 @media (hover: hover) { .shell-search-button:hover { border-color: var(--vela-control-border-hover); } }
+.shell-search-button:active { border-color: var(--vela-control-border-active); }
 .shell-kbd {
   display: inline-block; padding: 0 var(--vela-space-5);
   border: 1px solid var(--vela-border-default); border-radius: var(--vela-radius-3);
@@ -111,6 +123,7 @@
 .shell-search__list { list-style: none; margin: 0; padding: var(--vela-space-5); max-height: calc(100vh - 4 * var(--vela-space-60)); overflow-y: auto; }
 .shell-search__option { display: flex; flex-direction: column; gap: var(--vela-space-5); padding: var(--vela-space-10); border-radius: var(--vela-radius-4); cursor: pointer; }
 .shell-search__option[aria-selected='true'] { background: var(--vela-bg-raised-hover); box-shadow: inset var(--vela-stroke-2) 0 0 var(--vela-border-active); }
+.shell-search__option:active { background: var(--vela-bg-raised-hover); }
 .shell-search__title { display: flex; flex-wrap: wrap; align-items: center; gap: var(--vela-space-5) var(--vela-space-10); font-weight: var(--vela-font-weight-semibold); font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height); }
 .shell-search__alias { font-weight: var(--vela-font-weight-regular); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); }
 .shell-search__sign { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
@@ -146,6 +159,7 @@
 .shell-appearance__button svg { flex: none; color: var(--vela-icon-default); }
 .shell-appearance__button[aria-expanded="true"] { background: var(--vela-bg-selected); border-color: var(--vela-border-active); }
 @media (hover: hover) { .shell-appearance__button:hover { background: var(--vela-bg-hover); transition-duration: var(--vela-duration-fast); } }
+.shell-appearance__button:active { background: var(--vela-bg-selected); border-color: var(--vela-border-active); transition-duration: var(--vela-duration-instant); }
 .shell-appearance__panel {
   position: absolute; top: calc(100% + var(--vela-space-10)); right: 0; z-index: 40;
   width: var(--vela-popover-width); max-width: calc(100vw - 2 * var(--vela-space-15)); box-sizing: border-box;

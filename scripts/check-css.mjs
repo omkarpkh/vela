@@ -35,6 +35,17 @@
  *                   reaches the mark without naming it (`.host > *`) is the browser check's to catch:
  *                   tests/e2e/playground.spec.ts reads the computed style on the Brand Mark page.
  *
+ * Two more for the site only (slice 1 of the playground uplift), neither waivable:
+ *
+ *   pressed-state   a page control, any selector that sets `cursor: pointer`, has no pressed rule in
+ *                   the same stylesheet: a selector that begins with it and goes on to `:active`,
+ *                   `[data-press]` or `[data-vela-pressed]`. A press must show at pointer down.
+ *   shadow-meaning  a `box-shadow` that marks a state (a selector with `[aria-…]`, `[data-…]`,
+ *                   `.is-…`, `:hover`, `:focus…`, `:active`, `:checked` or `:target`) whose
+ *                   selector is not restated inside `@media (forced-colors: active)` in the same
+ *                   stylesheet. Forced colours drop every shadow, so a mark drawn only as one is lost
+ *                   there; the restatement draws it as a border, an outline or a system colour.
+ *
  * Allowed without a waiver: `0` in any unit; `1px` (and `-1px`) where it is a hairline or the
  * compensation for one — border*, outline*, inset*, margin*, top/right/bottom/left, box-shadow; `100%` and
  * every other percentage (translate percentages included); unitless numbers (line-height,
@@ -173,7 +184,27 @@ const walk = (dir) => {
  * Lint one stylesheet. Returns { findings, waivers }: each finding is
  * { rule, line, prop, value, what, waived }, each waiver { line, reason }.
  */
-export function lintCss(source) {
+/** Splits a selector list at its top-level commas: `.a:not(.b, .c), .d` is two selectors. */
+const splitSelectors = (list) => {
+  const out = []
+  let depth = 0, cur = ''
+  for (const ch of list) {
+    if (ch === '(' || ch === '[') depth++
+    if (ch === ')' || ch === ']') depth--
+    if (ch === ',' && depth === 0) { out.push(cur); cur = ''; continue }
+    cur += ch
+  }
+  out.push(cur)
+  return out.map((x) => x.replace(/\s+/g, ' ').replace(/'/g, '"').trim()).filter(Boolean)
+}
+const STATEFUL = /\[aria-|\[data-|\.is-|:(hover|focus|focus-visible|focus-within|active|checked|target)\b/
+const PRESSED = /:active\b|\[data-press|\[data-vela-pressed/
+const FORCED = /^@media[^{]*forced-colors\s*:\s*active/
+
+/**
+ * Lint one stylesheet. `site` adds the two site-only rules, pressed-state and shadow-meaning.
+ */
+export function lintCss(source, { site = false } = {}) {
   const findings = []
   const waivers = new Map()   // line → reason ('' when the waiver carries none)
 
@@ -199,6 +230,9 @@ export function lintCss(source) {
   const blocks = []   // the selector or at-rule of each open block, so a declaration knows it is in @keyframes or an icon
   let pressedLine = 0   // the first selector that styles [data-vela-pressed]
   let tapCleared = false
+  const selectors = []   // every rule's selectors, { sel, forced }
+  const controls = []    // selectors that set cursor: pointer, { sel, line }
+  const shadows = []     // state selectors that draw a box-shadow, outside forced colours, { sel, line }
   const flush = (isDecl) => {
     const text = buf
     buf = ''
@@ -240,6 +274,13 @@ export function lintCss(source) {
       }
     }
     if (prop === '-webkit-tap-highlight-color' && value.trim().toLowerCase() === 'transparent') tapCleared = true
+    if (site) {
+      const inner = blocks[blocks.length - 1] ?? ''
+      const forced = blocks.some((b) => FORCED.test(b))
+      if (prop === 'cursor' && value.trim() === 'pointer') for (const sel of splitSelectors(inner)) controls.push({ sel, line: from })
+      if (prop === 'box-shadow' && value.trim() !== 'none' && !forced)
+        for (const sel of splitSelectors(inner)) if (STATEFUL.test(sel)) shadows.push({ sel, line: from })
+    }
     // Not waivable: the mark is another company's drawing, and it never moves.
     if (STILL.test(prop) && blocks.some(onMark))
       findings.push({ rule: 'brand-mark-still', line: from, prop, value: rawValue.replace(/\s+/g, ' ').trim(),
@@ -258,6 +299,10 @@ export function lintCss(source) {
     if (ch === '{') {
       const selector = buf.trim()
       if (!pressedLine && selector.includes('[data-vela-pressed')) pressedLine = start
+      if (site && !selector.startsWith('@')) {
+        const forced = blocks.some((b) => FORCED.test(b))
+        for (const sel of splitSelectors(selector)) selectors.push({ sel, forced })
+      }
       blocks.push(selector); flush(false); start = line; continue
     }
     if (ch === ';') { flush(true); start = line; continue }
@@ -270,6 +315,21 @@ export function lintCss(source) {
   // A control with its own press response turns the browser's off. Not waivable: the fix is one line.
   if (pressedLine && !tapCleared) findings.push({ rule: 'tap-highlight', line: pressedLine, prop: '-webkit-tap-highlight-color', value: '',
     what: 'styles [data-vela-pressed] but never sets -webkit-tap-highlight-color: transparent — a touch press would get the browser\'s flash on top of its own press response', waived: false })
+
+  if (site) {
+    // A page control shows its press at pointer down (slice 1): the pressed rule sits beside it.
+    for (const c of controls) {
+      // The same control: the selector goes on from it, not from a longer name (`.card` is not `.cards`).
+      const pressed = selectors.some(({ sel }) => sel.startsWith(c.sel) && !/^[\w-]/.test(sel.slice(c.sel.length)) && PRESSED.test(sel.slice(c.sel.length)))
+      if (!pressed) findings.push({ rule: 'pressed-state', line: c.line, prop: 'cursor', value: c.sel,
+        what: `${c.sel} is a page control (cursor: pointer) with no pressed rule — add ${c.sel}:active, landing the selected mark at pointer down in --vela-duration-instant, with nothing moving`, waived: false })
+    }
+    // A state drawn only as a shadow is lost in forced colours: the forced block restates it.
+    for (const sh of shadows) {
+      if (!selectors.some(({ sel, forced }) => forced && sel === sh.sel)) findings.push({ rule: 'shadow-meaning', line: sh.line, prop: 'box-shadow', value: sh.sel,
+        what: `${sh.sel} marks a state with a box-shadow, which forced colours drop — restate it inside @media (forced-colors: active) as a border, an outline or a system colour`, waived: false })
+    }
+  }
 
   return { findings, waivers: [...waivers].map(([l, reason]) => ({ line: l, reason })) }
 }
@@ -291,7 +351,7 @@ export function checkCss(root = DEFAULT_ROOT) {
   })
   const report = []
   for (const [scope, file] of files) {
-    const { findings, waivers } = lintCss(readFileSync(file, 'utf8'))
+    const { findings, waivers } = lintCss(readFileSync(file, 'utf8'), { site: scope === 'site' })
     const problems = findings.filter((f) => !f.waived)
     for (const w of waivers) if (!w.reason) problems.push({ rule: 'waiver-without-reason', line: w.line, prop: '', value: '', what: 'a vela-allow waiver must say why — /* vela-allow: <reason> */', waived: false })
     report.push({ scope, file: relative(root, file), findings, waivers, problems })
