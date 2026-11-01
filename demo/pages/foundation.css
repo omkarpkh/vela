@@ -1,0 +1,128 @@
+/* ------------------------------------------------------------- foundations -- */
+/* The Foundations pages (slice 6 of the playground uplift): specimens first, the spec's words under
+   them. Site CSS: semantic tokens only, units on the token, hover only where hover exists, nothing that
+   carries meaning drawn only as a shadow. Sections sit 60 apart, rows and cards 20 apart. A swatch is
+   painted by its own token inside a light and a dark subtree, so forced colours must leave it alone;
+   every other edge falls back to CanvasText. Words are 12px or more. */
+.fd { display: flex; flex-direction: column; gap: var(--vela-space-40); min-width: 0; }
+.fd-section > p, .fd-section h2, .fd-section h3, .fd figure { margin: 0; }
+/* The page's own lists; the spec's lists, in the prose, keep their bullets. */
+.fd-swatches, .fd-families, .fd-ramp, .fd-faces, .fd-tokgrid, .fd-rows, .fd-radii { margin: 0; padding: 0; list-style: none; }
+.fd-lede { max-width: 72ch; color: var(--vela-text-default); }
+.fd-lede .pg-p { margin: 0; font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height); }
+.fd-main { display: flex; flex-direction: column; gap: var(--vela-space-60); min-width: 0; }
+.fd-section { display: flex; flex-direction: column; gap: var(--vela-space-20); min-width: 0; scroll-margin-top: calc(var(--site-topbar-height) + var(--vela-space-20)); }
+.fd-h2 { color: var(--vela-text-heading); }
+.fd-h2:focus { outline: none; }
+.fd-h2:focus-visible { outline: var(--vela-focus-ring-width) solid var(--vela-focus-ring-color); outline-offset: var(--vela-focus-ring-offset); }
+.fd-h3 { display: flex; align-items: baseline; gap: var(--vela-space-10); font-size: var(--vela-text-h4-size); line-height: var(--vela-text-h4-line-height); font-weight: var(--vela-font-weight-semibold); color: var(--vela-text-heading); }
+.fd-count { font-weight: var(--vela-font-weight-regular); color: var(--vela-text-default); font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height); }
+.fd-key, .fd-note { margin: 0; max-width: 72ch; font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
+.fd-note .pg-p { margin: 0; font-size: inherit; line-height: inherit; }
+.fd-groups { display: flex; flex-direction: column; gap: var(--vela-space-40); min-width: 0; }
+.fd-group { display: flex; flex-direction: column; gap: var(--vela-space-15); min-width: 0; }
+.fd-prose { max-width: 72ch; padding-top: 0; }
+.fd-prose > .pg-p:last-child, .fd-prose > .pg-list:last-child { margin-bottom: 0; }
+
+/* A token's name, breakable after its hyphens, and its copy mark. */
+.fd-tok { display: inline-flex; align-items: center; flex-wrap: wrap; gap: var(--vela-space-5); min-width: 0; }
+.fd-tok__name { min-width: 0; font-family: var(--vela-font-family-mono); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); overflow-wrap: normal; word-break: normal; }
+.fd-values { font-family: var(--vela-font-family-mono); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
+.fd-values--wrap { overflow-wrap: anywhere; }
+
+/* The pair: light on the left, dark on the right, each half its own theme. */
+.fd-pair { display: flex; height: var(--vela-control-height-35); border: 1px solid var(--vela-border-default); border-radius: var(--vela-radius-4); overflow: hidden; forced-color-adjust: none; }
+.fd-pair--small { width: var(--vela-control-height-48); height: var(--vela-control-height-24); flex: none; }
+.fd-pair__half { flex: 1; }
+
+/* Semantic colours: cards of swatches. */
+.fd-swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(calc(11 * var(--vela-space-20)), 1fr)); gap: var(--vela-space-20); }
+.fd-swatch { display: flex; flex-direction: column; gap: var(--vela-space-5); min-width: 0; }
+
+/* The taxonomies: one table each, the level shown by its own component. */
+.fd-taxonomy { display: flex; flex-direction: column; gap: var(--vela-space-10); min-width: 0; }
+.fd-tablewrap { overflow-x: auto; }
+.fd-table { border-collapse: collapse; font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
+.fd-table th, .fd-table td { padding: var(--vela-space-10) var(--vela-space-15) var(--vela-space-10) 0; text-align: start; vertical-align: middle; border-bottom: 1px solid var(--vela-border-subtle); }
+.fd-table thead th { font-weight: var(--vela-font-weight-semibold); vertical-align: bottom; }
+.fd-table tbody th { font-weight: var(--vela-font-weight-regular); }
+.fd-cell { display: inline-flex; align-items: center; gap: var(--vela-space-5); }
+
+/* Primitives: one ramp per family, reference only. */
+.fd-families { display: flex; flex-direction: column; gap: var(--vela-space-15); }
+.fd-family { display: grid; grid-template-columns: calc(6 * var(--vela-space-20)) minmax(0, 1fr); gap: var(--vela-space-15); align-items: start; }
+.fd-family__name { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); font-weight: var(--vela-font-weight-semibold); color: var(--vela-text-default); padding-top: var(--vela-space-5); }
+.fd-ramp { display: flex; flex-wrap: wrap; gap: var(--vela-space-5); }
+.fd-ramp__step { display: flex; flex-direction: column; align-items: center; gap: var(--vela-space-5); width: var(--vela-control-height-48); }
+.fd-ramp__chip { width: 100%; height: var(--vela-control-height-35); border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-3); forced-color-adjust: none; }
+.fd-ramp__words { font-family: var(--vela-font-family-mono); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
+
+/* Typography: the three families, then the scale set in its own classes. */
+.fd-faces { display: grid; grid-template-columns: repeat(auto-fit, minmax(calc(12 * var(--vela-space-20)), 1fr)); gap: var(--vela-space-20); }
+.fd-face { display: flex; flex-direction: column; gap: var(--vela-space-10); padding: var(--vela-space-20); border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4); min-width: 0; }
+.fd-face__big { font-size: var(--vela-control-height-48); line-height: var(--vela-control-height-60); color: var(--vela-text-heading); }
+.fd-face__sample { font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height); color: var(--vela-text-default); overflow-wrap: anywhere; }
+.fd-face--primary { font-family: var(--vela-font-family-primary); font-weight: var(--vela-font-weight-light); }
+.fd-face--display { font-family: var(--vela-font-family-display); }
+.fd-face--mono { font-family: var(--vela-font-family-mono); }
+.fd-face__sample.fd-face--primary { font-weight: var(--vela-font-weight-regular); }
+.fd-face__sample.fd-face--display { font-size: var(--vela-text-h1-size); line-height: var(--vela-text-h1-line-height); }
+.fd-face__sample.fd-face--mono { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); letter-spacing: var(--vela-text-meta-tracking); }
+.fd-row.fd-scale__row { grid-template-columns: calc(7 * var(--vela-space-20)) minmax(0, 1fr) calc(9 * var(--vela-space-20)); }
+.fd-scale__role { display: flex; flex-direction: column; }
+.fd-scale__name { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); font-weight: var(--vela-font-weight-semibold); color: var(--vela-text-default); }
+.fd-scale__sample { margin: 0; min-width: 0; color: var(--vela-text-heading); }
+.fd-scale__sample.fd-face--mono { letter-spacing: var(--vela-text-meta-tracking); }
+.fd-tokgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(calc(12 * var(--vela-space-20)), 1fr)); gap: var(--vela-space-15) var(--vela-space-20); }
+.fd-tokgrid__item { display: flex; flex-direction: column; gap: var(--vela-space-5); min-width: 0; }
+
+/* Rows: name and copy, value, picture, use. Rows sit on a hairline, 20 apart. */
+.fd-rows { display: flex; flex-direction: column; }
+.fd-row { display: grid; grid-template-columns: calc(11 * var(--vela-space-20)) calc(4 * var(--vela-space-20)) calc(5 * var(--vela-space-20)) minmax(0, 1fr); gap: var(--vela-space-10) var(--vela-space-20); align-items: center; padding: var(--vela-space-10) 0; border-bottom: 1px solid var(--vela-border-subtle); min-width: 0; }
+.fd-row__name, .fd-row__value { min-width: 0; }
+.fd-row__value { font-family: var(--vela-font-family-mono); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
+.fd-row__picture { display: flex; align-items: center; min-height: var(--vela-control-height-24); color: var(--vela-icon-default); }
+.fd-row__use { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
+.fd-row--skipped .fd-row__name, .fd-row--skipped .fd-row__value { color: var(--vela-text-default); }
+.fd-row--skipped .fd-tok__name { text-decoration: line-through; }
+.fd-row--play { grid-template-columns: calc(11 * var(--vela-space-20)) calc(7 * var(--vela-space-20)) minmax(calc(12 * var(--vela-space-20)), 1fr) minmax(0, 1fr); }
+.fd-bar { display: block; height: var(--vela-space-10); border-radius: var(--vela-radius-3); background: var(--vela-border-action); forced-color-adjust: none; }
+.fd-bar--none { width: calc(2 * var(--vela-space-25)); background: transparent; border: 1px dashed var(--vela-border-default); box-sizing: border-box; }
+.fd-box { display: block; width: var(--vela-space-40); box-sizing: border-box; border: 1px solid var(--vela-border-action); border-radius: var(--vela-radius-3); background: var(--vela-bg-container); }
+.fd-square { display: block; box-sizing: border-box; border: 1px dashed var(--vela-border-default); }
+.fd-target { display: inline-flex; outline: 1px dashed var(--vela-border-default); outline-offset: 0; }
+.fd-figure { display: flex; flex-direction: column; gap: var(--vela-space-10); }
+.fd-pairup { display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--vela-space-30); padding: var(--vela-space-20); border-radius: var(--vela-radius-8); background: var(--vela-bg-container); }
+.fd-pairup__item { display: flex; flex-direction: column; gap: var(--vela-space-10); }
+
+/* Radius: one tile per token, its corner drawn by the token. */
+.fd-radii { display: grid; grid-template-columns: repeat(auto-fill, minmax(calc(9 * var(--vela-space-20)), 1fr)); gap: var(--vela-space-20); }
+.fd-radius { display: flex; flex-direction: column; gap: var(--vela-space-5); min-width: 0; }
+.fd-radius__tile { display: block; height: var(--vela-space-80); box-sizing: border-box; border: 1px solid var(--vela-border-action); background: var(--vela-bg-container); margin-bottom: var(--vela-space-5); }
+.fd-radius__use { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
+
+/* Motion: a dot crosses its track when Play is pressed, by transform only, over the token's own
+   duration and curve. A replay jumps back to the start at once (is-reset) and crosses again. */
+.fd-runner { display: flex; align-items: center; gap: var(--vela-space-15); min-width: 0; }
+.fd-run { position: relative; flex: 1; min-width: 0; height: var(--vela-icon-16); border-bottom: 1px solid var(--vela-border-subtle); }
+.fd-run__mover { display: block; width: calc(100% - var(--vela-icon-16)); transform: translateX(0); transition: transform var(--fd-dur) var(--fd-ease); }
+.fd-run.is-end .fd-run__mover { transform: translateX(100%); }
+.fd-run.is-reset .fd-run__mover { transition: none; }
+.fd-run__dot { display: block; width: var(--vela-icon-16); height: var(--vela-icon-16); border-radius: var(--vela-radius-3); background: var(--vela-border-action); forced-color-adjust: none; }
+.fd-curveplay { display: flex; align-items: center; gap: var(--vela-space-15); min-width: 0; }
+.fd-curve { flex: none; width: calc(5 * var(--vela-space-20)); height: var(--vela-space-60); }
+.fd-curve__rule { stroke: var(--vela-border-subtle); stroke-width: 1; }
+.fd-curve__line { fill: none; stroke: var(--vela-border-action); stroke-width: 2; }
+
+/* Narrow: each row stacks, name first. */
+@media (max-width: 760px) {
+  .fd-row, .fd-row--play, .fd-scale__row { grid-template-columns: minmax(0, 1fr); gap: var(--vela-space-5); }
+  .fd-family { grid-template-columns: minmax(0, 1fr); gap: var(--vela-space-5); }
+}
+
+@media (forced-colors: active) {
+  .fd-face, .fd-box, .fd-radius__tile, .fd-row { border-color: CanvasText; }
+  .fd-pair, .fd-ramp__chip { border-color: CanvasText; }
+  .fd-bar, .fd-run__dot { background: CanvasText; }
+  .fd-curve__line { stroke: CanvasText; }
+}

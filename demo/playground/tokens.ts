@@ -80,3 +80,21 @@ export function inState(token: string, state: TokenState): string | null {
   const tail = `${token}-${word}`
   return exists(tail) ? tail : null
 }
+
+/**
+ * The token file's own groups (`primitives`, `color`, `sizing`, `typography`, `motion`), each in file
+ * order, as the CSS names them. The Foundations pages draw their specimens from these (slice 6 of the
+ * playground uplift), so a token added to the file is on its page the next build.
+ */
+type Raw = Record<string, Record<string, { $description?: string }>>
+const RAW = tokensJson as unknown as Raw
+export const GROUP: Record<string, string[]> = Object.fromEntries(
+  Object.entries(RAW).filter(([g]) => !g.startsWith('$')).map(([g, toks]) => [g, Object.keys(toks).filter((n) => !n.startsWith('$')).map((n) => `--vela-${n}`)]),
+)
+
+/** The token's own description in the token file, without its dashes' spacing quirks; '' when it has none. */
+export function descriptionOf(name: string): string {
+  const n = bare(name)
+  for (const [g, toks] of Object.entries(RAW)) if (!g.startsWith('$') && toks[n]) return (toks[n].$description ?? '').trim()
+  return ''
+}
