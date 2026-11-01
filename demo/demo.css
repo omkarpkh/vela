@@ -122,30 +122,11 @@ body { margin: 0; background: var(--vela-bg-global); }
 .adopt-frame { border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4); overflow: hidden; }
 .adopt-limit { margin-top: var(--vela-space-20); max-width: 72ch; }
 
-/* How it is made */
-.how-figure { margin: var(--vela-space-30) 0 0; }
-.how-figure svg { display: block; width: 100%; height: auto; max-width: 720px; }   /* vela-allow: the diagram's reading width; literal until a layout token exists */
-.how-figure figcaption { margin: var(--vela-space-10) 0 0; }
-.how-scroll { overflow-x: auto; }
-.how-table { width: 100%; border-collapse: collapse; font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); }
-.how-table th, .how-table td { text-align: left; vertical-align: top; padding: var(--vela-space-10) var(--vela-space-10) var(--vela-space-10) 0; border-bottom: 1px solid var(--vela-border-subtle); }
-.how-table thead th { color: var(--vela-text-de-emphasized); font-weight: var(--vela-font-weight-regular); }
-.how-table th[scope="row"] { white-space: nowrap; font-weight: var(--vela-font-weight-semibold); }
-.how-table code, .how-list code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: var(--site-code-size); }
-.how-list { margin: 0 0 var(--vela-space-20); padding-left: var(--vela-space-20); }
-.how-list li { margin: 0 0 var(--vela-space-10); }
-
-/* ---------------------------------------------------------- Status page -- */
-.status-table { width: 100%; border-collapse: collapse; font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height); }
-.status-table th, .status-table td { text-align: left; vertical-align: top; padding: var(--vela-space-10) var(--vela-space-10) var(--vela-space-10) 0; border-bottom: 1px solid var(--vela-border-default); }
-.status-table thead th { font-size: var(--vela-text-meta-size); font-weight: var(--vela-font-weight-semibold); color: var(--vela-text-de-emphasized); letter-spacing: var(--vela-text-meta-tracking); text-transform: uppercase; }
-.status-table tbody th { font-weight: var(--vela-font-weight-semibold); white-space: nowrap; }
+/* ------------------------------------------------------------ site tag -- */
 /* A lifecycle label is a neutral outlined tag: text-default, the default border, no fill. It is not
    a severity, so it never borrows a severity colour (DESIGN.md, the three taxonomies); the word is
    the signal. The same tag marks a Proposal page. */
 .site-tag { display: inline-block; padding: 0 var(--vela-space-5); border: 1px solid var(--vela-border-default); border-radius: var(--vela-radius-4); background: transparent; color: var(--vela-text-default); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); font-weight: var(--vela-font-weight-regular); }
-.status-note { display: block; margin-top: var(--vela-space-5); max-width: 42ch; }
-.status-scroll { overflow-x: auto; }
 
 /* --------------------------------------------------------- motion review -- */
 .motion-section { padding: var(--vela-space-30) 0; border-bottom: 1px solid var(--vela-border-subtle); }
