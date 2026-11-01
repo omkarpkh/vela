@@ -274,7 +274,9 @@ function DropdownListStage({ v }: { v: Values }) {
 
 // The Tabs stage's example: ten security views, so narrowing the stage width shows tabs leaving the
 // row for the "more" control (playground spec, section 5; the playground thread's list, 1 Nov 2026).
-const TAB_EXAMPLE: { value: string; label: string; count?: number; disabled?: boolean; panel: string }[] = [
+// Sessions holds news (`unseen`, headless only): narrow the stage until it leaves the row, and the
+// control says "· 1 new".
+const TAB_EXAMPLE: { value: string; label: string; count?: number; disabled?: boolean; unseen?: boolean; panel: string }[] = [
   { value: 'overview', label: 'Overview', panel: 'Everything at a glance.' },
   { value: 'alerts', label: 'Alerts', count: 12, panel: 'Arrow keys move, Home and End jump, Audit log is skipped.' },
   { value: 'assets', label: 'Assets', count: 340, panel: 'Only the active panel is mounted.' },
@@ -283,7 +285,7 @@ const TAB_EXAMPLE: { value: string; label: string; count?: number; disabled?: bo
   { value: 'devices', label: 'Devices', panel: 'Laptops, phones and servers.' },
   { value: 'reports', label: 'Reports', panel: 'Scheduled and saved reports.' },
   { value: 'audit', label: 'Audit log', disabled: true, panel: '' },
-  { value: 'sessions', label: 'Sessions', panel: 'Who is signed in now.' },
+  { value: 'sessions', label: 'Sessions', unseen: true, panel: 'Who is signed in now.' },
   { value: 'integrations', label: 'Integrations', panel: 'Connected tools.' },
 ]
 
@@ -501,11 +503,11 @@ export const REGISTRY: Entry[] = [
     // shows (a segment row with nothing current is not a legal state); the gap goes to the spec thread.
     seed: { implementation: 'core', size: 'regular' },
     containerResponsive: true,
-    // Overflow will be headless only (Omkar, 30 Oct), but the "more" control is designed, not built
-    // (motion/tabs-overflow-control.md): today both implementations scroll the row. Say so.
+    // Overflow is headless only (Omkar, 30 Oct): the headless row loses tabs into "N more"; the core
+    // row scrolls, with a fade at the edge where more tabs are (tabs.md, Overflow). Say which.
     widthNote: (v) => (v.implementation === 'headless'
-      ? 'Tabs scrolls the row sideways when it is full. The "more" control for the headless Tabs is designed but not built yet.'
-      : 'Core Tabs scrolls the row sideways when it is full. The "more" control will be in the headless Tabs; it is designed but not built yet.'),
+      ? 'When the row is full, the tabs that don\'t fit go into "N more", and the open tab stays in view. Sessions has news.'
+      : 'Core Tabs scrolls the row sideways when it is full, with a fade where more tabs are. The "more" control is in the headless Tabs.'),
     hide: ['defaultValue'],
     // The Phase 1 proving case: the same props through either implementation, against the same
     // spec and the same stylesheet. The entries are the ones tabs.md states under "Implementations".
@@ -514,22 +516,34 @@ export const REGISTRY: Entry[] = [
       { id: 'headless', entry: '@omkarux/vela/headless' },
     ],
     render: (v) => {
-      const T = v.implementation === 'headless' ? HeadlessTabs : Tabs
+      const size = (str(v.size) || 'regular') as 'regular' | 'large'
+      const panels = (P: typeof Tabs.Panel) => TAB_EXAMPLE.filter((t) => !t.disabled).map((t) => (
+        <P key={t.value} value={t.value}><p className="vela-body">{t.panel}</p></P>
+      ))
+      // `unseen` is the headless trigger's alone; the core's type rejects it (tabs-unseen-headless-only).
+      if (v.implementation === 'headless') {
+        return (
+          <HeadlessTabs defaultValue="alerts" size={size}>
+            <HeadlessTabs.List aria-label="Views">
+              {TAB_EXAMPLE.map((t) => <HeadlessTabs.Trigger key={t.value} value={t.value} count={t.count} disabled={t.disabled} unseen={t.unseen}>{t.label}</HeadlessTabs.Trigger>)}
+            </HeadlessTabs.List>
+            {panels(HeadlessTabs.Panel)}
+          </HeadlessTabs>
+        )
+      }
       return (
-        <T defaultValue="alerts" size={(str(v.size) || 'regular') as 'regular' | 'large'}>
-          <T.List aria-label="Views">
-            {TAB_EXAMPLE.map((t) => <T.Trigger key={t.value} value={t.value} count={t.count} disabled={t.disabled}>{t.label}</T.Trigger>)}
-          </T.List>
-          {TAB_EXAMPLE.filter((t) => !t.disabled).map((t) => (
-            <T.Panel key={t.value} value={t.value}><p className="vela-body">{t.panel}</p></T.Panel>
-          ))}
-        </T>
+        <Tabs defaultValue="alerts" size={size}>
+          <Tabs.List aria-label="Views">
+            {TAB_EXAMPLE.map((t) => <Tabs.Trigger key={t.value} value={t.value} count={t.count} disabled={t.disabled}>{t.label}</Tabs.Trigger>)}
+          </Tabs.List>
+          {panels(Tabs.Panel)}
+        </Tabs>
       )
     },
     code: (v, spec) =>
       `${printJsx('Tabs', { defaultValue: 'alerts', size: v.size }, defaultsOf(spec)).replace(' />', '>')}
   <Tabs.List aria-label="Views">
-${TAB_EXAMPLE.map((t) => `    <Tabs.Trigger value="${t.value}"${t.count !== undefined ? ` count={${t.count}}` : ''}${t.disabled ? ' disabled' : ''}>${t.label}</Tabs.Trigger>`).join('\n')}
+${TAB_EXAMPLE.map((t) => `    <Tabs.Trigger value="${t.value}"${t.count !== undefined ? ` count={${t.count}}` : ''}${t.disabled ? ' disabled' : ''}${t.unseen && v.implementation === 'headless' ? ' unseen' : ''}>${t.label}</Tabs.Trigger>`).join('\n')}
   </Tabs.List>
 ${TAB_EXAMPLE.filter((t) => !t.disabled).map((t) => `  <Tabs.Panel value="${t.value}">…</Tabs.Panel>`).join('\n')}
 </Tabs>`,
