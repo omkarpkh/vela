@@ -9,7 +9,7 @@ import { LINKS, figmaUrl } from './links'
 import { Doc, DOCS } from './pages/Doc'
 import { Appearance, type Theme } from './shell/Appearance'
 import { Search } from './shell/Search'
-import { ProductMark } from './shell/ProductMark'
+import { ProductMark } from './shell/product-mark-core'
 import { GROUPS } from './playground/catalog'
 
 // One chunk per page, loaded when it is opened (playground spec, B8). The shell — header, nav,

@@ -31,4 +31,17 @@ describe('the site loads each page when it is opened', () => {
     // The catalog imports specs cut to their facts (B8), and nothing that renders.
     expect(staticImports(read('demo/playground/catalog.ts')).every((i) => i.endsWith('.md?facts')), 'catalog.ts').toBe(true)
   })
+
+  // Slice 7, page weight: the header's logo is on every page, so it is in the first chunk; the two
+  // hero drawings are only for the Overview. They are imported by ProductMark.tsx alone, and only the
+  // Overview imports that, so they load with the Overview's chunk, never with the first.
+  it('the hero drawings load only with the Overview, never with the header logo', () => {
+    const walk = (d: string): string[] => readdirSync(resolve(process.cwd(), d), { withFileTypes: true })
+      .flatMap((e) => (e.isDirectory() ? walk(`${d}/${e.name}`) : /\.tsx?$/.test(e.name) ? [`${d}/${e.name}`] : []))
+    const files = walk('demo')
+    expect(files.filter((f) => staticImports(read(f)).some((i) => /vela-hero-96plus/.test(i)))).toEqual(['demo/shell/ProductMark.tsx'])
+    expect(files.filter((f) => staticImports(read(f)).some((i) => /\/ProductMark$/.test(i)))).toEqual(['demo/pages/Overview.tsx'])
+    expect(staticImports(read('demo/App.tsx'))).toContain('./shell/product-mark-core')
+    expect(staticImports(read('demo/shell/product-mark-core.tsx')).filter((i) => /vela-hero|\/ProductMark$/.test(i))).toEqual([])
+  })
 })
