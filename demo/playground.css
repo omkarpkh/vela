@@ -59,24 +59,39 @@
 .pg--full .pg-codebar { margin-top: 0; }
 @media (max-width: 960px) { .pg { grid-template-columns: 1fr; } }
 
-.pg-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: var(--vela-space-15); margin: 0; min-height: var(--vela-control-height-35); }
+.pg-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: var(--vela-space-15); margin: 0 0 var(--vela-space-15); min-height: var(--vela-control-height-35); }
 
 /* Slice 3 (s5-tabs, level 4): the section's heading, with the stage's layout, Compare and Reset at
-   its end; then the Stage part (demo/shell/Stage.tsx), whose slab holds the frames. Alone, the frame
-   is the slab: no edge and no label of its own. Side by side, each frame keeps its edge and names
-   its theme. */
+   its end; then the Stage part (demo/shell/Stage.tsx), whose slab holds the frames edge to edge.
+   Alone, the frame is the slab, with no label of its own. Side by side, each frame names its theme
+   and its own surface tells it apart, and the light one stays exactly where it was alone (the 0px
+   check), so neither form adds an edge or moves the content. */
 .pg-stagehead { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--vela-space-10) var(--vela-space-20); margin: 0 0 var(--vela-space-15); }
 .pg-stagehead__title { margin: 0; }
-.pg-stage-region .shell-stage__slab { padding: var(--vela-space-20); }
-.pg-frame.pg-frame--single { border: 0; border-radius: 0; padding: 0; min-height: calc(4 * var(--vela-space-30)); }
+.pg-stagehead .pg-toolbar { margin: 0; }
+.pg-stage-region .shell-stage__slab { padding: 0; }
+.pg-stage-region .pg-stage { gap: 0; }
+.pg-stage-region .pg-frame { border: 0; border-radius: var(--vela-radius-3); padding: var(--vela-space-40) var(--vela-space-30) var(--vela-space-30); min-height: calc(4 * var(--vela-space-30)); }
+@media (forced-colors: active) { .pg-stage-region .pg-frame:not(.pg-frame--single) { outline: 1px solid CanvasText; outline-offset: -1px; } }
+/* The caption's props may run long, so the stage's own switches take the line under them: the slab
+   then sits at the same place whichever props are on show (the 0px check). */
+.pg-stage-region .shell-stage__props { flex: 1 1 0; }
+.pg-stage-region .shell-stage__tools { flex-basis: 100%; justify-content: flex-end; }
 .pg-stage-region .shell-stage__tools .pg-width { flex-wrap: wrap; }
+/* The caption is on the plate (--vela-bg-container), where de-emphasized text is 4.35:1 in light (a
+   negative case in PAIRS): its words are text-default, as the props panel's are. */
+.pg-stage-region .shell-stage__tools .pg-toolbar__label { color: var(--vela-text-default); }
+
 
 /* The resting stage (RangeStage.tsx): the range, 20 under the live stage. Each form is the real
    component at its real size; its name sits under it. Block components (an alert, a field) stack. */
 .pg-range-wrap { margin-top: var(--vela-space-20); display: flex; flex-direction: column; gap: var(--vela-space-10); }
-.pg-range__frames { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--vela-space-15); }
+.pg-range .shell-stage__slab { padding: 0; }
+.pg-range__frames { display: grid; grid-template-columns: minmax(0, 1fr); }
 .pg-range__frames--two { grid-template-columns: repeat(auto-fit, minmax(calc(14 * var(--vela-space-20)), 1fr)); }
-.pg-range__frame--labelled { position: relative; border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4); padding: var(--vela-space-40) var(--vela-space-20) var(--vela-space-20); }
+.pg-range__frame { position: relative; border-radius: var(--vela-radius-3); padding: var(--vela-space-30); }
+.pg-range__frame--labelled { padding-top: var(--vela-space-40); }
+@media (forced-colors: active) { .pg-range__frame--labelled { outline: 1px solid CanvasText; outline-offset: -1px; } }
 .pg-range__list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--vela-space-20) var(--vela-space-30); }
 .pg-range--stack .pg-range__list { flex-direction: column; align-items: stretch; flex-wrap: nowrap; }
 .pg-range__cell { display: flex; flex-direction: column; align-items: flex-start; gap: var(--vela-space-5); min-width: 0; }
@@ -87,7 +102,10 @@
 .pg-range__left { margin: 0; font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
 @media (max-width: 600px) {
   .pg-stage-region, .pg-range { padding: var(--vela-space-15); }
-  .pg-stage-region .shell-stage__slab, .pg-range .shell-stage__slab { padding: var(--vela-space-15); }
+  .pg-range__frame { padding: var(--vela-space-15); }
+  .pg-range__frame--labelled { padding-top: var(--vela-space-40); }
+  .pg-stage-region .pg-frame { padding: var(--vela-space-40) var(--vela-space-15) var(--vela-space-15); }
+  .pg-stage-region .pg-frame.pg-frame--single { padding: var(--vela-space-15); }
 }
 
 /* The stage column is a container: the two frames stack whenever the column itself is narrow,
@@ -272,10 +290,9 @@
     position: sticky; top: var(--site-topbar-height); z-index: 5;
     padding: var(--vela-space-10); gap: var(--vela-space-10);
   }
-  .pg:not(.is-unpinned) .pg-stage-region .shell-stage__slab { padding: var(--vela-space-10); }
   .pg:not(.is-unpinned) .pg-stage { max-height: var(--pg-strip-height); overflow-y: auto; grid-template-columns: 1fr; }
   .pg:not(.is-unpinned) .pg-frame { min-height: 0; padding-top: var(--vela-space-40); }
-  .pg:not(.is-unpinned) .pg-frame.pg-frame--single { padding-top: 0; }
+  .pg:not(.is-unpinned) .pg-stage-region .pg-frame.pg-frame--single { padding: var(--vela-space-15); }
   /* What sticks is the header and the plate, whose height the page measures into --pg-strip
      (Playground.tsx): its caption wraps by component. Until it is measured, the stage's own cap. */
   html:has(.pg:not(.is-unpinned)) { scroll-padding-top: calc(var(--site-topbar-height) + var(--pg-strip, var(--pg-strip-height)) + var(--vela-space-10)); }
