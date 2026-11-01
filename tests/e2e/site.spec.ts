@@ -62,20 +62,22 @@ test.describe('Proposal pages', () => {
 })
 
 test.describe('the install command', () => {
-  test('a core component installs the package alone', async ({ page }) => {
+  // Slice 2 of the playground uplift: one header band. A core component needs the package alone, so
+  // its header names only the import line; a headless one says it needs Base UI and gives the command.
+  test('a core component shows the import line only', async ({ page }) => {
     await page.goto('/#/components/button')
-    const contract = page.getByRole('region', { name: /^Use / })
-    await expect(contract.locator('.pg-install-command')).toHaveText('npm i @omkarux/vela')
-    await expect(contract.locator('.pg-install-note')).toHaveCount(0)
-    // Install appears once, and never in the code block the Copy button copies.
+    const head = page.locator('.pg-head')
+    await expect(head.locator('.pg-import')).toHaveText("import { Button } from '@omkarux/vela'")
+    await expect(head.locator('.pg-install-command')).toHaveCount(0)
+    // Install is never in the code block the Copy button copies.
     await expect(page.locator('.pg-code')).not.toContainText('npm i')
   })
 
   test('a headless component installs Base UI too, and says why', async ({ page }) => {
     await page.goto('/#/components/popover')
-    const contract = page.getByRole('region', { name: /^Use / })
-    await expect(contract.locator('.pg-install-command')).toHaveText('npm i @omkarux/vela @base-ui/react')
-    await expect(contract.locator('.pg-install-note')).toHaveText("Base UI is an optional peer, and npm doesn't install optional peers for you.")
+    const head = page.locator('.pg-head')
+    await expect(head.locator('.pg-install-command')).toHaveText('npm i @omkarux/vela @base-ui/react')
+    await expect(head.locator('.pg-head__peer')).toContainText('Base UI is an optional peer. Install it too:')
     await expect(page.locator('.pg-code')).not.toContainText('npm i')
   })
 })
@@ -152,6 +154,7 @@ test.describe('forced colours', () => {
       // Change marks: a bound row in the Tokens table is drawn with a border, not a tint. Tokens is
       // its own page tab, so this comes after the checks on the Playground tab.
       await page.getByRole('tab', { name: /^Tokens/ }).click()
+      await page.getByRole('button', { name: /^See all \d+ as one table/ }).click()
       const marks = page.locator('.pg-table--tokens tr.is-bound td:first-child')
       const n = await marks.count()
       if (id !== 'popover') expect(n, 'a bound row').toBeGreaterThan(0)
@@ -286,59 +289,37 @@ test.describe('no sideways page scroll', () => {
 // Slice 1 of the playground redesign: the page header (playground spec, section 4). The Use panel,
 // the contract facts grid, page tabs that appear only with data, and Copy that fails loudly (B3).
 test.describe('the page header', () => {
-  test('the Use panel holds install and import, each with its own Copy, and the links', async ({ page }) => {
+  test('one header band: the title, its status, one line, the import line with its copy mark, and the links', async ({ page }) => {
     await page.goto('/#/components/button')
-    const use = page.getByRole('region', { name: 'Use Button' })
-    await expect(use.getByText('1 · Install')).toBeVisible()
-    await expect(use.getByText('in your terminal, once per project')).toBeVisible()
-    await expect(use.locator('.pg-install-command')).toHaveText('npm i @omkarux/vela')
-    await expect(use.getByText('2 · Import')).toBeVisible()
-    await expect(use.getByText('at the top of each file that uses it')).toBeVisible()
-    await expect(use.locator('.pg-import')).toHaveText("import { Button } from '@omkarux/vela'")
-    await expect(use.getByRole('button', { name: 'Copy install command' })).toBeVisible()
-    await expect(use.getByRole('button', { name: 'Copy import line' })).toBeVisible()
-    await expect(use.getByRole('link', { name: 'Spec on GitHub' })).toHaveAttribute('href', 'https://github.com/omkarpkh/vela/blob/main/guidelines/components/button.md')
-    await expect(use.getByRole('link', { name: 'Source' })).toHaveAttribute('href', 'https://github.com/omkarpkh/vela/blob/main/src/components/Button/Button.tsx')
-    await expect(use.getByRole('link', { name: 'Figma' })).toHaveAttribute('href', /node-id=7-122$/)
-    // Install is only here: the code bar copies the import and the JSX, never the install.
+    const head = page.locator('.pg-head')
+    await expect(head.getByRole('heading', { level: 1 })).toHaveText('Button')
+    await expect(head.locator('.site-tag')).toHaveText('Approved')
+    await expect(head.locator('.pg-head__line')).toHaveText('Triggers an action: save, submit, delete, apply, cancel.')
+    await expect(head.locator('.pg-import')).toHaveText("import { Button } from '@omkarux/vela'")
+    await expect(head.getByRole('button', { name: 'Copy import line' })).toBeVisible()
+    await expect(head.getByRole('link', { name: 'Spec' })).toHaveAttribute('href', 'https://github.com/omkarpkh/vela/blob/main/guidelines/components/button.md')
+    await expect(head.getByRole('link', { name: 'Source' })).toHaveAttribute('href', 'https://github.com/omkarpkh/vela/blob/main/src/components/Button/Button.tsx')
+    await expect(head.getByRole('link', { name: 'Figma' })).toHaveAttribute('href', /node-id=7-122$/)
+    // The install panel and the facts strip are gone.
+    await expect(page.getByRole('region', { name: 'Use Button' })).toHaveCount(0)
+    await expect(page.locator('dl[aria-label="Contract"]')).toHaveCount(0)
     const code = page.getByRole('region', { name: 'Import and usage' })
     await expect(code.locator('.pg-code')).toContainText("import { Button } from '@omkarux/vela'")
     await expect(code.locator('.pg-code')).not.toContainText('npm i')
-    await expect(page.locator('.pg-install-command')).toHaveCount(1)
   })
 
   test('Dropdown List links to its set in the library, published with 0.14.0', async ({ page }) => {
     await page.goto('/#/components/dropdown-list')
-    const use = page.getByRole('region', { name: 'Use Dropdown List' })
-    await expect(use.getByRole('link', { name: 'Figma' })).toHaveAttribute('href', /node-id=164-85$/)
+    await expect(page.locator('.pg-head').getByRole('link', { name: 'Figma' })).toHaveAttribute('href', /node-id=164-85$/)
     const tabs = page.getByRole('tablist', { name: 'Dropdown List page' }).getByRole('tab')
-    await expect(tabs).toHaveText(['Playground', 'Rules', /^Tokens\s*\d+$/, 'Figma'])
+    await expect(tabs).toHaveText(['Playground', /^Rules\s*\d+$/, /^Tokens\s*\d+$/, 'Figma'])
   })
 
-  test('the facts grid reads the spec, the package and the build', async ({ page }) => {
-    await page.goto('/#/components/button')
-    const facts = page.locator('dl[aria-label="Contract"]')
-    const cell = (term: string) => facts.locator('.pg-fact', { has: page.locator('dt', { hasText: new RegExp(`^${term}$`) }) }).locator('dd')
-    await expect(cell('Status')).toHaveText('Approved')
-    await expect(cell('Entry')).toHaveText('@omkarux/vela')
-    await expect(cell('Dependencies')).toHaveText('None at runtime')
-    await expect(cell('Minimum width')).toHaveText('Not stated in the spec yet')
-    await expect(cell('Built')).toHaveText(/^\d+\.\d+\.\d+ · ([0-9a-f]{7}|unknown) · \d{1,2} [A-Z][a-z]{2} \d{4}$/)
-    // Rules: the total, then one tag per level, in the Rules tab's order.
-    await expect(cell('Rules')).toHaveText(/^\d+\s*\d+ compiler/)
-    await expect(cell('Rules').locator('.site-tag').first()).toHaveText(/^\d+ compiler$/)
-
-    await page.goto('/#/components/dropdown-list')
-    await expect(cell('Status')).toHaveText('Experimental')
-    await expect(cell('Entry')).toHaveText('@omkarux/vela/headless')
-    await expect(cell('Dependencies')).toHaveText('@base-ui/react, an optional peer')
-  })
-
-  test('the facts grid never scrolls the page sideways, from 320 to 1440', async ({ page }) => {
+  test('the header band never scrolls the page sideways, from 320 to 1440', async ({ page }) => {
     for (const width of [320, 390, 820, 1280, 1440]) {
       await page.setViewportSize({ width, height: 900 })
-      await page.goto('/#/components/tabs')
-      await expect(page.locator('dl[aria-label="Contract"]')).toBeVisible()
+      await page.goto('/#/components/toast')
+      await expect(page.locator('.pg-head .pg-install-command')).toBeVisible()
       expect(await noSidewaysScroll(page), `${width}px`).toBe(true)
     }
   })
@@ -346,17 +327,17 @@ test.describe('the page header', () => {
   test('page tabs have addresses: shareable, kept on reload, and no history entry per tab', async ({ page }) => {
     await page.goto('/#/components/button')
     const tabs = page.getByRole('tablist', { name: 'Button page' })
-    await expect(tabs.getByRole('tab')).toHaveText(['Playground', 'Rules', /^Tokens\s*\d+$/, 'Figma'])
+    await expect(tabs.getByRole('tab')).toHaveText(['Playground', /^Rules\s*\d+$/, /^Tokens\s*\d+$/, 'Figma'])
     await expect(tabs.getByRole('tab', { name: 'Playground' })).toHaveAttribute('aria-selected', 'true')
     const length = await page.evaluate(() => history.length)
-    await tabs.getByRole('tab', { name: 'Rules' }).click()
+    await tabs.getByRole('tab', { name: /^Rules/ }).click()
     await expect(page).toHaveURL(/#\/components\/button\/rules$/)
     await expect(page.getByRole('heading', { level: 2, name: 'States' })).toBeVisible()
     expect(await page.evaluate(() => history.length)).toBe(length)
     // The nav link stays current on every tab of the page.
     await expect(page.getByRole('navigation', { name: 'Site' }).getByRole('link', { name: 'Button', exact: true })).toHaveAttribute('aria-current', 'page')
     await page.reload()
-    await expect(page.getByRole('tablist', { name: 'Button page' }).getByRole('tab', { name: 'Rules' })).toHaveAttribute('aria-selected', 'true')
+    await expect(page.getByRole('tablist', { name: 'Button page' }).getByRole('tab', { name: /^Rules/ })).toHaveAttribute('aria-selected', 'true')
     // Back to the page's own address: the Playground tab, and the props are where they were.
     await page.getByRole('tablist', { name: 'Button page' }).getByRole('tab', { name: 'Playground' }).click()
     await expect(page).toHaveURL(/#\/components\/button$/)
@@ -389,10 +370,10 @@ test.describe('the page header', () => {
       document.execCommand = () => false
     })
     await page.goto('/#/components/popover')
-    const use = page.getByRole('region', { name: 'Use Popover' })
-    await use.getByRole('button', { name: 'Copy install command' }).click()
+    const head = page.locator('.pg-head')
+    await head.getByRole('button', { name: 'Copy install command' }).click()
     // The Copy Button spec's words; this desktop Chromium is neither Apple nor touch, so Ctrl+C.
-    await expect(use.getByRole('status').first()).toHaveText("Couldn't copy: your browser blocked the clipboard. The text is selected, so press Ctrl+C.")
+    await expect(head.locator('.shell-copymark__fail')).toHaveText("Couldn't copy: your browser blocked the clipboard. The text is selected, so press Ctrl+C.")
     expect(await page.evaluate(() => window.getSelection()?.toString())).toBe('npm i @omkarux/vela @base-ui/react')
 
     const code = page.getByRole('region', { name: 'Import and usage' })
@@ -522,7 +503,7 @@ test.describe('find', () => {
     await dialog.getByRole('combobox').fill('toggle-label-required')
     await expect(dialog.getByRole('option').first()).toContainText('toggle-label-required')
     await page.keyboard.press('Enter')
-    await expect(page).toHaveURL(/#\/components\/toggle\/rules$/)
+    await expect(page).toHaveURL(/#\/components\/toggle\/rules\?rule=toggle-label-required$/)
   })
 
   test('a link to a component that does not exist suggests the closest names', async ({ page }) => {
@@ -981,41 +962,48 @@ test.describe('slice 2b · stage width', () => {
 })
 
 test.describe('slice 4 · proof', () => {
-  test('the Rules tab groups rules by level, and Show filters them with counts from the proof map', async ({ page }) => {
+  // Rebuilt in slice 2 of the playground uplift (s5-tabs): a ledger by checker with plain headings.
+  test('the Rules tab is a ledger by checker, with plain headings, a summary in words and an index', async ({ page }) => {
     await page.goto('/#/components/button/rules')
-    await expect(page.getByText(/^Every proof below passed in the build that published this page: /)).toBeVisible()
-    const show = page.getByRole('group', { name: 'Show' })
-    await expect(show.getByRole('button')).toHaveText(['All 10', 'compiler 3', 'browser test 2', 'convention 5'])
-    for (const h of ['Enforced by the compiler', 'Proved in a real browser', 'Conventions'])
-      await expect(page.getByRole('heading', { name: h, level: 2 })).toBeVisible()
-    await expect(page.getByText('Not mechanically enforced. A reviewer checks these; no test can.')).toBeVisible()
-    await show.getByRole('button', { name: 'convention 5' }).click()
-    await expect(page.getByRole('heading', { name: 'Enforced by the compiler' })).toHaveCount(0)
-    await expect(page.locator('.pg-rule')).toHaveCount(5)
-    // A tag is a label, never a control.
-    await expect(page.locator('.pg-rule .site-tag').first()).toHaveJSProperty('tagName', 'SPAN')
+    await expect(page.locator('.pg-summary__count')).toHaveText('10 rules')
+    await expect(page.locator('.pg-summary__words')).toHaveText('Filled: a machine checks it on every build, 5. Outlined: a reviewer checks it, 5.')
+    await expect(page.locator('.pg-summary__pass')).toHaveText(/^All 5 machine checks pass in \d+\.\d+\.\d+$/)
+    for (const h of ['The compiler refuses these', 'A real browser proves these', 'A reviewer checks these', 'States', 'Motion', "Don't, and what to do instead"])
+      await expect(page.getByRole('heading', { name: new RegExp(`^${h}`), level: 2 })).toBeVisible()
+    // A checker with no rules has no group and no index item (Button has no unit-test rule).
+    await expect(page.getByRole('heading', { name: /^A unit test/ })).toHaveCount(0)
+    await expect(page.getByRole('navigation', { name: 'On this tab' }).getByRole('link')).toHaveText(['Compiler 3', 'Browser 2', 'Review 5', 'States', 'Motion', "Don'ts 12"])
+    // No filter row: the index and Find replace it.
+    await expect(page.getByRole('group', { name: 'Show' })).toHaveCount(0)
   })
 
-  test('"Try to break it" shows the fixture and the compiler\'s own error, in a neutral block', async ({ page }) => {
+  test('"Try to break it" shows the fixture and the compiler\'s own words, in a neutral block', async ({ page }) => {
     await page.goto('/#/components/button/rules')
     const rule = page.locator('.pg-rule[data-rule="button-text-link-requires-primary"]')
     const tryIt = rule.getByRole('button', { name: 'Try to break it' })
     await expect(tryIt).toHaveAttribute('aria-expanded', 'false')
     await tryIt.click()
-    await expect(tryIt).toHaveAttribute('aria-expanded', 'true')
-    await expect(rule.getByText(/^What the compiler says if this rule is broken \(TypeScript \d+\.\d+\.\d+\):$/)).toBeVisible()
+    await expect(rule.getByRole('button', { name: 'Hide the attempt' })).toHaveAttribute('aria-expanded', 'true')
+    await expect(rule.getByText('We tried this')).toBeVisible()
+    await expect(rule.getByText('The compiler says')).toBeVisible()
     await expect(rule.locator('.pg-rule__code').first()).toContainText('appearance="text-link"')
-    await expect(rule.locator('.pg-rule__code').last()).toContainText(/error TS\d+:/)
+    await expect(rule.locator('.pg-rule__code').last()).toContainText('is not assignable')
+    // A neutral block, never in error colours (A14).
+    const colour = await rule.locator('.pg-rule__code').last().evaluate((el) => getComputedStyle(el).color)
+    const body = await page.locator('.pg-rule__lead').first().evaluate((el) => getComputedStyle(el).color)
+    expect(colour).toBe(body)
   })
 
-  test('each proof links to its file and line at the built commit', async ({ page }) => {
+  test('each proof is one link to its file and line at the built commit, with no path in its words', async ({ page }) => {
     await page.goto('/#/components/tabs/rules')
-    const links = page.locator('.pg-rule__where a')
-    // The map is fetched when the page opens (B8); wait for it.
-    await expect(links.first()).toBeVisible()
-    for (const href of await links.evaluateAll((as) => as.map((a) => a.getAttribute('href'))))
-      expect(href).toMatch(/^https:\/\/github\.com\/omkarpkh\/vela\/blob\/([0-9a-f]{7,40}|main)\/(src|tests|scripts)\/[\w./-]+#L\d+$/)
-    const open = page.locator('.pg-rule[data-rule="tabs-only-active-panel-renders"]').getByRole('link', { name: 'Open proof' })
+    const links = page.locator('.pg-rule__test')
+    // The map is fetched when the page opens (B8); wait for it. A compiler rule's link is in its opened row.
+    await expect(page.locator('.pg-rule__act .pg-rule__test').first()).toBeVisible()
+    for (const a of await links.evaluateAll((as) => as.map((x) => ({ href: x.getAttribute('href'), text: (x as HTMLElement).innerText }))))
+      expect(a.href).toMatch(/^https:\/\/github\.com\/omkarpkh\/vela\/blob\/([0-9a-f]{7,40}|main)\/(src|tests|scripts)\/[\w./-]+#L\d+$/)
+    // The visible words; the rule's own line follows for a screen reader only, so a list of links tells them apart.
+    for (const t of await links.evaluateAll((as) => as.map((x) => x.firstChild?.textContent))) expect(t).toBe('See the test on GitHub')
+    const open = page.locator('.pg-rule[data-rule="tabs-only-active-panel-renders"]').getByRole('link', { name: /^See the test on GitHub/ })
     await expect(open).toHaveAttribute('href', /src\/components\/Tabs\/Tabs\.test\.tsx#L\d+$/)
   })
 })
@@ -1695,7 +1683,7 @@ test.describe('slice 1 · the shell', () => {
 
     await index.getByRole('link', { name: 'Browser 2' }).click()
     await expect(page).toHaveURL(/#\/components\/button\/rules\?section=browser$/)
-    const heading = page.getByRole('heading', { level: 2, name: 'Proved in a real browser' })
+    const heading = page.getByRole('heading', { level: 2, name: /^A real browser proves these/ })
     await expect(heading).toBeFocused()
     await expect(index.getByRole('link', { name: 'Browser 2' })).toHaveAttribute('aria-current', 'location')
     await expect(index.locator('[aria-current]')).toHaveCount(1)
@@ -1736,7 +1724,7 @@ test.describe('slice 1 · the shell', () => {
       if (!tall) expect(padding).toBe(56)
       // A row scrolled up under the top of the window, then focused, as Shift+Tab would land on it:
       // the browser brings it out from under what sticks.
-      const row = page.locator('.pg-rule', { hasText: 'button-icons-left-only' })
+      const row = page.locator('.pg-rule[data-rule="button-icons-left-only"]')
       await row.evaluate((el) => { window.scrollBy(0, el.getBoundingClientRect().top - 10) })
       await row.evaluate((el) => { (el as HTMLElement).tabIndex = -1; (el as HTMLElement).focus() })
       await expect(row).toBeFocused()
@@ -1771,8 +1759,9 @@ test.describe('slice 1 · the shell', () => {
     // The strip keeps its edge when its fill goes.
     await expect(index).toHaveCSS('border-top-style', 'solid')
 
-    // The chosen segment (Show, on this tab): a 2px border, never only a shadow.
-    const chosen = page.getByRole('group', { name: 'Show' }).locator('[aria-current="true"]')
+    // The chosen segment (State, on the Tokens tab): a 2px border, never only a shadow.
+    await page.goto('/#/components/button/tokens')
+    const chosen = page.getByRole('group', { name: 'State' }).locator('[aria-current="true"]')
     const seg = await chosen.evaluate((el) => { const cs = getComputedStyle(el); return { style: cs.borderTopStyle, width: cs.borderTopWidth, shadow: cs.boxShadow } })
     expect(seg).toEqual({ style: 'solid', width: '2px', shadow: 'none' })
   })
