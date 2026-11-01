@@ -346,6 +346,8 @@
   @delay-tooltip
   @delay-preview
   @duration-toast
+  @duration-brand-pulse        /* the hero logo only: the site may bind it, no component does */
+  @delay-brand-pulse-outer     /* the hero logo only */
   @ease-standard
   @ease-out
   @ease-spring /* the fallback; the spring itself is declared under @supports at the end of this file */

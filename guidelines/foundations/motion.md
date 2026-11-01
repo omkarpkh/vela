@@ -159,6 +159,22 @@ proved by browser-level (Playwright) rules in the owning component's spec, for e
 `copy-button-strokes-retract-clean`, not by the linter. "One glyph at a time" is a convention,
 held in review.
 
+## The brand pulse exception
+
+One movement in Vela is allowed past 300ms: the pulse of Vela's own logo, the Pulse mark, in the
+hero of the site's Overview. It runs over `--vela-duration-brand-pulse` (900ms), and the outer ring
+starts `--vela-delay-brand-pulse-outer` (120ms) later. It is the one exception to the under-300ms
+rule, and it is kept that small:
+
+- **Hero only.** The large logo on the Overview, and nowhere else.
+- **Once per visit.** Never again on in-app navigation back to the page.
+- **Never under reduced motion.** The logo is shown at rest.
+- **Never at 32px or below.** The small marks do not move.
+- **Never in anything a consumer builds with Vela.** The two tokens are for the site. No component
+  or style under `src/` binds them, and a unit test (`src/styles/brand.test.ts`) fails if one does.
+
+It plays once and stops, so it is not a loop and Rule 6 still holds.
+
 ## What this buys
 
 Motion that goes unnoticed. The compliment to design for is "this feels quick", never "nice animation".

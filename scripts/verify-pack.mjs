@@ -60,6 +60,7 @@ check(files.some((f) => f.startsWith('guidelines/')), 'tarball contains guidelin
 check(files.includes('NOTICE'), 'tarball contains NOTICE (the Lucide ISC notice travels with every copy)')
 check(!files.some((f) => f.startsWith('src/')), 'no src/ leaked into the tarball')
 check(!files.some((f) => f.includes('.test.')), 'no test files leaked into the tarball')
+check(!files.some((f) => f.startsWith('brand/') || f.startsWith('scripts/')), 'no brand/ files or brand scripts in the tarball (the logo files are the site\'s, not the package\'s)')
 console.log(`  ....  ${files.length} files, ${(packed.size / 1024).toFixed(1)} kB packed`)
 
 // 1b. the core entry's module graph ------------------------------------------

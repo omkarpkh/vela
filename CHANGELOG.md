@@ -57,6 +57,42 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   - e2e: the Overview's headings, every link's target, its Copy button, its layout at its own
     widths and no sideways scroll at 320px; All states renders the gallery; axe runs on both
     pages, in both themes. 1257 checks (was 1233): 991 unit and contract, 193 e2e.
+- **Vela's brand groundwork (R31, part one): the pulse tokens, the release seed, the logo contrast
+  pairs and a wording lint.** Approved by Omkar on 1 November.
+- **Vela's own logo, the Pulse mark, and the mood background, in `brand/`** (R31, approved by
+  Omkar on 1 November). The site now has a favicon; nothing else a visitor sees changes yet.
+  - `brand/`: the three core masters (16, 24, 32px), the favicon and avatar in their squircle tile,
+    the hero for dark and for light, the app icon, and the mood shader `mood-o.frag.glsl`, all
+    copied unchanged. `brand/README.md` has the files, colours, geometry and rules. The folder is
+    not in the npm package, and `verify-pack` checks that.
+  - The favicon: `demo/public/favicon.svg`, a copy of `brand/vela-favicon-16.svg` (a unit test
+    holds them byte-identical), linked from `demo/index.html` through the site's base path.
+  - `npm run brand:stills` renders the four Overview stills (desktop 1600 × 520 and phone
+    720 × 900, light and dark) as 2× PNG masters on SwiftShader, and encodes each as AVIF and WebP
+    at 2× and 1× through Pillow (`scripts/brand/encode-stills.py`; Python with Pillow 11 or later,
+    not an npm dependency): 16 files in `demo/public/brand/`, named with the release seed, from
+    5.7 to 234.4 kB. A unit test holds every file to 250 kB, and another fails if their seed is not
+    the package version's; `RELEASING.md` runs the script on a minor or major bump. The masters (4
+    to 5.6 MB) are not committed; their hashes match the recipe's.
+  - `markSeed(version)` in `scripts/brand/mark-seed.mjs` (not in the package): n = major × 100 +
+    minor, lobes = n mod 24 (24 for 0, never under 3), step = lobes / 100. `applySeed` writes a
+    seed into the shader as it loads; for 0.15.0 the shader comes back byte-identical, which a
+    test checks, so the stored file is never edited.
+  - Two tokens for the hero logo only: `--vela-duration-brand-pulse` (900ms) and
+    `--vela-delay-brand-pulse-outer` (120ms), in CSS and Dart. They are the one exception to the
+    under-300ms rule (`guidelines/foundations/motion.md`, "The brand pulse exception"): hero only,
+    once per visit, never under reduced motion, never at 32px or below, never in anything built
+    with Vela. A unit test fails if any file under `src/` binds them.
+  - Four logo pairs in `PAIRS`, as graphics (3:1), by primitive name: white on primary-500
+    (6.08:1), primary-500 on white (6.08:1), primary-500 on grey-50 (5.75:1) and primary-300 on
+    grey-900 (7.05:1). The hero's outer ring at 75% opacity is measured as a composite: white over
+    primary-500 at 4.17:1, primary-500 over white at 3.61:1.
+  - A wording lint (`src/styles/wording.test.ts`): no sentence in the guidelines, the site source,
+    `README.md`, `brand/` or `llms.txt` calls the logo a seal, or names the logo, the Pulse mark
+    or the mood together with "secure", "security", "trusted", "verified" or "certified".
+  - `DESIGN.md`: brand assets are the one place primitives are named directly, because they are
+    images, not interface. `NOTICE`: the hash function in `brand/mood-o.frag.glsl` is after Dave
+    Hoskins (MIT).
 - **Patterns: a new area, `guidelines/patterns/`, and its first page, Copy** (`copy.md`, with nine
   figures in `copy/`). A pattern records the decisions a component can't make alone: who may read
   a secret, where the "last copied" mark lives, whether a row is clickable, whether the page copies

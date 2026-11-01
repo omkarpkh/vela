@@ -346,6 +346,8 @@
   --vela-delay-tooltip: 600ms;
   --vela-delay-preview: 80ms;
   --vela-duration-toast: 6000ms;
+  --vela-duration-brand-pulse: 900ms;        /* the hero logo only: the site may bind it, no component does */
+  --vela-delay-brand-pulse-outer: 120ms;     /* the hero logo only */
   --vela-ease-standard: cubic-bezier(0.2, 0, 0.2, 1);
   --vela-ease-out: cubic-bezier(0.25, 1, 0.5, 1);
   --vela-ease-spring: var(--vela-ease-out); /* the fallback; the spring itself is declared under @supports at the end of this file */

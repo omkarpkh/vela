@@ -1532,7 +1532,9 @@ test.describe('the Tabs press', () => {
   test('the Motion review page lists every motion token with its value and reason, in light and dark', async ({ page }) => {
     await page.goto('/#/motion')
     const rows = page.locator('.motion-tokens tbody tr')
-    await expect(rows).toHaveCount(11)
+    await expect(rows).toHaveCount(13)
+    // The two brand-pulse tokens are listed too: the hero logo only, the one exception to the under-300ms rule.
+    await expect(page.locator('.motion-tokens tr[data-token="duration-brand-pulse"]')).toHaveCount(1)
     await expect(page.locator('.motion-tokens tr[data-token="ease-spring"] td').first()).toContainText('stiffness 1200, damping 56, mass 1')
     await expect(page.locator('.motion-tokens tr[data-token="ease-out"] td').first()).toHaveText('cubic-bezier(0.25, 1, 0.5, 1)')
     await expect(page.locator('.motion-frame[data-theme="dark"] .vela-tabs__list')).toHaveCount(2)

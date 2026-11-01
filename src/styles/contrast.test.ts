@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { resolve as resolvePath } from 'node:path'
 // Shared with `npm run contrast` so the report and the test cannot disagree.
-import { loadThemes, auditTheme, resolve } from '../../scripts/contrast-core.mjs'
+import { loadThemes, auditTheme, resolve, composite, contrast } from '../../scripts/contrast-core.mjs'
 
 const themes = loadThemes()
 
@@ -63,5 +63,23 @@ describe('design tokens', () => {
     )
     const rawHex = darkSource.match(/--vela-[\w-]+:\s*#[0-9a-f]{3,6}/gi) ?? []
     expect(rawHex, `dark theme must not contain raw hex: ${rawHex.join(', ')}`).toHaveLength(0)
+  })
+
+  // The hero logo's outer ring is drawn at 75% opacity (brand/README.md), so what reaches the screen
+  // is a composite no token holds and PAIRS cannot list. Measured here in both themes, against the
+  // 3:1 a graphic needs. The ratio is in the test name and pinned, so the name cannot drift from it.
+  describe('logo: the hero outer ring at 75% opacity', () => {
+    const cases = [
+      ['--vela-white', '--vela-primary-500', 'white at 75% over primary-500', '4.17'],
+      ['--vela-primary-500', '--vela-white', 'primary-500 at 75% over white', '3.61'],
+    ] as const
+    for (const theme of ['light', 'dark'] as const) {
+      it.each(cases)(`${theme}: %s on %s (%s) measures %s:1, at least 3:1`, (fg, bg, _what, measured) => {
+        const under = resolve(themes[theme], bg)
+        const ratio = contrast(composite(resolve(themes[theme], fg), under, 0.75), under)
+        expect(ratio).toBeGreaterThanOrEqual(3)
+        expect(ratio.toFixed(2)).toBe(measured)
+      })
+    }
   })
 })

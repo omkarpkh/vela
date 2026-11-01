@@ -3455,6 +3455,32 @@
         }
       }
     },
+    "duration-brand-pulse": {
+      "$type": "duration",
+      "$value": {
+        "value": 900,
+        "unit": "ms"
+      },
+      "$description": "The hero logo only: the pulse of the Pulse mark in the site's Overview hero, played once per visit. The one exception to the under-300ms rule. Never on in-app navigation, never under reduced motion, never at 32px or below, and never bound by a component or by anything a consumer builds with Vela.",
+      "$extensions": {
+        "com.omkarux.vela": {
+          "figma": "duration/brand-pulse"
+        }
+      }
+    },
+    "delay-brand-pulse-outer": {
+      "$type": "duration",
+      "$value": {
+        "value": 120,
+        "unit": "ms"
+      },
+      "$description": "The hero logo only: how long after the pulse starts the outer ring of the Pulse mark joins it. Part of the same one-off hero moment as duration-brand-pulse, with the same limits: hero only, once per visit, never under reduced motion, never in a component.",
+      "$extensions": {
+        "com.omkarux.vela": {
+          "figma": "delay/brand-pulse-outer"
+        }
+      }
+    },
     "ease-standard": {
       "$type": "cubicBezier",
       "$value": [
