@@ -1,0 +1,227 @@
+/* ------------------------------------------------------------ proposal page -- */
+/* A Proposal page (demo/pages/Proposal.tsx; slice 4 of the playground uplift, s5-proposal). Site
+   CSS: semantic tokens only, units on the token, hover only where hover exists, a pressed rule for
+   every control, and nothing that carries meaning drawn only as a shadow. Sections sit 60 apart,
+   cards 20 apart. Every sketch has a dashed edge and a "Sketch" chip, so nothing drawn passes as
+   built; its words are 12px or more. */
+
+.proposal { display: flex; flex-direction: column; gap: var(--vela-space-30); }
+.proposal__head { margin: 0; }
+.proposal__facts { margin: var(--vela-space-10) 0 0; color: var(--vela-text-default); }
+.proposal__count { margin-inline-start: var(--vela-space-5); font-weight: var(--vela-font-weight-semibold); }
+.proposal__banner, .proposal__nostory {
+  display: flex; align-items: flex-start; gap: var(--vela-space-10);
+  padding: var(--vela-space-15) var(--vela-space-20); border: 1px dashed var(--vela-border-default); border-radius: var(--vela-radius-4);
+  background: var(--vela-bg-container); color: var(--vela-text-default);
+}
+.proposal__banner p, .proposal__nostory p { margin: 0; }
+.proposal__banner .vela-icon, .proposal__nostory .vela-icon { flex: none; color: var(--vela-icon-strong); }
+.prop-chip { border-style: dashed; }
+
+/* The layout: the content, and the rail beside it (the section index's rail form). Under 1100 CSS
+   px the index is a strip above the content that sticks under the header (one button under 600). */
+.proposal__layout { display: grid; grid-template-columns: minmax(0, 1fr) calc(10 * var(--vela-space-20)); grid-template-areas: "main rail"; gap: var(--vela-space-40); align-items: start; }
+.proposal__main { grid-area: main; display: flex; flex-direction: column; gap: var(--vela-space-60); min-width: 0; }
+.proposal__rail { grid-area: rail; position: sticky; top: calc(var(--site-topbar-height) + var(--vela-space-20)); }
+.proposal__layout.is-narrow { grid-template-columns: minmax(0, 1fr); grid-template-areas: "rail" "main"; gap: var(--vela-space-20); }
+.proposal__layout.is-narrow .proposal__rail { top: var(--site-topbar-height); z-index: 5; background: var(--vela-bg-global); }
+/* Under 560 CSS px tall only the header sticks (sweep T45): a zoomed page keeps its reading room. */
+@media (max-height: 560px) { .proposal__rail, .proposal__layout.is-narrow .proposal__rail { position: static; } }
+@media (min-height: 561px) {
+  html:has(.proposal__layout.is-narrow) { scroll-padding-top: calc(var(--site-topbar-height) + var(--vela-control-height-40) + var(--vela-space-10)); }
+}
+
+.proposal__section { display: flex; flex-direction: column; gap: var(--vela-space-20); min-width: 0; }
+.proposal__heading { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--vela-space-5) var(--vela-space-15); }
+.proposal__heading h2 { margin: 0; scroll-margin-top: var(--vela-space-20); }
+.proposal__heading h2:focus { outline: none; }
+.proposal__heading h2:focus-visible { outline: var(--vela-focus-ring-width) solid var(--vela-focus-ring-color); outline-offset: var(--vela-focus-ring-offset); }
+.proposal__heading p { margin: 0; color: var(--vela-text-default); }
+.proposal__lede { margin: 0; }
+.proposal__ask { display: flex; flex-wrap: wrap; align-items: center; gap: var(--vela-space-10); margin: 0; }
+.proposal__ask a, .prop-source__title, .prop-panel__spec { display: inline-flex; align-items: center; gap: var(--vela-space-5); }
+
+/* ------------------------------------------------------------------ sketch -- */
+.prop-sketch {
+  display: flex; flex-direction: column; gap: var(--vela-space-15); min-width: 0; margin: 0; box-sizing: border-box;
+  padding: var(--vela-space-20); border: 1px dashed var(--vela-border-default); border-radius: var(--vela-radius-4);
+  background: var(--vela-bg-container); color: var(--vela-text-default);
+}
+.prop-sketch__caption { display: flex; flex-wrap: wrap; align-items: center; gap: var(--vela-space-10); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); }
+.prop-sketch__caption .prop-chip { display: inline-flex; padding: 0 var(--vela-space-5); border: 1px dashed var(--vela-border-default); border-radius: var(--vela-radius-4); }
+.prop-sketch__body { display: flex; flex-direction: column; gap: var(--vela-space-10); min-width: 0; }
+.prop-sketch__block { display: flex; align-items: flex-start; gap: var(--vela-space-10); min-width: 0; }
+.prop-sketch__box {
+  flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--vela-space-5);
+  padding: var(--vela-space-10) var(--vela-space-15); border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4);
+  background: var(--vela-bg-global); font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height);
+}
+.prop-sketch__line { overflow-wrap: anywhere; }
+.prop-sketch__line.is-heading { font-weight: var(--vela-font-weight-semibold); }
+.prop-sketch__line.is-meta { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); }
+/* A flag is words and weight, never a colour: the spec's trust and weak-claim lines carry no colour. */
+.prop-sketch__line.is-flag { padding-inline-start: var(--vela-space-10); border-inline-start: var(--vela-stroke-2) solid var(--vela-border-default); font-weight: var(--vela-font-weight-semibold); }
+.prop-sketch__line.is-link { color: var(--vela-text-link); text-decoration: underline; }
+.prop-sketch__line.is-button { align-self: flex-start; padding: 0 var(--vela-space-10); border: 1px solid var(--vela-border-default); border-radius: var(--vela-radius-4); font-size: var(--vela-text-meta-size); line-height: var(--vela-control-height-24); }
+/* A grey bar stands for content the spec does not give; drawn in the hairline colour. */
+.prop-bar { display: block; width: 100%; height: var(--vela-space-5); border-radius: var(--vela-radius-4); background: var(--vela-border-subtle); }
+.prop-bar--short { width: 60%; }
+.prop-sketch--small { gap: var(--vela-space-5); padding: var(--vela-space-10); }
+.prop-sketch--small .prop-sketch__body { gap: var(--vela-space-5); max-height: calc(4 * var(--vela-space-20)); overflow: hidden; }
+.prop-sketch--small .prop-sketch__box { padding: var(--vela-space-5) var(--vela-space-10); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); }
+.prop-sketch--small .prop-sketch__line { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.prop-pin {
+  display: inline-flex; flex: none; align-items: center; justify-content: center; box-sizing: border-box;
+  width: var(--vela-control-height-24); height: var(--vela-control-height-24); border: 1px solid var(--vela-border-default); border-radius: var(--vela-radius-4);
+  background: var(--vela-bg-global); color: var(--vela-text-default);
+  font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); font-weight: var(--vela-font-weight-semibold);
+}
+
+/* ------------------------------------------------------------------- steps -- */
+/* The step picker stands in for a storyboard: a tab list. The chosen step has the segment's mark, a
+   neutral surface and a 2px active edge; pointer on another darkens its edge; pressed lands the mark. */
+.prop-steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(calc(10 * var(--vela-space-20)), 1fr)); gap: var(--vela-space-20); }
+.prop-step {
+  display: flex; flex-direction: column; gap: var(--vela-space-10); min-width: 0; padding: var(--vela-space-10);
+  border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4); background: var(--vela-bg-global); color: var(--vela-text-default);
+  font: inherit; text-align: start; cursor: pointer; -webkit-tap-highlight-color: transparent;
+  transition: border-color var(--vela-duration-base) var(--vela-ease-standard), background-color var(--vela-duration-base) var(--vela-ease-standard);
+}
+.prop-step__words { font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height); }
+.prop-step__n { font-weight: var(--vela-font-weight-semibold); }
+@media (hover: hover) { .prop-step[aria-selected="false"]:hover { border-color: var(--vela-border-default); transition-duration: var(--vela-duration-fast); } }
+.prop-step[aria-selected="true"] { background: var(--vela-bg-selected); border-color: var(--vela-border-active); box-shadow: inset 0 0 0 1px var(--vela-border-active); }
+.prop-step[aria-selected="true"] .prop-step__words { font-weight: var(--vela-font-weight-semibold); }
+.prop-step:active { background: var(--vela-bg-selected); border-color: var(--vela-border-active); box-shadow: inset 0 0 0 1px var(--vela-border-active); transition-duration: var(--vela-duration-instant); }
+.prop-steps__panel { display: grid; grid-template-columns: minmax(0, 1fr) calc(14 * var(--vela-space-20)); gap: var(--vela-space-30); align-items: start; }
+.prop-notice { display: flex; flex-direction: column; gap: var(--vela-space-15); }
+.prop-notice h3, .prop-notice p { margin: 0; }
+.prop-notice__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--vela-space-15); }
+.prop-notice__list li { display: flex; align-items: flex-start; gap: var(--vela-space-10); }
+.prop-steps__nav { display: flex; flex-wrap: wrap; align-items: center; gap: var(--vela-space-15); }
+.prop-steps__nav [aria-disabled="true"] { cursor: default; }
+@media (max-width: 760px) {
+  /* Stacked: the list of notes follows the sketch directly, so each note sits by its pins (sweep P25). */
+  .prop-steps { grid-template-columns: minmax(0, 1fr); gap: var(--vela-space-10); }
+  .prop-step .prop-sketch { display: none; }
+  .prop-steps__panel { grid-template-columns: minmax(0, 1fr); gap: var(--vela-space-20); }
+}
+
+/* ------------------------------------------------------------------ states -- */
+/* Opening a card grows it downwards only: the grid aligns to the start, so its neighbours stay (P13). */
+.prop-states { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(calc(12 * var(--vela-space-20)), 1fr)); gap: var(--vela-space-20); align-items: start; }
+.prop-states[hidden]:not([hidden="until-found"]) { display: none; }
+.prop-state {
+  display: flex; flex-direction: column; gap: var(--vela-space-10); min-width: 0; padding: var(--vela-space-15);
+  border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4); background: var(--vela-bg-global);
+  transition: border-color var(--vela-duration-base) var(--vela-ease-standard);
+}
+@media (hover: hover) { .prop-state:hover { border-color: var(--vela-border-default); transition-duration: var(--vela-duration-fast); } }
+.prop-state.is-open { border-color: var(--vela-border-default); }
+.prop-state.is-asked { border-color: var(--vela-border-active); }
+.prop-state:focus { outline: none; }
+.prop-state:focus-visible { outline: var(--vela-focus-ring-width) solid var(--vela-focus-ring-color); outline-offset: var(--vela-focus-ring-offset); }
+.prop-state__name { margin: 0; font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height); font-weight: var(--vela-font-weight-semibold); color: var(--vela-text-heading); }
+.prop-state__body { padding-top: var(--vela-space-10); border-top: 1px solid var(--vela-border-subtle); }
+.prop-state__body p { margin: 0; }
+.prop-more {
+  display: inline-flex; align-self: flex-start; align-items: center; gap: var(--vela-space-5); min-height: var(--vela-control-height-24); padding: 0 var(--vela-space-5);
+  border: 0; border-radius: var(--vela-radius-4); background: transparent; color: var(--vela-text-link);
+  font: inherit; font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height); cursor: pointer; -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--vela-duration-base) var(--vela-ease-standard);
+}
+@media (hover: hover) { .prop-more:hover { text-decoration: underline; } }
+.prop-more:active { background: var(--vela-bg-selected); transition-duration: var(--vela-duration-instant); }
+
+/* ------------------------------------------------------------ where it sits -- */
+.prop-map { display: flex; flex-direction: column; gap: var(--vela-space-20); padding: var(--vela-space-20); border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4); }
+.prop-map__row { display: grid; grid-template-columns: calc(5 * var(--vela-space-20)) minmax(0, 1fr); gap: var(--vela-space-15); align-items: start; }
+.prop-map__label { padding-top: var(--vela-space-10); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
+.prop-map__parts { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--vela-space-15); }
+.prop-map__key { margin: 0; color: var(--vela-text-default); }
+.prop-part {
+  display: inline-flex; flex-direction: column; gap: var(--vela-space-5); min-width: calc(8 * var(--vela-space-20)); box-sizing: border-box;
+  padding: var(--vela-space-10) var(--vela-space-15); border: 1px solid var(--vela-border-default); border-radius: var(--vela-radius-4);
+  background: var(--vela-bg-global); color: var(--vela-text-default); text-decoration: none;
+  transition: border-color var(--vela-duration-base) var(--vela-ease-standard);
+}
+a.prop-part { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.prop-part--proposal, .prop-part--missing { border-style: dashed; }
+.prop-part--self { border: var(--vela-stroke-2) solid var(--vela-border-action); }
+.prop-part__name { font-weight: var(--vela-font-weight-semibold); }
+.prop-part__status { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); }
+@media (hover: hover) { a.prop-part:hover { border-color: var(--vela-border-active); transition-duration: var(--vela-duration-fast); } a.prop-part:hover .prop-part__name { text-decoration: underline; } }
+a.prop-part:active { border-color: var(--vela-border-active); background: var(--vela-bg-selected); transition-duration: var(--vela-duration-instant); }
+@media (max-width: 600px) { .prop-map__row { grid-template-columns: minmax(0, 1fr); gap: var(--vela-space-5); } .prop-map__label { padding-top: 0; } }
+
+/* -------------------------------------------------------- until it is built -- */
+.prop-until, .prop-sources { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(calc(12 * var(--vela-space-20)), 1fr)); gap: var(--vela-space-20); align-items: start; }
+.prop-until__item { display: flex; flex-wrap: wrap; align-items: center; gap: var(--vela-space-10); padding: var(--vela-space-15); border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4); }
+.prop-until__item--missing { border-style: dashed; border-color: var(--vela-border-default); }
+.prop-until__name { font-size: var(--vela-text-h5-size); line-height: var(--vela-text-h5-line-height); font-weight: var(--vela-font-weight-semibold); }
+.prop-until__words { flex-basis: 100%; margin: 0; }
+
+/* ----------------------------------------------------------------- promises -- */
+.prop-promises { display: grid; grid-template-columns: repeat(auto-fit, minmax(calc(9 * var(--vela-space-20)), 1fr)); gap: var(--vela-space-20); align-items: start; }
+.prop-promises__col { display: flex; flex-direction: column; gap: var(--vela-space-10); min-width: 0; }
+.prop-promises__head { display: flex; align-items: flex-start; gap: var(--vela-space-5); margin: 0; padding-bottom: var(--vela-space-10); border-bottom: var(--vela-stroke-2) solid var(--vela-border-default); font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height); font-weight: var(--vela-font-weight-semibold); color: var(--vela-text-heading); }
+.prop-promises__head .vela-icon { flex: none; margin-top: var(--vela-space-5); color: var(--vela-icon-strong); }
+.prop-promises__n { margin-inline-start: auto; font-size: var(--vela-text-h4-size); line-height: var(--vela-text-h4-line-height); font-weight: var(--vela-font-weight-regular); }
+.prop-promises__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.prop-promises__list[hidden]:not([hidden="until-found"]) { display: none; }
+.prop-promises__list li { padding: var(--vela-space-10) 0; border-bottom: 1px solid var(--vela-border-subtle); }
+
+/* ------------------------------------------------------------------ sources -- */
+.prop-source { display: flex; align-items: flex-start; gap: var(--vela-space-10); padding: var(--vela-space-15); border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4); }
+.prop-source > .vela-icon { flex: none; margin-top: var(--vela-space-5); color: var(--vela-icon-strong); }
+.prop-source__title { font-weight: var(--vela-font-weight-semibold); }
+.prop-source__line { margin: var(--vela-space-5) 0 0; color: var(--vela-text-default); }
+
+/* ---------------------------------------------------------------- word sets -- */
+.prop-sets { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(calc(14 * var(--vela-space-20)), 1fr)); gap: var(--vela-space-20); }
+.prop-set { display: flex; flex-direction: column; gap: var(--vela-space-10); padding: var(--vela-space-15) var(--vela-space-20); border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4); }
+.prop-set p { margin: 0; color: var(--vela-text-default); }
+.prop-set__name { margin: 0; font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height); font-weight: var(--vela-font-weight-semibold); }
+.prop-set__values { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--vela-space-5) var(--vela-space-15); }
+
+.proposal__next { display: grid; grid-template-columns: repeat(auto-fit, minmax(calc(14 * var(--vela-space-20)), 1fr)); gap: var(--vela-space-20); }
+
+/* -------------------------------------------------------------- props panel -- */
+/* Not a dialog: the page stays readable behind it. A full sheet under 960 CSS px (sweep P10). */
+.prop-panel {
+  position: fixed; top: var(--site-topbar-height); right: 0; bottom: 0; z-index: 18; box-sizing: border-box;
+  display: flex; flex-direction: column; gap: var(--vela-space-15);
+  width: min(calc(23 * var(--vela-space-20)), 100%); padding: var(--vela-space-30); overflow-y: auto;
+  border-inline-start: 1px solid var(--vela-border-default); background: var(--vela-bg-global); color: var(--vela-text-default);
+}
+.prop-panel[hidden] { display: none; }
+.prop-panel p { margin: 0; }
+.prop-panel__head { display: flex; align-items: center; justify-content: space-between; gap: var(--vela-space-15); }
+.prop-panel__head h2 { margin: 0; }
+.prop-panel__back { display: none; }
+.prop-panel__rows { margin: 0; display: flex; flex-direction: column; }
+.prop-panel__row { padding: var(--vela-space-10) 0; border-top: 1px solid var(--vela-border-subtle); }
+.prop-panel__row dt { overflow-wrap: anywhere; }
+.prop-panel__row dd { margin: var(--vela-space-5) 0 0; color: var(--vela-text-default); }
+.prop-panel__type { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); }
+@media (max-width: 960px) {
+  .prop-panel { left: 0; width: auto; border-inline-start: 0; padding: var(--vela-space-20); }
+  .prop-panel__back { display: block; }
+}
+
+@media (max-width: 760px) { .prop-steps__panel .prop-sketch { padding: var(--vela-space-15); } }
+
+/* ---------------------------------------------------------- forced colours -- */
+/* Fills go, so every sketch, bar and box keeps an edge; the chosen step and a pressed part are
+   Highlight; the selected step's second pixel was a shadow, so it is a 2px border here. */
+@media (forced-colors: active) {
+  .prop-sketch, .proposal__banner, .proposal__nostory { border-color: CanvasText; }
+  .prop-bar { border: 1px solid CanvasText; }
+  .prop-step { border-color: ButtonText; }
+  .prop-step[aria-selected="true"] { border: var(--vela-stroke-2) solid Highlight; box-shadow: none; }
+  .prop-step:active { border-color: Highlight; box-shadow: none; }
+  .prop-part, .prop-state, .prop-map { border-color: CanvasText; }
+  a.prop-part:active, .prop-more:active { outline: 1px solid Highlight; }
+  .prop-part--self { border-color: Highlight; }
+  .prop-panel { border-inline-start-color: CanvasText; }
+}

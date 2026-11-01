@@ -31,10 +31,6 @@
 .pg-fact dt { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-de-emphasized); }
 .pg-fact dd { margin: var(--vela-space-5) 0 0; font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); overflow-wrap: anywhere; }
 .pg-fact dd code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: var(--site-code-size); }
-.pg-fact--rules { grid-column: 1 / -1; }
-.pg-facts--proposal { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-.pg-fact--rules dd { display: flex; flex-wrap: wrap; align-items: center; gap: var(--vela-space-5) var(--vela-space-10); }
-.pg-fact__total { font-weight: var(--vela-font-weight-semibold); }
 @container (max-width: 860px) {
   .pg-facts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .pg-fact:nth-child(5) { grid-column: span 2; }
