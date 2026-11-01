@@ -438,7 +438,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   were greys 1.57:1 apart. Each curve is now named on the chart, in its own colour, where it is
   alone (the three meet at the end value), and `ease-standard` is also dashed. e2e: the three
   names are inside the chart and clear of each other.
-- **Site: How it is made said "52 contrast pairs"**; there are 109. It now reads the count from the
+- **Site: How it is made said "52 contrast pairs"**; the build now counts them (111 today). It reads the count from the
   build (`virtual:vela-site-facts`), as the Overview and All states do. All states' "7 components"
   is now the length of the list of components the page shows, and a section's title must come from
   that list. A unit test holds both, and fails on any hand-typed count of pairs under `demo/`.
