@@ -106,7 +106,7 @@ describe('the Overview page', () => {
     for (let i = 1; i < levels.length; i++) expect(levels[i] - levels[i - 1], `heading ${i}`).toBeLessThanOrEqual(1)
     expect(Math.max(...levels)).toBe(3)
     expect(screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent)).toEqual([
-      'Check it yourself', 'Built for security products', 'Ways in', `New in ${pkg.version}`, 'Specified, not built yet',
+      'Check it yourself', 'Built for security products', 'Ways in', 'Specified, not built yet', `New in ${pkg.version}`,
     ])
   })
 

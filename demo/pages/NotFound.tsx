@@ -15,6 +15,9 @@ import './docs.css'
 // a word of a spec's prose and never the nearest spelling of a long name), flags the gap when there
 // is none, and opens Search on the words typed. It arrives at once: an error never makes you wait.
 
+/** The Overview's proposals section: `?section=` lands on its heading, focused. */
+export const PROPOSALS_ON_OVERVIEW = '#/?section=proposals'
+
 export type Area = 'component' | 'proposal' | 'pattern' | 'foundation' | 'page'
 
 const AREA_WORD: Record<Area, string> = { component: 'component', proposal: 'proposal', pattern: 'pattern', foundation: 'foundation', page: 'page' }
@@ -99,7 +102,8 @@ export function NotFound({ asked, name, area }: { asked: string; name: string; a
 
       <section className="nf__section nf__ways" aria-label="Ways on">
         <NextCard eyebrow="Every component" href={href({ kind: 'status' })} title="Component status" line={`All ${REGISTRY.length}, each with its picture and its label`} />
-        <NextCard eyebrow="Specified, not built yet" href={href({ kind: 'proposal', id: PROPOSALS[0].id })} title={`${PROPOSALS.length} proposals`} line={`Starting with ${PROPOSALS[0].name}`} />
+        {/* Every proposal, as a card with its picture, on the Overview (slice 6): the one page that lists them all. */}
+        <NextCard eyebrow="Specified, not built yet" href={PROPOSALS_ON_OVERVIEW} title={`${PROPOSALS.length} proposals`} line={`From ${PROPOSALS[0].name} to ${PROPOSALS[PROPOSALS.length - 1].name}`} />
       </section>
     </article>
   )

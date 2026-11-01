@@ -277,6 +277,9 @@ function Details() {
   )
 }
 
+/** The five targets' names, in order: the Overview's "How it is made" card draws them. */
+export const OUTPUT_NAMES: string[] = OUTPUTS.map((o) => o.name)
+
 export function How() {
   const form = useIndexForm()
   const ref = useLanding()
