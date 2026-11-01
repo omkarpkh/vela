@@ -19,6 +19,14 @@ against it.
 **Spec stage:** pressure-tested, 29 Oct 2026, with the repo thread's review folded in. Its six open
 answers were confirmed by Omkar on 31 Oct 2026.
 
+> **Changed 1 Nov 2026 — breaking.** With the [Filter Grammar](../contracts/filter-grammar.md),
+> a lesson's conditions are the grammar's `PositiveConjunction<F>` over the host's `Fields`, from
+> `defineFields`. A condition no longer carries `fieldTrust`, `source` or `writtenBy`: who could
+> have set a value is the field's declared `trust`. The operators are the grammar's positive ones
+> for each field's type, so a `domain` field takes `is-subdomain-of`, never `ends-with`. The
+> readback is the grammar's `readback` with `markTrust`. `fromItem` moves to a list beside the
+> conditions. The rule count is unchanged.
+
 ## Intent
 
 A person teaching an agent should be able to answer six questions from the panel before saving.
@@ -105,8 +113,21 @@ or rolled-back change) and about scores are out of scope for now (see *Open ques
 ## Props
 
 ```tsx
+import { defineFields } from "@omkarux/vela"   // the Filter Grammar, in the core entry
+
+// The host's fields for emails, declared once. Labels are people's words; keys are the text form's.
+const emailFields = defineFields({
+  "sender.domain": { label: "Authenticated sender domain", type: "domain",
+                     trust: { kind: "system-record", source: "Mail gateway (DMARC-aligned From)" } },
+  "subject":       { label: "Subject", type: "text",
+                     trust: { kind: "untrusted", writtenBy: "the email's sender" } },
+  "vendor.listed": { label: "Payment account on the vendor list", type: "boolean",
+                     trust: { kind: "system-record", source: "Vendor master" } },
+})
+
 <OverrideTeachPanel
   stage="draft"
+  fields={emailFields}
   agent={{ id: "agt_triage", name: "Triage agent", version: "2.4", model: "example-large-2026-07" }}
   taughtFrom={{
     verdictId: "vd_9c07", version: 2, caseLabel: "Case CS-4180",
@@ -118,12 +139,15 @@ or rolled-back change) and about scores are out of scope for now (see *Open ques
     lessonId: "ls_31", version: 3,
     words: "Monthly invoices from Northwind are expected. Check the domain is really theirs and the bank account is the one on the vendor list.",
     appliesTo: {
-      readback: "Emails whose authenticated sender domain is northwind.example, whose subject contains 'Invoice', and whose payment account is on the vendor list",
-      conditions: [
-        { field: "Authenticated sender domain", operator: "is", value: "northwind.example", fieldTrust: "system-record", source: "Mail gateway (DMARC-aligned From)" },
-        { field: "Subject", operator: "contains", value: "Invoice", fieldTrust: "untrusted", writtenBy: "the email's sender", fromItem: "ev4" },
-        { field: "Payment account on the vendor list", operator: "is", value: "yes", fieldTrust: "system-record", source: "Vendor master" },
-      ],
+      conditions: {
+        grammar: 1,
+        root: { kind: "group", join: "and", items: [
+          { kind: "condition", field: "sender.domain", operator: "is", value: "northwind.example" },
+          { kind: "condition", field: "subject", operator: "contains", value: "Invoice" },
+          { kind: "condition", field: "vendor.listed", operator: "is", value: true },
+        ] },
+      },
+      fromItems: [{ condition: 2, item: "ev4" }],   // the subject was copied from evidence item ev4
     },
     translation: {
       kind: "ready", version: 2, forDraftVersion: 3,
@@ -144,6 +168,7 @@ or rolled-back change) and about scores are out of scope for now (see *Open ques
 | Prop | Type | Default | Notes |
 |---|---|---|---|
 | `stage` | `"draft" \| "awaiting-approval" \| "in-use" \| "suspended" \| "ended"` | — | **Required. These five only.** Lifecycle, not a taxonomy: no tokens, no colour. The props are a union over `stage` (below). |
+| `fields` | `Fields<S>` | — | **Required.** The host's `defineFields` schema for the records a lesson matches: each field's label, type and declared `trust`. Every condition's field is one of its keys, and the panel reads a condition's trust from it, never from the condition. |
 | `agent` | `Provenance["agent"] & { model: string }` | — | **Required.** The agent being taught, as it runs now. Shown with the **Agent Provenance Badge**'s agent wording. Compared with `check.checkedAgainst`. |
 | `taughtFrom` | `Override` | — | **Required.** The override the lesson came from. A lesson always starts from one decided case. |
 | `draft` | `Draft` | — | **Required.** The lesson: the person's words, what it applies to, the agent's version, the expiry. At `in-use` and later it is the saved lesson. |
@@ -168,23 +193,32 @@ type Override = {
   by: string; at: string; reason: string
 }
 
-// Conditions are always ANDed: a lesson applies only when every condition holds. There is no OR
-// and no negation in this version. Alternatives are separate lessons, each checked on its own.
-type Operator = "is" | "is-one-of" | "contains" | "starts-with" | "ends-with"   // positive only
-type Match =
-  | { operator: "is-one-of"; value: [string, ...string[]] }
-  | { operator: "is" | "contains" | "starts-with" | "ends-with"; value: string }
+// A lesson's scope is the Filter Grammar's (guidelines/contracts/filter-grammar.md), imported from
+// the core entry, never redeclared here:
+import type { Fields, PositiveConjunction, PositiveCondition } from "@omkarux/vela"
+// PositiveConjunction<F> is one group, `join: "and"`, of at least one PositiveCondition<F>, and no
+// inner group. So conditions are always ANDed: a lesson applies only when every condition holds.
+// There is no OR and no negation. Alternatives are separate lessons, each checked on its own.
+//
+// A PositiveCondition<F> is `{ kind: "condition"; field; operator; value }`: `field` is a key of the
+// host's Fields, and the operator and value are those the field's type allows, positive only. Per
+// type: text — is, is-one-of, contains, starts-with, ends-with; identifier — is, is-one-of,
+// starts-with; domain — is, is-one-of, is-subdomain-of; ip — is, is-one-of, in-range; number — is,
+// greater-than, at-least, less-than, at-most, between; time — before, after, between, within-last;
+// enum — is, is-one-of; boolean — is. Every type also takes is-set. No `is-not-set`, and none of the
+// seven negations.
+//
+// A condition carries no trust of its own. Who could have set the value it matches on is the
+// field's declared `trust` (the Evidence Locker's Content trust set: system-record with `source`;
+// agent-output or untrusted with `writtenBy`), so no condition can claim a field is more trusted
+// than its declaration says.
 
-// Who could have set the value a condition matches on. The Evidence Locker's Content trust set.
-type ByFieldTrust =
-  | { fieldTrust: "system-record"; source: string; writtenBy?: never }
-  | { fieldTrust: "agent-output"; writtenBy: string; source?: never }
-  | { fieldTrust: "untrusted"; writtenBy: string; source?: never }
-
-type Condition = { field: string; fromItem?: string } & Match & ByFieldTrust
-// `field` is the host's words until the Filter Grammar (Phase 2b) owns it; the operators are a
-// closed, positive set now, so negation cannot slip in through a host string.
-// `fromItem` names the evidence item the value was copied from, when it was.
+// Where a condition's value was copied from, kept beside the conditions, not inside them: the
+// grammar rejects any key it does not know, so a `fromItem` inside a condition would make
+// `validateQuery` and `readback` refuse the lesson. `condition` counts the conditions as they read,
+// from 1, as the grammar's errors do. At most one entry per condition, and only for a condition the
+// lesson has.
+type FromItem = { condition: number; item: string }     // `item`: the Evidence Locker item's id
 
 type Translation =
   | { kind: "ready"; version: number; forDraftVersion: number; text: string }   // what the agent will store
@@ -192,11 +226,18 @@ type Translation =
   | { kind: "failed"; message: string }
   | { kind: "not-yet" }
 
-type Draft = {
+type Draft<F extends Fields = Fields> = {
   lessonId: string
   version: number                      // increments on every edit to words or conditions
   words: string                        // the person's own words, kept verbatim, never sent to the agent's memory
-  appliesTo: { readback: string; conditions: [Condition, ...Condition[]] }   // never empty; all must hold
+  appliesTo: {
+    conditions: PositiveConjunction<F> // never empty; all must hold
+    fromItems?: FromItem[]             // which values were copied from evidence, and from which item
+  }
+  // There is no readback to pass. The panel words it once, with the grammar:
+  // readback(conditions, fields, { markTrust: true, full: true, now: clock(), timeZone,
+  //   strings: { booleans: { true: "yes", false: "no" } } })
+  // `full` because the readback is also the text summary and the Ledger line.
   translation: Translation
   expiresAt: string                    // ISO 8601; approved with the lesson
   renewalOf?: { version: number }      // set when this draft renews a lesson in use
@@ -258,7 +299,7 @@ type LessonEvent = {
 
 // The public props are a union over `stage`. Do not flatten it: `teach-stage-carries-proof` is a
 // compiler rule only because of this union.
-type OverrideTeachPanelProps = CommonProps & (
+type OverrideTeachPanelProps<F extends Fields = Fields> = CommonProps<F> & (
   | { stage: "draft"; check?: Check;
       onTranslate?: (draftVersion: number) => Promise<void>
       onCheck?: (e: { draftVersion: number; translationVersion: number }) => Promise<void>
@@ -277,8 +318,8 @@ type OverrideTeachPanelProps = CommonProps & (
   | { stage: "ended"; check: Check; approval?: Approval; record?: LessonRecord; ended: Ended }
 )
 
-// CommonProps: agent, taughtFrom, draft, secondPerson, replayDays, lessonDays, expiryNoticeDays,
-// size, timeZone, clock, teachWith — the table above.
+// CommonProps<F>: fields (F), agent, taughtFrom, draft (Draft<F>), secondPerson, replayDays,
+// lessonDays, expiryNoticeDays, size, timeZone, clock, teachWith — the table above.
 
 type SaveResult =
   | { ok: true; version: number }
@@ -326,8 +367,8 @@ type BlockReason =
 
 // Blocked beats second person beats save. Every reason that applies is listed, not only the first.
 // Every direction rule reads `lessonDirections(taughtFrom, check).used`.
-export function lessonRoute(input: {
-  taughtFrom: Override; draft: Draft; check?: Check
+export function lessonRoute<F extends Fields>(input: {
+  fields: F; taughtFrom: Override; draft: Draft<F>; check?: Check
   agent: CommonProps["agent"]; secondPerson: "lenient-only" | "always"
   replayDays: number; now: Date
 }): LessonRoute
@@ -348,8 +389,8 @@ export function lessonStanding(input: {
 }): LessonStanding
 
 // The Approval Queue item for a lesson that needs a second person (see "Through the Approval Queue").
-export function lessonQueueItem(input: {
-  taughtFrom: Override; draft: Draft; check: Check; agent: CommonProps["agent"]
+export function lessonQueueItem<F extends Fields>(input: {
+  fields: F; taughtFrom: Override; draft: Draft<F>; check: Check; agent: CommonProps["agent"]
   teacher: string; arrivedAt: string; expiresAt: string
 }): Pick<PendingItem, "card" | "permission"> & { ceiling: "person-approves" }
 ```
@@ -361,7 +402,7 @@ export function lessonQueueItem(input: {
 | No check, or the check is for an older draft, translation, agent version or model | blocked: "Check again — the lesson changed after the last check." |
 | The agent's version of the lesson is not ready, or failed | blocked |
 | Any conflict with a lesson in use | blocked, each conflict listed with its text |
-| Lenient, and no condition matches a `system-record` field exactly (`is` or `is-one-of`) | blocked: "A lesson that lets cases through must match exactly on at least one value an outsider cannot set." |
+| Lenient, and no condition matches exactly (`is` or `is-one-of`) on a field whose declared trust is `system-record` | blocked: "A lesson that lets cases through must match exactly on at least one value an outsider cannot set." |
 | Lenient, and the replay goes against any settled case | blocked, the cases listed: "Narrow the lesson, or correct those cases first if they were settled wrongly." |
 | Replay counts do not add up | blocked: "Replay counts do not add up — not shown." |
 | `expiresAt` more than `VELA_MAX_LESSON_DAYS` after now | blocked |
@@ -380,10 +421,18 @@ Stricter lessons can rest on untrusted values ("the QR code in the attachment po
 tenant") and can go against settled benign cases. Both make the agent send more to people, which is
 the safe direction, so neither makes saving harder. The replay still shows them.
 
-**Why "exactly".** `contains`, `starts-with` and `ends-with` on a system record still let an
-outsider in: an authenticated domain that *contains* "northwind" also matches
-northwind-invoices.example, which anyone can register. A lenient lesson's outsider-proof condition
-must be `is` or `is-one-of`.
+**Why "exactly".** A partial match on a system record still lets an outsider in.
+- **Domains.** The panel used to allow `ends-with` on any field, and an authenticated domain that
+  *ends with* "northwind.example" also matches evilnorthwind.example, which anyone can register.
+  With the Filter Grammar, a `domain` field has no `contains` or `ends-with`: `is-subdomain-of`
+  replaces them, and matches on label boundaries only. That closes the gap.
+- **Still not exact.** `is-subdomain-of` matches every subdomain, and a subdomain can be run by
+  someone else: a hosted service, a forgotten DNS record. `contains`, `starts-with` and `ends-with`
+  on a `text` system record, `in-range`, the number and time comparisons and `is-set` all match more
+  than one value too.
+
+So a lenient lesson's outsider-proof condition must be `is` or `is-one-of`, on a field whose
+declared trust is `system-record`.
 
 **Retiring routes the opposite way.** Retiring a lenient lesson makes the agent stricter, so the
 teacher's own say is enough and it takes effect at once. Retiring a stricter lesson makes the agent
@@ -412,8 +461,8 @@ in a lane that runs on its own.
 
 | Card field | From the lesson |
 |---|---|
-| `summary` | "Teach Triage agent 2.4 a lenient lesson: *readback*." When intent and effect differ: "…a lesson meant to be stricter that would have let 2 cases through: *readback*." |
-| `operation` | `{ tool: "agent.memory.write", target: "lesson/ls_31", language: "json", literal }` — the literal is the lesson as it will be stored: the agent's version, the conditions, the expiry. Never the teacher's words alone. |
+| `summary` | "Teach Triage agent 2.4 a lenient lesson: *readback*." When intent and effect differ: "…a lesson meant to be stricter that would have let 2 cases through: *readback*." *readback* is the grammar's full readback with `markTrust`, the same sentence the panel shows. |
+| `operation` | `{ tool: "agent.memory.write", target: "lesson/ls_31", language: "json", literal }` — the literal is the lesson as it will be stored: the agent's version, the conditions as the grammar's object after `normalise`, and the expiry. Never the teacher's words alone. |
 | `reversibility` | `counterable`, with `counterAction`: "Retire the lesson and send the verdicts it changed back for review." Verdicts already closed under it are not undone by retiring. |
 | `blastRadius` | `{ kind: "verdicts it would have changed in the last 30 days", count: { exact: changed total } }`, or `{ unknown }` with the replay's reason — "Not replayed: the second person approves without seeing what it would have changed" |
 | `observed` | the replay window, or `{ none }` with the reason |
@@ -444,15 +493,19 @@ tokens and no colour.
 Rule ids are listed with their proof level; they become `[[rule: … ]]` tags when the spec enters
 `guidelines/components/`.
 
-- **Closed sets.** `stage`, `secondPerson`, `size`, `ended.how`, the route and standing reasons,
-  a condition's `operator` and its `fieldTrust` accept only their sets. There is no `"unknown"`
-  trust, no `secondPerson="never"` and no negative operator (`"is-not"`, `"does-not-contain"`). A Verdict, Severity, Risk or Status value passed as a direction or stage
-  does not compile. `teach-closed-sets` · compiler
-- **A lesson has a scope, and every condition must hold.** `appliesTo.conditions` is a non-empty
-  tuple; `[]` does not compile. Conditions are always ANDed; there is no combinator to pass, so an
-  OR cannot be built. A condition with `fieldTrust: "untrusted"` or `"agent-output"` requires
-  `writtenBy`; a `system-record` condition requires `source`. `is-one-of` takes a non-empty list;
-  the other operators take one value. The readback joins conditions with "and", never "or".
+- **Closed sets.** `stage`, `secondPerson`, `size`, `ended.how`, and the route and standing reasons
+  accept only their sets. A condition is the grammar's `PositiveCondition<F>`: its `field` is a key
+  of the host's `Fields`, and its operator and value are those the field's type allows, positive
+  only. A condition has no trust of its own to set; trust is the field's declared `trust`, which has
+  no `"unknown"`. There is no `secondPerson="never"`, no negated operator (`"is-not"`,
+  `"does-not-contain"`, `"is-not-set"`), and no `contains` or `ends-with` on a `domain` field. A
+  Verdict, Severity, Risk or Status value passed as a direction or stage does not compile.
+  `teach-closed-sets` · compiler
+- **A lesson has a scope, and every condition must hold.** `appliesTo.conditions` is a
+  `PositiveConjunction<F>`: one group whose `join` is `"and"`, with at least one condition and no
+  inner group. An empty `items`, `join: "or"` or a nested group does not compile, so an OR cannot be
+  built. `is-one-of` takes a non-empty list, and each operator takes its own shape of value, as the
+  grammar says. The readback is the grammar's, so it joins conditions with "and", never "or".
   `teach-scope-required` · compiler
 - **A check declares everything.** `conflicts`, `scan` and `replay` are required. `[]`,
   `{ flags: [] }` and `{ notRun }` are explicit claims, printed as such: "No conflicts", "Scan
@@ -484,10 +537,11 @@ Rule ids are listed with their proof level; they become `[[rule: … ]]` tags wh
   neither for `blocked`. A withheld control is not rendered disabled; its reason stands in its
   place. `teach-route-shown` · runtime
 - **A lenient lesson needs an exact value an outsider cannot set.** When the used direction is
-  lenient and no condition has `fieldTrust: "system-record"` with operator `is` or `is-one-of`, the
-  route is blocked. A sender display name, a subject or a file name alone can never let cases
-  through, and neither can a partial match on a system record. Because conditions are ANDed, the
-  outsider-proof condition always applies. `teach-lenient-needs-system-record` · runtime
+  lenient and no condition uses `is` or `is-one-of` on a field whose declared trust, read from
+  `fields`, is `system-record`, the route is blocked. A sender display name, a subject or a file name
+  alone can never let cases through, and neither can a partial match on a system record, such as
+  `is-subdomain-of`. Because conditions are ANDed, the outsider-proof condition always applies.
+  `teach-lenient-needs-system-record` · runtime
 - **A lenient lesson may not overrule settled cases.** When the used direction is lenient and
   `replay.outcome.againstReview` is more than 0, the route is blocked and the settled cases are
   listed with who settled them. The way out is to narrow the lesson, or to correct the settled
@@ -505,11 +559,13 @@ Rule ids are listed with their proof level; they become `[[rule: … ]]` tags wh
   up — not shown", and the route is blocked. The replay is labelled with the restatement it ran
   ("Replayed with the agent's version 2 of this lesson"): it runs what will be stored, not the
   conditions alone. `teach-replay-in-counts` · runtime
-- **Values from untrusted content are marked.** A condition whose `fieldTrust` is `untrusted`
-  renders its value in the Evidence Locker's quote block, labelled "could have been set by
-  *writtenBy*", everywhere it appears: the conditions, the readback, the agent's version and the
-  text summary. The agent's version is rendered as inert text: no markup, no links, hidden
-  characters escaped as the Locker escapes them. `teach-untrusted-values-marked` · runtime
+- **Values from untrusted content are marked.** A condition on a field whose declared trust is
+  `untrusted` renders its value in the Evidence Locker's quote block, labelled "could have been set
+  by *writtenBy*", everywhere it appears: the conditions, the readback, the agent's version and the
+  text summary. The words are the grammar's: the readback is `readback` with `markTrust`, which also
+  marks `agent-output` fields, and the condition rows use the same `couldHaveBeenSetBy` string.
+  The agent's version is rendered as inert text: no markup, no links, hidden characters escaped as
+  the Locker escapes them. `teach-untrusted-values-marked` · runtime
 - **The second person is someone else.** `lessonQueueItem` returns the route's ceiling as
   `person-approves` and a `permission` of `decide: false` for the teacher. The panel never offers
   the teacher an approve control for their own lesson. `teach-second-person-differs` · runtime
@@ -546,8 +602,9 @@ Rule ids are listed with their proof level; they become `[[rule: … ]]` tags wh
   `teach-reading-order` · runtime
 - **The text summary is complete.** The panel exposes a plain-text summary (see *Responsive
   behaviour*): id and version, stage or standing, agent, direction, the agent's version of the
-  lesson, every condition with its trust, who taught and approved it, expiry, and the record or the
-  route. It is the `summary` size, the narrow fallback and the Ledger line.
+  lesson, every condition in the grammar's full readback with `markTrust` (so each value an
+  outsider or an agent could have set names who), who taught and approved it, expiry, and the record
+  or the route. It is the `summary` size, the narrow fallback and the Ledger line.
   `teach-text-summary-complete` · runtime
 - **Every response has a state.** Translating, checking, saving and sending each have pending,
   failed and newer-version states. A failure names the host's message and offers a retry; the
@@ -559,7 +616,10 @@ Rule ids are listed with their proof level; they become `[[rule: … ]]` tags wh
   its server: it refuses a lenient lesson without a second person, a blocked lesson, and a
   self-approval, whatever the client sends. It runs every replay with the agent applying the exact
   restatement named by `forTranslationVersion`, and it emits the automatic events `lessonStanding`
-  calls for (expired, suspended, expiry notice). `teach-host-enforces-route` · convention
+  calls for (expired, suspended, expiry notice). A lesson's conditions that arrive untyped (a stored
+  draft, an agent's suggestion) go through `validateQuery` against the same `Fields`, and anything
+  that is not one `and` group of positive conditions is refused, never repaired.
+  `teach-host-enforces-route` · convention
 - **The agent translates from the person, not from the case.** The host builds the agent's
   version of the lesson from the person's words and the conditions only. It does not hand the
   translator the case's untrusted items, so an instruction hidden in an email cannot ride into
@@ -604,7 +664,7 @@ Impact Card or the Ladder: the lesson uses them as they are.
 | The override it came from | `--vela-text-default`, Body; who and when `--vela-text-de-emphasized`, Meta |
 | Direction sentence | `--vela-text-heading`, Body — SemiBold for lenient, Regular for stricter. No colour. When intent and effect differ, both on one line, the effect in SemiBold |
 | Your words (Text Area) | Text Area's own tokens; label `--vela-text-default`, Body |
-| Condition row | field and operator `--vela-text-default`, Body; value `--vela-text-default`, Body, SemiBold; trust label `--vela-text-de-emphasized`, Meta |
+| Condition row | field (its `label`) and operator (the grammar's operator words) `--vela-text-default`, Body; value `--vela-text-default`, Body, SemiBold; trust label, from the field's declared `trust`, `--vela-text-de-emphasized`, Meta |
 | Untrusted value | the Evidence Locker's quote block: `--vela-bg-raised`, start border `--vela-border-default` at `--vela-stroke-2`, `--vela-font-family-mono` at Meta size |
 | The agent's version | `--vela-bg-raised`, border `--vela-border-subtle`, padding `--vela-space-10`, `--vela-text-default`, Body; "Out of date" `--vela-text-heading`, Meta, SemiBold |
 | Check lines | `--vela-text-default`, Body; counts in SemiBold; window and coverage `--vela-text-de-emphasized`, Meta |
@@ -676,13 +736,16 @@ The text summary, exactly (the in-use example):
 ```
 Lesson ls_31 v3 · in use · Triage agent 2.4 · lenient
 Agent's version: "When the authenticated sender domain is northwind.example, the subject contains 'Invoice', and the payment account in the email is on the vendor list, treat the email as benign. Check the vendor list on every email; this lesson is not proof that an account is genuine."
-Applies to: Authenticated sender domain is northwind.example (system record — Mail gateway) · Subject contains "Invoice" (untrusted — could have been set by the email's sender) · Payment account on the vendor list is yes (system record — Vendor master)
+Applies to: Authenticated sender domain is "northwind.example", and Subject (could have been set by the email's sender) contains "Invoice", ignoring hidden characters, and Payment account on the vendor list is yes
 Taught by A. Rao 29 Oct 2026 09:12 UTC, from Case CS-4180 (Suspicious → Benign) · approved by S. Iyer 29 Oct 2026 09:41 UTC
 Expires 27 Jan 2027 (default 90 days)
 Record since 29 Oct: applied 0 times
 ```
 
-A draft's last line is its route instead: `Route: blocked — a lenient lesson may not overrule settled
+The "Applies to" line is the grammar's full readback with `markTrust`, exactly as `readback`
+returns it: a field that isn't a system record names who could have set it, and a system record
+needs no mark. The panel's condition rows name each system record's `source`. A draft's last line
+is its route instead: `Route: blocked — a lenient lesson may not overrule settled
 cases (3)`. **Compact density** tightens the block gap to `--vela-space-5`; type does not change.
 
 ## Accessibility
@@ -703,14 +766,14 @@ cases (3)`. **Compact density** tightens the block gap to `--vela-space-5`; type
 ## Built from
 
 - **Text Area** (Phase 1) for the words and every reason; **Combobox** (Phase 1) for choosing a
-  condition's field from the host's list and its operator from the closed set; **Input** (core) for
-  a value.
+  condition's field from the host's `Fields`, by label, and its operator from the grammar's positive
+  operators for that field's type; **Input** (core) for a value.
 - **Button** (core); **Contextual Alert** (core) for conflicts, scan flags and blocks.
 - **Popover** (Phase 1) for a conflicting lesson's full text from its conflict line.
 - **Table** (core) for the replay rows and the record at ≥ 480.
 - **Toast** (Phase 1), optional, to announce a save. Never the only place the result is shown.
-- **Evidence Locker** (Phase 2): its Content trust set for `fieldTrust`, its quote block and its
-  escapes; and the lesson as a memory item once in use.
+- **Evidence Locker** (Phase 2): its quote block and its escapes; and the lesson as a memory item
+  once in use. Its Content trust set reaches the panel through the Filter Grammar's `FieldTrust`.
 - **Agent Provenance Badge** (Phase 2) wording for the agent in the heading.
 - **Calibrated Confidence Gate** (Phase 2): the record's precedence and wording, reused for
   `LessonRecord`.
@@ -719,9 +782,12 @@ cases (3)`. **Compact density** tightens the block gap to `--vela-space-5`; type
   `ceiling` input, set to `person-approves`.
 - Opened from the **Verdict Card** (Phase 2), "Teach the agent". Events go to the **Agent Action
   Ledger** (Phase 2, next).
-- Later: the **Filter Grammar** (Phase 2b) replaces the host's `field` strings and the operator set
-  with its own AST. That will be a breaking change to `Condition`, flagged now. It must keep the
-  AND-only, positive-only limits for lessons.
+- **Filter Grammar** (core contract, `src/grammar/`, Experimental): `defineFields` and `Fields` for
+  the host's fields and their declared trust; `PositiveConjunction<F>` for a lesson's conditions,
+  which keeps the AND-only, positive-only limits in the type; `validateQuery` for conditions that
+  arrive untyped; `normalise` for the stored form; and `readback` with `markTrust` for every
+  sentence that names a condition. This replaced the host's `field` strings and the panel's own
+  operator set on 1 Nov 2026, a breaking change to the proposal.
 
 Not buildable before Phase 1's Text Area, Combobox, Popover and Toast exist.
 
@@ -733,7 +799,7 @@ frame.
 - `Override & Teach / Panel`: `Stage` (`Draft`, `Awaiting approval`, `In use`, `Suspended`,
   `Ended`) × `Direction` (`Stricter`, `Lenient`) = **10 variants**.
 - `Override & Teach / Condition`: `Field trust` (`System record`, `Agent output`, `Untrusted`) =
-  **3 variants**, with field, operator and value as text properties.
+  **3 variants**, with field (its label), operator (its words) and value as text properties.
 - `Override & Teach / Route`: `Route` (`Save`, `Second person`, `Blocked`) × `Replay` (`Run`, `Not
   run`) = **6 variants**. Booleans: `Conflict`, `Scan flag`, `Out of date`, `Intent differs`.
 - Example frame `Override & Teach — worked example`: CS-4180 at 1440 wide, the blocked check beside
@@ -744,7 +810,7 @@ frame.
 | `Stage` | `stage`, or the standing from `lessonStanding` when it differs |
 | `Direction` | `lessonDirections(taughtFrom, check).used` |
 | `Intent differs` | `intent !== effect`, with `effect` not `not-replayed` |
-| `Field trust` | `condition.fieldTrust` |
+| `Field trust` | `fields[condition.field].trust.kind`: the field's declared trust, never the condition's |
 | `Route` | `lessonRoute(...).route` |
 | `Replay` | `check.replay` is a `Replay`, not `{ notRun }` |
 | `Conflict` / `Scan flag` / `Out of date` | `check.conflicts.length > 0`; `scan.flags.length > 0`; `check.forDraftVersion !== draft.version` |
@@ -757,7 +823,9 @@ No variant colours a direction or a route. Every fill, stroke and text binds a v
 - ❌ Saving the person's words straight into memory → the agent restates them; the person approves the restatement; only that is stored.
 - ❌ A lesson with no scope ("Northwind emails are fine") → at least one condition (will not compile).
 - ❌ Letting cases through on a display name or a subject → a lenient lesson needs a value an outsider cannot set, matched exactly.
-- ❌ "Domain contains 'northwind'" as the outsider-proof condition → `is` or `is-one-of`; a look-alike domain contains it too.
+- ❌ "Domain ends with 'northwind.example'" or "contains 'northwind'" as the outsider-proof condition → neither exists on a `domain` field (will not compile): evilnorthwind.example matches both. `is-subdomain-of` is still partial, so `is` or `is-one-of`.
+- ❌ A field's label as `field`, or trust written on a condition → a key of the host's `defineFields`; who could have set a value is the field's declared `trust`.
+- ❌ A readback the host writes for each lesson → the grammar's `readback` with `markTrust`, so "could have been set by …" is worded in one place.
 - ❌ "Sender domain is X **or** subject contains 'Invoice'" → conditions are ANDed; alternatives are separate lessons.
 - ❌ Trusting the override's direction alone → the replay of the stored restatement decides too; the more lenient reading is used.
 - ❌ Suspending a stricter lesson on a model swap → it stays applied, marked "not re-checked"; stopping it would quietly loosen the agent.
@@ -795,5 +863,8 @@ string.
 6. **`field` as host strings until the Filter Grammar** — *Yes,* with the later breaking change
    flagged now. One refinement: the operator is a closed, positive set already, so AND-only and
    no-negation hold today rather than by host convention.
+   **Closed for good, 1 Nov 2026.** The Filter Grammar has merged, and a lesson's conditions are
+   its `PositiveConjunction<F>` over the host's `Fields`. `field` is a declared key, never a host
+   string, and AND-only and no-negation are held by the grammar's type.
 
 Still open: none for this component.
