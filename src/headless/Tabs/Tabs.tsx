@@ -132,15 +132,19 @@ function TabList({ children, className, ...rest }: TabListProps) {
   const items = listItems(row.items)
   const open = row.items.find((i) => i.selected)?.value
 
-  // tabs-overflow-announce-news: announced once, politely, when news arrives in a hidden tab.
+  // tabs-overflow-announce-news: announced once, politely, when news arrives in a hidden tab. News
+  // arriving is a tab gaining `unseen` while it is hidden; a tab leaving the row with news it already
+  // had is not news, and neither is the first render.
   const [announcement, setAnnouncement] = React.useState('')
-  const lastNews = React.useRef(0)
+  const totalNews = row.items.filter((i) => i.unseen).length
+  const before = React.useRef({ overflow: false, news: 0, total: 0 })
   React.useEffect(() => {
+    const prev = before.current
     const news = row.overflow ? row.unseenHidden : 0
-    if (news > lastNews.current) setAnnouncement(`All tabs, ${news} with new items`)
+    if (prev.overflow && row.overflow && news > prev.news && totalNews > prev.total) setAnnouncement(`All tabs, ${news} with new items`)
     else if (news === 0) setAnnouncement('')
-    lastNews.current = news
-  }, [row.overflow, row.unseenHidden])
+    before.current = { overflow: row.overflow, news, total: totalNews }
+  }, [row.overflow, row.unseenHidden, totalNews])
 
   // Choosing a tab in the list opens it as a click on it would; the row then scrolls it into view.
   const choose = React.useCallback((value: string) => {
