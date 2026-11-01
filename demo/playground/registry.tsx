@@ -89,6 +89,11 @@ export interface Entry extends CatalogEntry {
   code: (v: Values, spec: Spec) => string
   /** The Token bindings row that applies to the current values, if the spec has one. */
   bindingKey?: (v: Values) => string
+  /**
+   * No set picture on the Figma tab: the stage renders this component's trigger (an overlay, a toast's
+   * Save), so every cell of the grid would show the same button, not the set. Reviewed in the PR.
+   */
+  noSetPicture?: boolean
   /** Node id of the component set in the Figma library ("12:34"), for the deep link. */
   figma?: string
   /** Or a predicate for which of the spec's tokens the current values bind. */
@@ -612,6 +617,7 @@ ${TAB_EXAMPLE.filter((t) => !t.disabled).map((t) => `  <Tabs.Panel value="${t.va
   // demonstrated.
   {
     ...catalogEntry('popover'),
+    noSetPicture: true,
     seed: { title: 'Filter alerts', children: 'Show alerts from the last 24 hours, critical and major only.' },
     hide: ['open'],
     noControl: ['defaultOpen'],
@@ -636,6 +642,7 @@ ${TAB_EXAMPLE.filter((t) => !t.disabled).map((t) => `  <Tabs.Panel value="${t.va
   },
   {
     ...catalogEntry('tooltip'),
+    noSetPicture: true,
     seed: { content: 'Download the last 24 hours as CSV' },
     implementations: [{ id: 'headless', entry: '@omkarux/vela/headless' }],
     render: (v) => (
@@ -654,6 +661,7 @@ ${TAB_EXAMPLE.filter((t) => !t.disabled).map((t) => `  <Tabs.Panel value="${t.va
   },
   {
     ...catalogEntry('dialog'),
+    noSetPicture: true,
     seed: {
       variant: 'standard',
       title: 'Edit policy',
@@ -721,6 +729,7 @@ ${TAB_EXAMPLE.filter((t) => !t.disabled).map((t) => `  <Tabs.Panel value="${t.va
   // names: documented, not demonstrated.
   {
     ...catalogEntry('toast'),
+    noSetPicture: true,
     seed: { severity: 'success', title: 'Policy saved', description: 'Block legacy TLS now applies to 14 tenants.', action: false },
     extra: [
       { prop: 'action', kind: 'boolean', type: '{ label: string; onClick: () => void }', default: false, notes: 'Present → an Undo, a shortcut to the Undo on the page. A toast with an action never times out.' },
@@ -763,6 +772,7 @@ toast.add({ ${opts} })`
   // seed one list per frame and `open` would pin it — documented, not demonstrated.
   {
     ...catalogEntry('dropdown-list'),
+    noSetPicture: true,
     seed: { label: 'Views' },
     hide: ['value', 'open'],
     noControl: ['defaultValue', 'defaultOpen'],
