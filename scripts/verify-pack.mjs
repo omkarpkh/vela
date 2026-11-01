@@ -207,7 +207,7 @@ import type { TabsProps as HeadlessTabsProps } from '@omkarux/vela/headless'
 
 export const H = () => (
   <Tabs defaultValue="a" size="large">
-    <Tabs.List aria-label="Views"><Tabs.Trigger value="a" count={3}>Alerts</Tabs.Trigger><Tabs.Trigger value="b" disabled>Audit</Tabs.Trigger></Tabs.List>
+    <Tabs.List aria-label="Views"><Tabs.Trigger value="a" count={3}>Alerts</Tabs.Trigger><Tabs.Trigger value="b" disabled>Audit</Tabs.Trigger><Tabs.Trigger value="c" unseen>Sessions</Tabs.Trigger></Tabs.List>
     <Tabs.Panel value="a">Panel</Tabs.Panel>
   </Tabs>
 )
@@ -225,7 +225,7 @@ export const back = (p: HeadlessTabsProps): CoreTabsProps => p
     headlessOk = false
     console.log((e.stdout || '').toString().split('\n').slice(0, 8).join('\n'))
   }
-  check(headlessOk, 'headless entry resolves, typechecks, and its Tabs API is the core API')
+  check(headlessOk, 'headless entry resolves, typechecks, and its Tabs API is the core API, plus unseen on the trigger')
   rmSync(join(app, 'valid-headless.tsx'))
 
   // -- the headless-born components: every documented shape compiles --
@@ -496,6 +496,9 @@ export const shapes: [Fields, FieldSpec, FieldTrust, Group<F>, Node<F>, Conditio
     ['input-label-required', 'input with no label', `<Input />`],
     ['input-error-is-a-message', 'error as a boolean', `<Input label="Tenant" error />`],
     ['tabs-controlled-exclusive', 'tabs both controlled and uncontrolled', `<Tabs value="a" defaultValue="a"><Tabs.List aria-label="V"><Tabs.Trigger value="a">A</Tabs.Trigger></Tabs.List></Tabs>`],
+    // `unseen` is the headless trigger's only: on the core entry it is not a prop. The headless loop
+    // below skips this one, because there it must compile (the valid headless app proves that).
+    ['tabs-unseen-headless-only', 'unseen on the core trigger', `<Tabs defaultValue="a"><Tabs.List aria-label="V"><Tabs.Trigger value="a" unseen>A</Tabs.Trigger></Tabs.List></Tabs>`],
     ['toggle-controlled-exclusive', 'toggle both controlled and uncontrolled', `<Toggle label="Alerts" checked defaultChecked />`],
     ['text-area-label-required', 'text area with no label', `<TextArea />`],
     ['text-area-controlled-exclusive', 'text area both controlled and uncontrolled', `<TextArea label="Notes" value="a" defaultValue="a" />`],
@@ -660,7 +663,9 @@ export const shapes: [Fields, FieldSpec, FieldTrust, Group<F>, Node<F>, Conditio
   }
   // The same Tabs fixtures against the headless export. One spec, two implementations: a rule the
   // core's types reject and the headless types accept would be a rule enforced by one entry point.
-  for (const [id, name, snippet] of violations.filter(([id]) => id.startsWith('tabs-'))) {
+  // Every Tabs rule but the one that is about the difference: `unseen` exists on the headless trigger.
+  const CORE_ONLY = new Set(['tabs-unseen-headless-only'])
+  for (const [id, name, snippet] of violations.filter(([id]) => id.startsWith('tabs-') && !CORE_ONLY.has(id))) {
     writeFileSync(join(app, 'invalid.tsx'),
       `import { Tabs } from '@omkarux/vela/headless'\nexport const X = () => (${snippet})\n`)
     let rejected = false
