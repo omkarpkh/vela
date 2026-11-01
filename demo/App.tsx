@@ -178,7 +178,8 @@ export function App() {
           <NavGroup title="Start" holdsCurrent={route.kind === 'overview' || route.kind === 'how' || route.kind === 'states'}>
             <NavLink to={{ kind: 'overview' }} current={route}>Overview</NavLink>
             <NavLink to={{ kind: 'how' }} current={route}>How it is made</NavLink>
-            <NavLink to={{ kind: 'states' }} current={route}>All states</NavLink>
+            {/* All states (#/states) is the visual baselines' page: it keeps its address, and leaves
+                the menu (slice 1 of the playground uplift). */}
           </NavGroup>
           {foundations.length > 0 && (
             <NavGroup title="Foundations" holdsCurrent={route.kind === 'foundation'}>

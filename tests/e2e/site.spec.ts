@@ -1311,7 +1311,9 @@ test.describe('the Overview', () => {
     await expect(main.getByRole('heading', { level: 1 })).toHaveText(['Vela Design System'])
     await expect(page).toHaveTitle('Overview · Vela Design System')
     await expect(main.getByRole('heading', { level: 2 })).toHaveText(['Check it yourself', 'Built for security products', 'Ways in', /^New in \d+\.\d+\.\d+$/, 'Specified, not built yet'])
-    await expect(main.getByRole('heading', { level: 3 })).toHaveText([/^Severity · 6$/, /^Status · 5$/, /^Risk · 3$/, 'Components', 'Patterns', 'Foundations', 'Rules', 'Figma library', 'All states'])
+    // All states left the Ways in on 1 Nov 2026 (slice 1 of the playground uplift); it keeps its address.
+    await expect(main.getByRole('heading', { level: 3 })).toHaveText([/^Severity · 6$/, /^Status · 5$/, /^Risk · 3$/, 'Components', 'Patterns', 'Foundations', 'Rules', 'Figma library'])
+    await expect(main.locator('a[href="#/states"]')).toHaveCount(0)
     await expect(main.locator('h4, h5, h6')).toHaveCount(0)
     // Each taxonomy is shown with its own words, never another's.
     await expect(main.locator('[data-severity]')).toHaveText(['Success', 'Info', 'Warning', 'Minor', 'Major', 'Critical'])
@@ -1342,7 +1344,6 @@ test.describe('the Overview', () => {
       [/^Patterns/, '#/patterns/copy', 'Copy'],
       [/^Foundations/, '#/foundations/color', 'Colour'],
       [/^Rules Every rule/, '#/components/button/rules', 'Button'],
-      [/^All states/, '#/states', 'Every component, every state'],
       ['All changes', '#/changelog', 'Changelog'],
       ['Roadmap', '#/roadmap', 'Roadmap'],
       ['Changelog', '#/changelog', 'Changelog'],
@@ -1579,15 +1580,18 @@ test.describe('Product Mark: the Overview hero and its pulse', () => {
 })
 
 test.describe('All states', () => {
-  test('the gallery that was the Overview is at #/states, last in Start', async ({ page }) => {
+  // It left the menu on 1 Nov 2026 (slice 1 of the playground uplift), and stays at its address as the
+  // visual baselines' page.
+  test('the gallery that was the Overview is at #/states, and not in the menu', async ({ page }) => {
     await page.goto('/#/states')
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Every component, every state')
     await expect(page).toHaveTitle('All states · Vela Design System')
     for (const name of ['Button', 'Toggle', 'Input', 'Contextual Alert', 'Status Indicator', 'Risk Pill', 'Tabs', 'Tokens'])
       await expect(page.locator('section.demo-section', { has: page.getByRole('heading', { name, exact: true }) }), name).toBeVisible()
-    const start = page.getByRole('navigation', { name: 'Site' }).locator('.sitenav__group', { has: page.getByRole('heading', { level: 3, name: 'Start' }) })
-    await expect(start.getByRole('link')).toHaveText(['Overview', 'How it is made', 'All states'])
-    await expect(start.getByRole('link', { name: 'All states' })).toHaveAttribute('aria-current', 'page')
+    const nav = page.getByRole('navigation', { name: 'Site' })
+    const start = nav.locator('.sitenav__group', { has: page.getByRole('heading', { level: 3, name: 'Start' }) })
+    await expect(start.getByRole('link')).toHaveText(['Overview', 'How it is made'])
+    await expect(nav.locator('a[href="#/states"]')).toHaveCount(0)
     expect(await noSidewaysScroll(page)).toBe(true)
   })
 })
