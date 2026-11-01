@@ -1808,6 +1808,15 @@ test.describe('slice 3 · the stage', () => {
     }
   })
 
+  test('the Playground tab has no em or en dash in its visible words, on every component', async ({ page }) => {
+    for (const id of ALL) {
+      await page.goto(`/#/components/${id}`)
+      await expect(page.getByRole('region', { name: 'Live demo', exact: true })).toBeVisible()
+      const lines = (await page.locator('main').innerText()).split('\n').filter((l) => /[—–]/.test(l))
+      expect(lines, id).toEqual([])
+    }
+  })
+
   test('the controls drive the props: the caption, the component and the code follow a segment', async ({ page }) => {
     await page.goto('/#/components/button')
     const stage = page.getByRole('region', { name: 'Live demo', exact: true })

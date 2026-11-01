@@ -19,6 +19,7 @@ import { ScrollRegion } from '../shell/ScrollRegion'
 import { CopyButton, CopyStatus, useCopy } from '../shell/Copy'
 import { Markdown } from './Markdown'
 import { LEVELS } from './facts'
+import { undash } from './rules-read'
 
 export const SEGMENT_MAX = 6
 
@@ -147,7 +148,8 @@ export function AlsoInTheApi({ rows, explain }: { rows: PropRow[]; explain?: Rec
         {rows.map((p) => (
           <div key={`${p.part ?? ''}${p.prop}`} className="pg-uncontrolled__row">
             <dt><code>{p.part ? `${p.part}.` : ''}{p.prop}</code> <code className="pg-uncontrolled__type">{p.type.replace(/`/g, '')}</code></dt>
-            <dd>{explain?.[p.prop] ? <Markdown source={explain[p.prop]} /> : p.notes ? <Markdown source={p.notes} /> : null}</dd>
+            {/* The spec's words, with a spaced dash turned to a colon or a full stop in this layer only (slice 2's rule). */}
+            <dd>{explain?.[p.prop] ? <Markdown source={undash(explain[p.prop])} /> : p.notes ? <Markdown source={undash(p.notes)} /> : null}</dd>
           </div>
         ))}
       </dl>

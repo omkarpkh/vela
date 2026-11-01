@@ -229,7 +229,7 @@ function ToastStage({ v }: { v: Values }) {
         Save Changes
       </Button>
       <p className="vela-body pg-overlay-copy">
-        {saves === 0 ? 'Nothing saved yet.' : `Saved ${saves} ${saves === 1 ? 'time' : 'times'} — the page keeps the record.`}
+        {saves === 0 ? 'Nothing saved yet.' : `Saved ${saves} ${saves === 1 ? 'time' : 'times'}. The page keeps the record.`}
       </p>
       {saves > 0 && (
         <Button size="tiny" onClick={undo}>
@@ -248,7 +248,7 @@ function ToastStage({ v }: { v: Values }) {
 const VIEWS: [DropdownListItem, ...DropdownListItem[]] = [
   { value: 'alerts', label: 'All alerts' },
   { value: 'firewall', label: 'Firewall', meta: '1 new' },
-  { value: 'dlp', label: 'Data loss prevention — policy violations across every connected SaaS tenant' },
+  { value: 'dlp', label: 'Data loss prevention: policy violations across every connected SaaS tenant' },
   { value: 'pipeline', label: 'customer-ingest-pipeline-eu-west-2', meta: '2 new' },
   { value: 'archive', label: 'Archive', locked: { reason: 'Needs retention on' } },
   { value: 'reports', label: 'Reports', meta: '3 open' },
