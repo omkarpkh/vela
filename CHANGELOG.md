@@ -205,6 +205,36 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     and 320; the stills by width and theme, with the text shown while they load; forced colours,
     light and dark). The Overview has no visual baseline, and gets none here. 1394 checks (was
     1362): 1118 unit and contract, 203 e2e.
+- **Site: Vela's logo in the header, and a home-screen tile** (the logo states approved by Omkar
+  at 09:34 IST, 1 Nov 2026; asked for on 2 Nov). Nothing in the npm package changes.
+  - **The header logo**: the 24px mark (`<ProductMark size="regular" decorative />`, core-24 from
+    `brand/`), then "Vela Design System" and the version, as one link to the Overview, named
+    "Vela Design System": the mark and the version are hidden from the name. The mark is 5px from
+    the name (the mark's own gap, about 0.18 of its width). It is primary-500 on light and
+    primary-300 on dark, by the page's colour scheme, and it never pulses. Hover underlines the
+    name only; focus is Vela's ring round the whole link; on the Overview it is the current page,
+    and a press there goes back to the top. In forced colours the name and the mark are LinkText.
+  - **On a phone** (600px and below): the mark and "Vela". The rest of the name is clipped, not
+    removed, so the link keeps its full name; the version is hidden, as before.
+  - **The core marks follow the theme.** `regular` and `large` no longer keep their master's fixed
+    primary-500 in the page: the component names the colour rule's pair (primary-500, primary-300)
+    and the stylesheet picks one with `light-dark()`. In forced colours they draw in CanvasText.
+  - **`apple-touch-icon.png`**, 180px, rendered from `brand/vela-app-icon.svg` by
+    `npm run brand:touch-icon` (Playwright, never redrawn), 13 kB. It carries the SVG's SHA-256,
+    and a unit test fails when the two drift. **`theme-color`** for light and dark, the two
+    values of `--vela-bg-global`, held to the tokens by a unit test. No `mask-icon`: it needs a
+    one-colour drawing that `brand/` does not have. The favicon is unchanged, and a new test holds
+    it to the squircle tile.
+  - **`README.md`** shows the logo beside its title: the light hero, or the dark hero under a dark
+    colour scheme, through `<picture>`.
+  - **One pair in `PAIRS`** (115 now): primary-300 on grey-950, the dark header (7.91:1).
+  - Tests: 10 unit tests (the core marks' colour rule, the stylesheet's `light-dark()`, the header
+    drawing the regular mark only; the favicon's tile; the touch icon's size, source and link;
+    `theme-color`; the new pair in both themes) and 7 e2e tests (the link's name and
+    `aria-current`, and back to the top on the Overview; the colours and the 5px gap; hover
+    underlines the name only; the focus ring round the lockup; no animation on the header mark;
+    forced colours; 390px with no overlap). The header has no visual baseline, so none changes.
+    1688 checks (was 1671): 1293 unit and contract, 286 e2e.
 - **Patterns: a new area, `guidelines/patterns/`, and its first page, Copy** (`copy.md`, with nine
   figures in `copy/`). A pattern records the decisions a component can't make alone: who may read
   a secret, where the "last copied" mark lives, whether a row is clickable, whether the page copies
