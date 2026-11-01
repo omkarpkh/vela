@@ -32,6 +32,10 @@ function SearchIcon() {
   )
 }
 
+const SEARCH_EVENT = 'vela:search'
+/** Opens the site's Search with these words already typed. */
+export const searchFor = (words: string) => window.dispatchEvent(new CustomEvent(SEARCH_EVENT, { detail: words }))
+
 const inTextField = (el: EventTarget | null) =>
   el instanceof HTMLElement && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName))
 
@@ -47,10 +51,10 @@ export function Search({ compact }: { compact: boolean }) {
   const id = useId()
   const hits: Hit[] = useMemo(() => search(index, query), [index, query])
 
-  const open = () => {
+  const open = (words = '') => {
     const d = dialog.current
     if (!d || d.open) return
-    setQuery('')
+    setQuery(words)
     setActive(0)
     d.showModal()
     input.current?.focus()
@@ -68,7 +72,10 @@ export function Search({ compact }: { compact: boolean }) {
       else if (e.key === '/' && !e.metaKey && !e.ctrlKey && !e.altKey && !inTextField(e.target) && !dialog.current?.open) { e.preventDefault(); open() }
     }
     window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
+    // A page may open Search on words of its own ("Search all of Vela for …"): see searchFor.
+    const onAsk = (e: Event) => open(typeof (e as CustomEvent).detail === 'string' ? (e as CustomEvent<string>).detail : '')
+    window.addEventListener(SEARCH_EVENT, onAsk)
+    return () => { window.removeEventListener('keydown', onKey); window.removeEventListener(SEARCH_EVENT, onAsk) }
   }, [])
 
   useEffect(() => setActive(0), [query])
@@ -93,7 +100,7 @@ export function Search({ compact }: { compact: boolean }) {
         className={cn('shell-search-button', compact && 'is-compact')}
         aria-label={compact ? 'Search' : undefined}
         aria-keyshortcuts="Control+K Meta+K /"
-        onClick={open}
+        onClick={() => open()}
       >
         <SearchIcon />
         {!compact && <span className="shell-search-button__text">Search, or type a name you know</span>}

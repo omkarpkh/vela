@@ -20,7 +20,7 @@
  *   the list.
  * - A page with three sections or fewer has no index: the sections are already in view.
  */
-import { useEffect, useId, useRef, useState, type MouseEvent } from 'react'
+import { useEffect, useId, useRef, useState, type MouseEvent, type ReactNode } from 'react'
 import { cn, Icon } from '../../src'
 import './shell.css'
 
@@ -32,6 +32,8 @@ export interface SectionLink {
   count?: number
   /** The id of the section's heading. Defaults to `section-<id>`. */
   target?: string
+  /** A thin rule before this item: the tab's own groups, then the spec's sections. */
+  sep?: boolean
 }
 
 export interface SectionIndexProps {
@@ -42,6 +44,8 @@ export interface SectionIndexProps {
   label?: string
   /** False until the sections are on the page; a link that arrived with `?section=` jumps once it is true. */
   ready?: boolean
+  /** The tab's own tools at the strip's end (Find, Collapse all); inside the list when it is one button. */
+  tools?: ReactNode
 }
 
 /** The fewest sections that earn an index. */
@@ -77,7 +81,7 @@ export function jumpTo(s: SectionLink): boolean {
 /** What sticks above the content: the page's scroll-padding-top, in pixels. */
 const stuck = () => parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0
 
-export function SectionIndex({ items, form = 'strip', label, ready = true }: SectionIndexProps) {
+export function SectionIndex({ items, form = 'strip', label, ready = true, tools }: SectionIndexProps) {
   const name = label ?? (form === 'strip' ? 'On this tab' : 'On this page')
   const nameId = useId()
   const hereId = useId()
@@ -164,9 +168,10 @@ export function SectionIndex({ items, form = 'strip', label, ready = true }: Sec
         <span id={hereId} className="shell-index__here">{words(here)}</span>
         <Icon name={open ? 'chevron-up' : 'chevron-down'} size="small" />
       </button>
+      <div className="shell-index__panel">
       <ul id={listId} className="shell-index__list">
         {items.map((s) => (
-          <li key={s.id}>
+          <li key={s.id} className={s.sep ? 'shell-index__sep' : undefined}>
             <a
               className="shell-index__link"
               href={withSection(window.location.hash, s.id)}
@@ -178,6 +183,8 @@ export function SectionIndex({ items, form = 'strip', label, ready = true }: Sec
           </li>
         ))}
       </ul>
+      {tools && <div className="shell-index__tools">{tools}</div>}
+      </div>
     </nav>
   )
 }
