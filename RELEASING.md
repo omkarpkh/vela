@@ -19,7 +19,10 @@ npm run brand:stills                      # only when the minor or major number 
 
 A new minor or major version gives the mood a new seed (`scripts/brand/mark-seed.mjs`), so
 `npm run brand:stills` renders new stills into `demo/public/brand/` and removes the old ones. They
-are committed with the rest of the release; a unit test fails until they match the version.
+are committed with the rest of the release; a unit test fails until they match the version, and
+another fails any file over 250 kB. The script needs Python 3 with Pillow 11 or later, built with
+AVIF and WebP (`python3 -c "from PIL import features; print(features.check('avif'))"` prints
+`True`); it is not an npm dependency.
 
 Commit nothing yet. The changelog comes next, before the gate, because the gate reads it.
 

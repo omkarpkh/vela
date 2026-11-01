@@ -68,10 +68,12 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   - The favicon: `demo/public/favicon.svg`, a copy of `brand/vela-favicon-16.svg` (a unit test
     holds them byte-identical), linked from `demo/index.html` through the site's base path.
   - `npm run brand:stills` renders the four Overview stills (desktop 1600 × 520 and phone
-    720 × 900, at 2×, light and dark) on SwiftShader and writes them as WebP at quality 90 to
-    `demo/public/brand/`, named with the release seed: 31, 261, 43 and 209 KB. The PNGs (4 to
-    5.6 MB) are not committed; their hashes match the recipe's. A unit test fails if the stills'
-    seed is not the package version's, and `RELEASING.md` runs the script on a minor or major bump.
+    720 × 900, light and dark) as 2× PNG masters on SwiftShader, and encodes each as AVIF and WebP
+    at 2× and 1× through Pillow (`scripts/brand/encode-stills.py`; Python with Pillow 11 or later,
+    not an npm dependency): 16 files in `demo/public/brand/`, named with the release seed, from
+    5.7 to 234.4 kB. A unit test holds every file to 250 kB, and another fails if their seed is not
+    the package version's; `RELEASING.md` runs the script on a minor or major bump. The masters (4
+    to 5.6 MB) are not committed; their hashes match the recipe's.
   - `markSeed(version)` in `scripts/brand/mark-seed.mjs` (not in the package): n = major × 100 +
     minor, lobes = n mod 24 (24 for 0, never under 3), step = lobes / 100. `applySeed` writes a
     seed into the shader as it loads; for 0.15.0 the shader comes back byte-identical, which a

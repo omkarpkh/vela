@@ -110,11 +110,21 @@ describe('the favicon', () => {
 
 // The mood stills carry their seed in their names (npm run brand:stills). After a minor or major
 // version change they are stale until the script is run again (RELEASING.md), and this fails.
+// AVIF first and WebP as the fallback, each at 1× and 2×; the PNG master is never committed.
 describe('the mood stills', () => {
-  it("are the four for this version's seed, and only those", () => {
+  const dir = join(root, 'demo/public/brand')
+  const files = readdirSync(dir).sort()
+
+  it("are the sixteen for this version's seed, and nothing else", () => {
     const { version } = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'))
     const seed = seedLabel(markSeed(version))
-    const stills = readdirSync(join(root, 'demo/public/brand')).filter((f) => f.startsWith('mood-')).sort()
-    expect(stills).toEqual(['desktop-dark', 'desktop-light', 'phone-dark', 'phone-light'].map((s) => `mood-${s}-${seed}@2x.webp`))
+    const expected = ['desktop', 'phone'].flatMap((v) => ['light', 'dark'].flatMap((t) =>
+      [1, 2].flatMap((x) => ['avif', 'webp'].map((f) => `mood-${v}-${t}-${seed}@${x}x.${f}`))))
+    expect(files).toEqual(expected.sort())
+  })
+
+  // The budget agreed by the playground and Figma threads: 250 kB (250,000 bytes) per image.
+  it.each(files)('%s is within the 250 kB budget', (file) => {
+    expect(statSync(join(dir, file)).size).toBeLessThanOrEqual(250_000)
   })
 })

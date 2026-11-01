@@ -99,23 +99,26 @@ they change with each minor or major release:
 - The shader is stored as drawn for 0.15.0 and is never edited. `npm run brand:stills` writes the
   current version's seed into it as it loads it.
 
-The site uses stills, not the live shader: `npm run brand:stills` renders four, the desktop
-(1600 × 520) and the phone (720 × 900), both at 2×, light and dark, and writes them as WebP to
-`demo/public/brand/`, named with the seed (`mood-desktop-light-0.15@2x.webp`). Run it when the minor
-or major version changes (`RELEASING.md`). Still by default, and never animated under reduced motion.
+The site uses stills, not the live shader. `npm run brand:stills` renders four 2× PNG masters, the
+desktop (1600 × 520) and the phone (720 × 900), light and dark, and encodes each as AVIF (first
+choice) and WebP (fallback), at 2× and at 1× (the master resized, not rendered again): 16 files in
+`demo/public/brand/`, named with the seed (`mood-desktop-light-0.15@2x.avif`). Each is at most
+250 kB, and a unit test holds them to it. The PNG masters are 4 to 5.6 MB and are never committed.
+Run the script when the minor or major version changes (`RELEASING.md`). Still by default, and
+never animated under reduced motion.
 
-Worst contrast against the mark colour over the left 60% of each still, as rendered (PNG):
+Worst contrast against the mark colour over the left 60% of each still:
 
-| Still | Mark | Worst |
-|---|---|---|
-| Desktop, dark | white | 14.33:1 |
-| Phone, dark | white | 7.27:1 |
-| Desktop, light | primary-500 | 5.13:1 |
-| Phone, light | primary-500 | 4.55:1 |
+| Still | Mark | PNG master | AVIF 2× | AVIF 1× | WebP 2× | WebP 1× |
+|---|---|---|---|---|---|---|
+| Desktop, dark | white | 14.33:1 | 13.77:1 | 14.51:1 | 13.73:1 | 15.07:1 |
+| Phone, dark | white | 7.27:1 | 7.21:1 | 7.92:1 | 7.11:1 | 7.57:1 |
+| Desktop, light | primary-500 | 5.13:1 | 5.08:1 | 5.17:1 | 5.18:1 | 5.24:1 |
+| Phone, light | primary-500 | 4.55:1 | 4.47:1 | 4.59:1 | 4.40:1 | 4.44:1 |
 
-The shipped WebP files (quality 90) smooth the grain, and measure 13.54, 6.97, 5.06 and 4.40:1 in
-the same order. On the phone light still that is under the 4.5:1 that primary-500 text needs, so
-check the darkest area before text sits on it.
+The encoded files smooth the grain, which moves the worst pixel. On the phone light still, three of
+the four shipped files are under the 4.5:1 that primary-500 text needs, so check the darkest area
+before text sits on it.
 
 ## Name
 
