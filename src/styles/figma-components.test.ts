@@ -18,7 +18,7 @@ const cli = (...args: string[]) => {
 const lintReport: Record<string, { problems: { rule: string; node: string; what: string; waived: boolean }[]; allow: { rule: string; reason: string }[] }> = JSON.parse(cli('--lint'))
 const dump = (name: string, set?: string) => JSON.parse(set ? cli('--dump', name, `--set=${set}`) : cli('--dump', name))
 const styles: any[] = JSON.parse(execFileSync('node', ['scripts/figma/text-styles.mjs', '--json'], { cwd: root, encoding: 'utf8' }))
-const BUILDERS = ['brand-mark', 'button', 'checkbox', 'contextual-alert', 'dialog', 'dropdown-list', 'icon', 'icon-button', 'input', 'popover', 'radio-group', 'risk-pill', 'status-indicator', 'table', 'tabs', 'text-area', 'toast', 'toggle', 'tooltip']
+const BUILDERS = ['brand-mark', 'button', 'checkbox', 'contextual-alert', 'dialog', 'dropdown-list', 'icon', 'icon-button', 'input', 'popover', 'radio-group', 'risk-pill', 'status-indicator', 'table', 'tabs', 'tabs-overflow-control', 'text-area', 'toast', 'toggle', 'tooltip']
 // Extensions (<builder>.<id>.extend.figma.js) are reported under `<builder>.<id>`.
 const EXTENSIONS = ['dropdown-list.usage-locked', 'tabs.seed-hover']
 const tmp = () => mkdtempSync(join(tmpdir(), 'vela-figma-'))
