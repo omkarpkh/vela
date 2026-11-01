@@ -34,6 +34,9 @@ const STAGE_OPTIONS = [
   { value: 'beside', label: 'Beside' },
   { value: 'full', label: 'Full width' },
 ] as const
+// The stage width's presets (slice 7, s5-tabs): Full, then a small tablet and WCAG 1.4.10's reflow
+// width. The slider and the field beside them set any width between.
+const WIDTH_PRESETS = [480, 320] as const
 // Compare splits the stage (section 5). Brands joins when a second brand exists (B4, B9): there is
 // none yet, so it is not offered.
 const COMPARE_OPTIONS = [
@@ -417,7 +420,7 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
                     <>
                       <Toggle label="Reduced motion" size="tiny" checked={reduced} onChange={setReduced} />
                       {entry.containerResponsive && avail !== null && (
-                        <StageWidth min={wMin} max={wMax} width={frameWidth} onChange={setWidth} phone={phone} />
+                        <StageWidth min={wMin} max={wMax} width={frameWidth} onChange={setWidth} phone={phone} presets={WIDTH_PRESETS} />
                       )}
                       <button type="button" className="pg-expand vela-meta" aria-expanded={expanded} onClick={() => setExpanded((x) => !x)}>
                         Expand stage
