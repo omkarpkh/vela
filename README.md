@@ -60,7 +60,7 @@ link to each, and the number of automated checks, written by the test runners ra
 | **Icons** | 50 curated [Lucide](https://lucide.dev) 1.63.0 glyphs (ISC; a subset from Feather, MIT), compiled into the core entry at build time — no icon dependency, `lucide` is a devDependency only. The ISC notice ships in [`NOTICE`](NOTICE) |
 | **Format** | ESM, `preserveModules` for tree-shaking, full `.d.ts` |
 | **Tests** | 1500 automated checks — 1202 unit and contract (113 contrast pairs, each asserted in both themes), 295 browser (68 screenshots at four widths, 225 playground, 2 docs), 3 Flutter — counted by `npm run checks` |
-| **Packed size** | 305.6 kB, 266 files (the Filter Grammar's modules and their .d.ts are most of the growth since 0.15.0), as `npm run verify` measures it (README and CHANGELOG ship in the tarball, so this moves when they do) |
+| **Packed size** | 306.7 kB, 266 files (the Filter Grammar's modules and their .d.ts are most of the growth since 0.15.0), as `npm run verify` measures it (README and CHANGELOG ship in the tarball, so this moves when they do) |
 
 ## The three ideas worth stealing
 
