@@ -54,12 +54,25 @@ body { margin: 0; background: var(--vela-bg-global); }
    adds 15px, so the nearest other mark, npm's word, is at least 22.5px away even if the word filled
    its box. Figma is last, so nothing sits on its other side. tests/e2e/site.spec.ts measures it. */
 .topbar__marks { display: flex; align-items: center; gap: var(--vela-space-15); }
-.brand { display: flex; align-items: baseline; gap: var(--vela-space-10); text-decoration: none; color: var(--vela-text-heading); }
-.brand__name { font-size: var(--vela-text-h4-size); line-height: var(--vela-text-h4-line-height); font-weight: var(--vela-font-weight-semibold); }
-/* The full name in the header (the naming rule, 1 Nov 2026); a phone shows "Vela", and the page title keeps the full name. */
+/* The logo: the 24px mark, then the name and the version, one link (the logo states, 1 Nov 2026).
+   The gap is the mark's own (product-mark-clear-space; brand/README.md, rule 6): about 0.18 of the
+   mark's width between the mark and the name, 4.3px at 24, so space-5. The space-15 gap of the bar
+   keeps the quarter-width clear space (6px) from the menu button. Focus is Vela's ring, round the
+   whole link (base.css). Hover underlines the name only; the mark and the version never change. */
+.brand { display: flex; align-items: center; gap: var(--vela-space-5); min-width: 0; text-decoration: none; color: var(--vela-text-heading); }
+.brand__words { display: flex; align-items: baseline; gap: var(--vela-space-10); min-width: 0; }
+.brand__name { font-size: var(--vela-text-h4-size); line-height: var(--vela-text-h4-line-height); font-weight: var(--vela-font-weight-semibold); white-space: nowrap; }
+@media (hover: hover) { .brand:hover .brand__name { text-decoration-line: underline; } }
+/* No pressed state of its own: a press goes home (the logo states). */
+/* The full name in the header (the naming rule, 1 Nov 2026). A phone shows the mark and "Vela"; the
+   rest is clipped, not removed, so the link is still named "Vela Design System", and the page
+   title keeps the full name. */
 .brand__rest { font-weight: var(--vela-font-weight-regular); }
-@media (max-width: 600px) { .brand__rest { display: none; } }
-.brand__meta { color: var(--vela-text-de-emphasized); }
+@media (max-width: 600px) { .brand__rest { position: absolute; clip-path: inset(50%); overflow: hidden; white-space: nowrap; } }
+.brand__meta { color: var(--vela-text-de-emphasized); white-space: nowrap; }
+/* Forced colours: the name is LinkText, like any link, and so is the mark (an SVG keeps its own
+   colour there unless told). The focus ring is an outline, which the system keeps. */
+@media (forced-colors: active) { .brand, .brand__name, .brand .pm { color: LinkText; } }
 .topbar__right { margin-left: auto; display: flex; align-items: center; gap: var(--vela-space-20); }
 .topbar__link { color: var(--vela-text-default); text-decoration: none; }
 .topbar__link:hover { color: var(--vela-text-link); }

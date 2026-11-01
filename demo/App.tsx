@@ -9,6 +9,7 @@ import { LINKS, figmaUrl } from './links'
 import { Doc, DOCS } from './pages/Doc'
 import { Appearance, type Theme } from './shell/Appearance'
 import { Search } from './shell/Search'
+import { ProductMark } from './shell/ProductMark'
 import { GROUPS } from './playground/catalog'
 
 // One chunk per page, loaded when it is opened (playground spec, B8). The shell — header, nav,
@@ -176,9 +177,25 @@ export function App() {
         >
           <MenuIcon />
         </button>
-        <a href="#/" className="brand">
-          <span className="brand__name">Vela<span className="brand__rest"> Design System</span></span>
-          <span className="vela-meta brand__meta">@omkarux/vela {pkg.version}</span>
+        {/* The logo (the logo states Omkar approved on 1 Nov 2026): the 24px mark, the name and the
+            version, one link to the Overview. The link is named by the name alone, "Vela Design
+            System": the mark is aria-hidden, and so is the version, which is shown, not read. On the
+            Overview it is the current page, and a press there goes back to the top. It never pulses. */}
+        <a
+          href="#/"
+          className="brand"
+          aria-current={route.kind === 'overview' ? 'page' : undefined}
+          onClick={(e) => {
+            if (route.kind !== 'overview') return
+            e.preventDefault()
+            window.scrollTo({ top: 0 })
+          }}
+        >
+          <ProductMark size="regular" decorative />
+          <span className="brand__words">
+            <span className="brand__name">Vela<span className="brand__rest"> Design System</span></span>
+            <span className="vela-meta brand__meta" aria-hidden="true">@omkarux/vela {pkg.version}</span>
+          </span>
         </a>
         <Search compact={phone} />
         <div className="topbar__right">
