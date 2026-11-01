@@ -1278,7 +1278,8 @@ test.describe('slice 6b · Copy page', () => {
     const field = s11.getByRole('spinbutton', { name: 'Container width' })
     await s11.getByRole('button', { name: '160px, the minimum' }).click()
     await expect(field).toHaveValue('160')
-    expect(Math.round((await s11.locator('.copy-width__frame').evaluate((el) => el.clientWidth - 2 * parseFloat(getComputedStyle(el).paddingLeft))))).toBe(160)
+    // The frame's width can still be settling after the click, so poll until it lands.
+    await expect.poll(async () => Math.round(await s11.locator('.copy-width__frame').evaluate((el) => el.clientWidth - 2 * parseFloat(getComputedStyle(el).paddingLeft)))).toBe(160)
     await expect(s11.locator('datalist option')).toHaveCount(2)
     const s12 = sectionOf(page, 12)
     await expect(s12.getByRole('row', { name: /copy-button-confirms-after-write/ })).toContainText('not built yet')
