@@ -212,9 +212,11 @@ export function revealScroll(input: RowInput, j: number): number {
     // its sticking zone. And the same at the end.
     candidates.push(hi - reserve, starts[k] - ring - fade - 1, lo + reserve, starts[k] + wk + ring + fade + 1 - view)
   }
+  // The open tab itself is brought to its own place, not left stuck at an edge over the tabs beside it.
+  const own = sticky && j === k ? { ...input, sticky: false } : input
   let best: number | null = null
   for (const c of candidates.map(clamp)) {
-    const at = { ...input, scroll: c }
+    const at = { ...own, scroll: c }
     if (!inViewWithRing(measureRow(at), at, j)) continue
     if (best === null || Math.abs(c - scroll) < Math.abs(best - scroll)) best = c
   }
