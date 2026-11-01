@@ -367,6 +367,12 @@
 /* Pressed: the ink line lands at pointer down, in instant, over the hover line. The jump is instant too. */
 .shell-index__link:active, .shell-index__link:not([aria-current="location"]):active { border-bottom-color: var(--vela-border-action); transition-duration: var(--vela-duration-instant); }
 .shell-index__toggle { display: none; }
+/* Wide, the panel is not a box of its own: the list and the tools sit in the strip's row. */
+.shell-index__panel { display: contents; }
+/* The tab's own groups, then the spec's sections, with a thin rule between. */
+.shell-index__sep { margin-inline-start: var(--vela-space-5); padding-inline-start: var(--vela-space-20); border-inline-start: 1px solid var(--vela-border-default); align-self: center; height: var(--vela-control-height-24); align-items: stretch; }
+.shell-index__sep > .shell-index__link { margin-block: calc(-1 * var(--vela-space-10)); }
+.shell-index__tools { display: flex; flex: none; align-items: center; gap: var(--vela-space-15); margin-inline-start: auto; }
 
 /* The rail: the same index for a page without page tabs, beside the content. The ink line is a start edge. */
 .shell-index--rail { flex-direction: column; gap: var(--vela-space-10); padding: var(--vela-space-15); }
@@ -398,13 +404,16 @@
     transition: background-color var(--vela-duration-base) var(--vela-ease-standard);
   }
   .shell-index__toggle:active { background: var(--vela-bg-hover); transition-duration: var(--vela-duration-instant); }
-  .shell-index__list { display: none; }
-  .shell-index.is-open .shell-index__list {
-    display: flex; flex-direction: column; gap: 0; overflow: visible;
-    position: absolute; top: 100%; left: 0; right: 0; z-index: 15; margin-top: var(--vela-space-5); padding: var(--vela-space-5) 0;
+  .shell-index__panel { display: none; }
+  .shell-index.is-open .shell-index__panel {
+    display: flex; flex-direction: column; gap: var(--vela-space-10);
+    position: absolute; top: 100%; left: 0; right: 0; z-index: 15; margin-top: var(--vela-space-5); padding: var(--vela-space-5) 0 var(--vela-space-10);
     background: var(--vela-bg-container); border: 1px solid var(--vela-border-default); border-radius: var(--vela-radius-4);
   }
+  .shell-index.is-open .shell-index__list { flex-direction: column; gap: 0; overflow: visible; }
   .shell-index.is-open .shell-index__link { padding: 0 var(--vela-space-15); }
+  .shell-index.is-open .shell-index__sep { margin-inline-start: 0; padding-inline-start: 0; border-inline-start: 0; border-top: 1px solid var(--vela-border-default); }
+  .shell-index.is-open .shell-index__tools { margin-inline-start: 0; padding: 0 var(--vela-space-15); flex-wrap: wrap; }
 }
 
 /* ----------------------------------------------------------------- stage -- */
@@ -485,4 +494,50 @@
   .shell-stage__slab { border-color: CanvasText; }
   .shell-card, .shell-next { border-color: CanvasText; }
   .shell-card:active, .shell-next:active { border-color: Highlight; }
+}
+
+/* ------------------------------------------------------- folds, show more -- */
+/* Fold and Show more (demo/shell/Fold.tsx): stand in for a disclosure group, which Vela does not
+   have. The heading is the button; a line under it; groups sit 60 apart and rows 20 (playground.css).
+   Nothing starts closed. Folded content is hidden until found; print opens everything. */
+.shell-fold { display: flex; flex-direction: column; gap: var(--vela-space-15); min-width: 0; }
+.shell-fold__head { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--vela-space-5) var(--vela-space-10); margin: 0; padding-bottom: var(--vela-space-10); border-bottom: 1px solid var(--vela-border-subtle); font-size: var(--vela-text-h4-size); line-height: var(--vela-text-h4-line-height); font-weight: var(--vela-font-weight-semibold); color: var(--vela-text-heading); }
+.shell-fold__head:focus { outline: none; }
+.shell-fold__head:focus-visible { outline: var(--vela-focus-ring-width) solid var(--vela-focus-ring-color); outline-offset: var(--vela-focus-ring-offset); }
+.shell-fold__toggle {
+  display: inline-flex; align-items: center; gap: var(--vela-space-10); padding: 0; border: 0; border-radius: var(--vela-radius-4);
+  background: transparent; color: inherit; font: inherit; text-align: start; cursor: pointer; -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--vela-duration-base) var(--vela-ease-standard);
+}
+.shell-fold__toggle .vela-icon { color: var(--vela-icon-strong); }
+@media (hover: hover) { .shell-fold__toggle:hover .shell-fold__words { text-decoration: underline; } }
+/* Pressed: the surface lands under the words at pointer down; nothing moves. */
+.shell-fold__toggle:active { background: var(--vela-bg-selected); transition-duration: var(--vela-duration-instant); }
+.shell-fold__count { font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height); font-weight: var(--vela-font-weight-regular); color: var(--vela-text-default); }
+.shell-fold__aside { font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height); font-weight: var(--vela-font-weight-regular); color: var(--vela-text-default); }
+.shell-fold__body { display: flex; flex-direction: column; gap: var(--vela-space-15); min-width: 0; }
+.shell-fold__body[hidden]:not([hidden="until-found"]) { display: none; }
+.shell-more {
+  display: inline-flex; align-self: flex-start; align-items: center; gap: var(--vela-space-5); height: var(--vela-control-height-24); padding: 0 var(--vela-space-10);
+  border: 1px solid var(--vela-btn-hollow-primary-border); border-radius: var(--vela-radius-4); background: transparent; color: var(--vela-btn-hollow-primary-text);
+  font: inherit; font-size: var(--vela-text-button-tiny-size); line-height: var(--vela-text-button-tiny-line-height); cursor: pointer; -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--vela-duration-base) var(--vela-ease-standard);
+}
+@media (hover: hover) { .shell-more:hover { background: var(--vela-btn-hollow-hover-bg); transition-duration: var(--vela-duration-fast); } }
+.shell-more:active { background: var(--vela-bg-selected); transition-duration: var(--vela-duration-instant); }
+@media print {
+  .shell-fold__body[hidden], [hidden="until-found"] { display: revert !important; content-visibility: visible !important; }
+  .shell-more, .shell-fold__toggle .vela-icon { display: none; }
+}
+
+/* ------------------------------------------------------------ copy mark -- */
+/* Copy mark (demo/shell/CopyMark.tsx): the 24px Copy Morph, "Copied" beside it while the tick holds,
+   and the Copy pattern's words when the clipboard is refused. */
+.shell-copymark { display: inline-flex; flex: none; align-items: center; gap: var(--vela-space-5); vertical-align: middle; }
+.shell-copymark__done { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); font-weight: var(--vela-font-weight-semibold); color: var(--vela-text-default); }
+.shell-copymark__fail { display: block; flex-basis: 100%; margin-top: var(--vela-space-5); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
+@media (forced-colors: active) {
+  .shell-fold__head { border-bottom-color: CanvasText; }
+  .shell-fold__toggle:active, .shell-more:active { outline: 1px solid Highlight; }
+  .shell-more { border-color: ButtonText; }
 }

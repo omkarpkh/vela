@@ -322,10 +322,10 @@ test('the Text Area page counts as you type and the field only ever resizes vert
 test('the Tabs page switches implementation, and the import line and install command follow', async ({ page }) => {
   await page.goto('/#/components/tabs')
   await expect(page.getByRole('heading', { level: 1, name: 'Tabs' })).toBeVisible()
-  const contract = page.getByRole('region', { name: /^Use / })
+  const contract = page.locator('.pg-head')
   await expect(contract.locator('.pg-import')).toContainText("import { Tabs } from '@omkarux/vela'")
-  await expect(contract.locator('.pg-install-command')).toHaveText('npm i @omkarux/vela')
-  await expect(contract.locator('.pg-install-note')).toHaveCount(0)
+  // A core component needs the package alone: the header names no install line (it is on the Overview).
+  await expect(contract.locator('.pg-install-command')).toHaveCount(0)
 
   await page.getByRole('group', { name: 'Implementation' }).getByRole('button', { name: 'headless' }).click()
   await expect(contract.locator('.pg-import')).toContainText("import { Tabs } from '@omkarux/vela/headless'")
@@ -369,7 +369,7 @@ test('the Checkbox page renders the headless Checkbox: Space toggles, the fill f
   await page.goto('/#/components/checkbox')
   await expect(page.getByRole('heading', { level: 1, name: 'Checkbox' })).toBeVisible()
   await expect(page.getByRole('group', { name: 'Implementation' })).toHaveCount(0)
-  const contract = page.getByRole('region', { name: /^Use / })
+  const contract = page.locator('.pg-head')
   await expect(contract.locator('.pg-import')).toContainText("import { Checkbox } from '@omkarux/vela/headless'")
   await expect(contract.locator('.pg-install-command')).toHaveText('npm i @omkarux/vela @base-ui/react')
 
@@ -400,7 +400,7 @@ test('the Radio Group page renders the headless group: arrows move the selection
   await page.goto('/#/components/radio-group')
   await expect(page.getByRole('heading', { level: 1, name: 'Radio Group' })).toBeVisible()
   await expect(page.getByRole('group', { name: 'Implementation' })).toHaveCount(0)
-  const contract = page.getByRole('region', { name: /^Use / })
+  const contract = page.locator('.pg-head')
   await expect(contract.locator('.pg-import')).toContainText("import { RadioGroup } from '@omkarux/vela/headless'")
   await expect(contract.locator('.pg-install-command')).toHaveText('npm i @omkarux/vela @base-ui/react')
 
@@ -433,7 +433,12 @@ test('on the Tabs page the tab list stays put when the panel changes, and never 
   await page.setViewportSize({ width: 412, height: 900 })
   for (const impl of ['core', 'headless'] as const) {
     await page.goto('/#/components/tabs')
-    if (impl === 'headless') await page.getByRole('group', { name: 'Implementation' }).getByRole('button', { name: 'headless' }).click()
+    if (impl === 'headless') {
+      await page.getByRole('group', { name: 'Implementation' }).getByRole('button', { name: 'headless' }).click()
+      // The choice now sits in Controls, below the stage (slice 2 of the playground uplift): back to
+      // the top, where the core case starts, so both measure the list from the same place.
+      await page.evaluate(() => window.scrollTo(0, 0))
+    }
     const frame = page.locator('.pg-frame[data-theme="light"]')
     const list = frame.getByRole('tablist')
     await expect(list).toBeVisible()
@@ -832,7 +837,7 @@ test('the Popover page opens a themed, non-modal popover: focus moves in, Escape
   await compareThemes(page)
   await expect(page.getByRole('heading', { level: 1, name: 'Popover' })).toBeVisible()
   await expect(page.getByRole('group', { name: 'Implementation' })).toHaveCount(0)
-  const contract = page.getByRole('region', { name: /^Use / })
+  const contract = page.locator('.pg-head')
   await expect(contract.locator('.pg-import')).toContainText("import { Popover } from '@omkarux/vela/headless'")
   await expect(contract.locator('.pg-install-command')).toHaveText('npm i @omkarux/vela @base-ui/react')
 
@@ -867,7 +872,7 @@ test('the Popover page opens a themed, non-modal popover: focus moves in, Escape
 test('the Tooltip page describes its trigger on hover and on keyboard focus, and Escape dismisses it', async ({ page }) => {
   await page.goto('/#/components/tooltip')
   await expect(page.getByRole('heading', { level: 1, name: 'Tooltip' })).toBeVisible()
-  const contract = page.getByRole('region', { name: /^Use / })
+  const contract = page.locator('.pg-head')
   await expect(contract.locator('.pg-import')).toContainText("import { Tooltip } from '@omkarux/vela/headless'")
 
   const frame = page.locator('.pg-frame[data-theme="light"] .pg-frame-body')
@@ -896,7 +901,7 @@ test('the Dialog page opens a modal: focus moves in and is trapped, the page is 
   await page.goto('/#/components/dialog')
   await compareThemes(page)
   await expect(page.getByRole('heading', { level: 1, name: 'Dialog' })).toBeVisible()
-  const contract = page.getByRole('region', { name: /^Use / })
+  const contract = page.locator('.pg-head')
   await expect(contract.locator('.pg-import')).toContainText("import { Dialog } from '@omkarux/vela/headless'")
 
   const trigger = page.locator('.pg-frame[data-theme="dark"] .pg-frame-body').getByRole('button', { name: 'Edit Policy' })
@@ -990,7 +995,7 @@ test('the Toast page raises a polite, themed toast without moving focus, and its
   await compareThemes(page)
   await expect(page.getByRole('heading', { level: 1, name: 'Toast' })).toBeVisible()
   await expect(page.getByRole('group', { name: 'Implementation' })).toHaveCount(0)
-  const contract = page.getByRole('region', { name: /^Use / })
+  const contract = page.locator('.pg-head')
   await expect(contract.locator('.pg-import')).toContainText("import { ToastProvider, useToast } from '@omkarux/vela/headless'")
   await expect(contract.locator('.pg-install-command')).toHaveText('npm i @omkarux/vela @base-ui/react')
 
@@ -1128,7 +1133,7 @@ test('the Dropdown List page opens a themed menu on the current item, and a choi
   await page.goto('/#/components/dropdown-list')
   await compareThemes(page)
   await expect(page.getByRole('heading', { level: 1, name: 'Dropdown List' })).toBeVisible()
-  const contract = page.getByRole('region', { name: /^Use / })
+  const contract = page.locator('.pg-head')
   await expect(contract.locator('.pg-import')).toContainText("import { DropdownList } from '@omkarux/vela/headless'")
   await expect(contract.locator('.pg-install-command')).toHaveText('npm i @omkarux/vela @base-ui/react')
 
@@ -2353,4 +2358,207 @@ test.describe('the motion pass, part 2', () => {
       })
     })
   }
+})
+
+// Slice 2 of the playground uplift (s5-tabs): the component page's Rules, Tokens and Figma tabs.
+test.describe('slice 2 · the tabs', () => {
+  const ALL = ['button', 'toggle', 'input', 'text-area', 'contextual-alert', 'status-indicator', 'risk-pill', 'tabs', 'icon', 'checkbox', 'radio-group', 'table', 'popover', 'tooltip', 'dialog', 'toast', 'dropdown-list', 'brand-mark', 'icon-button']
+
+  test('the Rules tab shows no path, line or commit, the proof is one link, and the rule id only in an opened row', async ({ page }) => {
+    await page.goto('/#/components/button/rules')
+    const main = page.getByRole('main')
+    const row = main.locator('.pg-rule[data-rule="button-press-keeps-hit-target"]')
+    const test_ = row.getByRole('link', { name: /^See the test on GitHub/ })
+    await expect(test_).toHaveAttribute('href', /^https:\/\/github\.com\/omkarpkh\/vela\/blob\/[0-9a-f]{7,40}|main\/tests\/e2e\/playground\.spec\.ts#L\d+$/)
+    await expect(test_).toHaveAttribute('href', /tests\/e2e\/playground\.spec\.ts#L\d+$/)
+    const text = await main.innerText()
+    expect(text).not.toMatch(/scripts\/|tests\/e2e|\.spec\.ts|, line \d+|\bat [0-9a-f]{7}\b/)
+    expect(text).not.toContain('button-press-keeps-hit-target')
+    await row.getByRole('button', { name: 'More about this rule' }).click()
+    await expect(row.getByText('Rule id')).toBeVisible()
+    await expect(row.locator('.pg-rule__id')).toHaveText('Rule id button-press-keeps-hit-target')
+    // A compiler rule's attempt and the compiler's own words, without the scratch file's name.
+    const compiler = main.locator('.pg-rule[data-rule="button-text-link-requires-primary"]')
+    await compiler.getByRole('button', { name: 'Try to break it' }).click()
+    await expect(compiler.getByRole('button', { name: 'Hide the attempt' })).toHaveAttribute('aria-expanded', 'true')
+    await expect(compiler.locator('.pg-rule__code').first()).toContainText('appearance="text-link"')
+    await expect(compiler.locator('.pg-rule__code').last()).not.toContainText('fixture.tsx')
+    await expect(compiler.getByRole('link', { name: /^See the test on GitHub/ })).toHaveAttribute('href', /scripts\/verify-pack\.mjs#L\d+$/)
+  })
+
+  test('the rendered Rules tab has no em or en dash, on every component', async ({ page }) => {
+    test.setTimeout(120_000)
+    for (const id of ALL) {
+      await page.goto(`/#/components/${id}/rules`)
+      const main = page.getByRole('main')
+      await expect(main.locator('.pg-summary, .pg-empty').first()).toBeVisible()
+      // Every row shown, then opened, so the rest of each rule's words are read too.
+      while (await main.locator('.shell-more').count()) await main.locator('.shell-more').first().click()
+      for (const b of await main.getByRole('button', { name: 'More about this rule' }).all()) await b.click()
+      expect(await main.innerText(), id).not.toMatch(/[—–]/)
+    }
+  })
+
+  test('Find says how many rules are shown, politely, and a search with no match says so with two ways on', async ({ page }) => {
+    await page.goto('/#/components/button/rules')
+    const find = page.getByRole('searchbox', { name: 'Find a rule' })
+    const status = page.getByRole('main').getByRole('status').filter({ hasText: /rules shown/ })
+    await find.fill('text link')
+    await expect(status).toHaveText(/^\d+ of 10 rules shown$/)
+    const shown = await page.locator('.pg-rule').count()
+    expect(shown).toBeGreaterThan(0)
+    expect(shown).toBeLessThan(10)
+    // The rule id is found too, though it is shown only in an opened row.
+    await find.fill('button-icons-left')
+    await expect(page.locator('.pg-rule')).toHaveCount(1)
+    await find.fill('pill')
+    await expect(status).toHaveText('0 of 10 rules shown')
+    await expect(page.getByText('No rule on Button matches “pill”.')).toBeVisible()
+    await expect(page.locator('.pg-rule')).toHaveCount(0)
+    await page.getByRole('button', { name: 'Search all of Vela for “pill”' }).click()
+    await expect(page.getByRole('dialog', { name: 'Search' })).toBeVisible()
+    await expect(page.getByRole('combobox', { name: 'Search' })).toHaveValue('pill')
+    await page.keyboard.press('Escape')
+    await page.getByRole('button', { name: 'Clear the search' }).click()
+    await expect(find).toHaveValue('')
+    await expect(find).toBeFocused()
+    await expect(page.locator('.pg-rule')).toHaveCount(10)
+  })
+
+  test('when the proof file fails, the rows still come from the spec and the failure is said, with Try again', async ({ page }) => {
+    let fail = true
+    await page.route('**/proofs/button.json', (r) => (fail ? r.abort() : r.continue()))
+    await page.goto('/#/components/button/rules')
+    await expect(page.getByText('The proof links did not load.')).toBeVisible()
+    await expect(page.locator('.pg-rule')).toHaveCount(10)
+    await expect(page.getByRole('link', { name: /^See the test on GitHub/ })).toHaveCount(0)
+    await expect(page.getByRole('button', { name: 'Try to break it' })).toHaveCount(0)
+    fail = false
+    await page.getByRole('button', { name: 'Try again' }).click()
+    await expect(page.getByText('The proof links did not load.')).toHaveCount(0)
+    await expect(page.getByRole('link', { name: /^See the test on GitHub/ })).toHaveCount(2)
+    await expect(page.getByRole('button', { name: 'Try to break it' })).toHaveCount(3)
+  })
+
+  test('a slow proof file says "Loading proof…" where its links will be', async ({ page }) => {
+    let release: () => void = () => {}
+    const held = new Promise<void>((r) => { release = r })
+    await page.route('**/proofs/button.json', async (r) => { await held; await r.continue() })
+    await page.goto('/#/components/button/rules')
+    await expect(page.locator('.pg-rule')).toHaveCount(10)
+    await expect(page.getByText('Loading proof…').first()).toBeVisible()
+    release()
+    await expect(page.getByText('Loading proof…')).toHaveCount(0)
+  })
+
+  test('a link to a rule that no longer exists says so and takes focus; one past Show N more is revealed and focused', async ({ page }) => {
+    await page.goto('/#/components/button/rules?rule=button-text-link-blue')
+    const gone = page.locator('.pg-callout', { hasText: 'No rule called button-text-link-blue on Button.' })
+    await expect(gone).toBeFocused()
+    await expect(gone).toContainText('It may have been renamed. All 10 are below.')
+    await expect(page.locator('.pg-rule')).toHaveCount(10)
+
+    // Toast's seventh compiler rule sits past "Show 1 more".
+    await page.goto('/#/components/toast/rules?rule=toast-limit-closed')
+    const row = page.locator('.pg-rule[data-rule="toast-limit-closed"]')
+    await expect(row.locator('.pg-rule__lead')).toBeFocused()
+    await expect(row).toBeInViewport()
+    await expect(row).toHaveClass(/pg-rule--target/)
+    await expect(page.getByRole('region', { name: /The compiler refuses these/ }).getByRole('button', { name: /^Show \d+ more$/ })).toHaveCount(0)
+  })
+
+  test('Search sends a rule id to its row', async ({ page }) => {
+    await page.goto('/#/components/button')
+    await page.getByRole('button', { name: /^Search/ }).click()
+    await page.getByRole('combobox', { name: 'Search' }).fill('toggle-label-required')
+    await page.keyboard.press('Enter')
+    await expect(page).toHaveURL(/#\/components\/toggle\/rules\?rule=toggle-label-required$/)
+    await expect(page.locator('.pg-rule[data-rule="toggle-label-required"] .pg-rule__lead')).toBeFocused()
+  })
+
+  test('Collapse all folds every group; a jump from the index opens the group it lands on', async ({ page }) => {
+    await page.goto('/#/components/button/rules')
+    await page.getByRole('button', { name: 'Collapse all' }).click()
+    await expect(page.locator('.pg-rule:visible')).toHaveCount(0)
+    await expect(page.getByRole('button', { name: 'Expand all' })).toBeVisible()
+    await page.getByRole('navigation', { name: 'On this tab' }).getByRole('link', { name: 'Browser 2' }).click()
+    await expect(page.locator('#section-browser')).toBeFocused()
+    await expect(page.locator('.pg-rule[data-rule="button-press-keeps-hit-target"]')).toBeVisible()
+  })
+
+  test('a token copies, says Copied, and when the clipboard is refused the name is left selected with the Copy pattern’s words', async ({ page, context }) => {
+    await context.grantPermissions(['clipboard-read', 'clipboard-write'])
+    await page.goto('/#/components/button/tokens')
+    const mark = page.getByRole('button', { name: 'Copy --vela-btn-primary-bg' }).first()
+    const box = (await mark.boundingBox())!
+    expect(Math.min(box.width, box.height)).toBeGreaterThanOrEqual(24)
+    await mark.click()
+    await expect(page.locator('.shell-copymark__done').first()).toHaveText('Copied')
+    await expect(page.getByRole('status').filter({ hasText: 'Copied --vela-btn-primary-bg' })).toHaveCount(1)
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('--vela-btn-primary-bg')
+  })
+
+  test('a refused copy of a token leaves its name selected', async ({ page }) => {
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: () => Promise.reject(new DOMException('Denied', 'NotAllowedError')) } })
+      document.execCommand = () => false
+    })
+    await page.goto('/#/components/button/tokens')
+    await page.getByRole('button', { name: 'Copy --vela-btn-primary-bg' }).first().click()
+    await expect(page.locator('.shell-copymark__fail').first()).toHaveText("Couldn't copy: your browser blocked the clipboard. The text is selected, so press Ctrl+C.")
+    expect(await page.evaluate(() => window.getSelection()?.toString())).toBe('--vela-btn-primary-bg')
+  })
+
+  test('Tokens: a variant by its picture, a state marks its own tokens in words, and Dark shows the dark values while the page stays light', async ({ page }) => {
+    await page.goto('/#/components/button/tokens')
+    // Dark: the swatches and values become the dark theme's, and the page keeps its own theme.
+    await page.getByRole('group', { name: 'State' }).getByRole('button', { name: 'Hover' }).click()
+    const value = page.locator('.pg-part.is-changed').first().locator('.pg-token__value')
+    await expect(value).toHaveText('#075462')
+    await page.getByRole('group', { name: 'Theme' }).getByRole('button', { name: 'Dark' }).click()
+    await expect(value).not.toHaveText('#075462')
+    expect(await page.evaluate(() => document.documentElement.getAttribute('data-theme'))).not.toBe('dark')
+    await page.getByRole('group', { name: 'Theme' }).getByRole('button', { name: 'Light' }).click()
+    await page.getByRole('group', { name: 'State' }).getByRole('button', { name: 'Rest' }).click()
+    const variants = page.getByRole('group', { name: 'Variant' })
+    await variants.getByRole('button', { name: 'destructive · filled' }).click()
+    await expect(variants.getByRole('button', { name: 'destructive · filled' })).toHaveAttribute('aria-current', 'true')
+    await expect(page.locator('.pg-part .pg-token__name').first()).toHaveText('--vela-btn-destructive-bg')
+    await page.getByRole('group', { name: 'State' }).getByRole('button', { name: 'Hover' }).click()
+    const changed = page.locator('.pg-part.is-changed')
+    await expect(changed).toHaveCount(1)
+    await expect(changed).toContainText('Changes on hover')
+    await expect(changed.locator('.pg-token__name')).toHaveText('--vela-btn-destructive-hover-bg')
+    await page.getByRole('group', { name: 'State' }).getByRole('button', { name: 'Focus' }).click()
+    await expect(page.getByText('Nothing in colour changes on Focus.')).toBeVisible()
+    // The truth about the stylesheet: a Severity token bound on the destructive hollow hover.
+    await expect(page.locator('.pg-unnamed')).toContainText('Bound in code, not named in the spec')
+    await expect(page.locator('.pg-unnamed')).toContainText('--vela-bg-severity-major')
+  })
+
+  test('Figma: properties as segments write the code line, and the way on carries the setting to the Playground', async ({ page }) => {
+    await page.goto('/#/components/button/figma')
+    await expect(page.getByRole('figure', { name: /^Button, drawn from the code/ })).toBeVisible()
+    await page.getByRole('group', { name: 'Size', exact: true }).getByRole('button', { name: 'Large', exact: true }).click()
+    await expect(page.locator('.pg-figma__pre')).toContainText('size="large"')
+    await expect(page.locator('.pg-fprop', { hasText: 'Size' }).locator('.pg-fprop__code')).toHaveText('size="large"')
+    const next = page.getByRole('link', { name: /Try this setting in the Playground/ })
+    await expect(next).toContainText('Primary, filled, large, with an icon, on the stage')
+    await next.click()
+    await expect(page).toHaveURL(/#\/components\/button(\?|$)/)
+    await expect(page.getByRole('complementary', { name: 'Controls' }).getByRole('group', { name: 'size', exact: true }).locator('[aria-current="true"]')).toHaveText('large')
+  })
+
+  test('Figma: a component with no set says so, shows the code to use, and draws no set', async ({ page }) => {
+    for (const [id, name] of [['icon-button', 'Icon Button'], ['brand-mark', 'Brand Mark']]) {
+      await page.goto(`/#/components/${id}/figma`)
+      await expect(page.getByRole('tab', { name: 'Figma' })).toHaveAttribute('aria-selected', 'true')
+      await expect(page.getByText(`${name} has no Figma set yet.`)).toBeVisible()
+      await expect(page.getByText('Until then, use it in code')).toBeVisible()
+      await expect(page.locator('.pg-figma__set')).toHaveCount(0)
+      await expect(page.getByRole('link', { name: 'Ask for the set on GitHub' })).toHaveAttribute('href', /github\.com\/omkarpkh\/vela\/issues\/new/)
+      // The header names no Figma link for a set that does not exist.
+      await expect(page.locator('.pg-head__links').getByRole('link', { name: 'Figma' })).toHaveCount(0)
+    }
+  })
 })

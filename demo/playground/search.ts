@@ -97,7 +97,7 @@ export function buildIndex(): Item[] {
   for (const p of PROPOSALS) items.push({ kind: 'proposal', id: p.id, title: p.name, href: href({ kind: 'proposal', id: p.id }), tag: 'Proposal', aliases: [], uses: [], sign: plain(p.what) })
   for (const f of FOUNDATIONS) items.push({ kind: 'foundation', id: f.id, title: f.title, href: href({ kind: 'foundation', id: f.id }), aliases: [], uses: [], sign: f.kind })
   for (const e of REGISTRY) for (const r of e.spec.matchAll(/\[\[rule:\s*([^|\]]+?)\s*\|\s*(compiler|runtime|browser|convention)\s*\]\]/g))
-    items.push({ kind: 'rule', id: r[1], title: r[1], href: href({ kind: 'component', id: e.id, tab: 'rules' }), aliases: [], uses: [], sign: `${e.name} rule, ${r[2] === 'browser' ? 'browser test' : r[2]}` })
+    items.push({ kind: 'rule', id: r[1], title: r[1], href: `${href({ kind: 'component', id: e.id, tab: 'rules' })}?rule=${r[1]}`, aliases: [], uses: [], sign: `${e.name} rule, ${r[2] === 'browser' ? 'browser test' : r[2]}` })
   return items
 }
 

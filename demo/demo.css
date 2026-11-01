@@ -8,7 +8,7 @@
   --site-nav-width: 240px;      /* vela-allow: navigation column width; literal until a layout token exists */
   --site-content-max: 1180px;   /* vela-allow: content column cap (1100 inner, what the visual baselines were taken at); literal until a breakpoint token exists */
   --site-props-width: 300px;    /* vela-allow: playground props column width; literal until a layout token exists */
-  --site-head-col-min: 340px;   /* vela-allow: a component page header's columns (title, Use panel) at their narrowest before the panel wraps below; literal until a layout token exists */
+  --site-head-col-min: 340px;   /* vela-allow: a component page header's columns (title, import line) at their narrowest before the import line wraps below; literal until a layout token exists */
   --site-stage-min: 280px;      /* vela-allow: playground stage minimum height; literal until a layout token exists */
   --site-code-size: 0.92em;     /* vela-allow: inline code is set a step down from the text around it; a ratio, not a length */
 }

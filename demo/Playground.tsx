@@ -1,30 +1,30 @@
-import { useEffect, useMemo, useId, useRef, useState } from 'react'
-import { Button, Toggle, Tabs, cn } from '../src'
-import tokensJson from '../tokens/vela.tokens.json'
-import darkJson from '../tokens/vela.dark.tokens.json'
+import { useCallback, useEffect, useMemo, useId, useRef, useState } from 'react'
+import { Button, Toggle, Tabs, Icon, cn } from '../src'
 import { REGISTRY, type Values, type Lock } from './playground/registry'
 import { parseSpec, sectionOf as specSection } from './playground/spec'
 import { ControlField, LockPanel, AlsoInTheApi, CodeBar, type OpenLock } from './playground/Workbench'
 import { readLink, writeLink, queryOf, type Stage, type Compare } from './playground/link'
-import { Markdown } from './playground/Markdown'
 import { installFor } from './playground/install'
 import { statusOf } from './playground/status'
-import { rulesOf, dependenciesFor, figmaSetFor, builtLine } from './playground/facts'
-import { LINKS } from './links'
-import { replaceRoute, href, type PageTab } from './router'
-import { CopyButton, CopyStatus, useCopy } from './shell/Copy'
+import { rulesOf } from './playground/facts'
+import { replaceRoute, href, parseHash, type PageTab } from './router'
 import { buildIndex, closest } from './playground/search'
 import { Segments } from './shell/Segments'
 import { ScrollRegion } from './shell/ScrollRegion'
 import { StageBoundary, COMMIT, type Settings } from './shell/ErrorBoundary'
 import { StageWidth, WidthHandle, FLOOR, clampWidth } from './playground/StageWidth'
-import { useProofs, RulesFromProofs, groupsOf, type ProofLevel, type ProofShow } from './playground/Proofs'
-import { SectionIndex, sectionOf, type SectionLink } from './shell/SectionIndex'
+import { useProofs, RulesTab, rulesLine } from './playground/Proofs'
+import { sectionOf } from './shell/SectionIndex'
 import { NextCard } from './shell/Card'
+import { Announcer, CopyMark } from './shell/CopyMark'
+import { searchFor } from './shell/Search'
 import { useArrival } from './shell/arrival'
+import { KNOWN, type Mode } from './playground/tokens'
+import { TokensTab, tokensLine, variantsOf, boundInCode } from './playground/TokensTab'
+import { FigmaTab, figmaEntryFor, figmaLine, settingWords } from './playground/FigmaTab'
+import { rulesFromSpec, oneLine } from './playground/rules-read'
 import './playground.css'
 
-type Mode = 'light' | 'dark'
 const STAGE_OPTIONS = [
   { value: 'beside', label: 'Beside' },
   { value: 'full', label: 'Full width' },
@@ -60,33 +60,9 @@ const stored = {
   get: (k: string) => { try { return window.localStorage.getItem(k) } catch { return null } },
   set: (k: string, v: string) => { try { window.localStorage.setItem(k, v) } catch { /* not kept; fine */ } },
 }
-// DTCG 2025.10: colours are { colorSpace, components, hex } objects, aliases are full paths
-// ({primitives.grey-700}), the vendor data sits under the reverse-domain key, and the dark
-// values live in tokens/vela.dark.tokens.json — the overlay tokens/vela.resolver.json applies.
-const VENDOR = 'com.omkarux.vela'
-type Tok = { $type: string; $value: unknown; $extensions?: { [VENDOR]?: { figma?: string } } }
-const ALL: Record<string, Tok> = {}
-for (const [g, toks] of Object.entries(tokensJson as Record<string, unknown>))
-  if (!g.startsWith('$')) for (const [n, t] of Object.entries(toks as Record<string, Tok>)) if (!n.startsWith('$')) ALL[n] = t
-const DARK: Record<string, unknown> = {}
-for (const [g, toks] of Object.entries(darkJson as Record<string, unknown>))
-  if (!g.startsWith('$')) for (const [n, t] of Object.entries(toks as Record<string, { $value?: unknown }>)) if (!n.startsWith('$')) DARK[n] = t.$value
-const KNOWN = Object.keys(ALL).map((n) => `--vela-${n}`)
 
-// The same alias walk the CSS makes, so the pane shows what the browser resolves.
-function resolve(name: string, mode: Mode): string {
-  const t = ALL[name]
-  if (!t) return '?'
-  const v = mode === 'dark' && name in DARK ? DARK[name] : t.$value
-  if (typeof v === 'string' && /^\{.+\}$/.test(v)) return resolve(v.slice(1, -1).split('.').pop()!, mode)
-  if (t.$type === 'color') { const c = v as { components: number[]; hex?: string }; return c.hex ?? `#${c.components.map((x) => Math.round(x * 255).toString(16).padStart(2, '0')).join('')}` }
-  if (t.$type === 'dimension') { const d = v as { value: number; unit: string }; return `${d.value}${d.unit}` }
-  if (t.$type === 'duration') { const d = v as { value: number; unit: string }; return `${d.value}${d.unit}` }
-  if (t.$type === 'cubicBezier') return `cubic-bezier(${(v as number[]).join(', ')})`
-  return String(v)
-}
-const figmaOf = (name: string) => ALL[name]?.$extensions?.[VENDOR]?.figma ?? '—'
-const isColor = (name: string) => ALL[name]?.$type === 'color'
+/** `?rule=<id>`: a link to one rule on the Rules tab. */
+const ruleOf = (hash: string) => new URLSearchParams(queryOf(hash)).get('rule')
 
 // The component under test renders here, as its own element, so a render error throws inside the
 // stage's error boundary rather than in the page that holds it.
@@ -123,12 +99,6 @@ function Unknown({ name }: { name: string }) {
   )
 }
 
-const BUILT = builtLine(COMMIT, import.meta.env.VITE_VELA_BUILT)
-
-/** The section index's words for each proof group: short, so the strip stays one row. */
-const INDEX_WORDS: Record<ProofLevel, string> = { compiler: 'Compiler', runtime: 'Runtime', browser: 'Browser', convention: 'Conventions' }
-const slugOf = (heading: string) => heading.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
-
 /** A media query's answer, kept current. */
 function useMedia(query: string) {
   const [matches, setMatches] = useState(() => window.matchMedia(query).matches)
@@ -139,23 +109,6 @@ function useMedia(query: string) {
     return () => m.removeEventListener('change', on)
   }, [query])
   return matches
-}
-
-/** One step of the Use panel: what to do, where, the line itself and its Copy. */
-function UseStep({ n, title, hint, text, what, className, note }: { n: number; title: string; hint: string; text: string; what: string; className: string; note?: string }) {
-  const id = useId()
-  const { state, copy } = useCopy(text, id)
-  return (
-    <li className="pg-use__step">
-      <p className="pg-use__label"><span className="pg-use__title">{n} · {title}</span> <span className="pg-use__hint">{hint}</span></p>
-      <div className="pg-use__line">
-        <code id={id} className={className}>{text}</code>
-        <CopyButton what={what} onCopy={copy} />
-      </div>
-      {note && <p className="pg-install-note">{note}</p>}
-      <CopyStatus state={state} what={what} />
-    </li>
-  )
 }
 
 function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?: PageTab }) {
@@ -196,8 +149,6 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
   // sets it once. Per viewer, safe when empty; a link's own choice wins.
   const [compare, setCompareState] = useState<Compare>(() => link.compare ?? (stored.get('vela.playground.compare') === 'themes' ? 'themes' : 'off'))
   const setCompare = (c: Compare) => { setCompareState(c); stored.set('vela.playground.compare', c) }
-  // "Open proof" from the lock panel: the Rules tab, then focus on that rule (spec v1.2, section 8).
-  const [proofRule, setProofRule] = useState<string | null>(null)
   const [lock, setLock] = useState<OpenLock | null>(null)
   // Bumped on every change, so a changed code line's tint runs once and settles to its mark.
   const [settle, setSettle] = useState(0)
@@ -233,8 +184,6 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
   // Page tabs are size large, the clearest mark of level 1; under 480px they are regular and scroll
   // sideways, as Tabs does, with the current tab in view (sweep T44).
   const narrowTabs = useMedia('(max-width: 480px)')
-  // The Rules tab's "Show" filter, held here so the section index lists only the groups on show.
-  const [show, setShow] = useState<ProofShow>('all')
   // Set by a Next card, so the tab it opens is read from its start.
   const toTabStart = useRef(false)
   useArrival()
@@ -258,31 +207,52 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
   const importPath = impl?.entry ?? '@omkarux/vela'
   const install = installFor(importPath)
   const sourcePath = impl && impl.id !== 'core' ? `src/${impl.id}/${entry.src}/${entry.src}.tsx` : `src/components/${entry.src}/${entry.src}.tsx`
-  const bound = entry.bindingKey ? spec.bindings[entry.bindingKey(v)] : undefined
-  const boundTokens = new Set(Object.values(bound ?? {}))
-  const isBound = entry.highlight ? entry.highlight(v) : (t: string) => boundTokens.has(t)
-  const rules = useMemo(() => ['Hard constraints', 'States', 'Motion', 'Anti-patterns'].map((h) => specSection(spec, h)).filter((s): s is NonNullable<typeof s> => !!s), [spec])
+  // Which tokens the stage's values bind: the spec's Token bindings row for them, or the registry's own rule.
+  const boundFor = useCallback((x: Values) => {
+    if (entry.highlight) return entry.highlight(x)
+    const row = entry.bindingKey ? spec.bindings[entry.bindingKey(x)] : undefined
+    const set = new Set(Object.values(row ?? {}))
+    return (t: string) => set.has(t)
+  }, [entry, spec])
+  const specRules = useMemo(() => rulesFromSpec(entry.spec), [entry])
+  // The Rules tab's own sections after the ledger: the spec's States, Motion and Anti-patterns.
+  const ruleSections = useMemo(() => ['States', 'Motion', 'Anti-patterns'].map((h) => specSection(spec, h)).filter((s): s is NonNullable<typeof s> => !!s), [spec])
   const figma = specSection(spec, 'Figma mapping')
-  const figmaSet = figmaSetFor(entry.file)
+  const figmaEntry = figmaEntryFor(entry.file)
+  const figmaUrl = figmaEntry && figmaEntry.state !== 'none' ? figmaEntry.url : null
   const importLine = `import { ${entry.imports ?? entry.src} } from '${importPath}'`
   const snippet = `${importLine}\n\n${code}`
   const status = statusOf(entry.spec)
   const ruleCount = rulesOf(entry.spec)
-  // A tab appears only when its data exists (B9): no empty tab, and none named for what isn't there.
-  // The Changelog tab waits for per-component changelog tags (D3), so it has none yet.
+  const headless = importPath.endsWith('/headless')
+  const importId = useId()
+  const peerId = useId()
+  // A tab appears only when its data exists (B9). Figma is always there: a component with no set yet
+  // says so on the tab, with the code to use until then (sweep T26). Changelog waits for D3.
   const tabs: { value: 'playground' | PageTab; label: string; count?: number }[] = [
     { value: 'playground', label: 'Playground' },
-    ...(rules.length > 0 ? [{ value: 'rules' as const, label: 'Rules' }] : []),
+    ...(specRules.length > 0 || ruleSections.length > 0 ? [{ value: 'rules' as const, label: 'Rules', count: specRules.length || undefined }] : []),
     ...(spec.tokens.length > 0 ? [{ value: 'tokens' as const, label: 'Tokens', count: spec.tokens.length }] : []),
-    ...(figmaSet ? [{ value: 'figma' as const, label: 'Figma' }] : []),
+    ...(figmaEntry ? [{ value: 'figma' as const, label: 'Figma' }] : []),
   ]
   const current = tabs.some((t) => t.value === tab) ? tab! : 'playground'
   const proofs = useProofs(entry.file.replace(/\.md$/, ''))
-  // The Rules tab's sections, for its index: the proof groups on show, then the spec's own sections.
-  const rulesIndex = useMemo<SectionLink[]>(() => [
-    ...(proofs.map ? groupsOf(proofs.map).filter((g) => show === 'all' || show === g.level).map((g) => ({ id: g.level, label: INDEX_WORDS[g.level], count: g.count, target: `pg-proofs-${g.level}` })) : []),
-    ...rules.filter((s) => !(proofs.map && s.heading === 'Hard constraints')).map((s) => ({ id: slugOf(s.heading), label: s.heading })),
-  ], [proofs.map, show, rules])
+  // A link to one rule (`?rule=`, from Search or a shared link), or "Open proof" in a lock panel.
+  const [targetRule, setTargetRule] = useState<string | null>(() => ruleOf(window.location.hash))
+  useEffect(() => {
+    const on = () => {
+      const r = ruleOf(window.location.hash)
+      const route = parseHash(window.location.hash)
+      if (r && route.kind === 'component' && route.id === entry.id) setTargetRule(r)
+    }
+    window.addEventListener('hashchange', on)
+    return () => window.removeEventListener('hashchange', on)
+  }, [entry.id])
+  const targetDone = useCallback(() => setTargetRule(null), [])
+  // The setting chosen on the Figma tab, carried by its Next card into the Playground.
+  const [figmaValues, setFigmaValues] = useState<Values | null>(null)
+  const variants = useMemo(() => variantsOf(spec.bindings, controls.filter((c) => c.kind === 'select')), [spec, controls])
+  const inCode = useMemo(() => boundInCode(entry.src, impl?.entry === '@omkarux/vela/headless' || (!entry.implementations?.some((i) => i.id === 'core') && !!entry.implementations)), [entry, impl])
   // The way on from each tab: the next one, and from the last, back to the Playground.
   const nextAfter = (t: 'playground' | PageTab) => (tabs.length > 1 ? tabs[(tabs.findIndex((x) => x.value === t) + 1) % tabs.length].value : null)
   const goTo = (t: 'playground' | PageTab) => replaceRoute({ kind: 'component', id: entry.id, tab: t === 'playground' ? undefined : (t as PageTab) })
@@ -296,16 +266,22 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
   const next = (t: 'playground' | PageTab) => {
     const to = nextAfter(t)
     if (!to) return null
+    const fromFigma = t === 'figma' && to === 'playground' && !!figmaUrl
     const words = {
-      playground: { title: `Try ${entry.name} in the Playground`, line: 'Every value the spec allows, on the stage' },
-      rules: { title: `Rules: what ${entry.name} always does`, line: `${ruleCount.total} ${ruleCount.total === 1 ? 'rule' : 'rules'}, each with how it is checked` },
-      tokens: { title: `Tokens: what ${entry.name} is made of`, line: `${spec.tokens.length} ${spec.tokens.length === 1 ? 'token' : 'tokens'}, each in light and dark` },
-      figma: { title: `Figma: find ${entry.name} in the library`, line: figma ? 'Each Figma property, and the prop it sets' : 'Open the set in the Figma library' },
+      playground: fromFigma
+        ? { title: 'Try this setting in the Playground', line: settingWords(figmaEntry, controls, { ...v, ...(figmaValues ?? {}) }) }
+        : { title: `Try ${entry.name} in the Playground`, line: 'Every value the spec allows, on the stage' },
+      rules: { title: `Rules: what ${entry.name} always does`, line: rulesLine(ruleCount.total) },
+      tokens: { title: `Tokens: what ${entry.name} is made of, in every state`, line: tokensLine(spec.tokens) },
+      figma: figmaUrl
+        ? { title: `Figma: find ${entry.name} in the library, and match its properties`, line: figmaLine(figmaEntry) }
+        : { title: `Figma: ${entry.name} has no set yet`, line: figmaLine(figmaEntry) },
       changelog: { title: `Changelog: what changed in ${entry.name}`, line: '' },
     }[to]
     return (
       <NextCard
         className="pg-next"
+        eyebrow={fromFigma ? 'Next' : undefined}
         href={href({ kind: 'component', id: entry.id, tab: to === 'playground' ? undefined : (to as PageTab) })}
         title={words.title}
         line={words.line || undefined}
@@ -313,25 +289,14 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
           if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return
           e.preventDefault()
           setLock(null)
+          // The way on carries the setting chosen on the Figma tab.
+          if (fromFigma && figmaValues) set(figmaValues, 'Stage updated: the setting chosen on the Figma tab')
           toTabStart.current = true
           goTo(to)
         }}
       />
     )
   }
-  useEffect(() => {
-    // Wait for the proof map, so focus lands on the list the reader will see.
-    if (current !== 'rules' || !proofRule || !proofs.settled) return
-    const tagged = document.querySelector<HTMLElement>(`.pg-rules [data-rule~="${CSS.escape(proofRule)}"]`)
-    const target = tagged?.closest<HTMLElement>('li, p') ?? tagged
-    if (target) {
-      target.tabIndex = -1
-      target.classList.add('pg-rule--target')
-      target.scrollIntoView({ block: 'center' })
-      target.focus({ preventScroll: true })
-    }
-    setProofRule(null)
-  }, [current, proofRule, proofs.settled])
   const selects = controls.filter((c) => c.kind === 'select')
   const texts = controls.filter((c) => c.kind === 'text')
   const booleans = controls.filter((c) => c.kind === 'boolean')
@@ -347,10 +312,15 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
 
   // The address carries the settings (section 11), replaced, not pushed: no history entry per click.
   useEffect(() => {
+    // Only while the address is still this page: a link to another page (Search) is never rewritten.
+    const here = parseHash(window.location.hash)
+    if (here.kind !== 'component' || here.id !== entry.id) return
     const q = writeLink(controls, v, initial, { implementation: impl?.id, defaultImplementation: implIds[0], stage, defaultStage, compare, width: frameWidth })
-    // The section index's place (?section=) is kept beside the settings; a tab switch drops it.
+    // The section index's place (?section=) and a link to one rule (?rule=) are kept beside the
+    // settings; a tab switch drops them.
     const section = sectionOf(window.location.hash)
-    const query = [q, section ? new URLSearchParams({ section }).toString() : ''].filter(Boolean).join('&')
+    const rule = ruleOf(window.location.hash)
+    const query = [q, section ? new URLSearchParams({ section }).toString() : '', rule ? new URLSearchParams({ rule }).toString() : ''].filter(Boolean).join('&')
     const next = `${href({ kind: 'component', id: entry.id, tab: tab })}${query ? `?${query}` : ''}`
     if (window.location.hash !== next) window.history.replaceState(window.history.state, '', next)
   })
@@ -367,50 +337,41 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
 
   return (
     <>
+      {/* One header band (s5-tabs): what it is, the line to import it, and where it lives. The install
+          panel and the facts strip are gone: install is on the Overview, and a headless component
+          names the peer it needs here, in one line. */}
+      <Announcer>
       <header className="pg-head">
         <div className="pg-head__text">
           <p className="vela-meta pg-head__eyebrow">Components / {entry.group}</p>
-          <h1 className="vela-h2">{entry.name}</h1>
-          <div className="pg-intro"><Markdown source={spec.intro} /></div>
+          <div className="pg-head__title">
+            <h1 className="vela-h2">{entry.name}</h1>
+            <span className="site-tag">{status.label}</span>
+          </div>
+          <p className="pg-head__line">{oneLine(spec.intro).replace(/\*\*|`/g, '')}</p>
         </div>
-        <section className="pg-use" aria-labelledby={`use-${entry.id}`}>
-          <h2 id={`use-${entry.id}`} className="pg-use__heading">Use {entry.name}</h2>
-          {entry.implementations && entry.implementations.length > 1 && (
-            <Segments
-              label="Implementation"
-              value={impl?.id ?? entry.implementations[0].id}
-              options={entry.implementations.map((i) => ({ value: i.id, label: i.id }))}
-              onChange={(id) => setValues((s) => ({ ...s, implementation: id }))}
-            />
-          )}
-          <ol className="pg-use__steps">
-            <UseStep n={1} title="Install" hint="in your terminal, once per project" text={install.command} what="install command" className="pg-install-command" note={install.note} />
-            <UseStep n={2} title="Import" hint="at the top of each file that uses it" text={importLine} what="import line" className="pg-import" />
-          </ol>
-          <p className="pg-use__links">
-            <a className="vela-meta" href={`https://github.com/omkarpkh/vela/blob/main/guidelines/components/${entry.file}`}>Spec on GitHub</a>
-            <a className="vela-meta" href={`https://github.com/omkarpkh/vela/blob/main/${sourcePath}`}>Source</a>
-            {figmaSet && <a className="vela-meta" href={figmaSet.url}>Figma</a>}
+        <div className="pg-head__use">
+          <p className="pg-head__import">
+            <code id={importId} className="pg-import">{importLine}</code>
+            <CopyMark what="import line" text={importLine} shownId={importId} />
           </p>
-        </section>
-      </header>
-
-      <div className="pg-facts-wrap">
-      <dl className="pg-facts" aria-label="Contract">
-        <div className="pg-fact"><dt>Status</dt><dd>{status.label}</dd></div>
-        <div className="pg-fact"><dt>Entry</dt><dd><code>{importPath}</code></dd></div>
-        <div className="pg-fact"><dt>Dependencies</dt><dd>{dependenciesFor(importPath)}</dd></div>
-        <div className="pg-fact"><dt>Minimum width</dt><dd>Not stated in the spec yet</dd></div>
-        <div className="pg-fact"><dt>Built</dt><dd>{BUILT}</dd></div>
-        <div className="pg-fact pg-fact--rules">
-          <dt>Rules</dt>
-          <dd>
-            <span className="pg-fact__total">{ruleCount.total}</span>
-            {ruleCount.byLevel.map((l) => <span key={l.level} className="site-tag">{l.count} {l.words}</span>)}
-          </dd>
+          {/* A page that switches between the two entries keeps the line's place, unseen and unheard for
+              core, so the header never changes height and the stage never moves (the 0px check). */}
+          {(headless || (entry.implementations?.length ?? 0) > 1) && (
+            <p className="pg-head__peer" style={headless ? undefined : { visibility: 'hidden' }} aria-hidden={headless ? undefined : true}>
+              <span>{installFor('@omkarux/vela/headless').note?.replace(/, and npm.*$/, '')}. Install it too:</span>
+              <code id={peerId} className={headless ? 'pg-install-command' : undefined}>{installFor('@omkarux/vela/headless').command}</code>
+              <CopyMark what="install command" text={install.command} shownId={peerId} />
+            </p>
+          )}
+          <p className="pg-head__links">
+            <a href={`https://github.com/omkarpkh/vela/blob/main/guidelines/components/${entry.file}`} target="_blank" rel="noreferrer">Spec<Icon name="external-link" size="small" /></a>
+            <a href={`https://github.com/omkarpkh/vela/blob/main/${sourcePath}`} target="_blank" rel="noreferrer">Source<Icon name="external-link" size="small" /></a>
+            {figmaUrl && <a href={figmaUrl} target="_blank" rel="noreferrer">Figma<Icon name="external-link" size="small" /></a>}
+          </p>
         </div>
-      </dl>
-      </div>
+      </header>
+      </Announcer>
 
       <div className="pg-tabs">
         <Tabs size={narrowTabs ? 'regular' : 'large'} value={current} onValueChange={(t) => { setLock(null); goTo(t as 'playground' | PageTab) }}>
@@ -501,6 +462,20 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
                   </div>
                 )}
                 <div className="pg-controls">
+                  {/* Two entry points, one spec: the choice the header's import line follows. */}
+                  {entry.implementations && entry.implementations.length > 1 && (
+                    <div className="pg-control">
+                      <div className="pg-field" data-prop="implementation">
+                        <span className="pg-field__label">Built with</span>
+                        <Segments
+                          label="Implementation"
+                          value={impl?.id ?? entry.implementations[0].id}
+                          options={entry.implementations.map((i) => ({ value: i.id, label: i.id }))}
+                          onChange={(id) => setValues((s) => ({ ...s, implementation: id }))}
+                        />
+                      </div>
+                    </div>
+                  )}
                   {[...selects, ...texts, ...booleans].map((c) => (
                     <div key={c.prop} className="pg-control">
                       <ControlField
@@ -525,7 +500,7 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
                             requestAnimationFrame(() => document.querySelector<HTMLElement>(`.pg-control [data-prop="${c.prop}"] [aria-current="true"]`)?.focus())
                           }}
                           onClose={() => { setLock(null); lockOpener.current?.focus() }}
-                          onOpenProof={(rule) => { setLock(null); setProofRule(rule); replaceRoute({ kind: 'component', id: entry.id, tab: 'rules' }) }}
+                          onOpenProof={(rule) => { setLock(null); setTargetRule(rule); replaceRoute({ kind: 'component', id: entry.id, tab: 'rules' }) }}
                         />
                       )}
                     </div>
@@ -542,66 +517,65 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
             {next('playground')}
           </Tabs.Panel>
 
-          <Tabs.Panel value="rules">
-            <SectionIndex items={rulesIndex} ready={proofs.settled} />
-            <div className="pg-rules">
-              {proofs.map && (
-                <RulesFromProofs
-                  map={proofs.map}
-                  show={show}
-                  onShow={setShow}
+          {tabs.some((t) => t.value === 'rules') && (
+            <Tabs.Panel value="rules">
+              {current === 'rules' && (
+                <RulesTab
+                  name={entry.name}
+                  rules={specRules}
+                  sections={ruleSections}
+                  proofs={proofs}
                   commit={COMMIT}
-                  built={import.meta.env.VITE_VELA_BUILT}
-                  // The spec's own lead-in to its constraints, the prose before the first bullet.
-                  intro={rules.find((s) => s.heading === 'Hard constraints')?.body.split(/^- /m)[0].trim()}
+                  target={targetRule}
+                  onTargetDone={targetDone}
+                  onSearchAll={searchFor}
+                  specHref={`https://github.com/omkarpkh/vela/blob/main/guidelines/components/${entry.file}`}
                 />
               )}
-              {rules.filter((s) => !(proofs.map && s.heading === 'Hard constraints')).map((s) => (
-                <div key={s.heading} data-arrive="3">
-                  {/* A jump from the section index lands here, so the heading takes focus. */}
-                  <h2 id={`section-${slugOf(s.heading)}`} className="vela-h4 pg-h2" tabIndex={-1}>{s.heading}</h2>
-                  <Markdown source={s.body} />
-                </div>
-              ))}
-            </div>
-            {next('rules')}
-          </Tabs.Panel>
+              {next('rules')}
+            </Tabs.Panel>
+          )}
 
-          <Tabs.Panel value="tokens">
-            <div data-arrive="1">
-            <ScrollRegion label="Tokens, scrollable" className="pg-tablewrap">
-              <table className="pg-table pg-table--tokens">
-                <thead><tr><th>Token</th><th>Light</th><th>Dark</th><th>Figma</th></tr></thead>
-                <tbody>
-                  {spec.tokens.map((t) => {
-                    const n = t.replace(/^--vela-/, '')
-                    const l = resolve(n, 'light'), d = resolve(n, 'dark')
-                    return (
-                      <tr key={t} className={isBound(t) ? 'is-bound' : undefined}>
-                        <td><code>{t}</code></td>
-                        <td>{isColor(n) && <span className="pg-chip" style={{ background: l }} />}<code>{l}</code></td>
-                        <td>{isColor(n) && <span className="pg-chip" style={{ background: d }} />}<code>{d}</code></td>
-                        <td><code>{figmaOf(n)}</code></td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </ScrollRegion>
-            <p className="pg-p">{bound || entry.highlight ? 'Highlighted rows are bound for the current values.' : 'Every token this spec names, resolved for both themes.'}</p>
-            </div>
-            {next('tokens')}
-          </Tabs.Panel>
+          {spec.tokens.length > 0 && (
+            <Tabs.Panel value="tokens">
+              {current === 'tokens' && (
+                <TokensTab
+                  name={entry.name}
+                  spec={spec}
+                  tokens={spec.tokens}
+                  inCode={inCode}
+                  variants={variants}
+                  startKey={entry.bindingKey?.(v)}
+                  values={v}
+                  render={entry.render}
+                  code={(x) => entry.code(x, spec)}
+                  isBound={boundFor}
+                  pageTheme={pageTheme}
+                />
+              )}
+              {next('tokens')}
+            </Tabs.Panel>
+          )}
 
-          {figmaSet && (
+          {figmaEntry && (
             <Tabs.Panel value="figma">
-              <div data-arrive="1">
-              <p className="pg-p">
-                <a href={figmaSet.url}>Open {entry.name} in the Figma library</a>
-                {' '}— the file is public, and everything in it is generated from the same token file and specs as this page ({LINKS.figma.replace('https://www.', '')}).
-              </p>
-              {figma ? <Markdown source={figma.body} /> : <p className="pg-p">No Figma mapping in this spec.</p>}
-              </div>
+              {current === 'figma' && (
+                <FigmaTab
+                  name={entry.name}
+                  entry={figmaEntry}
+                  controls={controls}
+                  initial={initial}
+                  values={v}
+                  render={entry.render}
+                  code={(x) => entry.code(x, spec)}
+                  locks={entry.locks}
+                  mapping={figma?.body}
+                  onlyInCode={spec.props.filter((p) => !entry.hide?.includes(p.prop) && !figmaEntry.figmaToProp.some((r) => r.prop.trim().split(/[\s,]/)[0] === p.prop))}
+                  picture={!entry.noSetPicture}
+                  issueHref={`https://github.com/omkarpkh/vela/issues/new?title=${encodeURIComponent(`Figma set for ${entry.name}`)}`}
+                  onValues={setFigmaValues}
+                />
+              )}
               {next('figma')}
             </Tabs.Panel>
           )}

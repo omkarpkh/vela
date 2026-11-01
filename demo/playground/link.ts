@@ -39,6 +39,8 @@ export function readLink(query: string, name: string, controls: Control[], defau
   const params = new URLSearchParams(query)
   // `section` is the section index's place on the page (demo/shell/SectionIndex.tsx), not a setting.
   params.delete('section')
+  // `rule` is a link to one rule on the Rules tab (slice 2 of the playground uplift), not a setting.
+  params.delete('rule')
   const out: LinkState = { values: {}, notices: [] }
   if ([...params.keys()].length === 0) return out
   const v = params.get('v')
