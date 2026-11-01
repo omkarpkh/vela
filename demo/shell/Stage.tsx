@@ -26,13 +26,15 @@ export interface StageProps {
   tools?: ReactNode
   /** The region's name. */
   label?: string
+  /** Its step in the page's arrival (demo/shell/arrival.ts): "1" when the stage is the page's lead. */
+  arrive?: '1' | '2' | '3'
   className?: string
   children: ReactNode
 }
 
-export function Stage({ props, caption = 'Live', tools, label = 'Live demo', className, children }: StageProps) {
+export function Stage({ props, caption = 'Live', tools, label = 'Live demo', arrive, className, children }: StageProps) {
   return (
-    <section className={cn('shell-stage', className)} aria-label={label}>
+    <section className={cn('shell-stage', className)} aria-label={label} data-arrive={arrive}>
       <div className="shell-stage__caption">
         <span className="shell-stage__live">{caption}</span>
         {props && <code className="shell-stage__props">{props}</code>}

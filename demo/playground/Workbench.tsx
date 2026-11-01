@@ -19,6 +19,7 @@ import { ScrollRegion } from '../shell/ScrollRegion'
 import { CopyButton, CopyStatus, useCopy } from '../shell/Copy'
 import { Markdown } from './Markdown'
 import { LEVELS } from './facts'
+import { undash } from './rules-read'
 
 export const SEGMENT_MAX = 6
 
@@ -147,7 +148,8 @@ export function AlsoInTheApi({ rows, explain }: { rows: PropRow[]; explain?: Rec
         {rows.map((p) => (
           <div key={`${p.part ?? ''}${p.prop}`} className="pg-uncontrolled__row">
             <dt><code>{p.part ? `${p.part}.` : ''}{p.prop}</code> <code className="pg-uncontrolled__type">{p.type.replace(/`/g, '')}</code></dt>
-            <dd>{explain?.[p.prop] ? <Markdown source={explain[p.prop]} /> : p.notes ? <Markdown source={p.notes} /> : null}</dd>
+            {/* The spec's words, with a spaced dash turned to a colon or a full stop in this layer only (slice 2's rule). */}
+            <dd>{explain?.[p.prop] ? <Markdown source={undash(explain[p.prop])} /> : p.notes ? <Markdown source={undash(p.notes)} /> : null}</dd>
           </div>
         ))}
       </dl>
@@ -156,7 +158,7 @@ export function AlsoInTheApi({ rows, explain }: { rows: PropRow[]; explain?: Rec
 }
 
 /**
- * The code bar: the import line and the JSX, Copy for exactly that, and a change mark on each line
+ * The code bar, "Use it" (s5-tabs): the import line and the JSX, Copy for exactly that, and a change mark on each line
  * that carries a prop changed from its default. `settle` remounts the marked lines, so their tint
  * runs once per change and then settles to the mark.
  */
@@ -166,9 +168,9 @@ export function CodeBar({ id, snippet, changedProps, settle, children }: { id: s
   const lines = snippet.split('\n')
   const marked = (line: string) => changedProps.some((p) => new RegExp(`(^|\\s)${p}(=|\\s|/?>|$)`).test(line))
   return (
-    <section id={id} className="pg-panel pg-codebar" aria-labelledby={`${id}-h`} tabIndex={-1}>
+    <section id={id} className="pg-codebar" aria-labelledby={`${id}-h`} tabIndex={-1} data-arrive="3">
       <div className="pg-codebar__head">
-        <h2 id={`${id}-h`} className="pg-codebar__title">Import and usage</h2>
+        <h2 id={`${id}-h`} className="vela-h3 pg-codebar__title">Use it</h2>
         <CopyButton what="snippet" onCopy={copy} />
       </div>
       <ScrollRegion as="pre" id={codeId} label="Code, scrollable" className="pg-code">

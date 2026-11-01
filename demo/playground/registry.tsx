@@ -6,6 +6,8 @@ import type { ToastLimit, ToastPlacement, ToastSeverity, DropdownListAlign, Drop
 import { PlusIcon } from '../../src/lib/icons'
 import { printJsx, type Control, type Spec } from './spec'
 import { catalogEntry as factsEntry, type CatalogEntry } from './catalog'
+import { cross, optionsOf, type Range } from './live'
+import { STATUS_LABELS } from '../../src/components/StatusIndicator/StatusIndicator'
 
 export type Values = Record<string, string | boolean | undefined>
 
@@ -94,6 +96,15 @@ export interface Entry extends CatalogEntry {
    * Save), so every cell of the grid would show the same button, not the set. Reviewed in the PR.
    */
   noSetPicture?: boolean
+  /**
+   * The resting stage (slice 3): the component across its main closed values, at the page's other
+   * settings, under the live stage. Absent where the live stage already shows the range (Tabs' demo,
+   * Table's rows, Icon's grid, Icon Button's and Brand Mark's sets) or where the component is an
+   * overlay that only shows once it is opened. Reviewed in the PR, never a spec field (C4).
+   */
+  range?: Range
+  /** The Live caption, where the tag and its closed props are not the code (a toast is `toast.add`). */
+  live?: (v: Values) => string
   /** Node id of the component set in the Figma library ("12:34"), for the deep link. */
   figma?: string
   /** Or a predicate for which of the spec's tokens the current values bind. */
@@ -218,7 +229,7 @@ function ToastStage({ v }: { v: Values }) {
         Save Changes
       </Button>
       <p className="vela-body pg-overlay-copy">
-        {saves === 0 ? 'Nothing saved yet.' : `Saved ${saves} ${saves === 1 ? 'time' : 'times'} — the page keeps the record.`}
+        {saves === 0 ? 'Nothing saved yet.' : `Saved ${saves} ${saves === 1 ? 'time' : 'times'}. The page keeps the record.`}
       </p>
       {saves > 0 && (
         <Button size="tiny" onClick={undo}>
@@ -237,7 +248,7 @@ function ToastStage({ v }: { v: Values }) {
 const VIEWS: [DropdownListItem, ...DropdownListItem[]] = [
   { value: 'alerts', label: 'All alerts' },
   { value: 'firewall', label: 'Firewall', meta: '1 new' },
-  { value: 'dlp', label: 'Data loss prevention — policy violations across every connected SaaS tenant' },
+  { value: 'dlp', label: 'Data loss prevention: policy violations across every connected SaaS tenant' },
   { value: 'pipeline', label: 'customer-ingest-pipeline-eu-west-2', meta: '2 new' },
   { value: 'archive', label: 'Archive', locked: { reason: 'Needs retention on' } },
   { value: 'reports', label: 'Reports', meta: '3 open' },
@@ -343,6 +354,12 @@ export const REGISTRY: Entry[] = [
         bool(v.icon) ? { icon: '<PlusIcon />' } : {},
       ),
     bindingKey: (v) => (bool(v.disabled) ? 'disabled (any)' : `${str(v.variant) || 'standard'} · ${str(v.appearance) || 'filled'}`),
+    // Every variant and appearance the spec allows: text-link is primary only, so it appears once.
+    range: {
+      across: 'variant and appearance',
+      items: (c) => cross({ variant: optionsOf(c, 'variant'), appearance: optionsOf(c, 'appearance') })
+        .filter((i) => i.patch.appearance !== 'text-link' || i.patch.variant === 'primary'),
+    },
   },
   {
     ...catalogEntry('toggle'),
@@ -359,6 +376,15 @@ export const REGISTRY: Entry[] = [
     ),
     code: (v, spec) =>
       printJsx('Toggle', { label: v.label, defaultChecked: v.defaultChecked, disabled: v.disabled, labelPosition: v.labelPosition, size: v.size }, defaultsOf(spec)),
+    range: {
+      across: 'on, off and disabled',
+      items: () => [
+        { patch: { defaultChecked: false, disabled: false }, name: 'off' },
+        { patch: { defaultChecked: true, disabled: false }, name: 'on' },
+        { patch: { defaultChecked: false, disabled: true }, name: 'off, disabled' },
+        { patch: { defaultChecked: true, disabled: true }, name: 'on, disabled' },
+      ],
+    },
   },
   {
     ...catalogEntry('input'),
@@ -374,6 +400,7 @@ export const REGISTRY: Entry[] = [
       />
     ),
     code: (v, spec) => printJsx('Input', { label: v.label, hint: v.hint, error: v.error, size: v.size, required: v.required }, defaultsOf(spec)),
+    range: { across: 'size', stack: true, items: (c) => cross({ size: optionsOf(c, 'size') }) },
   },
   {
     ...catalogEntry('text-area'),
@@ -430,6 +457,20 @@ export const REGISTRY: Entry[] = [
     highlight: (v) => (t) => t.includes(`-severity-${str(v.severity) || 'info'}`),
     code: (v, spec) =>
       printJsx('ContextualAlert', { severity: v.severity, title: v.title, dismissLabel: v.dismissLabel }, defaultsOf(spec), str(v.children), bool(v.onDismiss) ? { onDismiss: 'close' } : {}),
+    // Each alert is titled with its severity, so the word under it would say it twice. Its words are
+    // the spec's own fact about it (Accessibility: major and critical announce assertively), so no
+    // success alert ever reads "the scan failed".
+    range: {
+      across: 'severity',
+      stack: true,
+      items: (c) => optionsOf(c, 'severity').map((x) => ({
+        patch: {
+          severity: x,
+          title: x.charAt(0).toUpperCase() + x.slice(1),
+          children: x === 'major' || x === 'critical' ? 'A screen reader reads this out at once.' : 'A screen reader waits, then reads this out.',
+        },
+      })),
+    },
   },
   {
     ...catalogEntry('status-indicator'),
@@ -437,6 +478,11 @@ export const REGISTRY: Entry[] = [
     highlight: (v) => (t) => t.includes(`-status-${str(v.status) || 'unknown'}`),
     render: (v) => <StatusIndicator status={(str(v.status) || 'unknown') as Status} label={str(v.label) || undefined} size={(str(v.size) || 'regular') as 'small' | 'regular'} />,
     code: (v, spec) => printJsx('StatusIndicator', { status: v.status, label: v.label, size: v.size }, defaultsOf(spec)),
+    // Labelled with the component's own word for each status, the words a bare dot is heard as.
+    range: {
+      across: 'status',
+      items: (c) => optionsOf(c, 'status').map((x) => ({ patch: { status: x, label: STATUS_LABELS[x as Status] } })),
+    },
   },
   {
     ...catalogEntry('risk-pill'),
@@ -446,6 +492,8 @@ export const REGISTRY: Entry[] = [
     highlight: (v) => (t) => t.includes(`-risk-${str(v.risk) || 'low'}`) || t === '--vela-radius-3',
     render: (v) => <RiskPill risk={(str(v.risk) || 'low') as Risk} label={str(v.label) || undefined} size={(str(v.size) || 'regular') as 'regular' | 'small'} />,
     code: (v, spec) => printJsx('RiskPill', { risk: v.risk, label: v.label, size: v.size }, defaultsOf(spec)),
+    // With no label each pill says its own level.
+    range: { across: 'risk', items: (c) => optionsOf(c, 'risk').map((x) => ({ patch: { risk: x, label: '' } })) },
   },
   {
     ...catalogEntry('tabs'),
@@ -548,6 +596,15 @@ ${TAB_EXAMPLE.filter((t) => !t.disabled).map((t) => `  <Tabs.Panel value="${t.va
       ),
     bindingKey: (v) =>
       bool(v.disabled) ? 'disabled (any)' : str(v.error) ? 'error (any)' : bool(v.defaultChecked) || bool(v.indeterminate) ? 'checked / indeterminate' : 'unchecked',
+    range: {
+      across: 'checked, indeterminate and disabled',
+      items: () => [
+        { patch: { defaultChecked: false, indeterminate: false, disabled: false }, name: 'unchecked' },
+        { patch: { defaultChecked: true, indeterminate: false, disabled: false }, name: 'checked' },
+        { patch: { defaultChecked: false, indeterminate: true, disabled: false }, name: 'indeterminate' },
+        { patch: { defaultChecked: false, indeterminate: false, disabled: true }, name: 'disabled' },
+      ],
+    },
   },
   {
     ...catalogEntry('radio-group'),
@@ -739,6 +796,8 @@ ${TAB_EXAMPLE.filter((t) => !t.disabled).map((t) => `  <Tabs.Panel value="${t.va
     noControl: ['label', 'dismissLabel'],
     implementations: [{ id: 'headless', entry: '@omkarux/vela/headless' }],
     highlight: (v) => (t) => t === `--vela-icon-severity-${str(v.severity) || 'info'}` || t === '--vela-bg-raised' || t === '--vela-toast-width',
+    // A toast is raised with toast.add, not written as a tag: the caption says the call the Save makes.
+    live: (v) => `toast.add({ severity: '${str(v.severity) || 'info'}'${bool(v.action) ? ', action' : ''} })`,
     render: (v) => (
       <ToastProvider
         placement={(str(v.placement) || 'bottom-end') as ToastPlacement}

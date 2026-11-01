@@ -1191,7 +1191,7 @@ test('the Dropdown List page opens a themed menu on the current item, and a choi
 test('a Dropdown List name wraps in full inside the list, at desktop width and in a narrow host', async ({ page }) => {
   await page.goto('/#/components/dropdown-list')
   const frame = page.locator('.pg-frame[data-theme="light"] .pg-frame-body')
-  const names = ['Data loss prevention — policy violations across every connected SaaS tenant', 'customer-ingest-pipeline-eu-west-2']
+  const names = ['Data loss prevention: policy violations across every connected SaaS tenant', 'customer-ingest-pipeline-eu-west-2']
   const check = async () => {
     const trigger = frame.getByRole('button', { name: 'Switch View' })
     // Mid-viewport, so there is room for the menu below it: with less, it flips above, as it should.

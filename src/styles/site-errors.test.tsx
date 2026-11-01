@@ -17,6 +17,8 @@ vi.mock('../../demo/playground/registry', async (importOriginal) => {
     seed: { ...button.seed, variant: 'destructive' },
     constrain: undefined,
     locks: undefined,
+    // The range under the stage has a boundary of its own; this test is about the live stage's.
+    range: undefined,
     render: (v) => {
       if (v.variant === 'destructive') throw new Error('Boom cannot render a destructive variant')
       return button.render(v)

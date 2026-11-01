@@ -315,6 +315,44 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     Eighteen new visual baselines, Button, Tabs and Toast on the three tabs in both themes at 1440,
     written by the Visual baselines workflow. 1547 checks (was 1500): 1219 unit (was 1202), 86
     screenshots (was 68), 237 e2e (was 225).
+- **Site, slice 3 of the playground uplift: the component stage on every Playground tab**
+  (s5-tabs, level 4; s5-site-map, "Component page: Playground"). Nineteen pages, one template.
+  - **The stage.** The live component sits only inside the Stage part from slice 1: a grey plate, a
+    slab, a region named "Live demo", and a caption that says Live and the closed props on show as
+    code, read from the Props table (`<Tabs size="regular">`; a toast says the call that raises it,
+    `toast.add({ severity: 'success' })`). Reduced motion and the container width are the stage's
+    own switches, in its caption, on the line under the props, so a long caption never moves the
+    component. Alone, the frame is the slab; with Compare on Themes the two frames sit edge to edge,
+    each naming its theme, and the light one stays exactly where it was. In forced colours the
+    plate keeps its edge and each frame side by side keeps an outline. The section is headed
+    "Stage", with Layout (Beside, Full width; it was called Stage), Compare and Reset at its end.
+  - **Set it.** The controls beside the stage, headed "Set it": segments for the Props table's
+    closed values, as before; Built with moves to the end, as it changes where the component comes
+    from, not how it looks.
+  - **The resting stage.** Under the live stage, the component's range at the page's other settings,
+    each form the real component at its real size, inert, with its name in words: Button by variant
+    and appearance (seven forms; text-link is primary only), Toggle and Checkbox by state, Input by
+    size, Contextual Alert by severity, Status Indicator by status, Risk Pill by risk. The values come
+    from the Props table, and a form the spec's rules forbid with these settings is left out with the
+    rule's own words under the plate ("text-link never carries an icon."). Tabs, Table, Icon, Icon
+    Button and Brand Mark already show their range on the live stage, and the overlays and Toast
+    only show once opened, so they have none.
+  - **Use it.** The code, headed "Use it" (it was "Import and usage"), 60 under the stage.
+  - **The arrival.** The stage is the lead and fades in first; the controls and the range follow one
+    step behind, the code a step after. The component inside keeps its own motion, untouched.
+  - **On a phone,** the whole plate pins under the header with its caption, and focus inside it no
+    longer scrolls the page (slice 2 found the Tabs page jumping when a tab in the strip took
+    focus): the page's scroll padding is the plate's measured height, and the plate's own contents
+    cancel it.
+  - **No dash.** The spec's notes under "Also in the API" go through slice 2's display layer; the
+    Toast stage's record and one Dropdown List item lose theirs.
+  - **Checks.** No new token, no new contrast pair, no new site waiver (still 20). Twenty unit tests
+    (`site-stage.test.tsx`: the caption writes only Props table values, a toast's call, every range
+    value is in the table, Button's range and what an icon leaves out, the range inert and named,
+    the phone rule). Eight e2e tests (`slice 3 · the stage`), and the workbench, phone strip and
+    segment tests follow the new names. Six new visual baselines, the Playground tab of Button, Tabs
+    and Toast in both themes at 1440, written by the Visual baselines workflow. 1583 checks (was
+    1547): 1241 unit (was 1219), 92 screenshots (was 86), 245 e2e (was 237).
 - **Brand marks now use the interface's icon grey** (`--vela-brand-mark` points at `--vela-grey-700`
   in light and `--vela-grey-300` in dark, the same values as `--vela-icon-strong`). The live header
   showed GitHub's and Figma's marks, and the word "npm", in pure black, heavier than the icons beside
