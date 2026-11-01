@@ -57,7 +57,7 @@ describe('search', () => {
 
   it('finds the Filter Grammar contract, listed under Foundations, by "filter"', () => {
     const [hit] = search(index, 'filter')
-    expect(hit.item).toMatchObject({ kind: 'foundation', id: 'filter-grammar', title: 'Filter Grammar', href: '#/foundations/filter-grammar', sign: 'Contract' })
+    expect(hit.item).toMatchObject({ kind: 'foundation', id: 'filter-grammar', title: 'Filter Grammar', href: '#/foundations/filter-grammar', tag: 'Contract' })
   })
 
   it('returns nothing for nothing', () => {
