@@ -44,7 +44,7 @@ describe('search', () => {
   })
 
   it('finds rule ids, at most three, and only on three letters or more', () => {
-    expect(search(index, 'toggle-label-required')[0].item).toMatchObject({ kind: 'rule', href: '#/components/toggle/rules' })
+    expect(search(index, 'toggle-label-required')[0].item).toMatchObject({ kind: 'rule', href: '#/components/toggle/rules?rule=toggle-label-required' })
     expect(search(index, 'dropdown').filter((h) => h.item.kind === 'rule').length).toBeLessThanOrEqual(3)
     expect(search(index, 'to').some((h) => h.item.kind === 'rule')).toBe(false)
   })

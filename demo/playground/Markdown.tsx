@@ -35,7 +35,7 @@ export function inline(text: string, key: number, em = false): ReactNode {
  * tab, so `## ` is an `h3` (the default). On a page of its own (a foundation), the page's `h1` is
  * the only heading above, so `## ` is an `h2` and the levels don't skip (axe: heading-order).
  */
-export function Markdown({ source, top = 'h3' }: { source: string; top?: 'h2' | 'h3' }) {
+export function Markdown({ source, top = 'h3', em = false }: { source: string; top?: 'h2' | 'h3'; em?: boolean }) {
   const out: ReactNode[] = []
   const lines = source.split('\n')
   let i = 0
@@ -58,7 +58,7 @@ export function Markdown({ source, top = 'h3' }: { source: string; top?: 'h2' | 
         <ScrollRegion key={k++} label={`${head[0] ? head[0].replace(/[`*]/g, '') + ' table' : 'Table'}, scrollable`} className="pg-tablewrap">
           <table className="pg-table">
             <thead><tr>{head.map((h, j) => <th key={j}>{inline(h, j)}</th>)}</tr></thead>
-            <tbody>{body.map((r, j) => <tr key={j}>{r.map((c, m) => <td key={m}>{inline(c, m)}</td>)}</tr>)}</tbody>
+            <tbody>{body.map((r, j) => <tr key={j}>{r.map((c, m) => <td key={m}>{inline(c, m, em)}</td>)}</tr>)}</tbody>
           </table>
         </ScrollRegion>,
       )
@@ -69,7 +69,7 @@ export function Markdown({ source, top = 'h3' }: { source: string; top?: 'h2' | 
         while (i < lines.length && /^  \S/.test(lines[i])) item += ' ' + lines[i++].trim()
         items.push(item)
       }
-      out.push(<ul key={k++} className="pg-list">{items.map((it, j) => <li key={j}>{inline(it, j)}</li>)}</ul>)
+      out.push(<ul key={k++} className="pg-list">{items.map((it, j) => <li key={j}>{inline(it, j, em)}</li>)}</ul>)
     } else if (/^#{1,4} /.test(line)) {
       const level = line.match(/^#+/)![0].length
       const text = line.replace(/^#+ /, '')
@@ -83,7 +83,7 @@ export function Markdown({ source, top = 'h3' }: { source: string; top?: 'h2' | 
     } else {
       const buf: string[] = []
       while (i < lines.length && lines[i].trim() !== '' && !/^(\||- |```|#)/.test(lines[i])) buf.push(lines[i++])
-      out.push(<p key={k++} className="pg-p">{inline(buf.join(' '), 0)}</p>)
+      out.push(<p key={k++} className="pg-p">{inline(buf.join(' '), 0, em)}</p>)
     }
   }
   return <>{out}</>
