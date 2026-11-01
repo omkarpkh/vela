@@ -264,6 +264,57 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     keep a border, not a shadow, on the index's place and the chosen segment; every copy mark is at
     least 24 by 24. The Overview and All states tests follow the menu change. 1500 checks (was 1477): 1202 unit (was
     1183), 225 e2e (was 221).
+- **Site, slice 2 of the playground uplift: a component page's Rules, Tokens and Figma tabs**
+  (s5-tabs; the gaps of the state sweep that the tabs own). Nineteen pages, three tabs each.
+  - **One header band.** The title, its status tag and the spec's first sentence; the import line
+    with a 24px copy mark; Spec, Source and Figma. The Use panel and the facts strip are gone.
+    Install is on the Overview; a headless component keeps one line saying it needs Base UI, with
+    the command and its copy mark. The Implementation choice moves into Controls as "Built with".
+  - **Rules.** A summary (the count, a cell per rule, filled when a machine checks it and outlined
+    when a reviewer does, and the same counts in words); a ledger by checker with plain headings
+    ("The compiler refuses these", "A unit test checks these", "A real browser proves these", "A
+    reviewer checks these"); then the spec's States, Motion and "Don't, and what to do instead", as
+    a two-column table. The rows render from the spec at once; the proof file adds the links. A
+    rule's one line is the spec's own bold sentence; its disclosure holds the rest and its rule id,
+    which shows nowhere else. The proof is one link, "See the test on GitHub", to the exact file and
+    line, with no path, line or commit in its words. A compiler rule's fixture is its picture (the
+    don't), and "Try to break it" shows the attempt and the compiler's words without the scratch
+    file's name; a rule with no example gets no picture and no placeholder. Find a rule matches the
+    words and the rule id and says "3 of 10 rules shown" once typing pauses; nothing found says so,
+    with Clear the search and Search all of Vela. Groups fold, Collapse all closes them, a group of
+    more than six shows six then "Show N more", and folded rows stay findable with the browser's
+    own find. A link to one rule, `?rule=<id>` (Search's rule results use it now), opens its group,
+    reveals and tints the row and focuses its words; a rule id that no longer exists says so and
+    takes focus. A proof file that fails says so with Try again; one that is slow says "Loading
+    proof…" where the links will be.
+  - **Tokens.** Anatomy: the variant picker by picture (each one the real component, from the
+    spec's Token bindings rows), State and Theme segments, and the component on a stage at twice its
+    size where it fits, with the token each part binds beside it; a state's own tokens are marked
+    "Changes on hover" in words, with an edge and a tint, and a state that changes no colour says
+    so. Colour, Size, Motion and Type, resolved in the theme chosen there while the page keeps its
+    own. A colour token the component's stylesheet binds but the spec never names is shown, dashed,
+    as "Bound in code, not named in the spec" (Button's destructive hollow hover binds
+    `--vela-bg-severity-major`; passed to the repo thread). Names break only after a hyphen. Every
+    token has a 24px copy mark with "Copied" and the Copy pattern's refusal. The full light and dark
+    table with Figma names stays, folded.
+  - **Figma.** Always a tab now. The set drawn from the code with this page's setting outlined,
+    and three steps; each Figma property whose prop has closed values is a row of segments that
+    writes the code line beside the live component; "Only in code" lists the rest of the Props
+    table; the spec's own Figma mapping is folded underneath. Icon Button and Brand Mark say they
+    have no set yet, with the import line and "Ask for the set on GitHub". The Next card carries the
+    setting chosen here into the Playground.
+  - **Dashes.** The site's display layer turns a spaced em or en dash in spec text into a colon or a
+    full stop, a range into "to"; the guideline files are untouched.
+  - **Shell parts**, flagged as stand-ins, not kit parts: Fold and Show more (Vela has no disclosure
+    group), and Copy mark (Copy Morph at 24px with its words). The section index gains a tools slot
+    (Find, Collapse all) and a rule between the tab's groups and the spec's sections.
+  - **Checks.** No new token, no new contrast pair, no new site waiver (still 20). Eleven unit tests
+    (`site-tabs.test.ts`: the rules read as `check-rules.mjs` reads them, the dash layer leaves no
+    dash in any spec, the state names, a builder behind every "no set yet"). Thirteen e2e tests
+    (`slice 2 · the tabs`), and the header, Rules, Find and slice 1 tests follow the new page.
+    Eighteen new visual baselines, Button, Tabs and Toast on the three tabs in both themes at 1440,
+    written by the Visual baselines workflow. 1547 checks (was 1500): 1219 unit (was 1202), 86
+    screenshots (was 68), 237 e2e (was 225).
 - **Brand marks now use the interface's icon grey** (`--vela-brand-mark` points at `--vela-grey-700`
   in light and `--vela-grey-300` in dark, the same values as `--vela-icon-strong`). The live header
   showed GitHub's and Figma's marks, and the word "npm", in pure black, heavier than the icons beside
