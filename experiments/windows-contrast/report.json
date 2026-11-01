@@ -1,0 +1,86 @@
+{
+  "when": "2026-11-01T04:25:08.236Z",
+  "runs": [
+    {
+      "label": "real-edge",
+      "page": "home",
+      "file": "real-edge-home.png",
+      "forcedColors": false,
+      "dark": false,
+      "canvas": "rgb(255, 255, 255)",
+      "text": "rgb(0, 0, 0)"
+    },
+    {
+      "label": "real-edge",
+      "page": "button",
+      "file": "real-edge-button.png",
+      "forcedColors": false,
+      "dark": false,
+      "canvas": "rgb(255, 255, 255)",
+      "text": "rgb(0, 0, 0)"
+    },
+    {
+      "label": "real-edge",
+      "page": "tabs",
+      "file": "real-edge-tabs.png",
+      "forcedColors": false,
+      "dark": false,
+      "canvas": "rgb(255, 255, 255)",
+      "text": "rgb(0, 0, 0)"
+    },
+    {
+      "label": "emulated-light",
+      "page": "home",
+      "file": "emulated-light-home.png",
+      "forcedColors": true,
+      "dark": false,
+      "canvas": "rgb(255, 255, 255)",
+      "text": "rgb(0, 0, 0)"
+    },
+    {
+      "label": "emulated-light",
+      "page": "button",
+      "file": "emulated-light-button.png",
+      "forcedColors": true,
+      "dark": false,
+      "canvas": "rgb(255, 255, 255)",
+      "text": "rgb(0, 0, 0)"
+    },
+    {
+      "label": "emulated-light",
+      "page": "tabs",
+      "file": "emulated-light-tabs.png",
+      "forcedColors": true,
+      "dark": false,
+      "canvas": "rgb(255, 255, 255)",
+      "text": "rgb(0, 0, 0)"
+    },
+    {
+      "label": "emulated-dark",
+      "page": "home",
+      "file": "emulated-dark-home.png",
+      "forcedColors": true,
+      "dark": true,
+      "canvas": "rgb(0, 0, 0)",
+      "text": "rgb(255, 255, 255)"
+    },
+    {
+      "label": "emulated-dark",
+      "page": "button",
+      "file": "emulated-dark-button.png",
+      "forcedColors": true,
+      "dark": true,
+      "canvas": "rgb(0, 0, 0)",
+      "text": "rgb(255, 255, 255)"
+    },
+    {
+      "label": "emulated-dark",
+      "page": "tabs",
+      "file": "emulated-dark-tabs.png",
+      "forcedColors": true,
+      "dark": true,
+      "canvas": "rgb(0, 0, 0)",
+      "text": "rgb(255, 255, 255)"
+    }
+  ]
+}
