@@ -1,59 +1,59 @@
 {
-  "when": "2026-11-01T04:42:56.996Z",
+  "when": "2026-11-01T05:41:39.571Z",
   "runs": [
     {
       "label": "real-edge",
       "page": "home",
       "file": "real-edge-home.png",
-      "forcedColors": false,
-      "dark": false,
-      "canvas": "rgb(255, 255, 255)",
-      "text": "rgb(0, 0, 0)"
+      "forcedColors": true,
+      "dark": true,
+      "canvas": "rgb(0, 0, 0)",
+      "text": "rgb(255, 255, 255)"
     },
     {
       "label": "real-edge",
       "page": "button",
       "file": "real-edge-button.png",
-      "forcedColors": false,
-      "dark": false,
-      "canvas": "rgb(255, 255, 255)",
-      "text": "rgb(0, 0, 0)"
+      "forcedColors": true,
+      "dark": true,
+      "canvas": "rgb(0, 0, 0)",
+      "text": "rgb(255, 255, 255)"
     },
     {
       "label": "real-edge",
       "page": "tabs",
       "file": "real-edge-tabs.png",
-      "forcedColors": false,
-      "dark": false,
-      "canvas": "rgb(255, 255, 255)",
-      "text": "rgb(0, 0, 0)"
+      "forcedColors": true,
+      "dark": true,
+      "canvas": "rgb(0, 0, 0)",
+      "text": "rgb(255, 255, 255)"
     },
     {
       "label": "real-edge-headed",
       "page": "home",
       "file": "real-edge-headed-home.png",
-      "forcedColors": false,
-      "dark": false,
-      "canvas": "rgb(255, 255, 255)",
-      "text": "rgb(0, 0, 0)"
+      "forcedColors": true,
+      "dark": true,
+      "canvas": "rgb(0, 0, 0)",
+      "text": "rgb(255, 255, 255)"
     },
     {
       "label": "real-edge-headed",
       "page": "button",
       "file": "real-edge-headed-button.png",
-      "forcedColors": false,
-      "dark": false,
-      "canvas": "rgb(255, 255, 255)",
-      "text": "rgb(0, 0, 0)"
+      "forcedColors": true,
+      "dark": true,
+      "canvas": "rgb(0, 0, 0)",
+      "text": "rgb(255, 255, 255)"
     },
     {
       "label": "real-edge-headed",
       "page": "tabs",
       "file": "real-edge-headed-tabs.png",
-      "forcedColors": false,
-      "dark": false,
-      "canvas": "rgb(255, 255, 255)",
-      "text": "rgb(0, 0, 0)"
+      "forcedColors": true,
+      "dark": true,
+      "canvas": "rgb(0, 0, 0)",
+      "text": "rgb(255, 255, 255)"
     },
     {
       "label": "emulated-light",
