@@ -2387,13 +2387,14 @@ test.describe('slice 2 · the tabs', () => {
   })
 
   test('the rendered Rules tab has no em or en dash, on every component', async ({ page }) => {
+    test.setTimeout(120_000)
     for (const id of ALL) {
       await page.goto(`/#/components/${id}/rules`)
       const main = page.getByRole('main')
       await expect(main.locator('.pg-summary, .pg-empty').first()).toBeVisible()
-      // Open every row, so the rest of each rule's words are read too.
-      for (const b of await main.getByRole('button', { name: 'More about this rule' }).all()) await b.click()
+      // Every row shown, then opened, so the rest of each rule's words are read too.
       while (await main.locator('.shell-more').count()) await main.locator('.shell-more').first().click()
+      for (const b of await main.getByRole('button', { name: 'More about this rule' }).all()) await b.click()
       expect(await main.innerText(), id).not.toMatch(/[—–]/)
     }
   })
