@@ -1,17 +1,20 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { Button, Table, Toggle } from '../../src'
+import { Fragment, useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react'
+import { Button, Icon, Table, Toggle, cn } from '../../src'
 import { inline } from '../playground/Markdown'
 import { CopyMorph, type MorphPose, type MorphState } from '../shell/CopyMorph'
 import { COPY_WORDS, PLATFORM, type Platform } from '../shell/Copy'
 import { CopyGroupProvider } from '../shell/CopyGroup'
 import { Segments } from '../shell/Segments'
+import { Stage } from '../shell/Stage'
+import { SectionIndex, useIndexForm, type SectionLink } from '../shell/SectionIndex'
+import { useArrival } from '../shell/arrival'
 import { LINKS } from '../links'
 import {
   SECTIONS, section, Words, Example, Drawing, CopyValue, MarkSlot, useAnnouncer, failureWords, fetchSecret, escapeHidden,
   ZWSP, NBSP, LQ, RQ, PLATFORMS, platformWord, wordsRows, wordsFor, type WordsRow,
 } from './copy-parts'
 import { MoreSections, SHOWN_MORE } from './copy-more'
-import { visible } from './copy-read'
+import { visible, tableOf } from './copy-read'
 import '../playground.css'
 
 // The Copy pattern page (playground spec, section 12): guidelines/patterns/copy.md, told with live
@@ -34,10 +37,12 @@ const HOSTS = [
 
 function Opening({ announce }: { announce: (m: string) => void }) {
   const s = section(0)
-  const aside = s.body.split(/\n\s*\n/).map((b) => b.trim()).find((b) => /^\*[^*].*\*$/.test(b))
+  const aside = questionOf(s.body)
+  // The opening's example is the page's lead: a stage, which says what the demo is made with. The
+  // control is the site's own stand-in (demo/shell/CopyMorph.tsx), not a kit part (slice 4).
   return (
-    <section className="copy-section" aria-label="Opening">
-      <Example label="Copy any address. The tick says it worked; the word Copied says which one you took; the copy mark says you can take it again.">
+    <section id="copy-s0" className="copy-section copy-section--opening" aria-label="Opening">
+      <Stage caption="Live demo" note="Made with the site's own copy control, not a kit part. Copy any address." arrive="1">
         <Table caption="Hosts" density="compact">
           <Table.Head>
             <Table.Row>
@@ -62,11 +67,26 @@ function Opening({ announce }: { announce: (m: string) => void }) {
             ))}
           </Table.Body>
         </Table>
-        {aside && <p className="vela-body copy-example__caption"><em>{aside.slice(1, -1)}</em></p>}
-      </Example>
+      </Stage>
       <Words body={s.body} skip={(b) => b.trim() === aside} />
     </section>
   )
+}
+
+/** The opening's italic question line, the page's one line under its title: "*Did it work? …*". */
+function questionOf(body: string): string | undefined {
+  return body.split(/\n\s*\n/).map((b) => b.trim()).find((b) => /^\*[^*].*\*$/.test(b))
+}
+
+/** The pattern's status word, from its **Status:** line. */
+const statusWord = (body: string) => body.match(/\*\*Status:\*\*\s*([A-Z][a-z]+)/)?.[1]
+
+/** The components that carry the pattern out, from its "Carried out by" list. */
+function carriedBy(body: string): string[] {
+  const at = body.indexOf('**Carried out by**')
+  if (at < 0) return []
+  const list = body.slice(at).split(/\n\s*\n/)[1] ?? ''
+  return [...list.matchAll(/^- \*\*([^*]+)\*\*/gm)].map((m) => m[1])
 }
 
 // ---------------------------------------------------------------------------- section 1 --
@@ -119,6 +139,8 @@ function WhenToOffer({ announce }: { announce: (m: string) => void }) {
   return (
     <section className="copy-section" aria-labelledby="copy-s1">
       <h2 id="copy-s1" className="vela-h3">1 · {s.title}</h2>
+      <CasePicker body={s.body} />
+      <h3 className="vela-h5 copy-pairs__title">Do and don't, {pairs.length === 5 ? 'five' : pairs.length} pairs</h3>
       <Example label="Do (live) beside don't (drawn)">
         <ul className="copy-pairs">
           {pairs.map((p) => (
@@ -136,8 +158,64 @@ function WhenToOffer({ announce }: { announce: (m: string) => void }) {
           ))}
         </ul>
       </Example>
-      <Words body={s.body} />
+      <Words body={s.body} skip={(b) => b.trim().startsWith('| You have')} />
     </section>
+  )
+}
+
+/**
+ * Section 1 as a picker (slice 4; sweep C6, C7): what you have, then the answer. The answer is a
+ * polite live region, so a new choice is heard once; "See all 6 cases as one table" shows every
+ * answer at once, the chosen row marked. Both read the section's own table.
+ */
+function CasePicker({ body }: { body: string }) {
+  const table = body.split(/\n\s*\n/).find((b) => b.trim().startsWith('| You have')) ?? ''
+  const [head, ...rows] = tableOf(table)
+  const [at, setAt] = useState(1)
+  const [all, setAll] = useState(false)
+  const name = useId()
+  const tableId = useId()
+  if (!rows.length) return null
+  return (
+    <Example label="Pick what you have; the answer follows">
+      <div className="copy-cases">
+        <fieldset className="copy-cases__pick">
+          <legend className="vela-h6">{head[0]}</legend>
+          {rows.map((r, i) => (
+            <label key={i} className={cn('copy-case', i === at && 'is-current')}>
+              <input type="radio" name={name} checked={i === at} onChange={() => setAt(i)} />
+              <span>{inline(r[0], 0)}</span>
+            </label>
+          ))}
+        </fieldset>
+        <div className="copy-cases__answer" aria-live="polite">
+          <p className="vela-meta copy-cases__use">{head[1]}</p>
+          <p className="vela-h4 copy-cases__words">{inline(rows[at][1], 0)}</p>
+        </div>
+      </div>
+      <button type="button" className="copy-cases__all" aria-expanded={all} aria-controls={tableId} onClick={() => setAll((a) => !a)}>
+        <Icon name={all ? 'chevron-down' : 'chevron-right'} size="small" />
+        See all {rows.length} cases as one table
+      </button>
+      <div id={tableId} className="copy-cases__table" hidden={!all}>
+        <Table caption={`When to offer copy: all ${rows.length} cases`} captionHidden>
+          <Table.Head>
+            <Table.Row>
+              <Table.HeaderCell>{head[0]}</Table.HeaderCell>
+              <Table.HeaderCell>{head[1]}</Table.HeaderCell>
+            </Table.Row>
+          </Table.Head>
+          <Table.Body>
+            {rows.map((r, i) => (
+              <Table.Row key={i} selected={i === at}>
+                <Table.HeaderCell scope="row">{inline(r[0], 0)}</Table.HeaderCell>
+                <Table.Cell>{inline(r[1], 0)}</Table.Cell>
+              </Table.Row>
+            ))}
+          </Table.Body>
+        </Table>
+      </div>
+    </Example>
   )
 }
 
@@ -151,6 +229,10 @@ const POSE: Record<Exclude<Step, 'return'>, MorphPose> = {
   copied: { state: 'copied' }, away: { state: 'copied' }, marked: { state: 'idle' }, failed: { state: 'failed' },
 }
 const SLOW = 5
+/** The glyph each frame of the strip shows: the mark at rest, the tick once copied, the failure. */
+const FRAME_GLYPH: Record<Step, 'copy' | 'check' | 'circle-alert'> = {
+  rest: 'copy', hover: 'copy', press: 'copy', copied: 'check', away: 'check', return: 'copy', marked: 'copy', failed: 'circle-alert',
+}
 
 /** The §2 list of states, keyed by the step its bold lead names ("**Rest.**", "**Hover** (pointer only)."). */
 function statesOf(body: string) {
@@ -202,9 +284,21 @@ function HowItWorks({ announce }: { announce: (m: string) => void }) {
       <h2 id="copy-s2" className="vela-h3">2 · {s.title}</h2>
       <Example label="Choose a state to see the control in it. The states run in this order; Failed is the other path.">
         <div className="pg-toolbar copy-toolbar">
-          <Segments label="State" value={step} options={STEPS.map((v) => ({ value: v, label: STEP_LABEL[v] }))} onChange={choose} />
+          {/* The frame strip is a picker (slice 4): each frame names its state and shows the mark in it. */}
+          <div className="copy-strip" role="group" aria-label="State">
+            {STEPS.map((v) => (
+              <Fragment key={v}>
+                {v === 'failed' && <span className="copy-strip__or" aria-hidden="true">or</span>}
+                <button type="button" className={cn('copy-strip__frame', v === 'failed' && 'is-other')} aria-current={v === step ? 'true' : undefined} onClick={() => choose(v)}>
+                  <Icon name={FRAME_GLYPH[v]} />
+                  <span>{STEP_LABEL[v]}</span>
+                </button>
+              </Fragment>
+            ))}
+          </div>
           <Segments label="Speed" value={speed} options={[{ value: '1', label: '1×' }, { value: 'slow', label: '5× slower' }] as const} onChange={setSpeed} />
         </div>
+        <p className="copy-strip__now" aria-live="polite">{inline(items.find((it) => it.step === step)?.text ?? '', 0)}</p>
         <div className="copy-stage" ref={stage}>
           <CopyMorph what="request id, large preview" text="req_8f2a91c4e7" box="preview" pose={pose} onResult={(r) => announce(r === 'copied' ? 'Copied request id' : failureWords(r, PLATFORM))} />
           <div className="copy-stage__side" aria-hidden="true">
@@ -406,25 +500,50 @@ function WhenItFails({ announce }: { announce: (m: string) => void }) {
 export function CopyPattern() {
   const { announce, region } = useAnnouncer()
   const [reduced, setReduced] = useState(false)
+  const form = useIndexForm()
+  useArrival()
+  const opening = section(0).body
+  const question = questionOf(opening)
+  const parts = carriedBy(opening)
+  // The rail (slice 4): the opening and every numbered section, by the first words of its title.
+  const index: SectionLink[] = SHOWN.map((n) => n === 0
+    ? { id: 'opening', label: 'Opening', target: 'copy-s0' }
+    : { id: `s${n}`, label: `${n} ${section(n).title.split(',')[0]}`, target: `copy-s${n}` })
   return (
     <CopyGroupProvider>
       <article className={`doc copy-page ${reduced ? 'shell-cm-reduced' : ''}`}>
-        <header className="page-head">
-          <p className="vela-meta page-head__eyebrow">Pattern</p>
-          <h1 className="vela-h2">Copy</h1>
-          <p className="vela-meta">
-            A scenario pattern, read from <code>guidelines/patterns/copy.md</code> (<a href={`${LINKS.github}/blob/main/guidelines/patterns/copy.md`}>on GitHub</a>).
-          </p>
-          <div className="pg-toolbar copy-toolbar copy-page__settings">
-            <Toggle label="Reduced motion" size="tiny" checked={reduced} onChange={setReduced} />
+        <header className="pg-head copy-page__head">
+          <div className="pg-head__text">
+            <p className="vela-meta pg-head__eyebrow">Patterns</p>
+            <div className="pg-head__title">
+              <h1 className="vela-h2">Copy</h1>
+              {statusWord(opening) && <span className="site-tag">{statusWord(opening)}</span>}
+            </div>
+            {question && <p className="pg-head__line">{question.slice(1, -1)}</p>}
+            {parts.length > 0 && <p className="vela-meta copy-page__parts">A pattern: its {parts.length === 2 ? 'two ' : ''}components, {parts.join(' and ')}, are specified, not built.</p>}
+          </div>
+          <div className="pg-head__use">
+            <div className="pg-toolbar copy-toolbar copy-page__settings">
+              <Toggle label="Reduced motion" size="tiny" checked={reduced} onChange={setReduced} />
+            </div>
+            <p className="pg-head__links">
+              <a href={`${LINKS.github}/blob/main/guidelines/patterns/copy.md`} target="_blank" rel="noreferrer">Spec on GitHub<Icon name="external-link" size="small" /></a>
+            </p>
           </div>
         </header>
-        <Opening announce={announce} />
-        <WhenToOffer announce={announce} />
-        <HowItWorks announce={announce} />
-        <WordsSection announce={announce} />
-        <WhenItFails announce={announce} />
-        <MoreSections announce={announce} reduced={reduced} />
+        <div className={cn('shell-railpage', form === 'strip' && 'is-narrow')}>
+          <div className="shell-railpage__rail">
+            <SectionIndex items={index} form={form} label="On this page" />
+          </div>
+          <div className="shell-railpage__main">
+            <Opening announce={announce} />
+            <WhenToOffer announce={announce} />
+            <HowItWorks announce={announce} />
+            <WordsSection announce={announce} />
+            <WhenItFails announce={announce} />
+            <MoreSections announce={announce} reduced={reduced} />
+          </div>
+        </div>
         {region}
       </article>
     </CopyGroupProvider>

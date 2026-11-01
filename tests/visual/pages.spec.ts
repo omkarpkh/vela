@@ -34,3 +34,30 @@ for (const theme of THEMES) {
     }
   })
 }
+
+// Slice 4 of the playground uplift (s5-proposal): Evidence Locker (a worked example, so steps), Verdict
+// Card (no worked example, so its states lead) and the Copy pattern page, whole, in both themes, at
+// 1440 only. The Linux baselines are written by the "Visual baselines" workflow, never on a laptop.
+const SLICE_4 = [['proposal-evidence-locker', '/#/proposals/evidence-locker'], ['proposal-verdict-card', '/#/proposals/verdict-card'], ['pattern-copy', '/#/patterns/copy']] as const
+
+for (const theme of THEMES) {
+  test.describe(`proposal and pattern pages · ${theme}`, () => {
+    for (const [name, path] of SLICE_4) {
+      test(name, async ({ page }, testInfo) => {
+        test.skip(testInfo.project.name !== 'desktop', 'the proposal and pattern pages are screenshotted at 1440 only')
+        await page.goto(path)
+        await setTheme(page, theme)
+        await page.evaluate(() => document.fonts.ready)
+        // The page's sections load with its spec; the picture waits for them.
+        await expect(page.getByRole('navigation', { name: 'On this page' })).toBeVisible()
+        await page.mouse.move(0, 0)
+        // A whole page taller than the window scrolls while it is captured, and its section index marks
+        // a new current section as it goes, so two captures never match. Make the window as tall as the
+        // page first: nothing scrolls, and the index stays on its first section.
+        const height = await page.evaluate(() => Math.ceil(document.documentElement.scrollHeight))
+        await page.setViewportSize({ width: 1440, height })
+        await expect(page.locator('main')).toHaveScreenshot(`page-${name}-${theme}.png`)
+      })
+    }
+  })
+}

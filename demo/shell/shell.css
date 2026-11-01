@@ -380,7 +380,7 @@
 .shell-index--rail .shell-index__list { flex-direction: column; gap: 0; overflow: visible; }
 .shell-index--rail .shell-index__link,
 .shell-index.is-open .shell-index__link {
-  width: 100%; min-height: var(--vela-control-height-35); padding: 0 var(--vela-space-10);
+  width: 100%; min-height: var(--vela-control-height-35); padding: var(--vela-space-5) var(--vela-space-10); white-space: normal;
   border-top: 0; border-bottom: 0; border-inline-start: var(--vela-stroke-2) solid transparent;
 }
 .shell-index--rail .shell-index__link[aria-current="location"],
@@ -391,6 +391,20 @@
 }
 .shell-index--rail .shell-index__link:not([aria-current="location"]):active,
 .shell-index.is-open .shell-index__link:not([aria-current="location"]):active { border-inline-start-color: var(--vela-border-action); transition-duration: var(--vela-duration-instant); }
+
+/* A page with a rail (slice 4: proposals and the Copy pattern): the content, and the index beside
+   it. Under 1100 CSS px the index is a strip above the content that sticks under the header, and
+   under 600 one button (below); useIndexForm in SectionIndex.tsx switches the form. Under 560 CSS px
+   tall only the header sticks (sweep T45), so a zoomed page keeps its reading room. */
+.shell-railpage { display: grid; grid-template-columns: minmax(0, 1fr) calc(10 * var(--vela-space-20)); grid-template-areas: "main rail"; gap: var(--vela-space-40); align-items: start; }
+.shell-railpage__main { grid-area: main; min-width: 0; }
+.shell-railpage__rail { grid-area: rail; position: sticky; top: calc(var(--site-topbar-height) + var(--vela-space-20)); }
+.shell-railpage.is-narrow { grid-template-columns: minmax(0, 1fr); grid-template-areas: "rail" "main"; gap: var(--vela-space-20); }
+.shell-railpage.is-narrow .shell-railpage__rail { top: var(--site-topbar-height); z-index: 5; background: var(--vela-bg-global); }
+@media (max-height: 560px) { .shell-railpage__rail, .shell-railpage.is-narrow .shell-railpage__rail { position: static; } }
+@media (min-height: 561px) {
+  html:has(.shell-railpage.is-narrow) { scroll-padding-top: calc(var(--site-topbar-height) + var(--vela-control-height-40) + var(--vela-space-10)); }
+}
 
 /* Narrow: one button that says where you are and opens the list over the content (sweep T43). */
 @media (max-width: 600px) {
@@ -432,6 +446,7 @@
   background: var(--vela-bg-global); color: var(--vela-text-default);
   font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); font-weight: var(--vela-font-weight-semibold);
 }
+.shell-stage__note { min-width: 0; font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
 .shell-stage__props { min-width: 0; overflow-wrap: anywhere; font-family: var(--vela-font-family-mono); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
 .shell-stage__tools { display: flex; flex-wrap: wrap; align-items: center; gap: var(--vela-space-10) var(--vela-space-15); margin-inline-start: auto; }
 .shell-stage__slab { min-width: 0; padding: var(--vela-space-20); border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4); background: var(--vela-bg-global); color: var(--vela-text-default); }

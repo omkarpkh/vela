@@ -1,12 +1,12 @@
 {
   "version": "0.15.0",
-  "unit": 1241,
+  "unit": 1268,
   "browser": {
-    "visual": 92,
-    "e2e": 245,
+    "visual": 98,
+    "e2e": 261,
     "docs": 2,
-    "total": 339
+    "total": 361
   },
   "flutter": 3,
-  "total": 1583
+  "total": 1632
 }

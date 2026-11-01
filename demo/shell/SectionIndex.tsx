@@ -48,6 +48,24 @@ export interface SectionIndexProps {
   tools?: ReactNode
 }
 
+/** Under this width a rail is a strip above the content (and one button under 600; shell.css). */
+export const RAIL_QUERY = '(max-width: 1100px)'
+
+/** The form a page's rail takes at this width: `rail` beside the content, or `strip` above it. */
+export function useIndexForm(): 'rail' | 'strip' {
+  const media = () => (typeof window !== 'undefined' && typeof window.matchMedia === 'function' ? window.matchMedia(RAIL_QUERY) : null)
+  const [narrow, setNarrow] = useState(() => !!media()?.matches)
+  useEffect(() => {
+    const m = media()
+    if (!m) return
+    const on = () => setNarrow(m.matches)
+    on()
+    m.addEventListener('change', on)
+    return () => m.removeEventListener('change', on)
+  }, [])
+  return narrow ? 'strip' : 'rail'
+}
+
 /** The fewest sections that earn an index. */
 export const INDEX_MIN = 4
 

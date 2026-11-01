@@ -353,6 +353,52 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     segment tests follow the new names. Six new visual baselines, the Playground tab of Button, Tabs
     and Toast in both themes at 1440, written by the Visual baselines workflow. 1583 checks (was
     1547): 1241 unit (was 1219), 92 screenshots (was 86), 245 e2e (was 237).
+- **Site, slice 4 of the playground uplift: the nine proposal pages and the Copy pattern page**
+  (s5-proposal, Storyboard B with three parts of Blueprint A; s5-site-map, "Proposal" and "Pattern").
+  - **Every fact from the spec.** `demo/playground/proposal-read.ts` reads each proposal's States
+    table (every row), its "Built from" parts, its rules under Hard constraints by how each will be
+    checked, its sources from the Intent, its new word sets and its props. A part's status comes
+    from the kit's catalogue, never typed: Popover is in the kit, so it is drawn solid; Combobox is
+    not, so it is flagged with the closest part the kit has (Input), from the site's list of
+    missing components. The spec's dashes pass through the display layer; no spec file changes.
+  - **The job, in steps, only from a worked example the spec writes out**
+    (`demo/playground/proposal-steps.ts`): Evidence Locker (Case CS-4133), Awareness Clock (the
+    printer maker) and Override & Teach Panel (CS-4180). Every word of a step is the spec's own, and
+    a unit test fails the build if one is not found in its spec. Approval Queue names a worked
+    example only as a Figma frame and never writes it out, so it has no steps either. The six pages
+    without steps lead with their states and say why: "Steps are drawn from the spec's worked
+    example. This spec has none yet, so its states lead."
+  - **The page.** One header band (Proposal tag, one line, "Experimental, not in the kit · no Figma
+    set yet · nothing to install", Show props, Read the spec, Discuss on GitHub), then the banner
+    "This is a proposal, not a component." Steps are a tab list named "Steps" with arrow keys, each a
+    small sketch; the chosen step is drawn large with numbered pins and "What to notice" beside it.
+    Every picture is a sketch: a dashed frame, a "Sketch" chip, the spec's words in boxes and grey
+    bars where the spec gives none, heard as one named picture. Then every state as cards (six, then
+    "Show N more"; a card grows downwards only; `?state=` reveals, opens and moves to one), where it
+    sits (built from, around it, later; solid, dashed and ink edges, each said in words), until it is
+    built (the kit parts in the spec's own words, a missing part flagged, what it waits on),
+    promises by checker, every source (Evidence Locker's seven, none drawn as a link the spec does
+    not give), word sets, and Previous and Next, ending on "Back to every proposal". Props open in a
+    side panel (focus to Close, Esc back to the button), a full sheet with "Back to the page" under
+    960 CSS px. The facts grid goes.
+  - **Copy.** One header band (Patterns, Experimental, "Did it work? Which one did I take? Can I take
+    it again?", its two components named, Reduced motion, Spec on GitHub). The opening's live demo
+    sits on a stage that says it is "Made with the site's own copy control, not a kit part." Section
+    1 is a picker: what you have, then the answer in a polite live region, and "See all 6 cases as
+    one table". Section 2's state segments become a frame strip, each frame its glyph and name, with
+    the chosen state's words announced under it.
+  - **The rail.** Both templates carry the section index's rail form, "On this page", beside the
+    content; under 1100 CSS px it is a strip above the content, and under 600 one button. A shell
+    part, `.shell-railpage`, holds the layout; the Stage caption gains a plain note.
+  - **Checks.** No new token, no new contrast pair, no new site waiver (still 20). 27 more unit
+    tests: 24 in `site-proposals.test.ts` (no steps without a written example; every step word
+    found in its spec; the state count is the States table's rows for all nine; promises agree with
+    the README's rule counts; part statuses match the catalogue; Evidence Locker's 21 states, 20
+    promises, 7 sources, 2 word sets and 8 props), and three where the suites walk the site's files
+    and stylesheets. Sixteen e2e tests (`slice 4 · proposals and Copy`), and the Proposal tests
+    follow the new page. Six new visual baselines, Evidence Locker, Verdict Card and
+    Copy in both themes at 1440, written by the Visual baselines workflow. 1632 checks (was 1583):
+    1268 unit (was 1241), 98 screenshots (was 92), 261 e2e (was 245).
 - **Brand marks now use the interface's icon grey** (`--vela-brand-mark` points at `--vela-grey-700`
   in light and `--vela-grey-300` in dark, the same values as `--vela-icon-strong`). The live header
   showed GitHub's and Figma's marks, and the word "npm", in pure black, heavier than the icons beside

@@ -108,15 +108,6 @@ body { margin: 0; background: var(--vela-bg-global); }
   border-radius: var(--vela-radius-4); border: 1px solid var(--vela-border-subtle); flex: none; }
 .demo-footer { padding: var(--vela-space-30) 0 0; }
 
-/* ------------------------------------------------------------ proposals -- */
-/* A Proposal page: a heading first, then one outlined line saying it is a written spec. Text on the
-   container is text-default (PAIRS: "Site tag text on container"). */
-.proposal__head h1 { margin: 0 0 var(--vela-space-15); }
-.proposal__banner { margin: 0 0 var(--vela-space-10); padding: var(--vela-space-10) var(--vela-space-15); max-width: 72ch; border: 1px solid var(--vela-border-default); border-radius: var(--vela-radius-4); background: var(--vela-bg-container); color: var(--vela-text-default); }
-.proposal__links { display: flex; flex-wrap: wrap; gap: var(--vela-space-5) var(--vela-space-20); margin: 0; padding: 0; list-style: none; }
-.proposal__waits { margin-top: var(--vela-space-30); }
-.proposal__links a { color: var(--vela-text-link); }
-
 /* ---------------------------------------------------------------- docs -- */
 .doc__body { max-width: 72ch; padding-top: var(--vela-space-20); }
 .doc__body .pg-h1 { margin: var(--vela-space-30) 0 var(--vela-space-10); }
@@ -312,3 +303,58 @@ body { margin: 0; background: var(--vela-bg-global); }
 .copy-page__details { margin: var(--vela-space-10) 0 0; }
 .copy-page__details summary { cursor: pointer; font-weight: var(--vela-font-weight-semibold); }
 .copy-page__details summary:active { background: var(--vela-bg-selected); }
+
+/* Copy pattern, slice 4 of the playground uplift (s5-proposal, section 2): the header band, the
+   frame strip as a picker, and section 1 as a picker whose answer is a live region. */
+.copy-page { display: flex; flex-direction: column; gap: var(--vela-space-30); }
+.copy-page__head { margin: 0; }
+.copy-page__parts { margin: var(--vela-space-10) 0 0; color: var(--vela-text-default); }
+.copy-page__settings { margin: 0; }
+.copy-section--opening { padding-top: 0; }
+.copy-section:focus { outline: none; }
+.copy-pairs__title { margin: var(--vela-space-30) 0 var(--vela-space-15); }
+.copy-strip { display: flex; flex-wrap: wrap; align-items: stretch; gap: var(--vela-space-10); }
+.copy-strip__frame {
+  display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--vela-space-5);
+  min-width: calc(4 * var(--vela-space-20)); padding: var(--vela-space-10); box-sizing: border-box;
+  border: 1px solid var(--vela-border-default); border-radius: var(--vela-radius-4); background: var(--vela-bg-global); color: var(--vela-text-default);
+  font: inherit; font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); cursor: pointer; -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--vela-duration-base) var(--vela-ease-standard), border-color var(--vela-duration-base) var(--vela-ease-standard);
+}
+.copy-strip__frame.is-other { border-style: dashed; }
+.copy-strip__frame .vela-icon { color: var(--vela-icon-strong); }
+@media (hover: hover) { .copy-strip__frame:not([aria-current="true"]):hover { background: var(--vela-bg-hover); transition-duration: var(--vela-duration-fast); } }
+/* Chosen: the segment's mark, a neutral surface and a 2px active edge; pressed lands it at pointer down. */
+.copy-strip__frame[aria-current="true"] { background: var(--vela-bg-selected); border-color: var(--vela-border-active); box-shadow: inset 0 0 0 1px var(--vela-border-active); font-weight: var(--vela-font-weight-semibold); }
+.copy-strip__frame:not([aria-current="true"]):active { background: var(--vela-bg-selected); border-color: var(--vela-border-active); transition-duration: var(--vela-duration-instant); }
+.copy-strip__or { align-self: center; font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); }
+.copy-strip__now { margin: 0; padding: var(--vela-space-10) var(--vela-space-15); border-radius: var(--vela-radius-4); background: var(--vela-bg-container); font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height); }
+.copy-cases { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, calc(14 * var(--vela-space-20))), 1fr)); gap: var(--vela-space-20); align-items: start; }
+.copy-cases__pick { margin: 0; padding: 0; border: 0; display: flex; flex-direction: column; gap: var(--vela-space-10); min-width: 0; }
+.copy-cases__pick legend { margin: 0 0 var(--vela-space-10); padding: 0; }
+.copy-case {
+  display: flex; align-items: flex-start; gap: var(--vela-space-10); padding: var(--vela-space-10) var(--vela-space-15);
+  border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4); cursor: pointer; -webkit-tap-highlight-color: transparent;
+  font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height);
+  transition: border-color var(--vela-duration-base) var(--vela-ease-standard), background-color var(--vela-duration-base) var(--vela-ease-standard);
+}
+.copy-case input { margin: var(--vela-space-5) 0 0; accent-color: var(--vela-border-active); }
+@media (hover: hover) { .copy-case:not(.is-current):hover { border-color: var(--vela-border-default); transition-duration: var(--vela-duration-fast); } }
+.copy-case.is-current { background: var(--vela-bg-selected); border-color: var(--vela-border-active); box-shadow: inset 0 0 0 1px var(--vela-border-active); }
+.copy-case:active { background: var(--vela-bg-selected); border-color: var(--vela-border-active); transition-duration: var(--vela-duration-instant); }
+.copy-cases__answer { display: flex; flex-direction: column; gap: var(--vela-space-10); padding: var(--vela-space-20); border: 1px solid var(--vela-border-default); border-radius: var(--vela-radius-4); }
+.copy-cases__use, .copy-cases__words { margin: 0; }
+.copy-cases__all {
+  display: inline-flex; align-self: flex-start; align-items: center; gap: var(--vela-space-5); min-height: var(--vela-control-height-24); padding: 0 var(--vela-space-5);
+  border: 0; border-radius: var(--vela-radius-4); background: transparent; color: var(--vela-text-link);
+  font: inherit; font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height); cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+@media (hover: hover) { .copy-cases__all:hover { text-decoration: underline; } }
+.copy-cases__all:active { background: var(--vela-bg-selected); transition-duration: var(--vela-duration-instant); }
+.copy-cases__table[hidden] { display: none; }
+@media (forced-colors: active) {
+  .copy-strip__frame { border-color: ButtonText; }
+  .copy-strip__frame[aria-current="true"], .copy-case.is-current { border: var(--vela-stroke-2) solid Highlight; box-shadow: none; }
+  .copy-strip__frame:not([aria-current="true"]):active, .copy-case:active { border-color: Highlight; }
+  .copy-cases__all:active { outline: 1px solid Highlight; }
+}

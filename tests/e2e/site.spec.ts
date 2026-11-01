@@ -27,33 +27,22 @@ const noSidewaysScroll = (page: Page) =>
   page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)
 
 test.describe('Proposal pages', () => {
-  test('the Evidence Locker page is a written spec: no stage, no Copy, no props panel, no install', async ({ page }) => {
+  test('the Evidence Locker page is a written spec: no stage, no install, and it says so first', async ({ page }) => {
     await page.goto('/')
     await page.getByRole('navigation', { name: 'Site' }).getByRole('link', { name: 'Evidence Locker Proposal', exact: true }).click()
     await expect(page).toHaveURL(/#\/proposals\/evidence-locker$/)
     const main = page.getByRole('main')
-    // The first block is a heading.
-    const first = main.locator('article > header > :first-child')
-    await expect(first).toHaveText('Evidence Locker')
-    expect(await first.evaluate((el) => el.tagName)).toBe('H1')
-    await expect(main.getByText("Proposal. This component is a written spec. It isn't built and can't be installed yet.")).toBeVisible()
-    await expect(main.getByRole('link', { name: 'Read the spec on GitHub' })).toHaveAttribute('href', 'https://github.com/omkarpkh/vela/blob/main/guidelines/proposals/evidence-locker.md')
-    await expect(main.getByText('There is no Figma set yet.')).toBeVisible()
-    await expect(main.getByRole('link', { name: 'Follow or discuss this proposal' })).toBeVisible()
+    await expect(main.getByRole('heading', { level: 1 })).toHaveText('Evidence Locker')
+    await expect(main.locator('.pg-head .site-tag')).toHaveText('Proposal')
+    await expect(main.getByText('Experimental, not in the kit · no Figma set yet · nothing to install')).toBeVisible()
+    await expect(main.getByRole('note').first()).toHaveText('This is a proposal, not a component. A written spec with no code yet, so there is nothing to install. Every picture on this page is a sketch.')
+    await expect(main.getByRole('link', { name: 'Read the spec' })).toHaveAttribute('href', 'https://github.com/omkarpkh/vela/blob/main/guidelines/proposals/evidence-locker.md')
+    await expect(main.getByRole('link', { name: 'Discuss on GitHub' }).first()).toHaveAttribute('href', 'https://github.com/omkarpkh/vela/pull/21')
     await expect(main.getByRole('link', { name: 'See the design in Figma' })).toHaveCount(0)
 
-    // The spec, loaded when the page opens.
-    await expect(main.getByRole('heading', { level: 2, name: 'Responsive behaviour' })).toBeVisible()
-    await expect(main.getByRole('heading', { level: 2, name: 'Props' })).toBeVisible()
-    await expect(main.getByText('These may change before the component is built.')).toBeVisible()
-    await expect(main.getByRole('cell', { name: 'conclusion', exact: true })).toBeVisible()
-    await expect(main.getByText('Waiting on: the Action Impact Card (Phase 2) and the Calibrated Confidence Gate (Phase 2).')).toBeVisible()
-
     // What a built component's page has, and a proposal's must not.
-    await expect(page.locator('.pg-stage')).toHaveCount(0)
-    await expect(page.getByRole('button', { name: 'Copy' })).toHaveCount(0)
+    await expect(page.getByRole('region', { name: 'Live demo' })).toHaveCount(0)
     await expect(page.getByRole('complementary', { name: 'Controls' })).toHaveCount(0)
-    await expect(page.getByRole('combobox')).toHaveCount(0)
     await expect(page.locator('.pg-install-command')).toHaveCount(0)
     await expect(main).not.toContainText('npm i')
     await expect(main).not.toContainText('import {')
@@ -696,19 +685,14 @@ test.describe('review of slices 1 to 3', () => {
     await expect(page.getByRole('region', { name: 'Use it', exact: true })).toBeVisible()
   })
 
-  test('the Proposal page has its facts grid and its discussion link', async ({ page }) => {
+  test('the Proposal page counts its promises from the spec, as the spec states them', async ({ page }) => {
     await page.goto('/#/proposals/evidence-locker')
-    const facts = page.locator('dl[aria-label="Contract"]')
-    await expect(facts).toContainText('Planned entry')
-    await expect(facts).toContainText('@omkarux/vela/headless')
-    await expect(facts).toContainText('Not built')
-    await expect(facts.locator('.pg-fact--rules dt')).toHaveText('Rules planned')
     // Counted from the proposal's own Hard constraints, never a zero it can't read (B9). The spec
     // states its own total ("20 rules, 17 with proofs"), so the page must agree with it.
-    const stated = readFileSync(resolve(process.cwd(), 'guidelines/proposals/evidence-locker.md'), 'utf8').match(/(\d+) rules, \d+ with proofs/)
-    expect(stated?.[1]).toBe('20')
-    await expect(facts.locator('.pg-fact--rules .pg-fact__total')).toHaveText(stated![1])
-    await expect(page.getByRole('link', { name: 'Follow or discuss this proposal' })).toHaveAttribute('href', 'https://github.com/omkarpkh/vela/pull/21')
+    const stated = readFileSync(resolve(process.cwd(), 'guidelines/proposals/evidence-locker.md'), 'utf8').match(/(\d+) rules, (\d+) with proofs/)
+    expect(stated?.slice(1)).toEqual(['20', '17'])
+    await expect(page.getByRole('heading', { level: 2, name: `${stated![1]} promises, planned` })).toBeVisible()
+    await expect(page.getByText(`${stated![2]} will have a proof. None is checked yet: nothing is built.`)).toBeVisible()
   })
 })
 
@@ -1929,5 +1913,242 @@ test.describe('slice 3 · the stage', () => {
     await expect(views.getByRole('tab', { name: /^Assets/ })).toBeFocused()
     expect(Math.abs((await page.evaluate(() => window.scrollY)) - at)).toBeLessThan(60)
     expect(Math.round((await stage.boundingBox())!.y)).toBe(Math.round(header.y + header.height))
+  })
+})
+
+// Slice 4 of the playground uplift (s5-proposal): the nine proposal pages and the Copy pattern page.
+// What the pages read from the specs is unit-tested in src/styles/site-proposals.test.ts; here, the
+// pages in a real browser.
+test.describe('slice 4 · proposals and Copy', () => {
+  const main = (page: Page) => page.getByRole('main')
+  /** Every word the page shows, without the parts that are code. */
+  const visibleWords = (page: Page) => page.locator('main').evaluate((el) => {
+    const clone = el.cloneNode(true) as HTMLElement
+    clone.querySelectorAll('code, pre, [hidden]').forEach((c) => c.remove())
+    return clone.innerText
+  })
+
+  test('Evidence Locker: the job in three steps from its worked example, then all 21 states, six first', async ({ page }) => {
+    await page.goto('/#/proposals/evidence-locker')
+    await expect(main(page).getByRole('heading', { level: 2, name: 'The job, in three steps' })).toBeVisible()
+    const steps = page.getByRole('tablist', { name: 'Steps' })
+    await expect(steps.getByRole('tab')).toHaveCount(3)
+    await expect(steps.getByRole('tab').first()).toHaveAttribute('aria-selected', 'true')
+    // The sketch is one picture with a name; its words are not read as a product.
+    await expect(page.getByRole('tabpanel').getByRole('img', { name: /^Sketch: Evidence Locker, step 1/ })).toBeVisible()
+    await expect(page.getByText('From the spec\'s worked example, Case CS-4133')).toBeVisible()
+
+    await expect(main(page).getByRole('heading', { level: 2, name: 'Every state, drawn' })).toBeVisible()
+    await expect(page.getByText('21 in the spec')).toBeVisible()
+    const states = page.locator('.prop-state')
+    await expect(states.filter({ visible: true })).toHaveCount(6)
+    await page.getByRole('button', { name: 'Show 15 more' }).click()
+    await expect(states.filter({ visible: true })).toHaveCount(21)
+    // A card grows downwards only: its neighbour does not move.
+    const neighbour = states.nth(1)
+    const before = await neighbour.boundingBox()
+    await states.first().getByRole('button', { name: 'What it shows' }).click()
+    await expect(states.first().getByText(/Heading with conclusion and version/)).toBeVisible()
+    expect((await neighbour.boundingBox())!.y).toBe(before!.y)
+  })
+
+  test('steps: arrows move along the tab list; Previous says why it can\'t act at step 1; the last step starts again', async ({ page }) => {
+    await page.goto('/#/proposals/evidence-locker')
+    const steps = page.getByRole('tablist', { name: 'Steps' })
+    const previous = page.getByRole('button', { name: 'Previous: this is the first step' })
+    await expect(previous).toHaveAttribute('aria-disabled', 'true')
+    await steps.getByRole('tab').first().focus()
+    await page.keyboard.press('ArrowRight')
+    await expect(steps.getByRole('tab').nth(1)).toBeFocused()
+    await expect(steps.getByRole('tab').nth(1)).toHaveAttribute('aria-selected', 'true')
+    await expect(page.getByText('Step 2 of 3')).toBeVisible()
+    await page.getByRole('button', { name: 'Next', exact: true }).click()
+    await expect(page.getByText('Step 3 of 3')).toBeVisible()
+    await expect(page.getByRole('tabpanel')).toContainText('This claim about the world cites only untrusted content (1 item). Check it against a system record before acting.')
+    await page.getByRole('button', { name: 'Start again' }).click()
+    await expect(steps.getByRole('tab').first()).toHaveAttribute('aria-selected', 'true')
+  })
+
+  test('a spec with no worked example: no steps, the states lead, and the page says why', async ({ page }) => {
+    for (const id of ['verdict-card', 'action-impact-card', 'autonomy-ladder', 'calibrated-confidence-gate', 'agent-provenance-badge', 'approval-queue']) {
+      await page.goto(`/#/proposals/${id}`)
+      await expect(main(page).getByRole('heading', { level: 2, name: 'Every state, drawn' }), id).toBeVisible()
+      await expect(page.getByRole('tablist', { name: 'Steps' }), id).toHaveCount(0)
+      await expect(page.getByText('Steps are drawn from the spec\'s worked example. This spec has none yet, so its states lead.'), id).toBeVisible()
+      // The states come straight after the job, before where it sits.
+      const order = await main(page).locator('h2').allTextContents()
+      expect(order.slice(0, 3), id).toEqual(['The job', 'Every state, drawn', 'Where it sits'])
+    }
+  })
+
+  test('where it sits and until it is built: statuses from the kit, a missing part flagged with the closest one', async ({ page }) => {
+    await page.goto('/#/proposals/evidence-locker')
+    const map = page.locator('.prop-map')
+    await expect(map.getByRole('link', { name: 'Popover In the kit · Experimental' })).toHaveAttribute('href', '#/components/popover')
+    await expect(map.getByRole('link', { name: 'Calibrated Confidence Gate Proposal' })).toHaveAttribute('href', '#/proposals/calibrated-confidence-gate')
+    await expect(map.getByText('Agent Action Ledger')).toBeVisible()
+    await expect(page.getByText('Waiting on two proposals: Calibrated Confidence Gate and Action Impact Card.')).toBeVisible()
+
+    await page.goto('/#/proposals/override-and-teach-panel')
+    const combobox = page.locator('.prop-until__item--missing', { hasText: 'Combobox' })
+    await expect(combobox).toContainText('Not in the kit')
+    await expect(combobox).toContainText('Planned, not built yet.')
+    await expect(combobox.getByRole('link', { name: 'Input' })).toHaveAttribute('href', '#/components/input')
+    await expect(page.locator('main')).not.toContainText('Phase 1')
+  })
+
+  test('sources: all seven of Evidence Locker\'s, none drawn as a link the spec does not give', async ({ page }) => {
+    await page.goto('/#/proposals/evidence-locker')
+    await expect(page.getByText('7 sources, each from the spec')).toBeVisible()
+    await expect(page.locator('.prop-source')).toHaveCount(7)
+    await expect(page.locator('.prop-source a')).toHaveCount(0)
+    await expect(page.locator('.prop-source').last()).toContainText('The verdict-card study')
+  })
+
+  test('no dash reaches a reader, though the spec\'s own strings carry them', async ({ page }) => {
+    for (const id of ['evidence-locker', 'override-and-teach-panel', 'awareness-clock', 'verdict-card']) {
+      await page.goto(`/#/proposals/${id}`)
+      await expect(main(page).getByRole('heading', { level: 2, name: 'Where it sits' })).toBeVisible()
+      const more = page.getByRole('button', { name: /^Show \d+ more$/ })
+      while (await more.count()) await more.first().click()
+      const closed = page.getByRole('button', { name: 'What it shows' })
+      while (await closed.count()) await closed.first().click()
+      const words = await visibleWords(page)
+      expect(words.match(/.{0,30}[—–].{0,30}/g), id).toBeNull()
+    }
+  })
+
+  test('Props: a side panel; focus goes to Close, Esc puts it away and focus goes back', async ({ page }) => {
+    await page.goto('/#/proposals/evidence-locker')
+    const open = page.getByRole('button', { name: 'Show props 8' })
+    await open.click()
+    const panel = page.getByRole('region', { name: 'Props 8' })
+    await expect(panel).toBeVisible()
+    await expect(panel.getByRole('button', { name: 'Close the props of Evidence Locker' })).toBeFocused()
+    await expect(panel.getByText('These may change before the component is built.')).toBeVisible()
+    await expect(panel.locator('.prop-panel__name')).toHaveText(['conclusion', 'items', 'claims', 'notSeen', 'confidence', 'rationale', 'groupBy', 'timeZone'])
+    // Not a dialog: the page stays readable beside it.
+    await expect(page.getByRole('heading', { level: 1 })).toBeInViewport()
+    await expect(page.getByRole('button', { name: 'Back to the page' })).toBeHidden()
+    await page.keyboard.press('Escape')
+    await expect(panel).toBeHidden()
+    await expect(open).toBeFocused()
+  })
+
+  test('Props under 960 CSS px: a full sheet that says how to get back', async ({ page }) => {
+    await page.setViewportSize({ width: 720, height: 900 })
+    await page.goto('/#/proposals/evidence-locker')
+    await page.getByRole('button', { name: 'Show props 8' }).click()
+    const panel = page.getByRole('region', { name: 'Props 8' })
+    const box = (await panel.boundingBox())!
+    expect(box.x).toBe(0)
+    expect(Math.round(box.width)).toBe(720)
+    await page.getByRole('button', { name: 'Back to the page' }).click()
+    await expect(panel).toBeHidden()
+    await expect(page.getByRole('button', { name: 'Show props 8' })).toBeFocused()
+  })
+
+  test('section links: the rail writes ?section= in place, so Back leaves the page and a reload keeps the place', async ({ page }) => {
+    await page.goto('/#/patterns/copy')
+    await page.goto('/#/proposals/evidence-locker')
+    const rail = page.getByRole('navigation', { name: 'On this page' })
+    await expect(rail.getByRole('link')).toHaveText(['The job', 'Every state 21', 'Where it sits', 'Until it is built', 'Promises 20', 'Why it exists 7', 'Word sets 2'])
+    await rail.getByRole('link', { name: 'Where it sits' }).click()
+    await expect(page).toHaveURL(/#\/proposals\/evidence-locker\?section=where$/)
+    await expect(page.getByRole('heading', { level: 2, name: 'Where it sits' })).toBeFocused()
+    await expect(rail.getByRole('link', { name: 'Where it sits' })).toHaveAttribute('aria-current', 'location')
+    await page.reload()
+    await expect(page.getByRole('heading', { level: 2, name: 'Where it sits' })).toBeInViewport()
+    await page.goBack()
+    await expect(page).toHaveURL(/#\/patterns\/copy$/)
+  })
+
+  test('a link to one state reveals it past Show more, opens it and moves to it', async ({ page }) => {
+    await page.goto('/#/proposals/evidence-locker?state=hidden-characters')
+    const card = page.locator('#state-hidden-characters')
+    await expect(card).toBeFocused()
+    await expect(card).toBeInViewport()
+    await expect(card.getByRole('button', { name: 'Less' })).toHaveAttribute('aria-expanded', 'true')
+    await expect(card).toContainText('3 hidden characters shown · 1 look-alike domain')
+  })
+
+  test('the ninth proposal never dead-ends: it goes back to every proposal', async ({ page }) => {
+    await page.goto('/#/proposals/override-and-teach-panel')
+    const more = page.getByRole('navigation', { name: 'More proposals' })
+    await expect(more.getByRole('link', { name: /Previous proposal Awareness Clock/ })).toBeVisible()
+    await more.getByRole('link', { name: /That is all nine Back to every proposal/ }).click()
+    await expect(page).toHaveURL(/#\/$/)
+  })
+
+  test('Copy: the live demo on a stage that says what it is made with, and the rail of every section', async ({ page }) => {
+    await page.goto('/#/patterns/copy')
+    const stage = page.getByRole('region', { name: 'Live demo' })
+    await expect(stage).toContainText("Made with the site's own copy control, not a kit part.")
+    await expect(stage.getByRole('button', { name: 'Copy db-primary IP address' })).toBeVisible()
+    const rail = page.getByRole('navigation', { name: 'On this page' })
+    await expect(rail.getByRole('link')).toHaveCount(14)
+    await expect(rail.getByRole('link').first()).toHaveText('Opening')
+    await rail.getByRole('link', { name: '9 Motion' }).click()
+    await expect(page).toHaveURL(/#\/patterns\/copy\?section=s9$/)
+    await expect(page.getByRole('heading', { level: 2, name: /^9 · / })).toBeFocused()
+  })
+
+  test('Copy, section 1: the answer follows the choice and is announced; every case as one table', async ({ page }) => {
+    await page.goto('/#/patterns/copy')
+    const picker = page.getByRole('group', { name: 'You have' })
+    const answer = page.locator('.copy-cases__answer')
+    await expect(answer).toHaveAttribute('aria-live', 'polite')
+    await expect(answer).toContainText('Copyable Value, inside a CopyGroup when there are several')
+    await picker.getByRole('radio', { name: 'Many rows, or a whole table' }).check()
+    await expect(answer).toContainText('An export, not a copy')
+    const all = page.getByRole('button', { name: 'See all 6 cases as one table' })
+    await expect(all).toHaveAttribute('aria-expanded', 'false')
+    await all.click()
+    const table = page.getByRole('table', { name: 'When to offer copy: all 6 cases' })
+    await expect(table.getByRole('row')).toHaveCount(7)
+    await expect(table.getByRole('row', { name: /Many rows/ })).toHaveAttribute('aria-selected', 'true')
+  })
+
+  test('Copy, section 2: the frame strip is a picker, and the chosen frame\'s words are announced', async ({ page }) => {
+    await page.goto('/#/patterns/copy')
+    const strip = page.locator('section[aria-labelledby="copy-s2"]').getByRole('group', { name: 'State', exact: true })
+    await expect(strip.getByRole('button')).toHaveText(['Rest', 'Hover', 'Press', 'Copied', 'Away', 'Return', 'Marked', 'Failed'])
+    await strip.getByRole('button', { name: 'Copied' }).click()
+    await expect(strip.getByRole('button', { name: 'Copied' })).toHaveAttribute('aria-current', 'true')
+    const now = page.locator('.copy-strip__now')
+    await expect(now).toHaveAttribute('aria-live', 'polite')
+    await expect(now).toContainText('Copied, only once the write has resolved.')
+  })
+
+  test('no word under 12px on a proposal or the Copy page', async ({ page }) => {
+    for (const path of ['/#/proposals/evidence-locker', '/#/proposals/verdict-card', '/#/patterns/copy']) {
+      await page.goto(path)
+      await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+      const small = await page.locator('main').evaluate((root) => {
+        const out: string[] = []
+        const walk = document.createTreeWalker(root, NodeFilter.SHOW_TEXT)
+        for (let n = walk.nextNode(); n; n = walk.nextNode()) {
+          const el = n.parentElement
+          if (!el || !n.textContent?.trim() || !el.checkVisibility()) continue
+          if (parseFloat(getComputedStyle(el).fontSize) < 12) out.push(n.textContent.trim().slice(0, 40))
+        }
+        return out
+      })
+      expect(small, path).toEqual([])
+    }
+  })
+
+  test('at 390 the rail is one button that says where you are', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 })
+    for (const path of ['/#/proposals/evidence-locker', '/#/patterns/copy']) {
+      await page.goto(path)
+      const rail = page.getByRole('navigation', { name: 'On this page' })
+      const toggle = rail.getByRole('button')
+      await expect(toggle, path).toBeVisible()
+      await expect(rail.getByRole('link').first(), path).toBeHidden()
+      await toggle.click()
+      await expect(rail.getByRole('link').first(), path).toBeVisible()
+      expect(await noSidewaysScroll(page), path).toBe(true)
+    }
   })
 })

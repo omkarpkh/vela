@@ -51,7 +51,7 @@ describe('component CSS binds tokens', () => {
 // 36 bare values in the site CSS; what is left is pinned here, so a new literal is a decision.
 describe('site CSS binds tokens', () => {
   const report = checkCss().filter((r) => r.scope === 'site')
-  const SITE_STYLESHEETS = ['demo/demo.css', 'demo/playground.css', 'demo/pages/overview.css', 'demo/shell/shell.css']
+  const SITE_STYLESHEETS = ['demo/demo.css', 'demo/playground.css', 'demo/pages/overview.css', 'demo/pages/proposal.css', 'demo/shell/shell.css']
 
   it('lints every stylesheet under demo/', () => {
     expect(report.map((r) => r.file).sort()).toEqual([...SITE_STYLESHEETS].sort())
