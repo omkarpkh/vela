@@ -77,6 +77,9 @@ for (const theme of THEMES) {
         await page.evaluate(() => document.fonts.ready)
         await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
         await page.mouse.move(0, 0)
+        // As for slice 4: a window as tall as the page, so nothing scrolls while it is captured.
+        const height = await page.evaluate(() => Math.ceil(document.documentElement.scrollHeight))
+        await page.setViewportSize({ width: 1440, height })
         await expect(page.locator('main')).toHaveScreenshot(`page-${name}-${theme}.png`)
       })
     }
