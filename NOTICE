@@ -75,8 +75,8 @@ Lucide (the `lucide` npm package, version 1.63.0)
   The MIT text is in LICENSE; the copyright line for these glyphs is the one above.
 
 Hash function in `brand/mood-o.frag.glsl` after Dave Hoskins (MIT).
-  Use: the hash in the shader that draws the mood background for the site's Overview. In the
-  repository only: brand/ is not in the npm package.
+  Use: the hash in the shader that draws the mood background for the site's Overview. The shader
+  carries the same line. In the repository only: brand/ is not in the npm package.
 
 ------------------------------------------------------------------------------------------
 

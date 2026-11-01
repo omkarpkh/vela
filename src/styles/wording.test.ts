@@ -14,7 +14,7 @@ const walk = (d: string): string[] => readdirSync(join(root, d)).flatMap((f) => 
   return statSync(join(root, p)).isDirectory() ? (p === 'demo/public' ? [] : walk(p)) : [p]
 })
 const files = ['guidelines', 'demo', 'brand'].filter((d) => existsSync(join(root, d))).flatMap(walk)
-  .concat('README.md').filter((f) => /\.(md|txt|tsx?|html|css|json)$/.test(f))
+  .concat('README.md').filter((f) => /\.(md|txt|tsx?|html|css|json|svg|glsl)$/.test(f))
 const SEAL = /\bseal(s|ed)?\b/i
 const SUBJECT = /\b(logos?|mood|the Pulse mark|Vela['’]s mark|brand mark)\b/i
 const CLAIM = /\b(secure|security|trusted|verified|certified)\b/i
@@ -23,7 +23,7 @@ const STATES_THE_RULE = /never call(ed)? it a seal|no security claim/i
 
 describe('brand wording', () => {
   it('scans the docs, the site source, the brand folder and llms.txt', () => {
-    expect(files).toEqual(expect.arrayContaining(['README.md', 'guidelines/llms.txt', 'demo/App.tsx']))
+    expect(files).toEqual(expect.arrayContaining(['README.md', 'guidelines/llms.txt', 'demo/App.tsx', 'brand/README.md', 'brand/mood-o.frag.glsl', 'brand/vela-favicon-16.svg']))
   })
   it('never calls the logo a seal, or secure, trusted, verified or certified', () => {
     const hits = files.flatMap((f) => readFileSync(join(root, f), 'utf8').split(/(?<=[.!?])\s+|\n\s*\n/)

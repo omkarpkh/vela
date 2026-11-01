@@ -71,6 +71,7 @@
     "components:figma:check": "node scripts/figma/check-components.mjs",
     "tokens:check": "npm run tokens && git diff --exit-code -- src/styles/tokens.light.css src/styles/tokens.dark.body.css flutter/lib/vela_tokens.dart flutter/pubspec.yaml bridges/vela.mui-theme.json",
     "tokens:validate": "node scripts/validate-tokens.mjs",
+    "brand:stills": "node scripts/brand/stills.mjs",
     "icons:build": "node scripts/build-icons.mjs",
     "icons:check": "npm run icons:build && git diff --exit-code -- src/icons/generated src/icons/names.ts scripts/figma/components/icon.figma.js && test -z \"$(git status --porcelain -- src/icons/generated src/icons/names.ts scripts/figma/components/icon.figma.js)\"",
     "rules:check": "node scripts/check-rules.mjs",
