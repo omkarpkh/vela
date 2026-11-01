@@ -15,6 +15,8 @@
  *              value of its type, or this file does not compile.
  *   release    package.json's version, its date and its highlights from CHANGELOG.md.
  *   stamp      the commit and the date the site was built (vite.demo.config.ts), as the Rules tab says them.
+ *   mood       the stills behind the hero, named with the release seed of package.json's version
+ *              (MOOD_SEED, counted at build time), so a new minor version asks for its own stills.
  */
 import type { Severity, Status, Risk } from '../../src'
 import { CATALOG } from '../playground/catalog'
@@ -24,7 +26,7 @@ import { FOUNDATIONS, PATTERNS } from '../nav'
 import { LINKS } from '../links'
 import { COMMIT } from '../shell/ErrorBoundary'
 import checks from '../checks.json'
-import { PAIRS, PAIRS_LINE, DEPENDENCIES, RELEASE } from 'virtual:vela-site-facts'
+import { PAIRS, PAIRS_LINE, DEPENDENCIES, RELEASE, MOOD_SEED } from 'virtual:vela-site-facts'
 
 /**
  * A list that holds every value of `T`: a missing value is a compile error, and so is a value that
@@ -114,3 +116,21 @@ export const TARGETS = {
   governance: `${LINKS.github}/blob/main/GOVERNANCE.md`,
   licence: `${LINKS.github}/blob/main/LICENSE`,
 } as const
+
+/**
+ * The mood stills behind the hero (brand/README.md, "The mood"): in demo/public/brand/, named with
+ * the release seed (`mood-desktop-light-0.15@2x.avif`). Each is an `image-set()`: AVIF first, then
+ * WebP, each at 1× and 2×. The hero takes the desktop still above 520px and the phone still at 520px
+ * and below (overview.css), for the theme the page resolved to. Through the base path, so the Pages
+ * build (/vela/) finds them.
+ */
+export type MoodShape = 'desktop' | 'phone'
+export const moodUrl = (shape: MoodShape, theme: 'light' | 'dark', x: 1 | 2, format: 'avif' | 'webp') =>
+  `${import.meta.env.BASE_URL}brand/mood-${shape}-${theme}-${MOOD_SEED}@${x}x.${format}`
+export const moodImage = (shape: MoodShape, theme: 'light' | 'dark') =>
+  `image-set(${(['avif', 'webp'] as const).flatMap((f) => ([1, 2] as const).map((x) => `url("${moodUrl(shape, theme, x, f)}") type("image/${f}") ${x}x`)).join(', ')})`
+/** The two custom properties overview.css reads for the hero's background. */
+export const moodStyle = (theme: 'light' | 'dark') => ({
+  '--ov-mood-wide': moodImage('desktop', theme),
+  '--ov-mood-narrow': moodImage('phone', theme),
+})

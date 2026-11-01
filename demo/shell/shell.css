@@ -270,3 +270,49 @@
   .shell-action--secondary:hover { background: var(--vela-btn-hollow-hover-bg); }
 }
 @media (forced-colors: active) { .shell-action { border-color: LinkText; color: LinkText; } }
+
+/* ------------------------------------------------- ProductMark (Overview) -- */
+/* Stand-in for Product Mark (spec draft, not in the kit): Vela's own logo, drawn from brand/. The
+   sizes are the spec's: 16, 24 and 32px, and the hero at the width its slot gives it, never under
+   96px. Each size is its own master; nothing here scales one into another. */
+.pm { display: block; flex: none; overflow: visible; }
+.pm--small { width: var(--vela-icon-size); height: var(--vela-icon-size); }
+.pm--regular { width: calc(1.5 * var(--vela-icon-size)); height: calc(1.5 * var(--vela-icon-size)); }
+.pm--large { width: calc(2 * var(--vela-icon-size)); height: calc(2 * var(--vela-icon-size)); }
+.pm--hero { width: 100%; height: auto; min-width: calc(6 * var(--vela-icon-size)); aspect-ratio: 1; }
+
+/* The pulse: each ring scales from 0.82 and fades in, about its own centre in the master's user
+   space (the origin is set on the ring from the path data, in view-box units). The outer ring starts
+   --vela-delay-brand-pulse-outer later. Transform and opacity only (motion.md, rule 1); the one
+   movement past 300ms in Vela (motion.md, "The brand pulse exception"). A keyframe, not a
+   transition, because it plays from a state the mark is never at rest in. */
+.pm-ring { transform-box: view-box; }
+.pm[data-playing="pulse"] .pm-ring { animation: pm-pulse var(--vela-duration-brand-pulse) var(--vela-ease-out) both; }
+.pm[data-playing="pulse"] .pm-ring--outer { animation-delay: var(--vela-delay-brand-pulse-outer); }
+@keyframes pm-pulse { from { transform: scale(0.82); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+/* Reduced motion, a press: the rings fade in over --vela-duration-base, opacity only, together.
+   base.css collapses every duration under reduced motion, so this one is restated past it. */
+@keyframes pm-fade { from { opacity: 0; } to { opacity: 1; } }
+.vela-root .pm[data-playing="fade"] .pm-ring { animation: pm-fade var(--vela-duration-base) var(--vela-ease-standard) both !important; }
+
+/* Replay: the one control the logo may be (the Overview's hero). A bare button round the mark. */
+.pm-replay {
+  display: block; width: 100%; padding: 0; margin: 0; border: 0; background: transparent; color: inherit;
+  border-radius: var(--vela-radius-4); cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+/* Rest: the outer ring at the master's 75%. Hover and focus: 100%, in at fast, out at base. */
+.pm-replay .pm-ring--outer > g { transition: opacity var(--vela-duration-base) var(--vela-ease-standard); }
+@media (hover: hover) { .pm-replay:hover .pm-ring--outer > g { opacity: 1; transition-duration: var(--vela-duration-fast); } }
+.pm-replay:focus-visible .pm-ring--outer > g { opacity: 1; transition-duration: var(--vela-duration-fast); }
+/* Held: the solid parts take --pm-held (primary-600 on light, primary-300 on dark, named in the
+   component, because brand assets are the one place primitives are named). At once, and not while
+   the pulse plays, when a press is ignored. */
+.pm-replay:not([data-playing]):active .pm-ink { fill: var(--pm-held); }
+
+/* Forced colours: the solid parts take CanvasText, and Highlight while held; the ramp and the glow
+   are finish, and go. */
+@media (forced-colors: active) {
+  .pm--hero .pm-ink { fill: CanvasText; }
+  .pm-replay:not([data-playing]):active .pm-ink { fill: Highlight; }
+  .pm--hero .pm-finish { display: none; }
+}
