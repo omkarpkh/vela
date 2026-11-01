@@ -14,7 +14,7 @@ export function Foundation({ id }: { id: string }) {
         <p className="vela-meta page-head__eyebrow">{f.kind}</p>
         <h1 className="vela-h2">{f.title}</h1>
       </header>
-      <div className="doc__body"><Markdown source={body} /></div>
+      <div className="doc__body"><Markdown source={body} top="h2" /></div>
     </article>
   )
 }

@@ -30,11 +30,18 @@ export function inline(text: string, key: number, em = false): ReactNode {
   )
 }
 
-export function Markdown({ source }: { source: string }) {
+/**
+ * `top` is the element a `## ` heading becomes. Inside a playground tab, an `h2` already heads the
+ * tab, so `## ` is an `h3` (the default). On a page of its own (a foundation), the page's `h1` is
+ * the only heading above, so `## ` is an `h2` and the levels don't skip (axe: heading-order).
+ */
+export function Markdown({ source, top = 'h3' }: { source: string; top?: 'h2' | 'h3' }) {
   const out: ReactNode[] = []
   const lines = source.split('\n')
   let i = 0
   let k = 0
+  // Each scrollable code block is its own region, so each needs its own name (axe: landmark-unique).
+  let codes = 0
   while (i < lines.length) {
     const line = lines[i]
     if (line.startsWith('```')) {
@@ -42,7 +49,7 @@ export function Markdown({ source }: { source: string }) {
       i++
       while (i < lines.length && !lines[i].startsWith('```')) buf.push(lines[i++])
       i++
-      out.push(<ScrollRegion key={k++} as="pre" label="Code, scrollable" className="pg-code">{buf.join('\n')}</ScrollRegion>)
+      out.push(<ScrollRegion key={k++} as="pre" label={++codes === 1 ? 'Code, scrollable' : `Code ${codes}, scrollable`} className="pg-code">{buf.join('\n')}</ScrollRegion>)
     } else if (line.startsWith('|')) {
       const rows: string[][] = []
       while (i < lines.length && lines[i].startsWith('|')) rows.push(cells(lines[i++]))
@@ -66,9 +73,10 @@ export function Markdown({ source }: { source: string }) {
     } else if (/^#{1,4} /.test(line)) {
       const level = line.match(/^#+/)![0].length
       const text = line.replace(/^#+ /, '')
+      const H2 = top, H3 = top === 'h2' ? 'h3' : 'h4'
       out.push(level <= 1 ? <h2 key={k++} className="vela-h3 pg-h1">{text}</h2>
-        : level === 2 ? <h3 key={k++} className="vela-h4 pg-h2">{text}</h3>
-        : <h4 key={k++} className="pg-h">{text}</h4>)
+        : level === 2 ? <H2 key={k++} className="vela-h4 pg-h2">{text}</H2>
+        : <H3 key={k++} className="pg-h">{text}</H3>)
       i++
     } else if (line.trim() === '') {
       i++
