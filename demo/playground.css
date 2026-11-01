@@ -433,6 +433,7 @@
 .pg-anatomy__figure { margin: 0; display: flex; flex-direction: column; align-items: center; gap: var(--vela-space-10); min-width: 0; order: 2; }
 .pg-anatomy__holder { width: 100%; display: flex; justify-content: center; overflow-x: auto; padding: var(--vela-space-20) 0; background: var(--vela-bg-global); border-radius: var(--vela-radius-4); }
 .pg-anatomy__live { display: inline-block; width: max-content; max-width: none; }
+.pg-anatomy__zoom { white-space: nowrap; }
 .pg-anatomy__zoom.is-twice { zoom: 2; }
 .pg-anatomy__caption { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); text-align: center; }
 .pg-parts { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--vela-space-10); order: 1; }
@@ -465,7 +466,7 @@
 .pg-figma__where { display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--vela-space-30); }
 .pg-figma__set { margin: 0; display: flex; flex-direction: column; gap: var(--vela-space-10); min-width: 0; max-width: 100%; padding: var(--vela-space-20) var(--vela-space-30); border-radius: var(--vela-radius-8); background: var(--vela-bg-container); border: 1px solid transparent; }
 .pg-figma__setname { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
-.pg-figma__grid { display: grid; gap: var(--vela-space-10) var(--vela-space-15); align-items: center; justify-items: start; padding: var(--vela-space-15); border: 1px dashed var(--vela-border-default); border-radius: var(--vela-radius-4); background: var(--vela-bg-global); overflow-x: auto; pointer-events: none; }
+.pg-figma__grid { white-space: nowrap; display: grid; gap: var(--vela-space-10) var(--vela-space-15); align-items: center; justify-items: start; padding: var(--vela-space-15); border: 1px dashed var(--vela-border-default); border-radius: var(--vela-radius-4); background: var(--vela-bg-global); overflow-x: auto; pointer-events: none; }
 .pg-figma__cell { display: inline-flex; padding: var(--vela-stroke-2); border: 1px solid transparent; border-radius: var(--vela-radius-4); }
 /* This page's setting, outlined in the set. */
 .pg-figma__cell.is-current { outline: var(--vela-stroke-2) solid var(--vela-border-action); outline-offset: 0; }
