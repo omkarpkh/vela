@@ -144,11 +144,12 @@
   padding-inline: calc(var(--vela-focus-ring-width) + var(--vela-focus-ring-offset));
   margin-inline: calc(-1 * (var(--vela-focus-ring-width) + var(--vela-focus-ring-offset)));
 }
-/* The open tab never leaves view: it sticks to the edge it would leave by, its focus ring's reach in
-   from it, above the tabs that pass under it. Those fade out where they meet it (their mask). */
+/* The open tab never leaves view: it sticks to the edge it would leave by, above the tabs that pass
+   under it. Those fade out where they meet it (their mask). A sticky box keeps inside the scroller's
+   padding, so with the padding above it stands its focus ring's reach in from the edge. */
 .vela-tabs__row[data-vela-overflow] .vela-tabs__trigger[aria-selected='true'] {
   position: sticky;
-  inset-inline: calc(var(--vela-focus-ring-width) + var(--vela-focus-ring-offset));
+  inset-inline: 0;
   z-index: 1;
 }
 

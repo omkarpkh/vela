@@ -317,7 +317,8 @@ export const itemsOf = (list: HTMLElement): RowItem[] =>
 /**
  * Keeps the row honest: measures on mount, on scroll, when anything in it is resized, and when a
  * tab's selection, news or disabled state changes; brings the open tab into view whenever it
- * changes, and a focused or clicked tab whenever it gets focus. A press is never scrolled under
+ * changes, and a focused or clicked tab whenever it gets focus. Until the person scrolls the row
+ * themselves, a resize places it again from its start, as a fresh row would be. A press is never scrolled under
  * the pointer: a reveal asked for while a pointer is down waits for it to come up, so the click
  * still lands on the tab it started on. Scrolling is instant, from every input: it answers the
  * person's own action, and from the keyboard nothing animates.
@@ -341,6 +342,17 @@ export function useRowOverflow(
     let pressing = false
     let pending: HTMLElement | null = null
     let selected: Element | null = null
+    // Whether the person has scrolled the row themselves since the component last placed it. Until
+    // they do, a row that changes size (its host growing after mount, the control appearing) is
+    // placed again as a fresh one would be: from its start, just far enough to show the open tab.
+    let placedAt = list.scrollLeft
+    let personScrolled = false
+    let resized = false
+    const place = (to: number) => {
+      if (Math.abs(to - list.scrollLeft) > EPS) list.scrollLeft = to
+      placedAt = list.scrollLeft
+      personScrolled = false
+    }
 
     const measure = () => {
       const result = measureRow(readRow(list, row, sticky))
@@ -353,10 +365,27 @@ export function useRowOverflow(
         if (!SAME(next, last.current)) { last.current = next; setState(next) }
       }
     }
+    const replace = () => {
+      const tabs = triggersOf(list)
+      const k = tabs.findIndex((t) => t.getAttribute('aria-selected') === 'true')
+      const input = readRow(list, row, sticky)
+      if (k < 0 || !measureRow(input).overflow) return
+      place(revealScroll({ ...input, scroll: 0 }, k))
+    }
     const schedule = () => {
       if (frame) return
-      frame = requestAnimationFrame(() => { frame = 0; measure() })
+      frame = requestAnimationFrame(() => {
+        frame = 0
+        if (resized && !personScrolled && !pressing) replace()
+        resized = false
+        measure()
+      })
     }
+    const onScroll = () => {
+      if (Math.abs(list.scrollLeft - placedAt) > 1) personScrolled = true
+      schedule()
+    }
+    const onResize = () => { resized = true; schedule() }
 
     const reveal = (tab: HTMLElement) => {
       if (pressing) { pending = tab; return }
@@ -365,8 +394,7 @@ export function useRowOverflow(
       if (j < 0) return
       const input = readRow(list, row, sticky)
       if (!measureRow(input).overflow) return
-      const to = revealScroll(input, j)
-      if (Math.abs(to - list.scrollLeft) > EPS) list.scrollLeft = to
+      place(revealScroll(input, j))
       measure()
     }
     const revealSelected = () => {
@@ -394,13 +422,13 @@ export function useRowOverflow(
 
     measure()
     revealSelected()
-    list.addEventListener('scroll', schedule, { passive: true })
+    list.addEventListener('scroll', onScroll, { passive: true })
     list.addEventListener('focusin', onFocusIn)
     list.addEventListener('pointerdown', onPointerDown, true)
     document.addEventListener('pointerup', onPointerUp, true)
     document.addEventListener('pointercancel', onPointerUp, true)
 
-    const resize = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(schedule)
+    const resize = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(onResize)
     const observeAll = () => {
       if (!resize) return
       resize.disconnect()
@@ -420,7 +448,7 @@ export function useRowOverflow(
 
     return () => {
       if (frame) cancelAnimationFrame(frame)
-      list.removeEventListener('scroll', schedule)
+      list.removeEventListener('scroll', onScroll)
       list.removeEventListener('focusin', onFocusIn)
       list.removeEventListener('pointerdown', onPointerDown, true)
       document.removeEventListener('pointerup', onPointerUp, true)
