@@ -556,10 +556,11 @@ test.describe('the workbench', () => {
     expect((await controls.boundingBox())!.y).toBeGreaterThan((await frame.boundingBox())!.y + (await frame.boundingBox())!.height - 1)
     await expect(page.locator('.pg-frame-label').first()).toContainText('Full width')
     // Kept for this component: a fresh visit without the link still opens Full width.
-    await page.goto('/#/components/toggle')
+    await page.goto('about:blank')
     await page.goto('/#/components/button')
     await expect(page.getByRole('group', { name: 'Stage' }).getByRole('button', { name: 'Full width' })).toHaveAttribute('aria-current', 'true')
-    // And only for that one.
+    // And only for that one. A fresh page first: a hash-only move can race the page's own replaceState.
+    await page.goto('about:blank')
     await page.goto('/#/components/toggle')
     await expect(page.getByRole('group', { name: 'Stage' }).getByRole('button', { name: 'Beside' })).toHaveAttribute('aria-current', 'true')
   })
@@ -1501,7 +1502,7 @@ test.describe('All states', () => {
 })
 
 test.describe('axe', () => {
-  for (const path of ['/#/', '/#/states', '/#/components/button', '/#/components/tabs', '/#/components/dropdown-list', '/#/proposals/evidence-locker', '/#/patterns/copy', '/#/foundations/filter-grammar'])
+  for (const path of ['/#/', '/#/states', '/#/components/button', '/#/components/tabs', '/#/components/dropdown-list', '/#/proposals/evidence-locker', '/#/patterns/copy', '/#/foundations/filter-grammar', '/#/components/brand-mark'])
     for (const theme of ['Light', 'Dark'] as const)
       test(`${path} in ${theme.toLowerCase()} has no WCAG A or AA violation`, async ({ page }) => {
         const { default: AxeBuilder } = await import('@axe-core/playwright')

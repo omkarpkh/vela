@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 abstract final class VelaPrimitives {
   static const Color black = Color(0xFF191D1F);
   static const Color white = Color(0xFFFFFFFF);
+  static const Color blackPure = Color(0xFF000000);
   static const Color grey50 = Color(0xFFF7F9F9);
   static const Color grey100 = Color(0xFFEEF2F2);
   static const Color grey200 = Color(0xFFDDE3E4);
@@ -106,6 +107,7 @@ class VelaColors extends ThemeExtension<VelaColors> {
     required this.iconSelected,
     required this.iconDisabled,
     required this.iconOnBrand,
+    required this.brandMark,
     required this.btnPrimaryBg,
     required this.btnPrimaryHoverBg,
     required this.btnPrimaryBorder,
@@ -266,6 +268,9 @@ class VelaColors extends ThemeExtension<VelaColors> {
   final Color iconDisabled;
   /// `--vela-icon-on-brand` · Figma `icon/on-brand`
   final Color iconOnBrand;
+  /// `--vela-brand-mark` · Figma `brand-mark/fill`
+  /// Brand Mark's fill: the owner's own black in the light theme and white in the dark (guidelines/components/brand-mark.md). The svg fills with currentColor and .vela-brand-mark sets color to this, so forced colours still win. Never a grey, a status colour or an owner's brand colour, and bound by Brand Mark only.
+  final Color brandMark;
   /// `--vela-btn-primary-bg` · Figma `button/primary-bg`
   final Color btnPrimaryBg;
   /// `--vela-btn-primary-hover-bg` · Figma `button/primary-hover-bg`
@@ -541,6 +546,7 @@ class VelaColors extends ThemeExtension<VelaColors> {
     iconSelected: VelaPrimitives.primary500,
     iconDisabled: VelaPrimitives.grey300,
     iconOnBrand: VelaPrimitives.white,
+    brandMark: VelaPrimitives.blackPure,
     btnPrimaryBg: VelaPrimitives.primary500,
     btnPrimaryHoverBg: VelaPrimitives.primary600,
     btnPrimaryBorder: VelaPrimitives.primary500,
@@ -666,6 +672,7 @@ class VelaColors extends ThemeExtension<VelaColors> {
     iconSelected: VelaPrimitives.primary400,
     iconDisabled: VelaPrimitives.grey700,
     iconOnBrand: VelaPrimitives.white,
+    brandMark: VelaPrimitives.white,
     btnPrimaryBg: VelaPrimitives.primary500,
     btnPrimaryHoverBg: VelaPrimitives.primary450,
     btnPrimaryBorder: VelaPrimitives.primary500,
@@ -791,6 +798,7 @@ class VelaColors extends ThemeExtension<VelaColors> {
     Color? iconSelected,
     Color? iconDisabled,
     Color? iconOnBrand,
+    Color? brandMark,
     Color? btnPrimaryBg,
     Color? btnPrimaryHoverBg,
     Color? btnPrimaryBorder,
@@ -914,6 +922,7 @@ class VelaColors extends ThemeExtension<VelaColors> {
       iconSelected: iconSelected ?? this.iconSelected,
       iconDisabled: iconDisabled ?? this.iconDisabled,
       iconOnBrand: iconOnBrand ?? this.iconOnBrand,
+      brandMark: brandMark ?? this.brandMark,
       btnPrimaryBg: btnPrimaryBg ?? this.btnPrimaryBg,
       btnPrimaryHoverBg: btnPrimaryHoverBg ?? this.btnPrimaryHoverBg,
       btnPrimaryBorder: btnPrimaryBorder ?? this.btnPrimaryBorder,
@@ -1042,6 +1051,7 @@ class VelaColors extends ThemeExtension<VelaColors> {
       iconSelected: Color.lerp(iconSelected, other.iconSelected, t)!,
       iconDisabled: Color.lerp(iconDisabled, other.iconDisabled, t)!,
       iconOnBrand: Color.lerp(iconOnBrand, other.iconOnBrand, t)!,
+      brandMark: Color.lerp(brandMark, other.brandMark, t)!,
       btnPrimaryBg: Color.lerp(btnPrimaryBg, other.btnPrimaryBg, t)!,
       btnPrimaryHoverBg: Color.lerp(btnPrimaryHoverBg, other.btnPrimaryHoverBg, t)!,
       btnPrimaryBorder: Color.lerp(btnPrimaryBorder, other.btnPrimaryBorder, t)!,

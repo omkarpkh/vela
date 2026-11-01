@@ -38,6 +38,24 @@
         }
       }
     },
+    "black-pure": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0,
+          0,
+          0
+        ],
+        "hex": "#000000"
+      },
+      "$description": "Primitive. Do not bind directly — bind a semantic token. Pure black, for another company's mark only (--vela-brand-mark): the owners' files are black, and GitHub asks for the highest-contrast option. Vela's own black is `black`, #191d1f.",
+      "$extensions": {
+        "com.omkarux.vela": {
+          "figma": "black-pure"
+        }
+      }
+    },
     "grey-50": {
       "$type": "color",
       "$value": {
@@ -1302,6 +1320,16 @@
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "icon/on-brand"
+        }
+      }
+    },
+    "brand-mark": {
+      "$type": "color",
+      "$value": "{primitives.black-pure}",
+      "$description": "Brand Mark's fill: the owner's own black in the light theme and white in the dark (guidelines/components/brand-mark.md). The svg fills with currentColor and .vela-brand-mark sets color to this, so forced colours still win. Never a grey, a status colour or an owner's brand colour, and bound by Brand Mark only.",
+      "$extensions": {
+        "com.omkarux.vela": {
+          "figma": "brand-mark/fill"
         }
       }
     },

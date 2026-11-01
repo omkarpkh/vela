@@ -58,12 +58,70 @@ test('the Button page locks what the types forbid, says why, and offers the lega
 test('navigation reaches every component and each page lists its tokens', async ({ page }) => {
   await page.goto('/')
   const nav = page.getByRole('navigation', { name: 'Site' })
-  for (const name of ['Button', 'Toggle', 'Input', 'Text Area', 'Contextual Alert', 'Status Indicator', 'Risk Pill', 'Tabs', 'Icon', 'Checkbox', 'Radio Group', 'Table', 'Popover', 'Tooltip', 'Dialog', 'Toast', 'Dropdown List']) {
+  for (const name of ['Button', 'Toggle', 'Input', 'Text Area', 'Contextual Alert', 'Status Indicator', 'Risk Pill', 'Tabs', 'Icon', 'Checkbox', 'Radio Group', 'Table', 'Popover', 'Tooltip', 'Dialog', 'Toast', 'Dropdown List', 'Brand Mark']) {
     // A lifecycle tag is part of the link's name ("Popover Experimental"); Approved has none.
     await nav.getByRole('link', { name: new RegExp(`^${name}( (Experimental|Known bugs|Retired))?$`) }).click()
     await expect(page.getByRole('heading', { level: 1, name })).toBeVisible()
     await expect(page.getByRole('tab', { name: /^Tokens/ })).not.toHaveText(/Tokens\s*0$/)
   }
+})
+
+// [[rule: brand-mark-never-moves]]
+// The browser half of the rule; the css half is css:check's brand-mark-still. With motion allowed,
+// every mark on the page and everything inside it computes to no transform, no animation and no
+// transition, has no running animation, and stays where it is under a hover and a press. The
+// Figma lock is here too: Figma's mark is large only (brand-mark-closed).
+test('the Brand Mark page: no mark ever moves, and Figma is large only', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  await page.goto('/#/components/brand-mark')
+  await expect(page.getByRole('heading', { level: 1, name: 'Brand Mark' })).toBeVisible()
+  const marks = page.locator('.pg-frame-body .vela-brand-mark')
+  const still = async () => {
+    const n = await marks.count()
+    expect(n).toBeGreaterThanOrEqual(4)
+    for (let i = 0; i < n; i++) {
+      const found = await marks.nth(i).evaluate((mark) => [mark, ...mark.querySelectorAll('*')].map((el) => {
+        const cs = getComputedStyle(el)
+        return {
+          transform: cs.transform, translate: cs.translate, scale: cs.scale, rotate: cs.rotate,
+          animation: cs.animationName, transition: cs.transitionDuration.split(',').every((d) => parseFloat(d) === 0),
+          running: el.getAnimations().length,
+        }
+      }))
+      for (const f of found) expect(f).toEqual({ transform: 'none', translate: 'none', scale: 'none', rotate: 'none', animation: 'none', transition: true, running: 0 })
+    }
+  }
+  await still()
+
+  // The owners' drawings at their sizes: GitHub at 16 and 20, Figma at 20, each a square.
+  const boxes = await page.locator('.pg-frame[data-theme="light"] .pg-brand-mark__set .vela-brand-mark').evaluateAll((els) => els.map((el) => { const r = el.getBoundingClientRect(); return [r.width, r.height] }))
+  expect(boxes).toEqual([[16, 16], [20, 20], [20, 20]])
+
+  // A hover and a press on the mark move nothing.
+  const lead = page.locator('.pg-frame[data-theme="light"] .pg-brand-mark__lead .vela-brand-mark')
+  const before = await lead.boundingBox()
+  await lead.hover()
+  await page.mouse.down()
+  expect(await lead.boundingBox()).toEqual(before)
+  await still()
+  await page.mouse.up()
+
+  // Figma: the lead mark is Figma's own drawing, and regular is locked with its reason and its move.
+  const props = page.getByRole('complementary', { name: 'Controls' })
+  await choose(props, 'name', 'figma')
+  await expect(page.locator('.pg-code')).toContainText('<BrandMark name="figma" label="Figma" />')
+  await expect(lead).toHaveAttribute('viewBox', '212 340 600 600')
+  const regular = props.getByRole('group', { name: 'size' }).getByRole('button', { name: 'regular' })
+  await expect(regular).toHaveAttribute('aria-disabled', 'true')
+  await expect(regular).toHaveAccessibleDescription("Figma's mark is large only.")
+  await still()
+
+  // Decorative: hidden, and named by the words beside it.
+  await props.getByRole('switch', { name: 'decorative' }).click()
+  await expect(page.locator('.pg-code')).toContainText('<BrandMark name="figma" decorative />')
+  await expect(lead).toHaveAttribute('aria-hidden', 'true')
+  await expect(page.locator('.pg-frame[data-theme="light"] .pg-brand-mark__lead')).toContainText('Vela in Figma')
+  await still()
 })
 
 // [[rule: text-area-never-resizes-horizontally]]

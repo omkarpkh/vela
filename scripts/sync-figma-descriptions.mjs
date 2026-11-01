@@ -49,6 +49,8 @@ export const SETS = {
   'risk-pill.md': { set: 'Risk Pill', src: 'RiskPill', state: 'published', node: '127:14', export: 'RiskPill' },
   'tabs.md': { set: 'Tab', src: 'Tabs', state: 'published', node: '11:20', export: 'Tabs.Trigger' },
   'icon.md': { set: 'Icon', src: 'Icon', state: 'published', node: '131:324', export: 'Icon' },
+  // No set yet (1 Nov 2026): scripts/figma/components/brand-mark.figma.js is written and has not been run.
+  'brand-mark.md': { set: 'Brand Mark', src: 'BrandMark', state: 'none', node: null, export: 'BrandMark' },
   'checkbox.md': { set: 'Checkbox', src: 'Checkbox', entry: 'headless', state: 'published', node: '128:50', export: 'Checkbox' },
   'radio-group.md': { set: 'Radio', src: 'RadioGroup', entry: 'headless', state: 'published', node: '128:64', export: 'RadioGroup.Radio' },
   // A component built from several sets (scripts/figma/components/table.figma.js declares three)

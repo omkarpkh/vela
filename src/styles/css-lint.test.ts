@@ -13,7 +13,7 @@ describe('component CSS binds tokens', () => {
 
   it('lints every component stylesheet', () => {
     expect(report.map((r) => r.file).sort()).toEqual([
-      ...['Button', 'ContextualAlert', 'Icon', 'Input', 'RiskPill', 'StatusIndicator', 'Table', 'Tabs', 'TextArea', 'Toggle'].map((c) => `src/components/${c}/${c}.css`),
+      ...['BrandMark', 'Button', 'ContextualAlert', 'Icon', 'Input', 'RiskPill', 'StatusIndicator', 'Table', 'Tabs', 'TextArea', 'Toggle'].map((c) => `src/components/${c}/${c}.css`),
       // The headless-born components keep their stylesheets beside their implementation.
       ...['Checkbox', 'Dialog', 'DropdownList', 'Popover', 'RadioGroup', 'Toast', 'Tooltip'].map((c) => `src/headless/${c}/${c}.css`),
     ])
@@ -179,6 +179,22 @@ describe('the CSS checker', () => {
     // The check keys on the flag; a stylesheet that never styles it is not asked.
     expect(tap('.b:active { transform: scale(0.97); }')).toEqual([])
     expect(lintCss('.b[data-vela-pressed] { transform: scale(0.97); } /* vela-allow: no */').findings.map((f) => f.waived)).toEqual([false])
+  })
+
+  // The css half of brand-mark-never-moves; the computed-style half is in tests/e2e/playground.spec.ts.
+  it('fails any transition, animation or transform on a Brand Mark or inside it, even `none`, and no waiver reaches it', () => {
+    const still = (css: string) => rules(css).filter((r) => r.startsWith('brand-mark-still'))
+    expect(still('.vela-brand-mark { transition: color 120ms; }')).toEqual(['brand-mark-still:transition'])
+    expect(still('.vela-brand-mark--large { animation: pulse 1s; }')).toEqual(['brand-mark-still:animation'])
+    expect(still('.vela-brand-mark path { transform: none; }')).toEqual(['brand-mark-still:transform'])
+    expect(still('.vela-icon-button:active > .vela-brand-mark { scale: 0.97; }')).toEqual(['brand-mark-still:scale'])
+    expect(still('@media (hover: hover) { .host:hover .vela-brand-mark { translate: 0 -1px; } }')).toEqual(['brand-mark-still:translate'])
+    expect(still('.a, .vela-brand-mark { transition-duration: 0s; }')).toEqual(['brand-mark-still:transition-duration'])
+    // Its box, its colour and its neighbours are not motion.
+    expect(still('.vela-brand-mark { width: var(--vela-icon-size); fill: currentColor; }')).toEqual([])
+    expect(still('.vela-brand-mark + .label { transform: scale(0.97); }')).toEqual([])
+    expect(still('.vela-brand-marks, :not(.vela-brand-mark) { transform: scale(0.97); }')).toEqual([])
+    expect(lintCss('.vela-brand-mark { transform: none; } /* vela-allow: just this once */').findings.map((f) => f.waived)).toEqual([false])
   })
 
   it('honours an inline waiver with a reason, reports it, and rejects one without', () => {

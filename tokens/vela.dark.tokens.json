@@ -57,6 +57,9 @@
     "text-heading": {
       "$value": "{primitives.grey-50}"
     },
+    "brand-mark": {
+      "$value": "{primitives.white}"
+    },
     "text-de-emphasized": {
       "$value": "{primitives.grey-500}"
     },

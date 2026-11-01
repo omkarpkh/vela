@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react'
-import { Button, Toggle, Input, TextArea, ContextualAlert, StatusIndicator, RiskPill, Tabs, Icon, ICON_NAMES, Table } from '../../src'
-import type { Severity, Status, Risk, IconName, IconSize, IconTone, TableSortDirection } from '../../src'
+import { Button, Toggle, Input, TextArea, ContextualAlert, StatusIndicator, RiskPill, Tabs, Icon, ICON_NAMES, Table, BrandMark } from '../../src'
+import type { Severity, Status, Risk, IconName, IconSize, IconTone, TableSortDirection, BrandMarkName, BrandMarkProps, BrandMarkSize } from '../../src'
 import { Tabs as HeadlessTabs, Checkbox, RadioGroup, Popover, Tooltip, Dialog, ToastProvider, useToast, DropdownList } from '../../src/headless'
 import type { ToastLimit, ToastPlacement, ToastSeverity, DropdownListAlign, DropdownListItem } from '../../src/headless'
 import { PlusIcon } from '../../src/lib/icons'
@@ -759,5 +759,52 @@ toast.add({ ${opts} })`
         value: 'view',
         onValueChange: 'setView',
       }),
+  },
+  // Brand Mark: another company's own drawing, to link to its service. Figma's mark is large only
+  // (brand-mark-closed), so Figma locks regular and regular locks Figma, each with the move that
+  // gets there. `decorative` is a switch here; on, the mark is named by the words beside it, as it
+  // will be by Icon Button's label, and `label` changes nothing, so it is not printed.
+  {
+    ...catalogEntry('brand-mark'),
+    // An empty label is the seed on purpose: the stage then names the mark for its own service, so
+    // switching to Figma never leaves a Figma mark called "GitHub". A typed label wins.
+    seed: { name: 'github', label: '', decorative: false },
+    extra: [{ prop: 'decorative', kind: 'boolean', type: 'true', default: false, notes: 'On: the mark sits inside a control that carries the name, and is hidden from assistive technology.' }],
+    explain: {
+      decorative: '`decorative` is for a mark inside a control that already has a name, such as a link called "Vela on GitHub". Without it, the mark needs its own `label`.',
+    },
+    locks: (v) => {
+      const out: Record<string, Record<string, Lock>> = {}
+      const FIGMA = { reason: "Figma's mark is large only.", rule: 'brand-mark-closed' }
+      if (v.name === 'figma') out.size = { regular: { heading: 'regular needs github', ...FIGMA, keep: 'Keep figma', moves: [{ label: 'Use github, regular', patch: { name: 'github', size: 'regular' } }] } }
+      if (v.size === 'regular') out.name = { figma: { heading: 'figma needs large', ...FIGMA, keep: 'Keep regular', moves: [{ label: 'Use figma, large', patch: { name: 'figma', size: 'large' } }] } }
+      return out
+    },
+    highlight: (v) => (t) =>
+      t === ((str(v.size) || 'large') === 'regular' ? '--vela-icon-size' : '--vela-icon-size-large') || t === '--vela-brand-mark',
+    render: (v) => {
+      const name = (str(v.name) || 'github') as BrandMarkName
+      const size = (name === 'figma' ? 'large' : str(v.size) || 'large') as BrandMarkSize
+      const word = name === 'github' ? 'GitHub' : 'Figma'
+      const props = { name, size, ...(bool(v.decorative) ? { decorative: true } : { label: str(v.label).trim() || word }) } as BrandMarkProps
+      return (
+        <div className="pg-brand-mark">
+          <p className="vela-body pg-brand-mark__lead">
+            <BrandMark {...props} />
+            {bool(v.decorative) && <span>Vela {name === 'github' ? 'on' : 'in'} {word}</span>}
+          </p>
+          <ul className="pg-brand-mark__set" aria-label="Every mark at every size it has">
+            {([['github', 'regular'], ['github', 'large'], ['figma', 'large']] as const).map(([n, s]) => (
+              <li key={`${n}-${s}`} className="vela-meta pg-brand-mark__cell">
+                <BrandMark {...({ name: n, size: s, decorative: true } as BrandMarkProps)} />
+                <span>{n}, {s}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )
+    },
+    code: (v, spec) =>
+      printJsx('BrandMark', { name: str(v.name) || 'github', size: v.size, ...(bool(v.decorative) ? { decorative: true } : { label: str(v.label).trim() || (v.name === 'figma' ? 'Figma' : 'GitHub') }) }, defaultsOf(spec)),
   },
 ]

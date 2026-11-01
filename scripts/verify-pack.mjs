@@ -120,7 +120,8 @@ try {
   // -- valid usage must compile --
   mkdirSync(join(app, 'src'), { recursive: true })
   writeFileSync(join(app, 'valid.tsx'), `
-import { Button, Toggle, Input, TextArea, ContextualAlert, StatusIndicator, RiskPill, Tabs, Icon, ICON_NAMES, Table } from '@omkarux/vela'
+import { Button, Toggle, Input, TextArea, ContextualAlert, StatusIndicator, RiskPill, Tabs, Icon, ICON_NAMES, Table, BrandMark } from '@omkarux/vela'
+import type { BrandMarkProps, BrandMarkName, BrandMarkSize } from '@omkarux/vela'
 import type { Severity, Status, Risk, ButtonProps, IconName, TableProps, TableRowProps, TableHeaderCellProps, TableCellProps, TableEmptyProps, TableSort, TableSortDirection } from '@omkarux/vela'
 
 export const A = () => <Button variant="primary" appearance="filled" size="huge">Save Changes</Button>
@@ -154,6 +155,13 @@ export const K2 = () => <Icon name="rotate-ccw-clock" size="large" tone="muted" 
 export const K3 = () => <Button icon={<Icon name="plus" tone="inherit" />}>Add rule</Button>
 export const K4 = (n: IconName) => <Icon name={n} size="small" />
 export const names: readonly IconName[] = ICON_NAMES
+// Brand Mark: the valid control for the seven brand-mark-closed rejections below. Every shape the
+// spec allows compiles, so each rejection is for the rule it names and not for a broken import.
+export const BM = () => <BrandMark name="github" label="GitHub" />
+export const BM2 = () => <a href="https://github.com/omkarpkh/vela" aria-label="Vela on GitHub"><BrandMark name="github" size="regular" decorative /></a>
+export const BM3 = () => <BrandMark name="figma" size="large" decorative />
+export const BM4 = () => <BrandMark name="figma" label="Figma" />
+export const bm: [BrandMarkProps, BrandMarkName, BrandMarkSize] = [{ name: 'github', size: 'large', decorative: true }, 'figma', 'regular']
 // Table: every documented shape compiles, so the table fixtures are rejected for the right reason.
 export const T = (direction: TableSortDirection, isNumeric: boolean) => (
   <Table caption="Assets" captionHidden density="compact" layout="fixed" stickyHeader className="t">
@@ -486,6 +494,14 @@ export const shapes: [Fields, FieldSpec, FieldTrust, Group<F>, Node<F>, Conditio
     ['icon-tone-closed-set', 'risk used as an icon tone', `<Icon name="shield-alert" tone="high" />`],
     ['icon-not-interactive', 'icon with a click handler', `<Icon name="x" onClick={() => {}} />`],
     ['icon-not-interactive', 'icon in the tab order', `<Icon name="copy" tabIndex={0} />`],
+    // Brand Mark: seven rejections, each valid apart from the one thing it names (BM to BM4 above compile).
+    ['brand-mark-closed', 'a third brand mark', `<BrandMark name="npm" label="npm" />`],
+    ['brand-mark-closed', 'figma at regular size', `<BrandMark name="figma" size="regular" decorative />`],
+    ['brand-mark-closed', 'brand mark with neither label nor decorative', `<BrandMark name="github" />`],
+    ['brand-mark-closed', 'brand mark with both label and decorative', `<BrandMark name="github" label="GitHub" decorative />`],
+    ['brand-mark-closed', 'brand mark recoloured with a tone', `<BrandMark name="github" label="GitHub" tone="muted" />`],
+    ['brand-mark-closed', 'brand mark with a className', `<BrandMark name="github" label="GitHub" className="logo" />`],
+    ['brand-mark-closed', 'brand mark with a style', `<BrandMark name="github" label="GitHub" style={{ color: "#181717" }} />`],
     ['table-caption-required', 'table with no caption', `<Table><Table.Body><Table.Empty colSpan={1}>None</Table.Empty></Table.Body></Table>`],
     ['table-caption-required', 'table caption as a node', `<Table caption={<b>Assets</b>}><Table.Body><Table.Empty colSpan={1}>None</Table.Empty></Table.Body></Table>`],
     ['table-density-closed', 'size word used as a table density', `<Table caption="Assets" density="regular"><Table.Body><Table.Empty colSpan={1}>None</Table.Empty></Table.Body></Table>`],
@@ -581,7 +597,7 @@ export const shapes: [Fields, FieldSpec, FieldTrust, Group<F>, Node<F>, Conditio
   ]
   for (const [id, name, snippet] of violations) {
     writeFileSync(join(app, 'invalid.tsx'),
-      `import { Button, ContextualAlert, Icon, Input, RiskPill, StatusIndicator, Table, Tabs, TextArea, Toggle } from '@omkarux/vela'\n` +
+      `import { BrandMark, Button, ContextualAlert, Icon, Input, RiskPill, StatusIndicator, Table, Tabs, TextArea, Toggle } from '@omkarux/vela'\n` +
       `import { defineFields, parseQuery, validateQuery, normalise, queryToText, readback, evaluate, leftOutQuery } from '@omkarux/vela'\n` +
       `import { Checkbox, RadioGroup, Popover, Tooltip, Dialog, ToastProvider, useToast, DropdownList } from '@omkarux/vela/headless'\nexport const X = () => (${snippet})\n`)
     let rejected = false

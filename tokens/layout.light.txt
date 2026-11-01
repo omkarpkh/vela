@@ -13,6 +13,7 @@
   /* ---- Primitives: neutral ---- */
   @black
   @white
+  @black-pure
   @grey-50
   @grey-100
   @grey-200
@@ -113,6 +114,9 @@
   @icon-selected
   @icon-disabled
   @icon-on-brand
+
+  /* ---- Semantic: brand mark (another company's own mark; Brand Mark binds it, nothing else) ---- */
+  @brand-mark
 
   /* ---- Semantic: button ---- */
   @btn-primary-bg

@@ -6,6 +6,42 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Unreleased]
 
 ### Added
+- **Brand Mark, a new core component** (`guidelines/components/brand-mark.md`; Omkar said "go" on
+  1 Nov 2026). Another company's own logo, drawn as its owner drew it, used only to link to that
+  company's service, and kept apart from Icon: `<BrandMark name="github" label="GitHub" />`, or
+  `decorative` inside a control that already carries the name. Two names, `github` and `figma`; two
+  sizes on Icon's size tokens, 16px and 20px, Figma at 20px only; no tone, colour, class or style.
+  It is the owner's own black in the light theme and white in the dark, carries no `<title>`, and
+  never moves. Figma's mark keeps clear space equal to its height, 20px, as Figma's Brand Book asks
+  (Omkar chose to follow it as written, so the marks need not wait for Figma's reply). Experimental,
+  with no Figma set yet: `scripts/figma/components/brand-mark.figma.js` is written and passes the
+  builder lint, and has not been run. This is the first of the header's brand icons; Icon Button's
+  `brandMark` glyph and the site header come in later changes.
+  - **The owners' files, checked in unchanged** in `src/brand-marks/`, each with a source note.
+    GitHub: Primer Octicons 19.42.0 `mark-github-16.svg` (MIT), taken from the npm tarball, with
+    its licence text; Octicons is not a dependency. Figma: its own mono-line icon, the file Omkar
+    attached; the 1024 × 1280 canvas is cropped to the mark with the viewBox `212 340 600 600`
+    (the path measures x 304–720.156, y 340–940), and the path and its `evenodd` fill rule are
+    unchanged. `NOTICE` carries both, GitHub's MIT notice in full.
+  - **6 rules, 4 with proofs.** `brand-mark-closed`: one fixture group with seven rejections in
+    `scripts/verify-pack.mjs` (a third name, `size="regular"` on Figma, neither or both of `label`
+    and `decorative`, `tone`, `className`, `style`) beside a valid control that must compile.
+    `brand-mark-owner-drawing` and `brand-mark-named-once`: unit tests, one comparing each
+    rendered path's `d` with the owner's file. `brand-mark-never-moves`: a new `css:check` rule,
+    `brand-mark-still`, that fails any `transition`, `animation` or `transform` on
+    `.vela-brand-mark` or inside it and can't be waived, and a computed-style check on the Brand
+    Mark page. Two conventions, for a reviewer: the highest-contrast colour, and only to link to
+    its owner.
+  - **Two new tokens and two new contrast pairs.** `--vela-brand-mark` (Figma `brand-mark/fill`): the
+    new primitive `--vela-black-pure` (#000000) in light, because Vela's `--vela-black` is #191d1f,
+    and `--vela-white` in dark. The svg still fills with `currentColor`, and `.vela-brand-mark` sets
+    `color` to the token, so forced colours still win. "Brand mark on page" (`--vela-bg-global`, also
+    the site header's background) 21.00:1 light, 18.08:1 dark; "Brand mark on container" 18.62:1,
+    16.13:1. css:check now counts `--vela-black-pure` as a primitive, so no stylesheet binds it.
+  - A playground page (group Data), with Figma's regular size and regular's Figma locked, each with
+    the move that gets there. Not on All states, so no visual baseline moves.
+    231 rules across 19 specs (was 225), 74 compiler-enforced (was 73). 1429 checks (was 1400):
+    1150 unit and contract (was 1124), 204 e2e (was 203); 109 contrast pairs (was 107).
 - **Filter Grammar, the first contract: a new area, `guidelines/contracts/`, and `src/grammar/` in
   the core entry** (`guidelines/contracts/filter-grammar.md`, approved by Omkar on 1 Nov 2026). One
   way to say "these records, and not the others" for every surface that filters. A host declares

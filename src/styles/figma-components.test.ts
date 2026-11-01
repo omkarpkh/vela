@@ -18,7 +18,7 @@ const cli = (...args: string[]) => {
 const lintReport: Record<string, { problems: { rule: string; node: string; what: string; waived: boolean }[]; allow: { rule: string; reason: string }[] }> = JSON.parse(cli('--lint'))
 const dump = (name: string, set?: string) => JSON.parse(set ? cli('--dump', name, `--set=${set}`) : cli('--dump', name))
 const styles: any[] = JSON.parse(execFileSync('node', ['scripts/figma/text-styles.mjs', '--json'], { cwd: root, encoding: 'utf8' }))
-const BUILDERS = ['button', 'checkbox', 'contextual-alert', 'dialog', 'dropdown-list', 'icon', 'input', 'popover', 'radio-group', 'risk-pill', 'status-indicator', 'table', 'tabs', 'text-area', 'toast', 'toggle', 'tooltip']
+const BUILDERS = ['brand-mark', 'button', 'checkbox', 'contextual-alert', 'dialog', 'dropdown-list', 'icon', 'input', 'popover', 'radio-group', 'risk-pill', 'status-indicator', 'table', 'tabs', 'text-area', 'toast', 'toggle', 'tooltip']
 // Extensions (<builder>.<id>.extend.figma.js) are reported under `<builder>.<id>`.
 const EXTENSIONS = ['dropdown-list.usage-locked', 'tabs.seed-hover']
 const tmp = () => mkdtempSync(join(tmpdir(), 'vela-figma-'))
@@ -113,11 +113,13 @@ return { created: SET };
     // geometry on Lucide's 24-unit grid inside a box bound to icon/size — not a layout.
     const waiving = Object.entries(lintReport).filter(([, r]) => r.allow.length).map(([n]) => n).sort()
     // tabs.seed-hover (R33): the Seed is a third of its tab, measured, which no variable can hold.
-    expect(waiving).toEqual(['icon', 'status-indicator', 'tabs.seed-hover', 'toggle'])
+    // brand-mark (1 Nov 2026): the same two waivers as icon, for the owners' drawn geometry in a token-bound box.
+    expect(waiving).toEqual(['brand-mark', 'icon', 'status-indicator', 'tabs.seed-hover', 'toggle'])
     expect(lintReport['tabs.seed-hover'].allow.map((a) => a.rule)).toEqual(['raw-size'])
     expect(lintReport['tabs.seed-hover'].problems.map((p) => p.node).sort()).toEqual(['Seed', 'Seed', 'Soft ends', 'Soft ends'].map((n, i) => `State=hover, Size=${i % 2 ? 'large' : 'default'} › ${n}`).sort())
     expect(lintReport.tabs.allow).toEqual([])
     expect(lintReport.icon.allow.map((a) => a.rule).sort()).toEqual(['absolute-children', 'raw-size'])
+    expect(lintReport['brand-mark'].allow.map((a) => a.rule).sort()).toEqual(['absolute-children', 'raw-size'])
   })
 })
 
@@ -240,6 +242,35 @@ describe('Icon, as the builder creates it', () => {
   it('stays under the 50 KB the MCP accepts as one script', async () => {
     const { generate } = await import('../../scripts/figma/build-components.mjs')
     expect(Buffer.byteLength(generate('icon'))).toBeLessThan(50 * 1024)
+  })
+})
+
+describe('Brand Mark, as the builder creates it', () => {
+  const mark = dump('brand-mark')
+  const builder = readFileSync(resolve(root, 'scripts/figma/components/brand-mark.figma.js'), 'utf8')
+  const pathsIn = (svg: string) => [...svg.matchAll(/<path\b[^>]*\sd="([^"]+)"/g)].map((m) => m[1])
+  const owner = (f: string) => readFileSync(resolve(root, 'src/brand-marks', f), 'utf8')
+
+  it('has three variants, Figma at Large only, and no other property', () => {
+    expect(mark.variants.map((v: any) => v.n)).toEqual(['Name=GitHub, Size=Regular', 'Name=GitHub, Size=Large', 'Name=Figma, Size=Large'])
+    expect(Object.keys(mark.defs).sort()).toEqual(['Name', 'Size'])
+  })
+
+  it("binds each box to Icon's size variable and fills one flattened vector with brand-mark/fill, no stroke", () => {
+    for (const v of mark.variants) {
+      const [name, size] = v.n.split(', ').map((p: string) => p.split('=')[1])
+      const box = size === 'Regular' ? 'icon/size' : 'icon/size-large'
+      expect(v.wh.slice(2)).toEqual([box, box])
+      expect([v.fill, v.stroke]).toEqual([[], []])
+      expect(v.ch).toHaveLength(1)
+      expect(v.ch[0]).toMatchObject({ t: 'VECTOR', n: `Mark / ${name}`, fill: ['brand-mark/fill'], stroke: [] })
+    }
+  })
+
+  it("draws the owners' paths, unchanged: the same d as the checked-in files, and Figma's evenodd rule", () => {
+    expect(pathsIn(builder)).toEqual([...pathsIn(owner('github/mark-github-16.svg')), ...pathsIn(owner('figma/figma-mono-line-black.svg'))])
+    expect(builder).toContain("viewBox: '0 0 16 16'")
+    expect(builder).toContain("viewBox: '212 340 600 600', path: '<path fill-rule=\"evenodd\" d=")
   })
 })
 

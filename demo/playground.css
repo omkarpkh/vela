@@ -153,6 +153,12 @@
   gap: var(--vela-space-5) var(--vela-space-10); }
 .pg-icon__cell { display: flex; align-items: center; gap: var(--vela-space-5); min-width: 0; color: var(--vela-text-de-emphasized); }
 .pg-icon__name { overflow-wrap: anywhere; }
+/* Brand Mark: the mark sets its own colour (--vela-brand-mark), so nothing here colours it; the set row
+   shows every mark at every size it has. Nothing here moves the mark (css:check, brand-mark-still). */
+.pg-brand-mark { display: flex; flex-direction: column; gap: var(--vela-space-15); min-width: 0; }
+.pg-brand-mark__lead { display: inline-flex; align-items: center; gap: var(--vela-space-5); margin: 0; color: var(--vela-text-heading); }
+.pg-brand-mark__set { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--vela-space-15); }
+.pg-brand-mark__cell { display: flex; align-items: center; gap: var(--vela-space-5); color: var(--vela-text-de-emphasized); }
 
 /* Table (Phase 1): the bounded height is the host's half of stickyHeader; the region fills it and
    scrolls, and the header pins to its top. */

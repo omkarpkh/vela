@@ -13,6 +13,7 @@
   /* ---- Primitives: neutral ---- */
   --vela-black: #191d1f;
   --vela-white: #ffffff;
+  --vela-black-pure: #000000;
   --vela-grey-50: #f7f9f9;
   --vela-grey-100: #eef2f2;
   --vela-grey-200: #dde3e4;
@@ -113,6 +114,9 @@
   --vela-icon-selected: var(--vela-primary-500);
   --vela-icon-disabled: var(--vela-grey-300);
   --vela-icon-on-brand: var(--vela-white);
+
+  /* ---- Semantic: brand mark (another company's own mark; Brand Mark binds it, nothing else) ---- */
+  --vela-brand-mark: var(--vela-black-pure);
 
   /* ---- Semantic: button ---- */
   --vela-btn-primary-bg: var(--vela-primary-500);

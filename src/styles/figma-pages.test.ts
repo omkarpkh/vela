@@ -173,9 +173,9 @@ describe('the Status page', () => {
   })
 
   it('has one row per registered component, in registry order, each with its spec\'s label', () => {
-    expect(rows.map((r) => r.n)).toEqual(['Button', 'Toggle', 'Input', 'Text Area', 'Contextual Alert', 'Status Indicator', 'Risk Pill', 'Tabs', 'Icon', 'Checkbox', 'Radio Group', 'Table', 'Popover', 'Tooltip', 'Dialog', 'Toast', 'Dropdown List'])
+    expect(rows.map((r) => r.n)).toEqual(['Button', 'Toggle', 'Input', 'Text Area', 'Contextual Alert', 'Status Indicator', 'Risk Pill', 'Tabs', 'Icon', 'Checkbox', 'Radio Group', 'Table', 'Popover', 'Tooltip', 'Dialog', 'Toast', 'Dropdown List', 'Brand Mark'])
     expect(rows.filter((r) => label(r) === 'Approved').map((r) => r.n)).toEqual(['Button', 'Toggle', 'Input', 'Contextual Alert', 'Status Indicator', 'Risk Pill', 'Tabs'])
-    for (const n of ['Text Area', 'Icon', 'Checkbox', 'Radio Group', 'Table', 'Popover', 'Tooltip', 'Dialog', 'Toast', 'Dropdown List']) expect(label(rows.find((r) => r.n === n)!), n).toBe('Experimental')
+    for (const n of ['Text Area', 'Icon', 'Checkbox', 'Radio Group', 'Table', 'Popover', 'Tooltip', 'Dialog', 'Toast', 'Dropdown List', 'Brand Mark']) expect(label(rows.find((r) => r.n === n)!), n).toBe('Experimental')
   })
 
   it('names the headless entry point for a component born there', () => {
@@ -218,10 +218,15 @@ describe('the Status page', () => {
     const [, dset, dexp, dsince, dspec] = cells('Dropdown List')
     expect([dset.chars, dexp.chars, dsince.chars]).toEqual(['Dropdown List item · page Dropdown List', 'DropdownList · @omkarux/vela/headless', '0.14.0'])
     expect(dspec.chars).toBe(onMain('guidelines/components/dropdown-list.md') ? 'dropdown-list.md' : 'dropdown-list.md (branch)')
+    // Brand Mark (1 Nov 2026) has no set yet; its builder is written. It is core, not yet released,
+    // and its spec reads "(branch)" until it is on main.
+    const [, mset, mexp, msince, mspec] = cells('Brand Mark')
+    expect([mset.chars, mexp.chars, msince.chars]).toEqual(['None yet — the builder is ready (brand-mark.figma.js)', 'BrandMark · @omkarux/vela', 'Unreleased'])
+    expect(mspec.chars).toBe(onMain('guidelines/components/brand-mark.md') ? 'brand-mark.md' : 'brand-mark.md (branch)')
     // No set is left built-but-unpublished.
     for (const r of rows) expect(cells(r.n)[1].chars, r.n).not.toBe('Built, not published')
     // Every other spec is on main, so no other row shows "(branch)".
-    for (const r of rows.filter((x) => x.n !== 'Dropdown List')) expect(cells(r.n)[4].chars, r.n).not.toContain('(branch)')
+    for (const r of rows.filter((x) => x.n !== 'Dropdown List' && x.n !== 'Brand Mark')) expect(cells(r.n)[4].chars, r.n).not.toContain('(branch)')
   })
 })
 
