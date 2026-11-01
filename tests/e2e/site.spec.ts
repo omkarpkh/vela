@@ -2656,3 +2656,135 @@ test.describe('uplift slice 6 · foundations, the Overview and the overlays', ()
     }
   })
 })
+
+test.describe('uplift slice 7 · the deferrals', () => {
+  /** The still's image inside a scope, once it has loaded. */
+  const loadedStill = async (scope: Locator) => {
+    const img = scope.locator('picture.shell-still img')
+    await img.scrollIntoViewIfNeeded()
+    await expect.poll(() => img.evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth > 0)).toBe(true)
+    return img
+  }
+
+  test('a component tab\'s Next card shows the component\'s still: AVIF first, a PNG fallback, empty alt, lazy, in the page\'s theme', async ({ page }) => {
+    await page.goto('/#/components/button/rules')
+    const card = page.locator('.pg-next')
+    await expect(card).toHaveAccessibleName(/Tokens: what Button is made of/)
+    const img = await loadedStill(card)
+    await expect(img).toHaveAttribute('alt', '')
+    await expect(img).toHaveAttribute('loading', 'lazy')
+    await expect(img).toHaveAttribute('src', /stills\/button-light\.png$/)
+    await expect(card.locator('picture source')).toHaveAttribute('type', 'image/avif')
+    await expect(card.locator('picture source')).toHaveAttribute('srcset', /stills\/button-light@2x\.avif 2x$/)
+    // The browser takes the AVIF, and draws it at its own size, never scaled.
+    expect(await img.evaluate((i: HTMLImageElement) => i.currentSrc)).toMatch(/button-light@2x\.avif$/)
+    expect(await img.evaluate((i) => [i.clientWidth, i.clientHeight])).toEqual([200, 120])
+    await setTheme(page, 'Dark')
+    await expect(img).toHaveAttribute('src', /stills\/button-dark\.png$/)
+    await expect.poll(() => img.evaluate((i: HTMLImageElement) => i.currentSrc)).toMatch(/button-dark@2x\.avif$/)
+  })
+
+  test('"Where it sits" shows a still for each built part, and none for a proposal', async ({ page }) => {
+    await page.goto('/#/proposals/evidence-locker')
+    const map = page.locator('.prop-map')
+    await expect(map).toBeVisible()
+    for (const name of ['Table', 'Button', 'Popover']) {
+      const box = map.getByRole('link', { name: new RegExp(`^${name}`) })
+      await expect(box.locator('picture.shell-still'), name).toHaveCount(1)
+      await expect(box.locator('.prop-part__still'), name).toHaveAttribute('aria-hidden', 'true')
+      await loadedStill(box)
+    }
+    for (const name of ['Calibrated Confidence Gate', 'Verdict Card', 'Action Impact Card']) {
+      await expect(map.getByRole('link', { name: new RegExp(`^${name}`) }).locator('picture, img'), name).toHaveCount(0)
+    }
+    // This page and a part not in the kit have none either; nor do the proposal Next cards.
+    await expect(map.locator('.prop-part--self img, .prop-part--missing img')).toHaveCount(0)
+    await expect(page.locator('.proposal__next img')).toHaveCount(0)
+  })
+
+  test('the Playground tab has Props, States and Keyboard from the spec, and an index that jumps to each', async ({ page }) => {
+    await page.goto('/#/components/tabs')
+    const index = page.getByRole('navigation', { name: 'On this tab' })
+    await expect(index.getByRole('link')).toHaveText(['Stage', 'Use it', 'Props 9', 'States 6', 'Keyboard'])
+    await index.getByRole('link', { name: 'Props 9' }).click()
+    await expect(page.getByRole('heading', { level: 2, name: 'Props', exact: true })).toBeFocused()
+    await expect(page).toHaveURL(/section=props/)
+    await expect(index.getByRole('link', { name: 'Props 9' })).toHaveAttribute('aria-current', 'location')
+    await expect(page.locator('.pg-spec__section', { has: page.locator('#section-props') }).getByRole('row')).toHaveCount(10)
+    await index.getByRole('link', { name: 'Keyboard' }).click()
+    await expect(page.getByRole('heading', { level: 2, name: 'Keyboard' })).toBeFocused()
+    await expect(page.locator('#section-keyboard + *')).toContainText('Roving tabindex')
+    // A spec with three sections or fewer: no index.
+    await page.goto('/#/components/status-indicator')
+    await expect(page.getByRole('heading', { level: 2, name: 'Props', exact: true })).toBeVisible()
+    await expect(page.getByRole('navigation', { name: 'On this tab' })).toHaveCount(0)
+  })
+
+  test('Width: Full, 480 and 320 as segments, the slider beside them; a width between marks none', async ({ page }) => {
+    await page.goto('/#/components/tabs')
+    const presets = page.getByRole('group', { name: 'Width' })
+    await expect(presets.getByRole('button')).toHaveText(['Full', '480', '320'])
+    await expect(presets.getByRole('button', { name: 'Full' })).toHaveAttribute('aria-current', 'true')
+    const body = page.locator('.pg-frame-body').first()
+    const field = page.getByRole('spinbutton', { name: 'Container width' })
+    await presets.getByRole('button', { name: '480' }).click()
+    await expect(presets.getByRole('button', { name: '480' })).toHaveAttribute('aria-current', 'true')
+    await expect(field).toHaveValue('480')
+    await expect.poll(async () => Math.round((await body.boundingBox())!.width)).toBe(480)
+    await expect(page).toHaveURL(/w=480/)
+    await presets.getByRole('button', { name: '320' }).click()
+    await expect(page.getByRole('slider', { name: 'Container width' })).toHaveValue('320')
+    // The slider is the fine control: one step off a preset marks none of them.
+    await page.getByRole('slider', { name: 'Container width' }).focus()
+    await page.keyboard.press('ArrowRight')
+    await expect(field).toHaveValue('330')
+    await expect(presets.locator('[aria-current="true"]')).toHaveCount(0)
+    await presets.getByRole('button', { name: 'Full' }).click()
+    await expect(page).not.toHaveURL(/w=/)
+    // The slider sits right after the segments, then the field.
+    const order = await page.locator('.pg-width').evaluate((el) => [...el.querySelectorAll('.pg-width__presets, .pg-width__slider, .pg-width__field')].map((e) => e.className.split(' ')[0]))
+    expect(order).toEqual(['shell-segments', 'pg-width__slider', 'pg-width__field'])
+  })
+
+  test('on a phone the stage strip is the one thing that sticks: the page tabs and the index scroll away', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.goto('/#/components/tabs')
+    await expect(page.getByRole('group', { name: 'Width' })).toHaveCount(0)
+    await page.evaluate(() => window.scrollBy(0, 900))
+    const topbar = (await page.locator('.topbar').boundingBox())!
+    await expect.poll(async () => Math.round((await page.locator('.pg-stage-region').boundingBox())!.y)).toBe(Math.round(topbar.y + topbar.height))
+    expect((await page.getByRole('tablist', { name: 'Tabs page' }).boundingBox())!.y).toBeLessThan(0)
+  })
+
+  test('Copy: the three questions as cards under the live demo, then the strip', async ({ page }) => {
+    await page.goto('/#/patterns/copy')
+    const cards = page.getByRole('list', { name: 'Three questions the page answers' })
+    await expect(cards.getByRole('listitem')).toHaveText([
+      'Did it work?A tick, for a moment, where you pressed',
+      'CopiedWhich one did I take?The last one taken keeps the word',
+      'Can I take it again?The mark is always there',
+    ])
+    const strip = page.locator('.copy-facts')
+    await expect(strip.locator('dt')).toHaveText(['You need', "The page can't", 'Status'])
+    await expect(strip.locator('dd').last()).toHaveText('Experimental: the lowest status of its parts.')
+    // In that order: the demo, the cards, the strip, all in the first screen.
+    const y = async (l: Locator) => (await l.boundingBox())!.y
+    const demo = page.getByRole('region', { name: 'Live demo' }).first()
+    expect(await y(demo)).toBeLessThan(await y(cards))
+    expect(await y(cards)).toBeLessThan(await y(strip))
+    expect(await y(strip)).toBeLessThan(900)
+  })
+
+  test('the hero drawings load with the Overview only, never on another page\'s first load', async ({ page }) => {
+    const scripts: string[] = []
+    page.on('response', async (r) => { if (r.url().endsWith('.js')) scripts.push(await r.text().catch(() => '')) })
+    const hero = readFileSync(resolve(process.cwd(), 'brand/vela-hero-96plus.svg'), 'utf8').match(/d="(M[^"]{20})/)![1]
+    await page.goto('/#/components/button')
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Button')
+    await expect(page.locator('.topbar svg.pm--regular')).toBeVisible()
+    expect(scripts.some((s) => s.includes(hero))).toBe(false)
+    await page.goto('/#/')
+    await expect(page.locator('svg.pm--hero')).toBeVisible()
+    expect(scripts.some((s) => s.includes(hero))).toBe(true)
+  })
+})
