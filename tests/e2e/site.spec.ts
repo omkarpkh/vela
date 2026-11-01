@@ -1286,15 +1286,28 @@ test.describe('the Overview', () => {
     const main = page.getByRole('main')
     await expect(main.getByRole('heading', { level: 1 })).toHaveText(['Vela Design System'])
     await expect(page).toHaveTitle('Overview · Vela Design System')
-    await expect(main.getByRole('heading', { level: 2 })).toHaveText(['Check it yourself', 'Built for security products', 'Ways in', /^New in \d+\.\d+\.\d+$/, 'Specified, not built yet'])
+    await expect(main.getByRole('heading', { level: 2 })).toHaveText(['Check it yourself', 'Built for security products', 'Ways in', 'Specified, not built yet', /^New in \d+\.\d+\.\d+$/])
     // All states left the Ways in on 1 Nov 2026 (slice 1 of the playground uplift); it keeps its address.
-    await expect(main.getByRole('heading', { level: 3 })).toHaveText([/^Severity · 6$/, /^Status · 5$/, /^Risk · 3$/, 'Components', 'Patterns', 'Foundations', 'Rules', 'Figma library'])
+    // Slice 6: the three scales are one card, every way in has a picture, and every proposal is a card.
+    await expect(main.getByRole('heading', { level: 3 })).toHaveText([
+      'Severity 6, status 5, risk 3', 'Components', 'Foundations', 'Patterns', 'Rules', 'How it is made', 'Figma library',
+      'Verdict Card', 'Action Impact Card', 'Autonomy Ladder', 'Approval Queue', 'Calibrated Confidence Gate', 'Evidence Locker', 'Agent Provenance Badge', 'Awareness Clock', 'Override & Teach Panel',
+    ])
     await expect(main.locator('a[href="#/states"]')).toHaveCount(0)
     await expect(main.locator('h4, h5, h6')).toHaveCount(0)
-    // Each taxonomy is shown with its own words, never another's.
-    await expect(main.locator('[data-severity]')).toHaveText(['Success', 'Info', 'Warning', 'Minor', 'Major', 'Critical'])
-    await expect(main.locator('.vela-status')).toHaveText(['Status unknown', 'Healthy', 'Warning', 'Degraded', 'Unhealthy'])
-    await expect(main.locator('.vela-risk')).toHaveText(['Low', 'Medium', 'High'])
+    // Each taxonomy is shown with its own words, never another's, in the card's picture.
+    const scales = main.locator('.ov-thumb--scales')
+    await expect(scales.locator('[data-severity]')).toHaveText(['Success', 'Info', 'Warning', 'Minor', 'Major', 'Critical'])
+    await expect(scales.locator('.vela-status')).toHaveText(['Status unknown', 'Healthy', 'Warning', 'Degraded', 'Unhealthy'])
+    await expect(scales.locator('.vela-risk')).toHaveText(['Low', 'Medium', 'High'])
+    // Every card's picture is a picture: inert, hidden from assistive technology, never a tab stop.
+    for (const thumb of await main.locator('.shell-card__thumb').all()) {
+      await expect(thumb).toHaveAttribute('aria-hidden', 'true')
+      await expect(thumb).toHaveAttribute('inert', '')
+    }
+    // The hero's console is a picture too, named by its caption.
+    await expect(main.locator('.ov-console__screen')).toHaveAttribute('inert', '')
+    await expect(main.getByRole('figure', { name: /^A console screen made of Vela/ })).toBeVisible()
   })
 
   test('every link opens what it names', async ({ page }) => {
@@ -1306,7 +1319,8 @@ test.describe('the Overview', () => {
     await expect(link('See package.json')).toHaveAttribute('href', new RegExp(`^https://github\\.com/omkarpkh/vela${sha.source}package\\.json$`))
     await expect(link('See the pairs')).toHaveAttribute('href', new RegExp(`^https://github\\.com/omkarpkh/vela${sha.source}scripts/contrast-core\\.mjs#L\\d+$`))
     const figma = await page.getByRole('banner').getByRole('link', { name: 'Vela in Figma, opens in a new tab', exact: true }).getAttribute('href')
-    await expect(link('Open the Figma library')).toHaveAttribute('href', figma!)
+    // One primary action in the hero (slice 6): the Figma library is a way in, not a second button.
+    await expect(link('Open the Figma library')).toHaveCount(0)
     await expect(link(/^Figma library/)).toHaveAttribute('href', figma!)
     await expect(link('Governance')).toHaveAttribute('href', 'https://github.com/omkarpkh/vela/blob/main/GOVERNANCE.md')
     await expect(link('MIT licence')).toHaveAttribute('href', 'https://github.com/omkarpkh/vela/blob/main/LICENSE')
@@ -1320,10 +1334,12 @@ test.describe('the Overview', () => {
       [/^Patterns/, '#/patterns/copy', 'Copy'],
       [/^Foundations/, '#/foundations/color', 'Colour'],
       [/^Rules Every rule/, '#/components/button/rules', 'Button'],
+      [/^How it is made One token file/, '#/how', 'How it is made'],
+      [/^Severity 6, status 5, risk 3/, '#/foundations/color?section=taxonomies', 'Colour'],
       ['All changes', '#/changelog', 'Changelog'],
       ['Roadmap', '#/roadmap', 'Roadmap'],
       ['Changelog', '#/changelog', 'Changelog'],
-      ['Evidence Locker', '#/proposals/evidence-locker', 'Evidence Locker'],
+      [/^Evidence Locker Everything an agent used/, '#/proposals/evidence-locker', 'Evidence Locker'],
     ]
     for (const [name, to, h1] of opens) {
       await page.goto('/')
@@ -1339,7 +1355,7 @@ test.describe('the Overview', () => {
     await context.grantPermissions(['clipboard-read', 'clipboard-write'])
     await page.goto('/')
     const main = page.getByRole('main')
-    await expect(main.locator('code', { hasText: 'npm install' })).toHaveText('npm install @omkarux/vela')
+    await expect(main.locator('.ov-install__code')).toHaveText('npm install @omkarux/vela')
     await main.getByRole('button', { name: 'Copy install command' }).click()
     await expect(main.getByRole('status').filter({ hasText: 'Copied' })).toHaveText('Copied install command')
     expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('npm install @omkarux/vela')
@@ -1351,21 +1367,24 @@ test.describe('the Overview', () => {
     await page.setViewportSize({ width: 1440, height: 900 })
     await page.goto('/')
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+    const heroAreas = () => page.locator('.ov-hero').evaluate((el) => getComputedStyle(el).gridTemplateAreas)
     expect(await across('.ov-fact'), 'facts: one row').toBe(1)
-    expect(await columns('.ov-cards'), 'security cards').toBe(3)
     expect(await columns('.ov-ways'), 'ways in').toBe(3)
-    expect(await columns('.ov-news'), 'new and specified').toBe(2)
+    expect(await columns('.ov-proposals'), 'proposals').toBe(3)
+    expect(await heroAreas(), 'the console beside the panel').toBe('"mark panel console"')
+    // 1100px: the content column is under 1000, and the console goes under the panel.
+    await page.setViewportSize({ width: 1100, height: 900 })
+    expect(await heroAreas()).toBe('"mark panel" "console console"')
     // 700px: the content column is under 760.
     await page.setViewportSize({ width: 700, height: 900 })
     expect(await across('.ov-fact'), 'facts: three rows of two, then one').toBe(3)
     expect(await page.locator('.ov-fact').last().evaluate((el) => getComputedStyle(el).gridColumnStart)).toBe('1')
-    expect(await columns('.ov-cards')).toBe(1)
     expect(await columns('.ov-ways')).toBe(2)
-    expect(await columns('.ov-news')).toBe(1)
+    expect(await columns('.ov-proposals')).toBe(2)
     // 500px: under 520.
     await page.setViewportSize({ width: 500, height: 900 })
     expect(await columns('.ov-ways')).toBe(1)
-    expect(await page.locator('.ov-hero').evaluate((el) => getComputedStyle(el).flexDirection)).toBe('column')
+    expect(await heroAreas()).toBe('"mark" "panel" "console"')
     for (const width of [320, 390]) {
       await page.setViewportSize({ width, height: 900 })
       expect(await noSidewaysScroll(page), `${width}px`).toBe(true)
@@ -1634,7 +1653,7 @@ test.describe('the Motion review curves', () => {
 })
 
 test.describe('axe', () => {
-  for (const path of ['/#/', '/#/states', '/#/components/button', '/#/components/tabs', '/#/components/dropdown-list', '/#/proposals/evidence-locker', '/#/patterns/copy', '/#/foundations/filter-grammar', '/#/components/brand-mark', '/#/components/icon-button'])
+  for (const path of ['/#/', '/#/states', '/#/components/button', '/#/components/tabs', '/#/components/dropdown-list', '/#/proposals/evidence-locker', '/#/patterns/copy', '/#/foundations/filter-grammar', '/#/foundations/color', '/#/foundations/typography', '/#/foundations/sizing', '/#/foundations/motion', '/#/components/brand-mark', '/#/components/icon-button'])
     for (const theme of ['Light', 'Dark'] as const)
       test(`${path} in ${theme.toLowerCase()} has no WCAG A or AA violation`, async ({ page }) => {
         const { default: AxeBuilder } = await import('@axe-core/playwright')
@@ -2249,7 +2268,8 @@ test.describe('uplift slice 5 · doc pages', () => {
     await main.getByRole('button', { name: 'Search Vela for “firewall rule”' }).click()
     await expect(page.getByRole('dialog', { name: 'Search' }).getByRole('combobox')).toHaveValue('firewall rule')
     await page.keyboard.press('Escape')
-    await expect(main.getByRole('link', { name: /proposals/ })).toHaveAttribute('href', /#\/proposals\//)
+    // Every proposal is listed on the Overview (slice 6): the card opens that section.
+    await expect(main.getByRole('link', { name: /proposals/ })).toHaveAttribute('href', '#/?section=proposals')
     await expect(page).toHaveTitle('Not found · Vela Design System')
   })
 
@@ -2308,4 +2328,171 @@ test.describe('uplift slice 5 · doc pages', () => {
         const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze()
         expect(results.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`)).toEqual([])
       })
+})
+
+// Slice 6 of the playground uplift (1 Nov 2026), the last: the Foundations pages as specimens, the
+// Overview's cards and console, and the overlays. What the pages read from the token file and the
+// specs is unit-tested in src/styles/site-foundations.test.tsx; here, what only a browser shows.
+test.describe('uplift slice 6 · foundations, the Overview and the overlays', () => {
+  /** A colour as the browser computes it, from a hex in the token file. */
+  const rgb = (hex: string) => {
+    const n = parseInt(hex.slice(1), 16)
+    return `rgb(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255})`
+  }
+
+  test('Colour: each swatch is painted by its token in both themes, whatever the page theme is', async ({ page }) => {
+    await page.goto('/#/foundations/color')
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Colour')
+    const swatch = page.locator('.fd-swatch', { has: page.locator('code', { hasText: /^--vela-bg-global$/ }) })
+    const halves = () => swatch.locator('.fd-pair__half').evaluateAll((els) => els.map((e) => getComputedStyle(e).backgroundColor))
+    const values = (await swatch.locator('.fd-values').innerText()).match(/#[0-9a-f]{6}/g)!
+    expect(await halves()).toEqual(values.map(rgb))
+    // The page's theme moves nothing in the specimen: each half is its own theme.
+    await setTheme(page, 'Dark')
+    expect(await halves()).toEqual(values.map(rgb))
+    // The Status row says Degraded, never Medium.
+    const status = page.getByRole('table', { name: /^Status/ })
+    await expect(status.locator('.vela-status')).toHaveText(['Status unknown', 'Healthy', 'Warning', 'Degraded', 'Unhealthy'])
+    // A copy mark is always in view, and is at least the smallest target.
+    const mark = swatch.getByRole('button', { name: 'Copy --vela-bg-global' })
+    await expect(mark).toBeVisible()
+    const box = (await mark.boundingBox())!
+    expect(Math.min(box.width, box.height)).toBeGreaterThanOrEqual(24)
+  })
+
+  test('a copy mark copies the whole token and says so', async ({ page, context }) => {
+    await context.grantPermissions(['clipboard-read', 'clipboard-write'])
+    await page.goto('/#/foundations/spacing')
+    await page.getByRole('button', { name: 'Copy --vela-space-20' }).click()
+    await expect(page.getByRole('status').filter({ hasText: 'Copied' })).toHaveText('Copied --vela-space-20')
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('--vela-space-20')
+    // Each bar is the token's own length; the skipped 50 is drawn, and says it is not a token.
+    expect(await page.locator('.fd-row', { has: page.locator('code', { hasText: /^--vela-space-20$/ }) }).locator('.fd-bar').evaluate((el) => el.getBoundingClientRect().width)).toBe(20)
+    await expect(page.locator('.fd-row--skipped')).toContainText('no token')
+  })
+
+  test('Motion: a curve plays when asked, by transform only, and again from the start', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'no-preference' })
+    await page.goto('/#/foundations/motion')
+    const row = page.locator('.fd-row', { has: page.locator('code', { hasText: /^--vela-ease-spring$/ }) })
+    const mover = row.locator('.fd-run__mover')
+    // At rest until asked.
+    expect(await mover.evaluate((el) => getComputedStyle(el).transform)).toMatch(/^(none|matrix\(1, 0, 0, 1, 0, 0\))$/)
+    await expect(mover).toHaveCSS('transition-property', 'transform')
+    await row.getByRole('button', { name: 'Play --vela-ease-spring' }).click()
+    await expect(row.locator('.fd-run')).toHaveClass(/is-end/)
+    // It ends one track's length along: its own width, as translateX(100%) says.
+    const width = await mover.evaluate((el) => el.getBoundingClientRect().width)
+    expect(width).toBeGreaterThan(50)
+    await expect.poll(() => mover.evaluate((el) => Math.round(new DOMMatrix(getComputedStyle(el).transform).m41))).toBe(Math.round(width))
+    // Played over duration-travel on the spring itself.
+    expect(await mover.evaluate((el) => getComputedStyle(el).transitionDuration)).toBe('0.24s')
+    // Again: back to the start at once, then across.
+    await row.getByRole('button', { name: 'Play --vela-ease-spring' }).click()
+    await expect(row.locator('.fd-run')).toHaveClass(/is-end/)
+  })
+
+  test('the Overview opens the three scales on Colour, at their section, focused', async ({ page }) => {
+    await page.goto('/')
+    await page.getByRole('main').getByRole('link', { name: /^Severity 6, status 5, risk 3/ }).click()
+    await expect(page).toHaveURL(/#\/foundations\/color\?section=taxonomies$/)
+    await expect(page.getByRole('heading', { level: 2, name: 'Severity, status and risk' })).toBeFocused()
+  })
+
+  test("Not found's proposals card opens the Overview's proposals, focused", async ({ page }) => {
+    await page.goto('/#/components/firewall-rule')
+    const card = page.getByRole('main').getByRole('link', { name: /^Specified, not built yet 9 proposals/ })
+    await expect(card).toHaveAttribute('href', '#/?section=proposals')
+    await card.click()
+    await expect(page.getByRole('heading', { level: 2, name: 'Specified, not built yet' })).toBeFocused()
+    await expect(page.locator('.ov-proposals > li')).toHaveCount(9)
+  })
+
+  test('every Overview card has hover, focus and pressed states, and nothing moves', async ({ page }) => {
+    await page.goto('/')
+    const card = page.locator('.ov-ways .shell-card').first()
+    const edge = () => card.evaluate((el) => getComputedStyle(el).borderTopColor)
+    // Where it sits on the page, whatever the scroll.
+    const place = () => card.evaluate((el) => { const r = el.getBoundingClientRect(); return [r.left + scrollX, r.top + scrollY, r.width, r.height].map(Math.round) })
+    const at = await place()
+    const rest = await edge()
+    await card.hover()
+    await expect.poll(edge).not.toBe(rest)
+    await expect(card.locator('.shell-card__title')).toHaveCSS('text-decoration-line', 'underline')
+    await page.mouse.down()
+    const pressed = await edge()
+    const pressedAt = await place()
+    // Off the card before letting go, so the press is not a click.
+    await page.mouse.move(0, 0)
+    await page.mouse.up()
+    expect(pressed).not.toBe(rest)
+    expect(pressedAt).toEqual(at)
+    await page.goto('/')
+    await page.locator('.ov-ways .shell-card').first().focus()
+    await expect(page.locator('.ov-ways .shell-card').first()).toHaveCSS('outline-style', 'solid')
+  })
+
+  test("Search marks each result's kind by a glyph and a word, and titles a rule in plain words", async ({ page }) => {
+    await page.goto('/')
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+    await page.keyboard.press('Control+k')
+    const dialog = page.getByRole('dialog', { name: 'Search' })
+    const combo = dialog.getByRole('combobox')
+    const first = dialog.getByRole('option').first()
+    await combo.fill('dialog')
+    await expect(first.locator('.shell-search__kind')).toHaveText('Component')
+    await expect(first.locator('.shell-search__kind svg')).toHaveCount(1)
+    await combo.fill('evidence')
+    await expect(first.locator('.shell-search__kind')).toHaveText('Proposal')
+    // The kind is not said twice: no Proposal tag beside the title.
+    await expect(first.locator('.site-tag')).toHaveCount(0)
+    await combo.fill('filter grammar')
+    await expect(first.locator('.shell-search__kind')).toHaveText('Contract')
+    await combo.fill('toggle-label-required')
+    await expect(first.locator('.shell-search__kind')).toHaveText('Rule')
+    await expect(first.locator('.shell-search__title')).toHaveText('Label required')
+    await expect(first.locator('.shell-search__id')).toHaveText('toggle-label-required')
+    // Each kind has its own glyph, so the kind is never told by colour alone.
+    const glyphs = new Set<string>()
+    for (const q of ['dialog', 'evidence', 'filter grammar', 'toggle-label-required', 'combobox']) {
+      await combo.fill(q)
+      const kind = dialog.locator('.shell-search__kind').first()
+      glyphs.add(`${await kind.innerText()}:${await kind.locator('svg').innerHTML()}`)
+    }
+    expect(new Set([...glyphs].map((g) => g.split(':').slice(1).join(':'))).size).toBe(5)
+  })
+
+  test("Appearance shows each mode before it is chosen, painted by that theme's tokens", async ({ page }) => {
+    await page.goto('/#/components/button')
+    await page.getByRole('button', { name: /^Appearance/ }).click()
+    const mode = page.getByRole('region', { name: 'Appearance' }).getByRole('group', { name: 'Mode' })
+    // Named by the word; the picture is decorative.
+    for (const name of ['System', 'Light', 'Dark']) {
+      const button = mode.getByRole('button', { name, exact: true })
+      await expect(button).toBeVisible()
+      await expect(button.locator('.shell-segment__picture')).toHaveAttribute('aria-hidden', 'true')
+    }
+    const page_ = (name: string) => mode.getByRole('button', { name, exact: true }).locator('.shell-preview__page')
+    const fill = (l: Locator) => l.evaluate((el) => getComputedStyle(el).backgroundColor)
+    const light = await fill(page_('Light'))
+    const dark = await fill(page_('Dark'))
+    expect(light).not.toBe(dark)
+    // System is both, split.
+    expect(await page_('System').evaluateAll((els) => els.map((e) => getComputedStyle(e).backgroundColor))).toEqual([light, dark])
+    await expect(page.getByRole('region', { name: 'Appearance' })).toContainText(/System follows your screen\. It is (light|dark) now\./)
+    // Choosing one marks it, and the previews do not change with the page.
+    await mode.getByRole('button', { name: 'Dark', exact: true }).click()
+    await expect(mode.getByRole('button', { name: 'Dark', exact: true })).toHaveAttribute('aria-current', 'true')
+    expect(await fill(page_('Light'))).toBe(light)
+    await expect(page.getByRole('region', { name: 'Appearance' })).not.toContainText('System follows your screen')
+  })
+
+  test('at 390 the Overview and the Foundations pages never scroll sideways', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 })
+    for (const path of ['/', '/#/foundations/color', '/#/foundations/typography', '/#/foundations/spacing', '/#/foundations/sizing', '/#/foundations/radius', '/#/foundations/motion']) {
+      await page.goto(path)
+      await expect(page.getByRole('heading', { level: 1 }), path).toBeVisible()
+      expect(await noSidewaysScroll(page), path).toBe(true)
+    }
+  })
 })

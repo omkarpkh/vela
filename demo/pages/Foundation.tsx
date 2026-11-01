@@ -11,6 +11,7 @@ import { Announcer, CopyMark } from '../shell/CopyMark'
 import { SectionIndex, useIndexForm, INDEX_MIN } from '../shell/SectionIndex'
 import { Fold, ShowMore, Rest, SHOW_FIRST } from '../shell/Fold'
 import { NextCard } from '../shell/Card'
+import { ScrollRegion } from '../shell/ScrollRegion'
 import { SeverityTag } from '../shell/SeverityTag'
 import { useArrival } from '../shell/arrival'
 import { springAt } from '../../scripts/spring.mjs'
@@ -120,7 +121,7 @@ function TaxonomyTable<L extends string>({ title, levels, kind, roles, show, not
   return (
     <section className="fd-taxonomy" aria-labelledby={id}>
       <h3 id={id} className="fd-h3">{title} <span className="fd-count">{levels.length}</span></h3>
-      <div className="fd-tablewrap">
+      <ScrollRegion label={`${title}, scrollable`} className="fd-tablewrap">
         <table className="fd-table">
           <caption className="vela-sr-only">{title}: each level, and its token for each role, in light and dark</caption>
           <thead>
@@ -138,8 +139,8 @@ function TaxonomyTable<L extends string>({ title, levels, kind, roles, show, not
             ))}
           </tbody>
         </table>
-      </div>
-      {note && <p className="fd-note">{note}</p>}
+      </ScrollRegion>
+      {note && <div className="fd-note">{note}</div>}
     </section>
   )
 }
@@ -263,7 +264,7 @@ function Row({ name, picture, use }: { name: string; picture?: ReactNode; use?: 
     <li className="fd-row">
       <span className="fd-row__name"><Tok name={name} /></span>
       <span className="fd-row__value"><Values name={name} /></span>
-      <span className="fd-row__picture" aria-hidden="true">{picture}</span>
+      <span className="fd-row__picture" aria-hidden="true" inert>{picture}</span>
       <span className="fd-row__use">{use}</span>
     </li>
   )

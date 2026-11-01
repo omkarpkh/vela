@@ -41,7 +41,7 @@
 
 /* The taxonomies: one table each, the level shown by its own component. */
 .fd-taxonomy { display: flex; flex-direction: column; gap: var(--vela-space-10); min-width: 0; }
-.fd-tablewrap { overflow-x: auto; }
+.fd-tablewrap { position: relative; overflow-x: auto; }   /* positioned, so the hidden words inside are clipped with it */
 .fd-table { border-collapse: collapse; font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
 .fd-table th, .fd-table td { padding: var(--vela-space-10) var(--vela-space-15) var(--vela-space-10) 0; text-align: start; vertical-align: middle; border-bottom: 1px solid var(--vela-border-subtle); }
 .fd-table thead th { font-weight: var(--vela-font-weight-semibold); vertical-align: bottom; }
@@ -85,7 +85,7 @@
 .fd-row__use { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
 .fd-row--skipped .fd-row__name, .fd-row--skipped .fd-row__value { color: var(--vela-text-default); }
 .fd-row--skipped .fd-tok__name { text-decoration: line-through; }
-.fd-row--play { grid-template-columns: calc(11 * var(--vela-space-20)) calc(7 * var(--vela-space-20)) minmax(calc(12 * var(--vela-space-20)), 1fr) minmax(0, 1fr); }
+.fd-row--play { grid-template-columns: calc(11 * var(--vela-space-20)) calc(7 * var(--vela-space-20)) minmax(calc(12 * var(--vela-space-20)), 3fr) minmax(0, 2fr); }
 .fd-bar { display: block; height: var(--vela-space-10); border-radius: var(--vela-radius-3); background: var(--vela-border-action); forced-color-adjust: none; }
 .fd-bar--none { width: calc(2 * var(--vela-space-25)); background: transparent; border: 1px dashed var(--vela-border-default); box-sizing: border-box; }
 .fd-box { display: block; width: var(--vela-space-40); box-sizing: border-box; border: 1px solid var(--vela-border-action); border-radius: var(--vela-radius-3); background: var(--vela-bg-container); }
@@ -104,13 +104,14 @@
 /* Motion: a dot crosses its track when Play is pressed, by transform only, over the token's own
    duration and curve. A replay jumps back to the start at once (is-reset) and crosses again. */
 .fd-runner { display: flex; align-items: center; gap: var(--vela-space-15); min-width: 0; }
-.fd-run { position: relative; flex: 1; min-width: 0; height: var(--vela-icon-16); border-bottom: 1px solid var(--vela-border-subtle); }
+.fd-run { position: relative; flex: 1; min-width: 0; overflow: hidden; pointer-events: none; height: var(--vela-icon-16); border-bottom: 1px solid var(--vela-border-subtle); }
 .fd-run__mover { display: block; width: calc(100% - var(--vela-icon-16)); transform: translateX(0); transition: transform var(--fd-dur) var(--fd-ease); }
 .fd-run.is-end .fd-run__mover { transform: translateX(100%); }
 .fd-run.is-reset .fd-run__mover { transition: none; }
 .fd-run__dot { display: block; width: var(--vela-icon-16); height: var(--vela-icon-16); border-radius: var(--vela-radius-3); background: var(--vela-border-action); forced-color-adjust: none; }
 .fd-curveplay { display: flex; align-items: center; gap: var(--vela-space-15); min-width: 0; }
-.fd-curve { flex: none; width: calc(5 * var(--vela-space-20)); height: var(--vela-space-60); }
+.fd-curveplay > .fd-runner { flex: 1; }
+.fd-curve { flex: none; width: calc(4 * var(--vela-space-20)); height: var(--vela-space-40); }
 .fd-curve__rule { stroke: var(--vela-border-subtle); stroke-width: 1; }
 .fd-curve__line { fill: none; stroke: var(--vela-border-action); stroke-width: 2; }
 
