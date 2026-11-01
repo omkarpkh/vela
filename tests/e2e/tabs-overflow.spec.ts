@@ -27,10 +27,8 @@ async function open(page: Page, impl: Impl, width = 412) {
 const tabOf = (list: Locator, name: string) => list.getByRole('tab', { name: new RegExp(`^${name}`) })
 
 interface Whole {
-  /** Space between the scroller's edge and the outside of the tab's focus ring, each side (px). */
-  left: number; right: number
-  /** The tab sits at an end of the core row, where the ring's outer side is outside the scroller (the gap tabs.md names). */
-  firstAtStart: boolean; lastAtEnd: boolean
+  /** Space between the scroller's visible box and the outside of the tab's focus ring, each side (px). */
+  left: number; right: number; top: number; bottom: number
   masked: boolean; cut: boolean
   /** Overlaps the stuck open tab or the half gap past it. */
   underStuck: boolean
@@ -45,28 +43,27 @@ const wholeness = (list: Locator, name: string) => list.evaluate((l: HTMLElement
   const half = parseFloat(getComputedStyle(l).columnGap) / 2
   const box = l.getBoundingClientRect()
   const r = t.getBoundingClientRect()
-  const inner = { left: box.left + l.clientLeft, right: box.left + l.clientLeft + l.clientWidth }
-  const stuck = l.querySelector<HTMLElement>('[data-vela-stuck]')
+  // The scroller's visible box: its padding box, which is where it clips.
+  const inner = { left: box.left + l.clientLeft, right: box.left + l.clientLeft + l.clientWidth, top: box.top + l.clientTop, bottom: box.top + l.clientTop + l.clientHeight }
+  const stuck = l.querySelector<HTMLElement>('[role="tab"][data-vela-stuck]')
   const s = stuck && stuck !== t ? stuck.getBoundingClientRect() : null
   return {
     left: r.left - ring - inner.left,
     right: inner.right - (r.right + ring),
-    firstAtStart: t === tabs[0] && l.scrollLeft < 0.5,
-    lastAtEnd: t === tabs[tabs.length - 1] && l.scrollLeft > l.scrollWidth - l.clientWidth - 0.5,
+    top: r.top - ring - inner.top,
+    bottom: inner.bottom - (r.bottom + ring),
     masked: cs.maskImage !== 'none' && cs.maskImage !== '',
     cut: t.hasAttribute('data-vela-cut'),
     underStuck: s ? r.left < s.right + half && r.right > s.left - half : false,
   }
 }, name)
 
+/** The tab and its whole ring box inside the scroller's visible box, clear of the fades and the stuck tab. */
 async function expectWhole(list: Locator, impl: Impl, name: string) {
   await expect.poll(async () => {
     const w = await wholeness(list, name)
-    // The core row's two ends: the ring's outer side lies outside the scroller (tabs.md names the gap).
-    const leftOk = w.left >= -0.5 || (impl === 'core' && w.firstAtStart)
-    const rightOk = w.right >= -0.5 || (impl === 'core' && w.lastAtEnd)
-    return { leftOk, rightOk, masked: w.masked, cut: w.cut, underStuck: w.underStuck }
-  }, { message: `${impl}: ${name} wholly in view, ring included` }).toEqual({ leftOk: true, rightOk: true, masked: false, cut: false, underStuck: false })
+    return { inside: [w.left, w.right, w.top, w.bottom].every((d) => d >= -0.5), masked: w.masked, cut: w.cut, underStuck: w.underStuck }
+  }, { message: `${impl}: ${name} wholly in view, ring included` }).toEqual({ inside: true, masked: false, cut: false, underStuck: false })
 }
 
 /**
@@ -170,10 +167,11 @@ test.describe('Tabs overflow, at 412px with ten tabs', () => {
             expect(s.opacity === 0 || s.visible >= 23.5, `${p.name} at ${x}: ${JSON.stringify(s)}`).toBe(true)
           }
           // The control: on a whole tab the Seed does show, and whole.
+          const whole = await list.evaluate((l: HTMLElement) => [...l.querySelectorAll<HTMLElement>('[role="tab"]:not(:disabled):not([aria-selected="true"]):not([data-vela-cut])')][0].textContent!.replace(/\d+$/, '').trim())
           await page.mouse.move(0, 0)
-          await tabOf(list, 'Overview').hover()
-          await expect.poll(async () => (await seen('Overview')).opacity).toBeGreaterThan(0.5)
-          expect((await seen('Overview')).visible).toBeGreaterThanOrEqual(23.5)
+          await tabOf(list, whole).hover()
+          await expect.poll(async () => (await seen(whole)).opacity).toBeGreaterThan(0.5)
+          expect((await seen(whole)).visible).toBeGreaterThanOrEqual(23.5)
         })
       })
 
@@ -305,10 +303,11 @@ test.describe('Tabs overflow, at 412px with ten tabs', () => {
       const tab = list.querySelector<HTMLElement>('[role="tab"]')!
       const more = row.querySelector<HTMLElement>('.vela-tabs__more')!
       const r = row.getBoundingClientRect(), m = more.getBoundingClientRect()
+      const ring = parseFloat(getComputedStyle(list).paddingTop) + parseFloat(getComputedStyle(list).paddingBottom)
       return {
-        row: r.height, tab: tab.getBoundingClientRect().height, list: list.offsetHeight,
+        row: r.height, tab: tab.getBoundingClientRect().height, list: list.clientHeight - ring,
         scrollbar: list.offsetHeight - list.clientHeight,
-        rowRule: getComputedStyle(row).boxShadow, listRule: getComputedStyle(list).boxShadow,
+        rowRule: getComputedStyle(row).boxShadow, listRule: getComputedStyle(list, '::before').display,
         controlInside: m.left >= r.left && m.right <= r.right + 0.5,
         shapes: [...row.querySelectorAll('*')].filter((e) => /pill|dot|divider|arrow/.test(String((e as HTMLElement).className))).length,
       }
@@ -317,6 +316,7 @@ test.describe('Tabs overflow, at 412px with ten tabs', () => {
     expect(g.list).toBe(g.tab)
     expect(g.scrollbar).toBe(0)
     expect(g.rowRule).toMatch(/inset$|^.* 0px -1px 0px 0px inset/)
+    // The list's own rule is off: the row draws the one rule.
     expect(g.listRule).toBe('none')
     expect(g.controlInside).toBe(true)
     expect(g.shapes).toBe(0)
@@ -334,7 +334,14 @@ test('when every tab fits, nothing appears, and the headless row lies exactly wh
     const o = root.getBoundingClientRect()
     const at = (r: DOMRect) => [Math.round((r.left - o.left) * 10) / 10, Math.round((r.top - o.top) * 10) / 10, Math.round(r.width * 10) / 10, Math.round(r.height * 10) / 10]
     const tabs = [...l.querySelectorAll<HTMLElement>('[role="tab"]')]
-    const ruleBox = l.parentElement!.classList.contains('vela-tabs__row') ? l.parentElement! : l
+    // Where the one rule is drawn: the headless row's bottom edge (an inset shadow), or the core list's
+    // ::before, a 1px border on the bottom of the list's content box, as wide as that box.
+    const row = l.parentElement!.classList.contains('vela-tabs__row') ? l.parentElement! : null
+    const lc = getComputedStyle(l), b = l.getBoundingClientRect()
+    const content = new DOMRect(b.left + parseFloat(lc.paddingLeft), b.top + parseFloat(lc.paddingTop), l.clientWidth - parseFloat(lc.paddingLeft) - parseFloat(lc.paddingRight), l.clientHeight - parseFloat(lc.paddingTop) - parseFloat(lc.paddingBottom))
+    // To the pixel: the core's box is read from whole-pixel client sizes.
+    const ruleAt = (row ? at(row.getBoundingClientRect()) : at(content)).map(Math.round)
+    const ruleColour = row ? getComputedStyle(row).boxShadow.replace(/ 0px -1px 0px 0px inset$/, '') : getComputedStyle(l, '::before').borderBottomColor
     return {
       fits: l.scrollWidth <= l.clientWidth,
       more: !!root.querySelector('.vela-tabs__more'),
@@ -343,7 +350,7 @@ test('when every tab fits, nothing appears, and the headless row lies exactly wh
       masks: tabs.filter((t) => getComputedStyle(t).maskImage !== 'none').length,
       positions: tabs.map((t) => getComputedStyle(t).position),
       rects: tabs.map((t) => at(t.getBoundingClientRect())),
-      rule: [...at(ruleBox.getBoundingClientRect()), getComputedStyle(ruleBox).boxShadow],
+      rule: [...ruleAt, ruleColour],
     }
   })
   await expect(page.locator('.motion-frame[data-theme="light"] [data-implementation="headless"] [role="tablist"]')).toBeVisible()
@@ -413,8 +420,8 @@ test('in forced colours the stuck open tab\'s edge is a gap of Canvas and one Ca
     return {
       selected: stuck.getAttribute('aria-selected'),
       bg: getComputedStyle(stuck).backgroundColor, shadow: getComputedStyle(stuck).boxShadow,
-      row: [getComputedStyle(row).borderBottomStyle, getComputedStyle(row).borderBottomColor],
-      listBorder: getComputedStyle(list).borderBottomStyle,
+      row: getComputedStyle(row).boxShadow,
+      listRule: getComputedStyle(list, '::before').display,
       more: [getComputedStyle(more).color, getComputedStyle(more).borderBottomColor],
     }
   })
@@ -422,8 +429,9 @@ test('in forced colours the stuck open tab\'s edge is a gap of Canvas and one Ca
   expect(s.bg).toBe(canvas)
   // Canvas over the gap, then one pixel of CanvasText.
   expect(s.shadow.split(/,(?![^(]*\))/).map((x) => x.trim().startsWith(canvasText) || x.includes(canvasText))).toEqual([false, false, true])
-  expect(s.row).toEqual(['solid', canvasText])
-  expect(s.listBorder).toBe('none')
+  // The row's rule, one pixel below the tabs, outside the row so it is no taller; the list draws none.
+  expect(s.row).toBe(`${canvasText} 0px 1px 0px 0px`)
+  expect(s.listRule).toBe('none')
   expect(s.more).toEqual([canvasText, canvas])
 })
 
@@ -449,3 +457,54 @@ for (const theme of ['Light', 'Dark'] as const) {
     expect(ran?.nodes.some((n) => n.html.includes('vela-tabs__more')), 'axe checked the control').toBe(true)
   })
 }
+
+// The focus ring is never clipped: the list reaches the ring's width past the tabs on every side, as
+// padding given back by a negative margin. The whole ring box of a focused first, middle and last tab
+// lies inside the scroller's visible box, at the top, the bottom and both ends; and the row keeps its
+// height and its place. Both implementations, at 412px (the row overflows) and at 1440 on the Motion
+// page (it fits).
+// [[rule: tabs-overflow-reveal-whole]]
+test.describe('the focus ring is never clipped', () => {
+  for (const impl of IMPLS) {
+    test(`${impl}: the ring box of a focused first, middle and last tab lies inside the scroller`, async ({ page }) => {
+      const { list } = await open(page, impl)
+      await tabOf(list, 'Alerts').focus()
+      for (const [key, name] of [['Home', 'Overview'], ['End', 'Integrations']] as const) {
+        await page.keyboard.press(key)
+        await expect(tabOf(list, name)).toBeFocused()
+        await expectWhole(list, impl, name)
+        await expect(tabOf(list, name)).not.toHaveCSS('outline-style', 'none')
+      }
+      // The middle: Policies, from the keyboard, so the ring shows.
+      await page.keyboard.press('Home')
+      for (let i = 0; i < 4; i++) await page.keyboard.press('ArrowRight')
+      await expect(tabOf(list, 'Policies')).toBeFocused()
+      await expectWhole(list, impl, 'Policies')
+      // The padding is the ring's reach, and the margin gives it back: the tabs' own box is unchanged.
+      const g = await list.evaluate((l: HTMLElement) => {
+        const cs = getComputedStyle(l)
+        const ring = parseFloat(cs.getPropertyValue('--vela-focus-ring-width')) + parseFloat(cs.getPropertyValue('--vela-focus-ring-offset'))
+        const tab = l.querySelector<HTMLElement>('[role="tab"]')!.getBoundingClientRect()
+        const parent = (l.parentElement!.classList.contains('vela-tabs__row') ? l.parentElement! : l.parentElement!).getBoundingClientRect()
+        return { ring, pad: [cs.paddingTop, cs.paddingRight, cs.paddingBottom, cs.paddingLeft].map(parseFloat), margin: [cs.marginTop, cs.marginRight, cs.marginBottom, cs.marginLeft].map(parseFloat), tabTop: tab.top, parentTop: parent.top }
+      })
+      expect(g.pad).toEqual([g.ring, g.ring, g.ring, g.ring])
+      expect(g.margin).toEqual([-g.ring, -g.ring, -g.ring, -g.ring])
+      expect(g.tabTop).toBe(g.parentTop)
+    })
+  }
+
+  test('when the row fits, a focused first and last tab\'s whole ring is inside the scroller too', async ({ page }) => {
+    await page.goto('/#/motion')
+    await page.evaluate(() => document.fonts.ready)
+    for (const impl of IMPLS) {
+      const list = page.locator(`.motion-frame[data-theme="light"] [data-implementation="${impl}"] [role="tablist"]`)
+      await tabOf(list, 'Alerts').focus()
+      for (const [key, name] of [['End', 'Audit log'], ['Home', 'Alerts']] as const) {
+        await page.keyboard.press(key)
+        await expect(tabOf(list, name)).toBeFocused()
+        await expectWhole(list, impl, name)
+      }
+    }
+  })
+})
