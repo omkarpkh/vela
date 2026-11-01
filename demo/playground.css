@@ -345,7 +345,8 @@
   transition: background-color var(--vela-duration-base) var(--vela-ease-standard), border-color var(--vela-duration-base) var(--vela-ease-standard);
 }
 .pg-rule__row:not(:has(.pg-rule__pics)) { grid-template-columns: minmax(0, 1fr) auto auto; }
-@media (hover: hover) { .pg-rule__row:hover { background: var(--vela-bg-hover); transition-duration: var(--vela-duration-fast); } }
+/* Pointer on a row: a quiet start edge, never a fill (the link on --vela-bg-hover is not an asserted pair in dark). */
+@media (hover: hover) { .pg-rule__row:hover { border-inline-start-color: var(--vela-border-default); transition-duration: var(--vela-duration-fast); } }
 /* Pressed: the start edge lands at pointer down; nothing moves (T17). */
 .pg-rule__row:has(.pg-rule__more:active), .pg-rule__row:has(.pg-rule__action:active) { border-inline-start-color: var(--vela-border-active); transition-duration: var(--vela-duration-instant); }
 .pg-rule__pics { margin: 0; display: flex; gap: var(--vela-space-10); }

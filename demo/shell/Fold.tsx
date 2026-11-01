@@ -12,7 +12,7 @@
  * - Show more: a group of more than six shows six, then "Show N more". The rest are hidden until
  *   found, the same way; a deep link to one of them reveals the group (T12).
  */
-import { useEffect, useId, useRef, type ReactNode } from 'react'
+import { useEffect, useId, useLayoutEffect, useRef, type ReactNode } from 'react'
 import { cn, Icon } from '../../src'
 import './shell.css'
 
@@ -21,7 +21,8 @@ export function useUntilFound<T extends HTMLElement>(hidden: boolean, onFound: (
   const ref = useRef<T>(null)
   const found = useRef(onFound)
   found.current = onFound
-  useEffect(() => {
+  // Before paint, so a row revealed for a link can take focus in the next frame.
+  useLayoutEffect(() => {
     const el = ref.current
     if (!el) return
     // A table's row group can't be hidden until found (content-visibility does not apply to it), so it is plainly hidden.

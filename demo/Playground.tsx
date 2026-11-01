@@ -7,7 +7,7 @@ import { readLink, writeLink, queryOf, type Stage, type Compare } from './playgr
 import { installFor } from './playground/install'
 import { statusOf } from './playground/status'
 import { rulesOf } from './playground/facts'
-import { replaceRoute, href, type PageTab } from './router'
+import { replaceRoute, href, parseHash, type PageTab } from './router'
 import { buildIndex, closest } from './playground/search'
 import { Segments } from './shell/Segments'
 import { ScrollRegion } from './shell/ScrollRegion'
@@ -240,10 +240,14 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
   // A link to one rule (`?rule=`, from Search or a shared link), or "Open proof" in a lock panel.
   const [targetRule, setTargetRule] = useState<string | null>(() => ruleOf(window.location.hash))
   useEffect(() => {
-    const on = () => { const r = ruleOf(window.location.hash); if (r) setTargetRule(r) }
+    const on = () => {
+      const r = ruleOf(window.location.hash)
+      const route = parseHash(window.location.hash)
+      if (r && route.kind === 'component' && route.id === entry.id) setTargetRule(r)
+    }
     window.addEventListener('hashchange', on)
     return () => window.removeEventListener('hashchange', on)
-  }, [])
+  }, [entry.id])
   const targetDone = useCallback(() => setTargetRule(null), [])
   // The setting chosen on the Figma tab, carried by its Next card into the Playground.
   const [figmaValues, setFigmaValues] = useState<Values | null>(null)
@@ -308,6 +312,9 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
 
   // The address carries the settings (section 11), replaced, not pushed: no history entry per click.
   useEffect(() => {
+    // Only while the address is still this page: a link to another page (Search) is never rewritten.
+    const here = parseHash(window.location.hash)
+    if (here.kind !== 'component' || here.id !== entry.id) return
     const q = writeLink(controls, v, initial, { implementation: impl?.id, defaultImplementation: implIds[0], stage, defaultStage, compare, width: frameWidth })
     // The section index's place (?section=) and a link to one rule (?rule=) are kept beside the
     // settings; a tab switch drops them.
@@ -348,10 +355,12 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
             <code id={importId} className="pg-import">{importLine}</code>
             <CopyMark what="import line" text={importLine} shownId={importId} />
           </p>
-          {headless && (
-            <p className="pg-head__peer">
-              <span>{install.note?.replace(/, and npm.*$/, '')}. Install it too:</span>
-              <code id={peerId} className="pg-install-command">{install.command}</code>
+          {/* A page that switches between the two entries keeps the line's place, unseen and unheard for
+              core, so the header never changes height and the stage never moves (the 0px check). */}
+          {(headless || (entry.implementations?.length ?? 0) > 1) && (
+            <p className="pg-head__peer" style={headless ? undefined : { visibility: 'hidden' }} aria-hidden={headless ? undefined : true}>
+              <span>{installFor('@omkarux/vela/headless').note?.replace(/, and npm.*$/, '')}. Install it too:</span>
+              <code id={peerId} className={headless ? 'pg-install-command' : undefined}>{installFor('@omkarux/vela/headless').command}</code>
               <CopyMark what="install command" text={install.command} shownId={peerId} />
             </p>
           )}

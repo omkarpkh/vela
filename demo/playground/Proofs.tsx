@@ -205,7 +205,14 @@ export function RulesTab({ name, rules, sections, proofs, commit, target, onTarg
     if (!r) {
       setMissing(target)
       onTargetDone()
-      requestAnimationFrame(() => { missingRef.current?.focus(); missingRef.current?.scrollIntoView({ block: 'center', behavior: 'instant' as ScrollBehavior }) })
+      let tries = 0
+      const land = () => {
+        const el = missingRef.current
+        el?.scrollIntoView({ block: 'center', behavior: 'instant' as ScrollBehavior })
+        el?.focus({ preventScroll: true })
+        if ((!el || document.activeElement !== el) && ++tries < 10) requestAnimationFrame(land)
+      }
+      requestAnimationFrame(land)
       return
     }
     setMissing(null)
@@ -214,11 +221,15 @@ export function RulesTab({ name, rules, sections, proofs, commit, target, onTarg
     setMore((m) => new Set(m).add(r.level))
     setTargeted(r.id)
     onTargetDone()
-    requestAnimationFrame(() => requestAnimationFrame(() => {
+    // A few frames at most: the row may sit in a group that opens, or past "Show N more", this render.
+    let tries = 0
+    const land = () => {
       const el = document.querySelector<HTMLElement>(`#rule-${CSS.escape(r.id)} .pg-rule__lead`)
       el?.scrollIntoView({ block: 'center', behavior: 'instant' as ScrollBehavior })
       el?.focus({ preventScroll: true })
-    }))
+      if ((!el || document.activeElement !== el) && ++tries < 10) requestAnimationFrame(land)
+    }
+    requestAnimationFrame(land)
   }, [target, rules, onTargetDone])
 
   const index: SectionLink[] = [
