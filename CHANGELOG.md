@@ -10,11 +10,15 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   decisions of 30 Oct to 1 Nov 2026, approved on 1 Nov as part of the refinement phase). When the
   row is narrower than its tabs, the **headless** Tabs puts the tabs that don't fit into an
   "N more" control at the row's end, outside the scroller, so a count that changes never moves a
-  tab: "6 more", or "6 more · 1 new" when hidden tabs have news, named "All tabs, 6 hidden, 1 with
-  new items". It looks like an unselected tab with a still chevron, and opens a Dropdown List of
+  tab: "6 more", or "6 more · 1 new" when hidden tabs have news, named "6 more, 1 new. Show all
+  tabs", its visible words first (WCAG 2.5.3, Label in Name; the dot is hidden from assistive
+  technology). It looks like an unselected tab with a still chevron, and opens a Dropdown List of
   every tab that can be opened, in row order, the open one marked "open" and news "new"; choosing
-  one opens it and scrolls to it. The open tab sticks to the edge it would leave by, and the tabs
-  that pass under it fade out. The count is measured, never a prop, with no threshold.
+  one opens it and scrolls to it. The open tab sticks to the edge it would leave by, at either
+  end (a recorded deviation from the note of 30 Oct, which said the left edge: otherwise scrolling
+  back can push it out past the right edge), and the tabs that pass under it fade out. The count is
+  measured, never a prop, with no threshold, and counts only what the list offers: a disabled tab
+  is not in the list and not counted, and when hidden is reachable by scrolling the row only.
   - **`unseen`, a new boolean on the headless `Tabs.Trigger` only.** The app sets it when a tab holds
     changes the person hasn't seen and clears it when the tab opens; a hidden tab with it adds
     "· 1 new", in semibold words, never a dot. News arriving in a hidden tab is announced once
@@ -35,7 +39,8 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     ring, a visible cue, the open tab never out of view, the Seed never cut below 24px), forced
     colours, instant scrolling with and without reduced motion, the control outside the scroller,
     one line high with nothing below, and nothing when everything fits, compared with the core on
-    the Motion page.
+    the Motion page; and axe, with its label-in-name rule on, on the Tabs page with the control
+    showing, in both themes.
   - **No new token and no new contrast pair:** the control is a tab's colours, already asserted;
     the fade is `--vela-space-20` wide and the stuck tab stands the focus ring's reach in.
   - **Figma:** `scripts/figma/components/tabs-overflow-control.figma.js` (State default, hover and
@@ -47,8 +52,8 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     tabs into "N more"; Sessions has news, so "· 1 new" shows. One new visual baseline pair, the
     headless stage at 412px in both themes (`page-tabs-playground-narrow-headless-{light,dark}`),
     written by the "Visual baselines" workflow.
-  - 258 rules across 20 specs (was 244), 79 compiler-enforced (was 78). 1711 checks (was 1671):
-    1299 unit and contract (was 1283), 301 e2e (was 279), 106 screenshots (was 104).
+  - 258 rules across 20 specs (was 244), 79 compiler-enforced (was 78). 1777 checks (was 1731):
+    1330 unit and contract (was 1313), 330 e2e (was 303), 112 screenshots (was 110).
 - **Icon Button, a new headless component** (`guidelines/components/icon-button.md`; the spec
   thread's draft of 30 Oct 2026 with the repo thread's amendment of 1 Nov 2026, approved by Omkar
   the same day). A button or a link drawn as one glyph people already know, always named by
@@ -305,10 +310,18 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **Tabs (core and headless): a full row fades at the edge where more tabs are, and keeps a tab you
   reach wholly in view** (see *Tabs overflow* under Added). Nothing changes while every tab fits.
   On the playground's Tabs page, whose stage is narrower than its ten tabs at 1440, the core row now
-  fades at its end, so the Tabs page screenshots move. Found while building it, and left for a
-  decision because it changes the list's box: a scroller clips what lies outside it, so a focused
-  tab's ring loses its top and bottom, and on the core row the outer side of the first or last
-  tab's ring.
+  fades at its end, so the Tabs page screenshots move.
+- **Tabs (core and headless): the focus ring is never clipped.** The list, a scroller, cut the top
+  and bottom of every focused tab's ring, and on the core row the outer side of the first or last
+  tab's. It now has the ring's width (`--vela-focus-ring-width` plus `--vela-focus-ring-offset`) as
+  padding on every side, given back as a negative margin, so the tabs, the row's height and its
+  baseline stay where they were. The list rule moves from an inset shadow to a sticky `::before`
+  along the tabs' bottom edge, and in forced colours to one pixel below it with the row no taller.
+  A host that styles the list styles that larger box: the site's sticky page tabs now stick a ring's
+  width higher and paint the page on the content box only. Tested by the whole ring box of a focused
+  first, middle and last tab lying inside the scroller, in both implementations. Measured against
+  the build before it, the All states Tabs sections at 400, 1280, 1440 and 1920 and the Button, Tabs
+  and Toast component pages are unchanged; the Status page moves by a pixel at a fade.
 - **Site, slice 1 of the playground uplift: the shell** (Omkar's decision of 1 Nov 2026 to go live
   slice by slice). Shared parts only; no page is redesigned yet.
   - **Page tabs at `size="large"`** on every component page, the clearest mark of the page's own
