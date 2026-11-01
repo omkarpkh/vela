@@ -77,10 +77,8 @@ describe('every number on the Overview is counted from its source', () => {
     }
   })
 
-  it('the Foundations line names the Foundations pages, in nav order', () => {
-    const titles = ['colour', 'typography', 'spacing', 'sizing', 'radius', 'motion']
-    expect(FOUNDATIONS_LINE).toBe('Colour, typography, spacing, sizing, radius and motion')
-    expect(FOUNDATIONS_LINE.toLowerCase().replace(' and ', ', ').split(', ')).toEqual(titles)
+  it('the Foundations line names the Foundations pages, in nav order, then the contracts', () => {
+    expect(FOUNDATIONS_LINE).toBe('Colour, typography, spacing, sizing, radius and motion, and the Filter Grammar contract')
   })
 })
 

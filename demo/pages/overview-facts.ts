@@ -62,10 +62,15 @@ export const RULES = {
 /** The ref GitHub links open: the built commit when it is one, else main. */
 export const REF = /^[0-9a-f]{7,40}$/.test(COMMIT) ? COMMIT : 'main'
 
-/** "Colour, typography, spacing, sizing, radius and motion": the Foundations pages, in nav order. */
+/**
+ * "Colour, typography, spacing, sizing, radius and motion, and the Filter Grammar contract": the
+ * Foundations pages in nav order, then any contract listed beside them, by its own name.
+ */
 const listWords = (words: string[]) => (words.length < 2 ? words.join('') : `${words.slice(0, -1).join(', ')} and ${words[words.length - 1]}`)
 export const FOUNDATIONS_LINE = (() => {
-  const line = listWords(FOUNDATIONS.map((f) => f.title.toLowerCase()))
+  const own = listWords(FOUNDATIONS.filter((f) => f.kind === 'Foundation').map((f) => f.title.toLowerCase()))
+  const contracts = FOUNDATIONS.filter((f) => f.kind === 'Contract').map((f) => f.title)
+  const line = own + (contracts.length ? `, and the ${listWords(contracts)} contract${contracts.length > 1 ? 's' : ''}` : '')
   return line.charAt(0).toUpperCase() + line.slice(1)
 })()
 
