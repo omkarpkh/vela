@@ -13,14 +13,15 @@
 A design system for data-heavy products, built first for security consoles. The tokens and the component specs are framework-agnostic;
 this repository is a **React implementation** of them. Nineteen components, two themes, zero runtime
 dependencies in the core entry — and every design rule in the documentation is tagged with how it is
-enforced: 78 of the 244 by the TypeScript compiler, the rest at runtime, in a real browser, or by review
+enforced: 79 of the 258 by the TypeScript compiler, the rest at runtime, in a real browser, or by review
 (counted by `npm run rules:check`).
 
 **Status:** every component carries a lifecycle label — Approved, Known bugs, Experimental or
 Retired, defined in [`GOVERNANCE.md`](GOVERNANCE.md). Seven are **Approved**; Icon, Brand Mark, Text Area,
 Checkbox, Radio Group, Popover, Tooltip, Icon Button, Dialog, Table, Toast and Dropdown List are **Experimental**.
 Every component's Figma set is published in the library except Brand Mark's and Icon Button's, whose
-builders are written and not yet run.
+builders are written and not yet run; so is the builder of the Tabs overflow control, a part the
+headless Tabs draws.
 
 ```bash
 npm install @omkarux/vela

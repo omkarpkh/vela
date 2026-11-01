@@ -4,7 +4,7 @@
 > deliberately separate status taxonomies, full light and dark theming, zero runtime dependencies
 > in the core entry (the `/headless` entry needs one optional peer, Base UI, and is where Checkbox,
 > Radio Group, Popover, Tooltip, Icon Button, Dialog, Toast and Dropdown List ship from).
-> 78 of the 244 design rules are enforced by the TypeScript types; the rest are checked at runtime, in a
+> 79 of the 258 design rules are enforced by the TypeScript types; the rest are checked at runtime, in a
 > real browser, or by review. Each rule in the component and contract guidelines is tagged with its level.
 >
 > THESE SPECS ARE FRAMEWORK-AGNOSTIC. The published package is a React implementation of them, and
@@ -69,7 +69,7 @@ behaviour has no Figma expression at all.
 - [Contextual Alert](components/contextual-alert.md)
 - [Status Indicator](components/status-indicator.md)
 - [Risk Pill](components/risk-pill.md)
-- [Tabs](components/tabs.md)
+- [Tabs](components/tabs.md) — when the row is full both entries fade the edge where more tabs are and scroll a tab you open, click or focus wholly into view; the headless Tabs also puts the tabs that don't fit into "N more" (a Dropdown List of every tab) and keeps the open tab in view. The count is measured, never a prop; `unseen` (headless `Tabs.Trigger` only) adds "· 1 new"
 - [Icon](components/icon.md) — 50 curated Lucide glyphs (ISC, see NOTICE), compiled into the core entry; `ICON_NAMES` is the closed list; Experimental
 - [Brand Mark](components/brand-mark.md) — `@omkarux/vela`, Experimental: GitHub's and Figma's own marks, unmodified (see NOTICE), only to link to their services; `name` is `github` or `figma`, nothing else; no Figma set yet
 - [Checkbox](components/checkbox.md) — `@omkarux/vela/headless` only, Experimental
