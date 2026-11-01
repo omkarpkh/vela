@@ -286,6 +286,7 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
     return (
       <NextCard
         className="pg-next"
+        still={entry.id}
         eyebrow={fromFigma ? 'Next' : undefined}
         href={href({ kind: 'component', id: entry.id, tab: to === 'playground' ? undefined : (to as PageTab) })}
         title={words.title}

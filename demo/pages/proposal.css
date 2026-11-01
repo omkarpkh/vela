@@ -127,6 +127,9 @@
 .prop-map__row { display: grid; grid-template-columns: calc(5 * var(--vela-space-20)) minmax(0, 1fr); gap: var(--vela-space-15); align-items: start; }
 .prop-map__label { padding-top: var(--vela-space-10); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
 .prop-map__parts { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--vela-space-15); }
+/* Boxes in a row share its height, so a box with a still and one without line up (slice 7). */
+.prop-map__parts > li { display: flex; }
+.prop-map__parts > li > .prop-part { flex: 1 1 auto; }
 .prop-map__key { margin: 0; color: var(--vela-text-default); }
 .prop-part {
   display: inline-flex; flex-direction: column; gap: var(--vela-space-5); min-width: calc(8 * var(--vela-space-20)); box-sizing: border-box;
@@ -137,6 +140,7 @@
 a.prop-part { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .prop-part--proposal, .prop-part--missing { border-style: dashed; }
 .prop-part--self { border: var(--vela-stroke-2) solid var(--vela-border-action); }
+.prop-part__still { display: block; margin-bottom: var(--vela-space-5); }
 .prop-part__name { font-weight: var(--vela-font-weight-semibold); }
 .prop-part__status { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); }
 @media (hover: hover) { a.prop-part:hover { border-color: var(--vela-border-active); transition-duration: var(--vela-duration-fast); } a.prop-part:hover .prop-part__name { text-decoration: underline; } }

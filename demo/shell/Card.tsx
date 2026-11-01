@@ -9,10 +9,13 @@
  *   are never heard as actions or reached by Tab; its words are 12px or more (the type ramp's floor).
  * - Pointer on a card: its edge darkens and its title is underlined. Pressed: the edge turns the
  *   active colour at pointer down, in --vela-duration-instant. Nothing moves.
- * - The Next card ends a tab or a page: where to go on from here, so a page never dead-ends.
+ * - The Next card ends a tab or a page: where to go on from here, so a page never dead-ends. On a
+ *   component's tabs it shows the component's still (slice 7): an image drawn at build time, not
+ *   the live component.
  */
 import type { MouseEvent, ReactNode } from 'react'
 import { cn, Icon } from '../../src'
+import { Still } from './Still'
 import './shell.css'
 
 export interface CardProps {
@@ -51,14 +54,17 @@ export interface NextCardProps {
   /** The small words above the title: "Next on this page", "Next proposal". */
   eyebrow?: string
   thumbnail?: ReactNode
+  /** A built component's id: its still, drawn at build time (Still.tsx), in place of a thumbnail. */
+  still?: string
   onClick?: (e: MouseEvent<HTMLAnchorElement>) => void
   className?: string
 }
 
-export function NextCard({ href, title, line, eyebrow = 'Next on this page', thumbnail, onClick, className }: NextCardProps) {
+export function NextCard({ href, title, line, eyebrow = 'Next on this page', thumbnail, still, onClick, className }: NextCardProps) {
   return (
     <a className={cn('shell-next', className)} href={href} onClick={onClick}>
-      {thumbnail && <Thumb className="shell-next__thumb">{thumbnail}</Thumb>}
+      {still ? <Thumb className="shell-next__thumb shell-next__thumb--still"><Still id={still} /></Thumb>
+        : thumbnail && <Thumb className="shell-next__thumb">{thumbnail}</Thumb>}
       <span className="shell-next__text">
         <span className="shell-next__eyebrow">{eyebrow}</span>
         <span className="shell-next__title">{title}</span>

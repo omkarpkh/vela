@@ -514,6 +514,10 @@
 .shell-card__line, .shell-next__line { font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height); color: var(--vela-text-default); }
 .shell-next { display: flex; align-items: center; gap: var(--vela-space-20); padding: var(--vela-space-15) var(--vela-space-20); }
 .shell-next__thumb { flex: none; width: calc(7 * var(--vela-space-20)); aspect-ratio: 4 / 3; }
+/* A still (Still.tsx, slice 7) is the well itself, drawn at its real size: no padding, no scaling. */
+.shell-next__thumb--still { width: auto; aspect-ratio: auto; padding: 0; }
+.shell-still, .shell-still img { display: block; }
+.shell-still img { max-width: 100%; height: auto; border-radius: var(--vela-radius-4); }
 .shell-next__text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--vela-space-5); }
 .shell-next__eyebrow { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
 .shell-next__arrow { flex: none; color: var(--vela-text-link); }

@@ -11,6 +11,7 @@ import { LINKS } from '../links'
 import { href } from '../router'
 import { SectionIndex, useIndexForm, type SectionLink } from '../shell/SectionIndex'
 import { NextCard } from '../shell/Card'
+import { Still } from '../shell/Still'
 import { ShowMore, Rest, SHOW_FIRST } from '../shell/Fold'
 import { useArrival } from '../shell/arrival'
 import { partStatus, statusWords, Sketch, Pin, capital, quoteOf } from './proposal-parts'
@@ -329,8 +330,12 @@ function StateCard({ state, open, asked, onToggle }: { state: ProposalState; ope
 
 function PartBox({ name, status, here }: { name: string; status: PartStatus; here?: boolean }) {
   const kind = here ? 'self' : status.kind
+  // A built part shows its still (slice 7): the real component, drawn at build time. A proposal is
+  // not built, so it has none, and no placeholder.
+  const still = !here && status.kind === 'kit' ? REGISTRY.find((c) => c.name === name)?.id : undefined
   const inner = (
     <>
+      {still && <span className="prop-part__still" aria-hidden="true"><Still id={still} /></span>}
       <span className="prop-part__name">{name}</span>
       <span className="prop-part__status">{here ? 'This page' : statusWords(status)}</span>
     </>
