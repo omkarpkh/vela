@@ -85,3 +85,33 @@ for (const theme of THEMES) {
     }
   })
 }
+
+// Slice 6 of the playground uplift: the Overview, Colour and Typography, whole, in both themes, at 1440
+// only. Each is taken in a window as tall as the page, so nothing scrolls while it is captured (a page
+// that scrolls during a capture never gives two matching shots). The suite runs with reduced motion, so
+// the hero's mark is at rest and nothing arrives. The commit stamp changes with every build, so it is
+// masked. The Linux baselines are written by the "Visual baselines" workflow, never on a laptop.
+const SLICE_6 = [['overview', '/#/', 'Vela Design System'], ['foundation-colour', '/#/foundations/color', 'Colour'], ['foundation-typography', '/#/foundations/typography', 'Typography']] as const
+
+for (const theme of THEMES) {
+  test.describe(`overview and foundations · ${theme}`, () => {
+    for (const [name, path, h1] of SLICE_6) {
+      test(name, async ({ page }, testInfo) => {
+        test.skip(testInfo.project.name !== 'desktop', 'the Overview and the foundations are screenshotted at 1440 only')
+        await page.goto(path)
+        await setTheme(page, theme)
+        await expect(page.getByRole('heading', { level: 1 })).toHaveText(h1)
+        await page.evaluate(() => document.fonts.ready)
+        await page.mouse.move(0, 0)
+        // As tall as the page; measured again once the window has grown, until it holds.
+        for (let i = 0, last = 0; i < 3; i++) {
+          const height = await page.evaluate(() => document.documentElement.scrollHeight)
+          if (height === last) break
+          await page.setViewportSize({ width: 1440, height })
+          last = height
+        }
+        await expect(page).toHaveScreenshot(`page-${name}-${theme}.png`, { fullPage: true, mask: [page.locator('.ov-stamp').first()] })
+      })
+    }
+  })
+}

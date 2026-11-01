@@ -121,7 +121,19 @@
 .shell-search__field:focus-within { box-shadow: inset 0 calc(-1 * var(--vela-focus-ring-width)) 0 var(--vela-focus-ring-color); }
 .shell-search__count { flex: none; font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
 .shell-search__list { list-style: none; margin: 0; padding: var(--vela-space-5); max-height: calc(100vh - 4 * var(--vela-space-60)); overflow-y: auto; }
-.shell-search__option { display: flex; flex-direction: column; gap: var(--vela-space-5); padding: var(--vela-space-10); border-radius: var(--vela-radius-4); cursor: pointer; }
+.shell-search__option { display: flex; align-items: flex-start; gap: var(--vela-space-15); padding: var(--vela-space-10); border-radius: var(--vela-radius-4); cursor: pointer; }
+/* The kind's mark (slice 6): a glyph over the kind's word, in a tile that keeps one width, so titles align. */
+.shell-search__kind {
+  flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--vela-stroke-2);
+  width: calc(4 * var(--vela-space-20)); min-height: var(--vela-control-height-40); box-sizing: border-box; padding: var(--vela-space-5);
+  border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4); color: var(--vela-text-default);
+}
+.shell-search__kind .vela-icon { color: var(--vela-icon-default); }
+.shell-search__kind[data-kind="missing"], .shell-search__kind[data-kind="proposal"] { border-style: dashed; border-color: var(--vela-border-default); }
+.shell-search__kindword { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); text-align: center; }
+.shell-search__option[aria-selected='true'] .shell-search__kind { border-color: var(--vela-border-active); }
+.shell-search__text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--vela-space-5); }
+.shell-search__id { font-family: var(--vela-font-family-mono); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); overflow-wrap: anywhere; }
 .shell-search__option[aria-selected='true'] { background: var(--vela-bg-raised-hover); box-shadow: inset var(--vela-stroke-2) 0 0 var(--vela-border-active); }
 .shell-search__option:active { background: var(--vela-bg-raised-hover); }
 .shell-search__title { display: flex; flex-wrap: wrap; align-items: center; gap: var(--vela-space-5) var(--vela-space-10); font-weight: var(--vela-font-weight-semibold); font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height); }
@@ -135,6 +147,8 @@
 @media (forced-colors: active) {
   .shell-search__option[aria-selected='true'] { forced-color-adjust: none; background: Highlight; color: HighlightText; }
   .shell-search__option[aria-selected='true'] .site-tag { border-color: HighlightText; color: HighlightText; }
+  .shell-search__kind { border-color: CanvasText; }
+  .shell-search__option[aria-selected='true'] .shell-search__kind, .shell-search__option[aria-selected='true'] .shell-search__kind .vela-icon { border-color: HighlightText; color: HighlightText; }
   .shell-search__field:focus-within { outline: var(--vela-focus-ring-width) solid Highlight; outline-offset: calc(-1 * var(--vela-focus-ring-width)); }
 }
 
@@ -173,6 +187,26 @@
 .shell-appearance__group { display: flex; flex-direction: column; gap: var(--vela-space-5); }
 .shell-appearance__label { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); font-weight: var(--vela-font-weight-semibold); }
 .shell-appearance__note { margin: 0; font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
+/* Segments with pictures (the Appearance panel's modes, slice 6): the picture over the word, one tile
+   each; selected is the same neutral surface and 2px active edge as any segment. */
+.shell-segments--pictures { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%; }
+.shell-segments--pictures .shell-segment { flex-direction: column; gap: var(--vela-space-5); height: auto; padding: var(--vela-space-5) var(--vela-space-5) var(--vela-stroke-2); }
+.shell-segment__picture { display: block; width: 100%; }
+/* A page in miniature, drawn by the tokens of the subtree it sits in. */
+.shell-preview { display: flex; width: 100%; height: var(--vela-space-60); overflow: hidden; border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-3); forced-color-adjust: none; }
+.shell-preview__whole, .shell-preview__half { display: flex; flex: 1; min-width: 0; overflow: hidden; }
+.shell-preview--split .shell-preview__half:last-child .shell-preview__page { margin-inline-start: -100%; }
+.shell-preview__half .shell-preview__page { flex: none; width: 200%; }
+.shell-preview__page { display: flex; flex-direction: column; width: 100%; background: var(--vela-bg-global); }
+.shell-preview__bar { display: block; height: var(--vela-space-10); border-bottom: 1px solid var(--vela-border-subtle); background: var(--vela-bg-global); }
+.shell-preview__body { display: flex; flex: 1; }
+.shell-preview__nav { display: block; width: 28%; background: var(--vela-bg-container); }
+.shell-preview__main { display: flex; flex: 1; flex-direction: column; gap: var(--vela-stroke-2); padding: var(--vela-space-5); }
+.shell-preview__line { display: block; width: 70%; height: var(--vela-stroke-2); border-radius: var(--vela-stroke-2); background: var(--vela-text-heading); }
+.shell-preview__line--short { width: 45%; background: var(--vela-text-default); }
+.shell-preview__row { display: flex; align-items: center; gap: var(--vela-stroke-2); margin-top: var(--vela-stroke-2); }
+.shell-preview__button { display: block; width: 35%; height: var(--vela-space-5); border-radius: var(--vela-stroke-2); background: var(--vela-btn-primary-bg); }
+.shell-preview__dot { display: block; width: var(--vela-space-5); height: var(--vela-space-5); border-radius: var(--vela-stroke-2); background: var(--vela-signal-status-healthy); }
 @media (forced-colors: active) {
   .shell-appearance__button[aria-expanded="true"] { border-color: Highlight; }
   .shell-segment__swatch { forced-color-adjust: none; }

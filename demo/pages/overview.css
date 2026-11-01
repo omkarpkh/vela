@@ -1,97 +1,136 @@
 /* ------------------------------------------------------------- Overview -- */
 /* The site's home (#/). Laid out against its own width, not the viewport (DESIGN.md, "Responsive and
-   density"): five facts, three security cards and three Ways in across; at 760px two facts across
-   with the last spanning both, one security card, one news column and two Ways in; at 520px one
-   Ways in and the hero stacked. Everything but the hero's mark sits on the page's own surface, so
-   every pair here is one PAIRS already asserts on --vela-bg-global; the mark sits on the mood still,
-   and its pairs are the "Logo: … hero" ones. */
+   density"): the hero's mark, panel and console in one row, five facts and three cards across; at
+   1000px the console goes under the panel; at 760px two facts across with the last spanning both, two
+   cards across; at 520px one card and the hero stacked. Everything but the hero's mark sits on the
+   page's own surface, or on the card's thumbnail well (--vela-bg-container), whose pairs PAIRS already
+   asserts; the mark sits on the mood still, and its pairs are the "Logo: … hero" ones. */
 .ov {
   container-type: inline-size;
-  display: flex; flex-direction: column; gap: var(--vela-space-40);
+  display: flex; flex-direction: column; gap: var(--vela-space-60);
   /* The hero mark's size: 128px, and 96px when the hero stacks, never less. */
   --ov-mark: calc(8 * var(--vela-icon-size));
 }
-.ov p, .ov ul, .ov h1, .ov h2, .ov h3 { margin: 0; }
+.ov p, .ov ul, .ov h1, .ov h2, .ov h3, .ov figure { margin: 0; }
 .ov ul { padding: 0; list-style: none; }
-.ov-section { display: flex; flex-direction: column; gap: var(--vela-space-15); min-width: 0; }
+.ov-section { display: flex; flex-direction: column; gap: var(--vela-space-20); min-width: 0; }
+.ov-section h2:focus { outline: none; }
+.ov-section h2:focus-visible { outline: var(--vela-focus-ring-width) solid var(--vela-focus-ring-color); outline-offset: var(--vela-focus-ring-offset); }
 .ov-lede { max-width: 72ch; color: var(--vela-text-default); }
 .ov-link { color: var(--vela-text-link); font-weight: var(--vela-font-weight-semibold); text-decoration: none; }
 .ov-link:hover { text-decoration: underline; }
 
-/* The hero: the mark and a solid panel on the mood. The mood stills (brand/README.md, "The mood")
-   are the background: AVIF first, then WebP, each at 1x and 2x, for the theme the page resolved to
-   (Overview.tsx sets --ov-mood-wide and --ov-mood-narrow, named with the release seed). A CSS
-   background never blocks the page, and the text never sits on it: it stays on the panel. The
-   mark's clear space is a quarter of its width (32px, or 24px stacked; never under 4px, because the
-   mark is never under 96px), held by the hero's padding and the gap. */
+/* The hero: the mark, a solid panel and the console, on the mood. The mood stills (brand/README.md,
+   "The mood") are the background: AVIF first, then WebP, each at 1x and 2x, for the theme the page
+   resolved to (Overview.tsx sets --ov-mood-wide and --ov-mood-narrow, named with the release seed). A
+   CSS background never blocks the page, and the text never sits on it: it stays on the panel, and the
+   console sits on its own plate. The mark's clear space is a quarter of its width (32px, or 24px
+   stacked; never under 4px, because the mark is never under 96px), held by the hero's padding and the gap. */
 .ov-hero {
   --ov-clear: calc(var(--ov-mark) / 4);
-  display: flex; align-items: center; gap: var(--ov-clear); padding: var(--ov-clear);
+  display: grid; grid-template-columns: var(--ov-mark) minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "mark panel console";
+  align-items: center; gap: var(--ov-clear); padding: var(--ov-clear);
   border-radius: var(--vela-radius-4);
   background-color: var(--vela-bg-global);
   background-image: var(--ov-mood-wide, none);
   background-position: right bottom; background-size: cover; background-repeat: no-repeat;
 }
-.ov-hero__mark { flex: none; width: var(--ov-mark); }
-.ov-hero__panel { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--vela-space-15); box-sizing: border-box; padding: var(--vela-space-30); background: var(--vela-bg-global); border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4); color: var(--vela-text-default); }
+.ov-hero__mark { grid-area: mark; width: var(--ov-mark); }
+.ov-hero__panel { grid-area: panel; min-width: 0; align-self: stretch; display: flex; flex-direction: column; justify-content: center; gap: var(--vela-space-15); box-sizing: border-box; padding: var(--vela-space-30); background: var(--vela-bg-global); border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4); color: var(--vela-text-default); }
 .ov-hero__claim { max-width: 60ch; }
 .ov-hero__actions { display: flex; flex-wrap: wrap; gap: var(--vela-space-10); }
 .ov-install { display: flex; flex-direction: column; gap: var(--vela-space-5); }
 .ov-install__line { display: flex; flex-wrap: wrap; align-items: center; gap: var(--vela-space-10); }
 .ov-install__code { min-width: 0; overflow-wrap: anywhere; font-family: var(--vela-font-family-mono); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); letter-spacing: var(--vela-text-meta-tracking); color: var(--vela-text-default); }
 
-/* Check it yourself: the number in the display face, its line, then the link to the proof. */
+/* The console: the kit's own Tabs, Table, Status Indicator and Risk Pill, on a plate like the stage's,
+   inert. Its caption says what it is made of. */
+.ov-console { grid-area: console; min-width: 0; align-self: stretch; display: flex; flex-direction: column; gap: var(--vela-space-10); box-sizing: border-box; padding: var(--vela-space-20); border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-8); background: var(--vela-bg-global); color: var(--vela-text-default); }
+.ov-console__screen { display: flex; flex-direction: column; gap: var(--vela-space-10); min-width: 0; pointer-events: none; }
+.ov-console__screen .vela-table-scroll, .ov-console__screen .vela-table-wrap { overflow: hidden; }
+.ov-console__caption { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
+
+/* Check it yourself: lighter than before. The number at H3's size in the display face, a short line, the link. */
 .ov-facts { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--vela-space-20); }
-.ov-fact { display: flex; flex-direction: column; gap: var(--vela-space-5); padding-top: var(--vela-space-15); border-top: 1px solid var(--vela-border-subtle); min-width: 0; }
-.ov-fact__n { font-family: var(--vela-font-family-display); font-size: var(--vela-text-h1-size); line-height: var(--vela-text-h1-line-height); font-weight: var(--vela-font-weight-regular); color: var(--vela-text-heading); }
-.ov-fact__line { flex: 1; }
+.ov-fact { display: flex; flex-direction: column; gap: var(--vela-space-5); padding-top: var(--vela-space-10); border-top: 1px solid var(--vela-border-subtle); min-width: 0; }
+.ov-fact__n { font-family: var(--vela-font-family-display); font-size: var(--vela-text-h3-size); line-height: var(--vela-text-h3-line-height); font-weight: var(--vela-font-weight-regular); color: var(--vela-text-heading); }
+.ov-fact__line { flex: 1; font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
+.ov-fact .ov-link { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); }
 .ov-stamp { color: var(--vela-text-de-emphasized); }
 
-/* Built for security products: one card per taxonomy, each shown with its own component. */
-.ov-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--vela-space-20); }
-.ov-card { display: flex; flex-direction: column; gap: var(--vela-space-10); padding: var(--vela-space-20); border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4); min-width: 0; }
-.ov-chips { display: flex; flex-wrap: wrap; gap: var(--vela-space-10); margin-top: var(--vela-space-5); }
+/* Built for security products: one wide card, its picture beside its words. */
+.ov-wide .shell-card { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); grid-template-rows: auto 1fr; gap: var(--vela-space-5) var(--vela-space-30); align-items: start; }
+.ov-wide .shell-card__thumb { grid-row: 1 / span 2; aspect-ratio: auto; }
+.ov-wide .shell-card__title { align-self: end; padding-top: var(--vela-space-20); }
 
-/* Ways in: each card is one link, its title and its line. */
-.ov-ways { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--vela-space-15); }
-.ov-way { display: flex; flex-direction: column; gap: var(--vela-space-5); height: 100%; box-sizing: border-box; padding: var(--vela-space-15) var(--vela-space-20); border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4); color: var(--vela-text-default); text-decoration: none; transition: border-color var(--vela-duration-base) var(--vela-ease-standard); }
-.ov-way__title { color: var(--vela-text-link); font-weight: var(--vela-font-weight-semibold); }
-/* A card and a tag are page controls: pressed, the active edge lands at pointer down (slice 1). */
-.ov-way, .ov-tag { cursor: pointer; -webkit-tap-highlight-color: transparent; }
-@media (hover: hover) {
-  .ov-way:hover { border-color: var(--vela-border-default); transition-duration: var(--vela-duration-fast); }
-  .ov-way:hover .ov-way__title { text-decoration: underline; }
-}
-/* After hover, so a press under the pointer shows. */
-.ov-way:active, .ov-tag:active { border-color: var(--vela-border-active); transition-duration: var(--vela-duration-instant); }
+/* Ways in and the proposals: cards with a picture, three across, 20 apart. A wider picture than the
+   kit's 16:9, so a short picture does not float in an empty well. */
+.ov-ways .shell-card__thumb, .ov-proposals .shell-card__thumb { aspect-ratio: 2 / 1; }
+.ov-ways, .ov-proposals { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--vela-space-20); }
 
-/* New in, and Specified, not built yet: two columns. */
-.ov-news { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--vela-space-30); }
-.ov .ov-highlights { display: flex; flex-direction: column; gap: var(--vela-space-5); padding-left: var(--vela-space-20); list-style: disc; color: var(--vela-text-default); }
-.ov-tags { display: flex; flex-wrap: wrap; gap: var(--vela-space-10); }
-.ov-tag { display: inline-block; padding: 0 var(--vela-space-10); border: 1px solid var(--vela-border-default); border-radius: var(--vela-radius-3); color: var(--vela-text-link); text-decoration: none; font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); letter-spacing: var(--vela-text-meta-tracking); }
-.ov-tag:hover { text-decoration: underline; }
+/* The pictures. Each is inert in its card (Card.tsx); words 12px or more; every colour a token. */
+.ov-thumb { display: flex; min-width: 0; max-width: 100%; color: var(--vela-text-default); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); }
+.ov-thumb--stack { flex-direction: column; align-items: flex-start; gap: var(--vela-space-10); }
+.ov-thumb--row { align-items: center; gap: var(--vela-space-10); }
+.ov-thumb__row { display: inline-flex; flex-wrap: wrap; align-items: center; gap: var(--vela-space-10); }
+.ov-thumb__label { font-weight: var(--vela-font-weight-semibold); }
+.ov-thumb--scales { gap: var(--vela-space-30); align-items: flex-start; }
+.ov-thumb__col { display: flex; flex-direction: column; align-items: flex-start; gap: var(--vela-space-5); }
+.ov-thumb__swatch { display: inline-block; width: var(--vela-control-height-24); height: var(--vela-control-height-24); border-radius: var(--vela-radius-3); border: 1px solid var(--vela-border-subtle); forced-color-adjust: none; }
+.ov-thumb__aa { margin: 0; color: var(--vela-text-heading); }
+.ov-thumb__bars { display: flex; flex-direction: column; gap: var(--vela-space-5); }
+.ov-thumb__bar, .ov-thumb__part--auto, .ov-thumb__key--auto { display: block; height: var(--vela-space-5); border-radius: var(--vela-radius-3); background: var(--vela-border-action); }
+.ov-thumb__code, .ov-thumb__file { font-family: var(--vela-font-family-mono); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); overflow-wrap: anywhere; }
+.ov-thumb__split { display: flex; gap: var(--vela-stroke-2); width: calc(12 * var(--vela-space-20)); max-width: 100%; }
+.ov-thumb__part { display: block; height: var(--vela-space-10); }
+.ov-thumb__part--auto { height: var(--vela-space-10); }
+.ov-thumb__part--review, .ov-thumb__key--review { box-sizing: border-box; height: var(--vela-space-10); border: 1px solid var(--vela-border-action); border-radius: var(--vela-radius-3); }
+.ov-thumb__words { display: flex; flex-wrap: wrap; gap: var(--vela-space-5) var(--vela-space-15); }
+.ov-thumb__key { display: inline-block; vertical-align: middle; width: var(--vela-space-10); height: var(--vela-space-10); margin-inline-end: var(--vela-space-5); }
+.ov-thumb--how { align-items: center; gap: var(--vela-space-20); }
+.ov-thumb__file { flex: none; padding: var(--vela-space-5) var(--vela-space-10); border: 1px solid var(--vela-border-active); border-radius: var(--vela-radius-4); background: var(--vela-bg-global); }
+.ov-thumb__fan { display: flex; flex-direction: column; gap: var(--vela-space-5); padding-inline-start: var(--vela-space-15); border-inline-start: 1px solid var(--vela-border-default); }
+.ov-thumb__out { white-space: nowrap; }
+.ov-thumb__vars { display: flex; flex-direction: column; gap: var(--vela-space-5); }
+.ov-thumb__var { display: inline-flex; align-items: center; gap: var(--vela-space-5); font-family: var(--vela-font-family-mono); }
+.ov-thumb__dot { display: inline-block; width: var(--vela-space-10); height: var(--vela-space-10); border-radius: var(--vela-radius-3); forced-color-adjust: none; }
+/* A proposal: a spec, not built, so its plate is dashed, as the proposal page's banner is. */
+.ov-thumb--spec { flex-direction: column; align-items: center; justify-content: center; gap: var(--vela-space-10); width: 100%; height: 100%; box-sizing: border-box; padding: var(--vela-space-10); border: 1px dashed var(--vela-border-default); border-radius: var(--vela-radius-4); }
+.ov-thumb__cells { display: grid; grid-template-columns: repeat(10, var(--vela-space-15)); gap: var(--vela-space-5); }
+.ov-thumb__cell { display: block; width: var(--vela-space-15); height: var(--vela-space-15); box-sizing: border-box; border: 1px solid var(--vela-border-action); border-radius: var(--vela-radius-3); }
+.ov-thumb__caption { text-align: center; }
+.ov-thumb__cell.is-proved { background: var(--vela-border-action); }
+
+/* New in: the release and its highlights. */
+.ov .ov-highlights { display: flex; flex-direction: column; gap: var(--vela-space-5); max-width: 72ch; padding-left: var(--vela-space-20); list-style: disc; color: var(--vela-text-default); }
 
 .ov-foot { padding-top: var(--vela-space-20); border-top: 1px solid var(--vela-border-subtle); }
 .ov-foot__links { display: flex; flex-wrap: wrap; gap: var(--vela-space-5) var(--vela-space-20); }
 .ov-foot__links a { color: var(--vela-text-link); }
 
+@container (max-width: 1000px) {
+  /* The console goes under the panel, as wide as the mark and the panel together. */
+  .ov-hero { grid-template-columns: var(--ov-mark) minmax(0, 1fr); grid-template-areas: "mark panel" "console console"; }
+}
 @container (max-width: 760px) {
   .ov-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .ov-fact:last-child { grid-column: 1 / -1; }
-  .ov-cards, .ov-news { grid-template-columns: minmax(0, 1fr); }
-  .ov-ways { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ov-ways, .ov-proposals { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ov-wide .shell-card { display: flex; flex-direction: column; }
+  .ov-wide .shell-card__title { padding-top: 0; }
+  .ov-thumb--scales { flex-wrap: wrap; gap: var(--vela-space-15) var(--vela-space-30); }
 }
 @container (max-width: 520px) {
-  .ov-ways { grid-template-columns: minmax(0, 1fr); }
-  /* Stacked: the mark above the panel, at 96px, on the phone still. (Set on the hero, not on .ov:
-     a container query never styles its own container.) */
-  .ov-hero { --ov-mark: calc(6 * var(--vela-icon-size)); flex-direction: column; align-items: stretch; background-image: var(--ov-mood-narrow, none); }
+  .ov-ways, .ov-proposals { grid-template-columns: minmax(0, 1fr); }
+  /* Stacked: the mark above the panel, at 96px, on the phone still, and the console under it. (Set
+     on the hero, not on .ov: a container query never styles its own container.) */
+  .ov-hero { --ov-mark: calc(6 * var(--vela-icon-size)); grid-template-columns: minmax(0, 1fr); grid-template-areas: "mark" "panel" "console"; align-items: stretch; background-image: var(--ov-mood-narrow, none); }
   .ov-hero__panel { padding: var(--vela-space-20); }
 }
 @media (forced-colors: active) {
-  .ov-card, .ov-way, .ov-hero__panel { border-color: CanvasText; }
-  .ov-way:active, .ov-tag:active { border-color: Highlight; }
+  .ov-hero__panel, .ov-console { border-color: CanvasText; }
   /* The stills go; the panel keeps its own Canvas and edge, and the mark draws in CanvasText. */
   .ov-hero { background-image: none; }
+  .ov-thumb__bar, .ov-thumb__part--auto, .ov-thumb__key--auto, .ov-thumb__cell.is-proved { background: CanvasText; }
+  .ov-thumb__cell, .ov-thumb__part--review, .ov-thumb__key--review, .ov-thumb--spec { border-color: CanvasText; }
 }

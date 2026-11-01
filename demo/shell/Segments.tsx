@@ -21,7 +21,7 @@
  *   be visible beside the group: the host shows that line. Pressing it selects nothing and calls
  *   onLockedPress. The word "locked" is never on screen or in a name.
  */
-import { Fragment, useId } from 'react'
+import { Fragment, useId, type ReactNode } from 'react'
 import { cn, Icon } from '../../src'
 import './shell.css'
 
@@ -32,6 +32,8 @@ export interface SegmentOption<T extends string> {
   locked?: { reason: string; describedBy?: string }
   /** A swatch before the label, filled with this semantic token (the Appearance panel's brands). */
   swatch?: string
+  /** A picture above the label (the Appearance panel's modes, slice 6). Decorative: the label is the name. */
+  picture?: ReactNode
 }
 
 export interface SegmentsProps<T extends string> {
@@ -48,7 +50,7 @@ export interface SegmentsProps<T extends string> {
 export function Segments<T extends string>({ label, value, options, onChange, onLockedPress, className }: SegmentsProps<T>) {
   const id = useId()
   return (
-    <div className={cn('shell-segments', className)} role="group" aria-label={label}>
+    <div className={cn('shell-segments', options.some((o) => o.picture) && 'shell-segments--pictures', className)} role="group" aria-label={label}>
       {options.map((o, i) => (
         <Fragment key={o.value}>
         <button
@@ -65,6 +67,7 @@ export function Segments<T extends string>({ label, value, options, onChange, on
         >
           {o.locked && <Icon name="lock" size="small" className="shell-segment__lock" />}
           {o.swatch && <span className="shell-segment__swatch" style={{ background: `var(${o.swatch})` }} aria-hidden="true" />}
+          {o.picture && <span className="shell-segment__picture" aria-hidden="true">{o.picture}</span>}
           {o.label}
         </button>
         {/* The reason sits beside the button, not in it, so it is the description and never the name. */}

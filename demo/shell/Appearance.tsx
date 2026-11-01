@@ -11,6 +11,9 @@
  * - Mode: System · Light · Dark. Brand: Default, and Custom unavailable, with its reason in view,
  *   until createBrand ships. There is no second brand yet, so none is offered (B9).
  * - Only this panel sets the page's theme and brand. The workbench's Compare only splits the stage.
+ * - Slice 6 of the playground uplift: each mode shows what it looks like before it is chosen, a small
+ *   page painted by the real tokens in a light or a dark subtree (System is both, split, as it follows
+ *   the screen), and System says which it is now. The pictures are decorative; the words name each mode.
  */
 import { useId, useRef, useState } from 'react'
 import { cn } from '../../src'
@@ -19,16 +22,42 @@ import './shell.css'
 
 export type Theme = 'system' | 'light' | 'dark'
 
+/** A page in miniature, drawn with the tokens of the theme it sits in: the bar, the nav, a heading, a button, a dot. */
+function MiniPage() {
+  return (
+    <span className="shell-preview__page">
+      <span className="shell-preview__bar" />
+      <span className="shell-preview__body">
+        <span className="shell-preview__nav" />
+        <span className="shell-preview__main">
+          <span className="shell-preview__line" />
+          <span className="shell-preview__line shell-preview__line--short" />
+          <span className="shell-preview__row"><span className="shell-preview__button" /><span className="shell-preview__dot" /></span>
+        </span>
+      </span>
+    </span>
+  )
+}
+const Preview = ({ theme }: { theme: 'light' | 'dark' | 'system' }) => (
+  <span className={cn('shell-preview', theme === 'system' && 'shell-preview--split')}>
+    {theme === 'system'
+      ? <><span data-theme="light" className="shell-preview__half"><MiniPage /></span><span data-theme="dark" className="shell-preview__half"><MiniPage /></span></>
+      : <span data-theme={theme} className="shell-preview__whole"><MiniPage /></span>}
+  </span>
+)
+
 const MODES = [
-  { value: 'system', label: 'System' },
-  { value: 'light', label: 'Light' },
-  { value: 'dark', label: 'Dark' },
+  { value: 'system', label: 'System', picture: <Preview theme="system" /> },
+  { value: 'light', label: 'Light', picture: <Preview theme="light" /> },
+  { value: 'dark', label: 'Dark', picture: <Preview theme="dark" /> },
 ] as const
 const CUSTOM_REASON = 'Custom is coming with createBrand.'
 const BRANDS = [
   { value: 'default', label: 'Default', swatch: '--vela-btn-primary-bg' },
   { value: 'custom', label: 'Custom', locked: { reason: CUSTOM_REASON, describedBy: 'appearance-custom-reason' } },
 ] as const
+
+const systemDark = () => typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-color-scheme: dark)').matches
 
 const themeWord = (t: Theme) => MODES.find((m) => m.value === t)!.label
 
@@ -74,6 +103,7 @@ export function Appearance({ theme, onTheme, compact }: { theme: Theme; onTheme:
         <div className="shell-appearance__group">
           <span className="shell-appearance__label" aria-hidden="true">Mode</span>
           <Segments label="Mode" value={theme} options={MODES} onChange={onTheme} />
+          {theme === 'system' && <span className="shell-appearance__note">System follows your screen. It is {systemDark() ? 'dark' : 'light'} now.</span>}
         </div>
         <div className="shell-appearance__group">
           <span className="shell-appearance__label" aria-hidden="true">Brand</span>

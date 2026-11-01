@@ -27,6 +27,7 @@ import { FOUNDATIONS, PATTERNS } from '../nav'
 import { LINKS } from '../links'
 import { COMMIT } from '../shell/ErrorBoundary'
 import checks from '../checks.json'
+import proposalsReadme from '../../guidelines/proposals/README.md?raw'
 import { PAIRS, PAIRS_LINE, DEPENDENCIES, RELEASE, MOOD_SEED } from 'virtual:vela-site-facts'
 
 /**
@@ -94,6 +95,8 @@ const GH = (path: string) => `${LINKS.github}/blob/${REF}/${path}`
 
 /** Where each link on the page goes. One place, so the page and its tests agree. */
 export const TARGETS = {
+  // Severity, status and risk on the Colour page, where each level's tokens are.
+  taxonomies: `#/foundations/${FOUNDATIONS[0].id}?section=taxonomies`,
   // The site has no list of components but the Status page, which the "not found" page already
   // sends people to as "Browse all components".
   components: '#/status',
@@ -129,3 +132,12 @@ export const moodStyle = (theme: 'light' | 'dark') => ({
   '--ov-mood-wide': moodImage('desktop', theme),
   '--ov-mood-narrow': moodImage('phone', theme),
 })
+
+/**
+ * Each proposal's rules and how many will have a proof, from the proposals README's own table
+ * ("| [Verdict Card](verdict-card.md) | … | 29 (23) | … |"). The Overview's proposal cards draw them as
+ * cells: filled for a rule that will have a proof, outlined for one a reviewer checks.
+ */
+export const PROPOSAL_RULES: Record<string, { rules: number; proved: number }> = Object.fromEntries(
+  [...proposalsReadme.matchAll(/^\|\s*\[[^\]]+\]\(([\w-]+)\.md\)\s*\|[^|]*\|\s*(\d+)\s*\((\d+)\)\s*\|/gm)].map((m) => [m[1], { rules: Number(m[2]), proved: Number(m[3]) }]),
+)

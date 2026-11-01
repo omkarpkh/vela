@@ -11,15 +11,24 @@
  *   focus back on the button that opened it.
  * - Each result: its title, its lifecycle tag in words, "also called: …" when an alias matched, and
  *   one line that tells it apart from its neighbours.
+ * - Slice 6 of the playground uplift: each result has a mark for its kind, a glyph from the kit's Icon
+ *   set over the kind's word (Component, Rule, Proposal, Foundation, Contract, Not in Vela), so the
+ *   kind is told by shape and by word, never by colour. A rule is titled in plain words, with its id
+ *   under it in code, where it is still found and copied from. A tag that says only the kind again is
+ *   not shown twice.
  */
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
-import { cn } from '../../src'
-import { buildIndex, search, MISSING, type Hit } from '../playground/search'
+import { cn, Icon, type IconName } from '../../src'
+import { buildIndex, search, MISSING, KIND_WORDS, type Hit, type Item, type Kind } from '../playground/search'
 import { CATALOG as REGISTRY } from '../playground/catalog'
 import './shell.css'
 
 const MISSING_STANDS: Record<string, string> = Object.fromEntries(MISSING.map((m) => [m.id, m.stands]))
 const CLOSEST: Record<string, string> = Object.fromEntries(MISSING.map((m) => [m.id, REGISTRY.find((e) => e.id === m.closest)?.name ?? m.closest]))
+
+const KIND_GLYPH: Record<Kind, IconName> = { component: 'shield-check', missing: 'circle-slash', proposal: 'pencil', foundation: 'settings', rule: 'check' }
+/** The kind's word: a foundation that is a contract says Contract. */
+export const kindWord = (i: Item) => (i.kind === 'foundation' && i.tag === 'Contract' ? 'Contract' : KIND_WORDS[i.kind])
 
 const isApple = () => /mac|iphone|ipad|ipod/i.test((navigator as Navigator & { userAgentData?: { platform?: string } }).userAgentData?.platform ?? navigator.platform ?? '')
 
@@ -146,13 +155,20 @@ export function Search({ compact }: { compact: boolean }) {
               onMouseMove={() => setActive(i)}
               onClick={() => go(h)}
             >
-              <span className="shell-search__title">
-                {h.item.title}
-                {h.item.tag && <span className="site-tag">{h.item.tag}</span>}
-                {h.alias && <span className="shell-search__alias">also called: {h.alias}</span>}
+              <span className="shell-search__kind" data-kind={h.item.kind}>
+                <Icon name={KIND_GLYPH[h.item.kind]} />
+                <span className="shell-search__kindword">{kindWord(h.item)}</span>
               </span>
-              <span className="shell-search__sign">
-                {h.item.kind === 'missing' ? `${h.item.title} isn't in Vela yet. It's ${MISSING_STANDS[h.item.id]}. ${h.item.sign} Closest today: ${CLOSEST[h.item.id]}.` : h.item.sign}
+              <span className="shell-search__text">
+                <span className="shell-search__title">
+                  {h.item.title}
+                  {h.item.tag && h.item.tag !== kindWord(h.item) && <span className="site-tag">{h.item.tag}</span>}
+                  {h.alias && <span className="shell-search__alias">also called: {h.alias}</span>}
+                </span>
+                {h.item.ruleId && <code className="shell-search__id">{h.item.ruleId}</code>}
+                <span className="shell-search__sign">
+                  {h.item.kind === 'missing' ? `${h.item.title} isn't in Vela yet. It's ${MISSING_STANDS[h.item.id]}. ${h.item.sign} Closest today: ${CLOSEST[h.item.id]}.` : h.item.sign}
+                </span>
               </span>
             </li>
           ))}

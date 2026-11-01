@@ -453,6 +453,56 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     new pages. Six new visual baselines, How it is made, Component status and Not found in both
     themes at 1440, written by the Visual baselines workflow. 1671 checks (was 1632): 1283 unit (was
     1268), 104 screenshots (was 98), 279 e2e (was 261).
+- **Site, slice 6 of the playground uplift, the last: the Foundations pages, the Overview and the
+  overlays** (s5-site-map, "Foundation", "Overview" and "Overlays"; Omkar's aims for the front door:
+  visual storytelling with less text, a designed picture on every card, alive states, calm and
+  intentional words).
+  - **The Foundations pages are their specs with the tables turned into specimens**, every value read
+    from the token file and every use from the spec's own table. Colour: every semantic colour as a
+    swatch painted by the token itself, once in a light subtree and once in a dark one, so each
+    swatch shows both themes whatever the page's; Severity, Status and Risk as three tables, each
+    level shown by its own part and each role by its swatch; the primitive ramps for reference, with
+    no copy mark, because a primitive is never bound. The Status row says Degraded, the Status
+    Indicator's own word, where the page said medium. Typography: the three families and the scale
+    set in its own classes. Spacing, Sizing and Radius: bars, boxes and tiles of each token's own
+    length; the 50 the scale skips is drawn, and says so; a regular Button beside a regular Input at
+    their real heights. Motion: every duration and curve plays when asked, a dot crossing its track
+    by transform only (the spring drawn from its own values), the waits said to be waits, and "Why
+    these values" folded. Every token has a copy mark always in view. The spec's paragraphs stay under
+    each picture; a group of more than six shows six, then "Show N more"; a rail indexes each page;
+    each ends on the next foundation. Filter Grammar stays a document.
+  - **The Overview.** The first line, the mark and its pulse are as they were. Beside the panel, a
+    console screen made of the kit's own Tabs, Table, Status Indicator and Risk Pill, inert, its
+    caption saying what it is made of. One primary action: the Figma button leaves the hero for the
+    ways in. The facts are lighter. All states' one unique idea, Severity, Status and Risk side by
+    side as three separate scales, is one card that opens them on Colour. Every way in (now six, with
+    How it is made) and every proposal is a card with a picture of where it goes: the real parts, the
+    token file's values, the build's counts; a proposal's picture is its rules as cells, filled for
+    the ones that will have a proof, read from the proposals README. Not found's proposals card now
+    opens this list, the one page that holds them all.
+  - **Search** marks each result's kind with a glyph from Icon's set over the kind's word (Component,
+    Rule, Proposal, Foundation, Contract, Not in Vela), so the kind is told by shape and by word,
+    never by colour. A rule is titled in plain words ("Label required") with its id under it, found
+    by either. A foundation's line is its own first sentence.
+  - **Appearance** shows each mode before it is chosen: a small page painted by the real tokens in its
+    own theme, System split in two, and says which System is now.
+  - **Deferred:** one side-panel part shared by the Props panel, Appearance and the phone menu.
+    Appearance is a panel anchored to its button and the other two are sheets, so sharing one part
+    is a change of behaviour, not of style, and is left for its own change.
+  - **Checks.** One new contrast pair (the specimens' ink on the page, `--vela-border-action` on
+    `--vela-bg-global`: 7.69:1 light, 5.22:1 dark); 115 pairs. No new token, no new site waiver.
+    20 more unit tests: 16 in `site-foundations.test.tsx` (every colour token in one place, the Status
+    words, the type scale from the spec's table, every sizing and motion token on its page, a copy
+    mark for every token on every page, the Play buttons, the heading order and the next card; the
+    proposals' rule counts; the plain rule titles and the kind words), the new pair in both themes,
+    and the new stylesheet's lint. Seventeen more e2e tests: nine new ones, the
+    swatches in both themes, a copy mark copying a whole token, a curve playing, the Overview's card
+    to Colour's scales and Not found's to the proposals, a card's states with nothing moving, Search's
+    kind marks, Appearance's preview, and nothing sideways at 390; and axe on four foundations in both
+    themes. The Overview tests follow the new page. Six new visual baselines, the Overview, Colour and
+    Typography in both themes at 1440, each taken in a window as tall as the page, written by the
+    Visual baselines workflow. 1714 checks (was 1671): 1303 unit (was 1283), 110 screenshots (was
+    104), 296 e2e (was 279).
 - **Brand marks now use the interface's icon grey** (`--vela-brand-mark` points at `--vela-grey-700`
   in light and `--vela-grey-300` in dark, the same values as `--vela-icon-strong`). The live header
   showed GitHub's and Figma's marks, and the word "npm", in pure black, heavier than the icons beside

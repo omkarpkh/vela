@@ -16,6 +16,8 @@ export type Kind = 'component' | 'missing' | 'proposal' | 'foundation' | 'rule'
 
 export interface Item {
   kind: Kind
+  /** For a rule, its id as written in the spec; its title is the id in plain words. */
+  ruleId?: string
   id: string
   title: string
   href: string
@@ -40,6 +42,12 @@ function whenToUse(spec: string): { text: string; targets: string[] }[] {
     const [left, right = ''] = b.split('→')
     return { text: plain(left).replace(/[.,;:]$/, ''), targets: [...right.matchAll(/\*\*([^*]+)\*\*/g)].map((t) => t[1].trim()) }
   })
+}
+
+/** A foundation's line: its first paragraph that is words, not a heading or a table, to its first stop. */
+const foundationLine = (md: string) => {
+  const para = md.replace(/^# [^\n]*\n+/, '').split(/\n\n/).map((p) => p.trim()).find((p) => p && !/^(#|\||- |```)/.test(p)) ?? ''
+  return plain(para).split(/(?<=\.)\s/)[0]
 }
 
 /** The spec's one-sentence summary: its first paragraph's first sentence. */
@@ -95,11 +103,25 @@ export function buildIndex(): Item[] {
     items.push({ kind: 'missing', id: m.id, title: m.title, href: href({ kind: 'component', id: closest.id }), tag: missingTag(m.stands), aliases: m.aliases, uses: [], sign: m.sign })
   }
   for (const p of PROPOSALS) items.push({ kind: 'proposal', id: p.id, title: p.name, href: href({ kind: 'proposal', id: p.id }), tag: 'Proposal', aliases: [], uses: [], sign: plain(p.what) })
-  for (const f of FOUNDATIONS) items.push({ kind: 'foundation', id: f.id, title: f.title, href: href({ kind: 'foundation', id: f.id }), aliases: [], uses: [], sign: f.kind })
+  for (const f of FOUNDATIONS) items.push({ kind: 'foundation', id: f.id, title: f.title, href: href({ kind: 'foundation', id: f.id }), tag: f.kind === 'Contract' ? 'Contract' : undefined, aliases: [], uses: [], sign: foundationLine(f.md) })
   for (const e of REGISTRY) for (const r of e.spec.matchAll(/\[\[rule:\s*([^|\]]+?)\s*\|\s*(compiler|runtime|browser|convention)\s*\]\]/g))
-    items.push({ kind: 'rule', id: r[1], title: r[1], href: `${href({ kind: 'component', id: e.id, tab: 'rules' })}?rule=${r[1]}`, aliases: [], uses: [], sign: `${e.name} rule, ${r[2] === 'browser' ? 'browser test' : r[2]}` })
+    items.push({ kind: 'rule', id: r[1], ruleId: r[1], title: ruleTitle(r[1], e.id), href: `${href({ kind: 'component', id: e.id, tab: 'rules' })}?rule=${r[1]}`, aliases: [], uses: [], sign: `${e.name} rule, ${r[2] === 'browser' ? 'browser test' : r[2]}` })
   return items
 }
+
+/**
+ * A rule's title in plain words, from its id (slice 6 of the playground uplift): the component's own
+ * name goes, since the line under it names the component, and the hyphens become spaces.
+ * `toggle-label-required` on Toggle is "Label required". The id itself is still shown, and found.
+ */
+export function ruleTitle(id: string, componentId: string): string {
+  const rest = id.startsWith(`${componentId}-`) ? id.slice(componentId.length + 1) : id
+  const words = rest.replace(/-/g, ' ')
+  return words.charAt(0).toUpperCase() + words.slice(1)
+}
+
+/** The word for each kind of result, shown under its mark (slice 6). A foundation that is a contract says so. */
+export const KIND_WORDS: Record<Kind, string> = { component: 'Component', missing: 'Not in Vela', proposal: 'Proposal', foundation: 'Foundation', rule: 'Rule' }
 
 export interface Hit { item: Item; score: number; alias?: string }
 
@@ -127,8 +149,8 @@ export function search(index: Item[], query: string, limit = 10): Hit[] {
   const hits: Hit[] = []
   for (const item of index) {
     // Rule ids are long and many: they match only on their own words, never on a single letter.
-    if (item.kind === 'rule' && (q.length < 3 || !norm(item.id).includes(q))) continue
-    let score = nameScore(item.title, q)
+    if (item.kind === 'rule' && (q.length < 3 || (!norm(item.id).includes(q) && !norm(item.title).includes(q)))) continue
+    let score = item.kind === 'rule' ? Math.max(nameScore(item.title, q), nameScore(item.id, q)) : nameScore(item.title, q)
     let alias: string | undefined
     for (const a of item.aliases) {
       const s = nameScore(a, q, ALIAS)
