@@ -83,12 +83,12 @@ test.describe('the install command', () => {
 })
 
 test.describe('segments', () => {
-  test('the theme, stage and implementation choices are segments: aria-current, Tab reaches each, arrows do nothing', async ({ page }) => {
+  test('the theme, layout and implementation choices are segments: aria-current, Tab reaches each, arrows do nothing', async ({ page }) => {
     await page.goto('/#/components/tabs')
     // The theme's segments live in the Appearance panel (section 9), the only control that sets it.
     await page.getByRole('button', { name: /^Appearance/ }).click()
-    for (const name of ['Mode', 'Stage', 'Implementation']) {
-      const group = page.getByRole('group', { name })
+    for (const name of ['Mode', 'Layout', 'Implementation']) {
+      const group = page.getByRole('group', { name, exact: true })
       await expect(group.locator('[aria-current="true"]')).toHaveCount(1)
       // No primary filled Button stands for "selected".
       await expect(group.locator('.vela-btn')).toHaveCount(0)
@@ -131,14 +131,14 @@ test.describe('forced colours', () => {
         probe.remove()
         return out
       })
-      const selected = page.getByRole('group', { name: 'Stage' }).locator('[aria-current="true"]')
+      const selected = page.getByRole('group', { name: 'Layout', exact: true }).locator('[aria-current="true"]')
       const seg = await selected.evaluate((el) => {
         const cs = getComputedStyle(el)
         return { adjust: cs.forcedColorAdjust, bg: cs.backgroundColor, fg: cs.color, width: cs.borderTopWidth, style: cs.borderTopStyle }
       })
       expect(seg).toEqual({ adjust: 'none', bg: system.highlight, fg: system.highlightText, width: '2px', style: 'solid' })
       // Only that element opts out of the forced palette.
-      const other = page.getByRole('group', { name: 'Stage' }).getByRole('button', { name: 'Full width', exact: true })
+      const other = page.getByRole('group', { name: 'Layout', exact: true }).getByRole('button', { name: 'Full width', exact: true })
       expect(await other.evaluate((el) => getComputedStyle(el).forcedColorAdjust)).toBe('auto')
 
       // Focus rings: a keyboard focus still draws the 2px outline.
@@ -303,7 +303,7 @@ test.describe('the page header', () => {
     // The install panel and the facts strip are gone.
     await expect(page.getByRole('region', { name: 'Use Button' })).toHaveCount(0)
     await expect(page.locator('dl[aria-label="Contract"]')).toHaveCount(0)
-    const code = page.getByRole('region', { name: 'Import and usage' })
+    const code = page.getByRole('region', { name: 'Use it', exact: true })
     await expect(code.locator('.pg-code')).toContainText("import { Button } from '@omkarux/vela'")
     await expect(code.locator('.pg-code')).not.toContainText('npm i')
   })
@@ -353,7 +353,7 @@ test.describe('the page header', () => {
   test('Copy snippet copies the import line and the JSX, and says so', async ({ page, context }) => {
     await context.grantPermissions(['clipboard-read', 'clipboard-write'])
     await page.goto('/#/components/button')
-    const code = page.getByRole('region', { name: 'Import and usage' })
+    const code = page.getByRole('region', { name: 'Use it', exact: true })
     await code.getByRole('button', { name: 'Copy snippet' }).click()
     await expect(code.getByRole('status')).toHaveText('Copied snippet')
     const copied = await page.evaluate(() => navigator.clipboard.readText())
@@ -376,7 +376,7 @@ test.describe('the page header', () => {
     await expect(head.locator('.shell-copymark__fail')).toHaveText("Couldn't copy: your browser blocked the clipboard. The text is selected, so press Ctrl+C.")
     expect(await page.evaluate(() => window.getSelection()?.toString())).toBe('npm i @omkarux/vela @base-ui/react')
 
-    const code = page.getByRole('region', { name: 'Import and usage' })
+    const code = page.getByRole('region', { name: 'Use it', exact: true })
     await code.getByRole('button', { name: 'Copy snippet' }).click()
     await expect(code.getByRole('status')).toHaveText(/^Couldn't copy: your browser blocked the clipboard\. The text is selected/)
     expect(await page.evaluate(() => window.getSelection()?.toString())).toBe(await code.locator('.pg-code').textContent())
@@ -525,9 +525,9 @@ test.describe('find', () => {
 
 // Slice 2 of the playground redesign: the workbench (playground spec, section 5 and 11).
 test.describe('the workbench', () => {
-  test('Stage: Beside by default; Full width puts the controls below the stage, kept for the component and in the link', async ({ page }) => {
+  test('Layout: Beside by default; Full width puts the controls below the stage, kept for the component and in the link', async ({ page }) => {
     await page.goto('/#/components/button')
-    const stage = page.getByRole('group', { name: 'Stage' })
+    const stage = page.getByRole('group', { name: 'Layout', exact: true })
     await expect(stage.getByRole('button', { name: 'Beside' })).toHaveAttribute('aria-current', 'true')
     const controls = page.getByRole('complementary', { name: 'Controls' })
     const frame = page.locator('.pg-frame').first()
@@ -535,21 +535,23 @@ test.describe('the workbench', () => {
     await stage.getByRole('button', { name: 'Full width' }).click()
     await expect(page).toHaveURL(/#\/components\/button\?v=1&stage=full$/)
     expect((await controls.boundingBox())!.y).toBeGreaterThan((await frame.boundingBox())!.y + (await frame.boundingBox())!.height - 1)
-    await expect(page.locator('.pg-frame-label').first()).toContainText('Full width')
+    await expect(page.locator('.pg')).toHaveClass(/pg--full/)
     // Kept for this component: a fresh visit without the link still opens Full width.
     await page.goto('about:blank')
     await page.goto('/#/components/button')
-    await expect(page.getByRole('group', { name: 'Stage' }).getByRole('button', { name: 'Full width' })).toHaveAttribute('aria-current', 'true')
+    await expect(page.getByRole('group', { name: 'Layout', exact: true }).getByRole('button', { name: 'Full width' })).toHaveAttribute('aria-current', 'true')
     // And only for that one. A fresh page first: a hash-only move can race the page's own replaceState.
     await page.goto('about:blank')
     await page.goto('/#/components/toggle')
-    await expect(page.getByRole('group', { name: 'Stage' }).getByRole('button', { name: 'Beside' })).toHaveAttribute('aria-current', 'true')
+    await expect(page.getByRole('group', { name: 'Layout', exact: true }).getByRole('button', { name: 'Beside' })).toHaveAttribute('aria-current', 'true')
   })
 
   test('Compare: Off shows the page theme alone; Themes shows light and dark', async ({ page }) => {
     await page.goto('/#/components/toggle')
     await expect(page.locator('.pg-frame')).toHaveCount(1)
-    await expect(page.locator('.pg-frame-label')).toHaveText('light · follows the page theme')
+    // Alone, the frame is the page's theme and the slab is the frame: no label of its own.
+    await expect(page.locator('.pg-frame-label')).toHaveCount(0)
+    await expect(page.locator('.pg-frame')).toHaveAttribute('data-theme', 'light')
     await setTheme(page, 'Dark')
     await expect(page.locator('.pg-frame')).toHaveAttribute('data-theme', 'dark')
     await compareThemes(page)
@@ -604,7 +606,7 @@ test.describe('the workbench', () => {
     await skip.focus()
     await expect(skip).toBeVisible()
     await page.keyboard.press('Enter')
-    await expect(page.getByRole('region', { name: 'Import and usage' })).toBeFocused()
+    await expect(page.getByRole('region', { name: 'Use it', exact: true })).toBeFocused()
     await expect(page).toHaveURL(/#\/components\/button$/)
   })
 
@@ -689,9 +691,9 @@ test.describe('review of slices 1 to 3', () => {
 
   test('the stage is a named landmark beside Controls and the code', async ({ page }) => {
     await page.goto('/#/components/button')
-    await expect(page.getByRole('region', { name: 'Stage' })).toBeVisible()
+    await expect(page.getByRole('region', { name: 'Live demo' })).toBeVisible()
     await expect(page.getByRole('complementary', { name: 'Controls' })).toBeVisible()
-    await expect(page.getByRole('region', { name: 'Import and usage' })).toBeVisible()
+    await expect(page.getByRole('region', { name: 'Use it', exact: true })).toBeVisible()
   })
 
   test('the Proposal page has its facts grid and its discussion link', async ({ page }) => {
@@ -848,7 +850,7 @@ test.describe('slice 5 · phone and Appearance', () => {
   test('on a phone the stage pins as a strip, and no focused control sits under it', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 })
     await page.goto('/#/components/button')
-    const region = page.getByRole('region', { name: 'Stage', exact: true })
+    const region = page.getByRole('region', { name: 'Live demo', exact: true })
     const header = await page.getByRole('banner').boundingBox()
     // Tab through every control; each focused one is in view below the strip, never under it.
     await page.getByRole('complementary', { name: 'Controls' }).getByRole('link', { name: 'Skip to code' }).focus()
@@ -868,7 +870,7 @@ test.describe('slice 5 · phone and Appearance', () => {
   test('the strip lets go while a text control has focus, and Expand stage opens it at full height', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 })
     await page.goto('/#/components/button')
-    const region = page.getByRole('region', { name: 'Stage', exact: true })
+    const region = page.getByRole('region', { name: 'Live demo', exact: true })
     await expect(region).toHaveCSS('position', 'sticky')
     await page.getByRole('textbox', { name: 'children' }).focus()
     await expect(region).toHaveCSS('position', 'static')
@@ -1775,5 +1777,148 @@ test.describe('slice 1 · the shell', () => {
       for (const box of await marks.evaluateAll((els) => els.map((el) => { const r = el.getBoundingClientRect(); return { w: r.width, h: r.height } })))
         expect(Math.min(box.w, box.h), path).toBeGreaterThanOrEqual(24)
     }
+  })
+})
+
+// Slice 3 of the playground uplift (s5-tabs, level 4; s5-site-map, "Component page: Playground"): the
+// component stage on all 19 Playground tabs. The caption, the range and their words are unit-tested in
+// src/styles/site-stage.test.tsx; here, the page in a real browser.
+test.describe('slice 3 · the stage', () => {
+  const ALL = [...COMPONENTS, 'dropdown-list', 'icon-button', 'brand-mark']
+  const SRC: Record<string, string> = { 'button': 'Button', 'toggle': 'Toggle', 'input': 'Input', 'text-area': 'TextArea', 'contextual-alert': 'ContextualAlert', 'status-indicator': 'StatusIndicator', 'risk-pill': 'RiskPill', 'tabs': 'Tabs', 'icon': 'Icon', 'checkbox': 'Checkbox', 'radio-group': 'RadioGroup', 'table': 'Table', 'popover': 'Popover', 'tooltip': 'Tooltip', 'dialog': 'Dialog', 'dropdown-list': 'DropdownList', 'icon-button': 'IconButton', 'brand-mark': 'BrandMark' }
+
+  test('on every Playground tab the component sits in a stage named Live demo, its caption says Live and its props, and the stage leads', async ({ page }) => {
+    expect(ALL).toHaveLength(19)
+    for (const id of ALL) {
+      await page.goto(`/#/components/${id}`)
+      const stage = page.getByRole('region', { name: 'Live demo', exact: true })
+      await expect(stage, id).toBeVisible()
+      await expect(stage.locator('.shell-stage__live')).toHaveText('Live')
+      const props = await stage.locator('code.shell-stage__props').textContent()
+      if (id === 'toast') expect(props).toBe("toast.add({ severity: 'success' })")
+      else expect(props, id).toMatch(new RegExp(`^<${SRC[id]}( [^>]*)?>$`))
+      // The real component is inside the slab, and only there.
+      await expect(stage.locator('.shell-stage__slab .pg-frame-body > *').first(), id).toBeVisible()
+      // The stage is the arrival's lead; the controls follow it.
+      await expect(stage).toHaveAttribute('data-arrive', '1')
+      await expect(page.getByRole('complementary', { name: 'Controls' })).toHaveAttribute('data-arrive', '2')
+      await expect(page.getByRole('complementary', { name: 'Controls' }).getByRole('heading', { name: 'Set it' })).toBeVisible()
+      // Reduced motion is the stage's own switch, in its caption.
+      await expect(stage.locator('.shell-stage__caption').getByRole('switch', { name: 'Reduced motion' }), id).toBeVisible()
+    }
+  })
+
+  test('the controls drive the props: the caption, the component and the code follow a segment', async ({ page }) => {
+    await page.goto('/#/components/button')
+    const stage = page.getByRole('region', { name: 'Live demo', exact: true })
+    const caption = stage.locator('code.shell-stage__props')
+    await expect(caption).toHaveText('<Button variant="primary" appearance="filled" size="regular" icon={…}>')
+    const controls = page.getByRole('complementary', { name: 'Controls' })
+    const live = stage.locator('.pg-frame-body .vela-btn')
+    const before = (await live.boundingBox())!.height
+    await choose(controls, 'size', 'large')
+    await choose(controls, 'variant', 'destructive')
+    await expect(caption).toHaveText('<Button variant="destructive" appearance="filled" size="large" icon={…}>')
+    expect((await live.boundingBox())!.height).toBeGreaterThan(before)
+    await expect(page.getByRole('region', { name: 'Use it', exact: true }).locator('.pg-code')).toContainText('<Button variant="destructive" size="large" icon={<PlusIcon />}>')
+    // A switch shows in the caption only while it is on.
+    await controls.getByRole('switch', { name: 'disabled' }).click()
+    await expect(caption).toContainText(' disabled')
+    await controls.getByRole('switch', { name: 'disabled' }).click()
+    await expect(caption).not.toContainText('disabled')
+  })
+
+  test('the resting stage shows the range at the page settings, inert, and says what the settings leave out', async ({ page }) => {
+    await page.goto('/#/components/button')
+    const range = page.getByRole('region', { name: 'The range', exact: true })
+    await expect(range.locator('.shell-stage__live')).toHaveText('The range')
+    await expect(range.locator('code.shell-stage__props')).toHaveText('<Button size="regular" icon={…}>')
+    const list = range.getByRole('list', { name: 'Button, every variant and appearance' })
+    // The icon is on, and text-link never carries one: six forms, and the rule's words under the plate.
+    await expect(list.getByRole('listitem')).toHaveCount(6)
+    await expect(page.getByText('Not in the range with these settings: text-link never carries an icon.')).toBeVisible()
+    // Each form is a picture: nothing in it is a control a reader can reach.
+    await expect(range.getByRole('button')).toHaveCount(0)
+    expect(await range.locator('.pg-range__pic').evaluateAll((els) => els.every((e) => e.hasAttribute('inert')))).toBe(true)
+    // The icon off: all seven forms, and nothing left out.
+    const controls = page.getByRole('complementary', { name: 'Controls' })
+    await controls.getByRole('switch', { name: 'icon' }).click()
+    await expect(list.getByRole('listitem')).toHaveCount(7)
+    await expect(page.getByText(/Not in the range/)).toHaveCount(0)
+    // The range follows the page's other settings, true to size: tiny here is tiny on the stage.
+    await choose(controls, 'size', 'tiny')
+    await expect(range.locator('code.shell-stage__props')).toHaveText('<Button size="tiny">')
+    const liveH = (await page.getByRole('region', { name: 'Live demo', exact: true }).locator('.pg-frame-body .vela-btn').boundingBox())!.height
+    // (text-link has no box, so it is measured by its own rule, not here.)
+    for (const h of await range.locator('.pg-range__pic .vela-btn:not(.vela-btn--text-link)').evaluateAll((els) => els.map((e) => e.getBoundingClientRect().height))) expect(h).toBe(liveH)
+    // Compare on Themes: one row per theme.
+    await compareThemes(page)
+    await expect(range.getByRole('list')).toHaveCount(2)
+  })
+
+  test('the range is only where the live stage shows one instance; Tabs keeps its own demo as its range', async ({ page }) => {
+    for (const [id, has] of [['risk-pill', true], ['status-indicator', true], ['tabs', false], ['table', false], ['toast', false]] as const) {
+      await page.goto(`/#/components/${id}`)
+      await expect(page.getByRole('region', { name: 'Live demo', exact: true })).toBeVisible()
+      await expect(page.getByRole('region', { name: 'The range', exact: true }), id).toHaveCount(has ? 1 : 0)
+    }
+  })
+
+  test('the hardest page: the Tabs page tabs and the demo tabs are told apart by the stage, set to Large or not', async ({ page }) => {
+    await page.goto('/#/components/tabs')
+    const pageTabs = page.getByRole('tablist', { name: 'Tabs page' })
+    const stage = page.getByRole('region', { name: 'Live demo', exact: true })
+    await expect(pageTabs).toBeVisible()
+    // The demo's own list keeps its name, inside the stage, never outside it.
+    await expect(stage.getByRole('tablist', { name: 'Views' })).toBeVisible()
+    await expect(page.getByRole('tablist', { name: 'Views' })).toHaveCount(1)
+    // The width control is the stage's own, in its caption, with the handle on the frame.
+    await expect(stage.locator('.shell-stage__caption').getByRole('spinbutton', { name: 'Container width' })).toBeVisible()
+    await expect(stage.locator('.pg-width__handle')).toHaveCount(1)
+    await choose(page.getByRole('complementary', { name: 'Controls' }), 'size', 'large')
+    await expect(stage.locator('code.shell-stage__props')).toHaveText('<Tabs size="large">')
+    await expect(stage.getByRole('tablist', { name: 'Views' })).toHaveClass(/vela-tabs__list/)
+    // Built with sits last in Set it, and is not a prop, so the caption never says it.
+    const fields = page.getByRole('complementary', { name: 'Controls' }).locator('.pg-field')
+    await expect(fields.last()).toHaveAttribute('data-prop', 'implementation')
+    await page.getByRole('group', { name: 'Implementation' }).getByRole('button', { name: 'headless' }).click()
+    await expect(stage.locator('code.shell-stage__props')).toHaveText('<Tabs size="large">')
+  })
+
+  test('in forced colours the stage keeps its edge, and each frame side by side keeps an outline', async ({ page }) => {
+    await page.emulateMedia({ forcedColors: 'active' })
+    await page.goto('/#/components/tabs')
+    const stage = page.getByRole('region', { name: 'Live demo', exact: true })
+    const canvasText = await page.evaluate(() => {
+      const probe = document.createElement('div')
+      probe.style.cssText = 'forced-color-adjust: none; color: CanvasText'
+      document.body.appendChild(probe)
+      const c = getComputedStyle(probe).color
+      probe.remove()
+      return c
+    })
+    const edge = await stage.evaluate((el) => { const cs = getComputedStyle(el); return { style: cs.borderTopStyle, colour: cs.borderTopColor, shadow: cs.boxShadow } })
+    expect(edge).toEqual({ style: 'solid', colour: canvasText, shadow: 'none' })
+    await compareThemes(page)
+    for (const outline of await stage.locator('.pg-frame').evaluateAll((els) => els.map((e) => getComputedStyle(e).outlineStyle))) expect(outline).toBe('solid')
+  })
+
+  test('on a phone, a tab inside the pinned stage takes focus and the page stays where it is', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.goto('/#/components/tabs')
+    const stage = page.getByRole('region', { name: 'Live demo', exact: true })
+    await expect(stage).toHaveCSS('position', 'sticky')
+    await page.evaluate(() => window.scrollTo(0, 900))
+    const header = (await page.getByRole('banner').boundingBox())!
+    await expect.poll(async () => Math.round((await stage.boundingBox())!.y)).toBe(Math.round(header.y + header.height))
+    const at = await page.evaluate(() => window.scrollY)
+    const views = stage.getByRole('tablist', { name: 'Views' })
+    await views.getByRole('tab', { selected: true }).focus()
+    expect(await page.evaluate(() => window.scrollY)).toBe(at)
+    // A move along the row: the panel under it changes height, and that is all that moves.
+    await page.keyboard.press('ArrowRight')
+    await expect(views.getByRole('tab', { name: /^Assets/ })).toBeFocused()
+    expect(Math.abs((await page.evaluate(() => window.scrollY)) - at)).toBeLessThan(60)
+    expect(Math.round((await stage.boundingBox())!.y)).toBe(Math.round(header.y + header.height))
   })
 })
