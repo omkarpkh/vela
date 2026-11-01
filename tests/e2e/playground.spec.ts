@@ -340,6 +340,8 @@ test('the Tabs page switches implementation, and the import line and install com
   await alerts.focus()
   await page.keyboard.press('ArrowRight')
   await expect(frame.getByRole('tab', { name: /^Assets/ })).toHaveAttribute('aria-selected', 'true')
+  // Base UI can hold the outgoing panel for a frame while it unmounts: wait for one panel, then read it.
+  await expect(frame.getByRole('tabpanel')).toHaveCount(1)
   await expect(frame.getByRole('tabpanel')).toHaveText('Only the active panel is mounted.')
   // Home and End jump; Audit log is disabled, so the arrows step over it.
   await page.keyboard.press('Home')
@@ -354,8 +356,9 @@ test('the Tabs page switches implementation, and the import line and install com
   await expect(alerts).toHaveAttribute('aria-selected', 'true')
   // Tabs.css keys on `[aria-selected='true']` and `:disabled`; Base UI's markup must hit both.
   const underline = (name: RegExp | string) => frame.getByRole('tab', { name }).evaluate((el) => getComputedStyle(el).borderBottomColor)
-  expect(await underline(/^Alerts/)).not.toBe('rgba(0, 0, 0, 0)')
-  expect(await underline(/^Assets/)).toBe('rgba(0, 0, 0, 0)')
+  // The underline's colour transitions, so poll until it settles rather than reading one frame.
+  await expect.poll(() => underline(/^Alerts/)).not.toBe('rgba(0, 0, 0, 0)')
+  await expect.poll(() => underline(/^Assets/)).toBe('rgba(0, 0, 0, 0)')
   await expect(frame.getByRole('tab', { name: 'Audit' })).toHaveCSS('cursor', 'not-allowed')
 })
 
