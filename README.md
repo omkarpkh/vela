@@ -13,14 +13,15 @@
 A design system for data-heavy products, built first for security consoles. The tokens and the component specs are framework-agnostic;
 this repository is a **React implementation** of them. Nineteen components, two themes, zero runtime
 dependencies in the core entry — and every design rule in the documentation is tagged with how it is
-enforced: 78 of the 244 by the TypeScript compiler, the rest at runtime, in a real browser, or by review
+enforced: 79 of the 258 by the TypeScript compiler, the rest at runtime, in a real browser, or by review
 (counted by `npm run rules:check`).
 
 **Status:** every component carries a lifecycle label — Approved, Known bugs, Experimental or
 Retired, defined in [`GOVERNANCE.md`](GOVERNANCE.md). Seven are **Approved**; Icon, Brand Mark, Text Area,
 Checkbox, Radio Group, Popover, Tooltip, Icon Button, Dialog, Table, Toast and Dropdown List are **Experimental**.
 Every component's Figma set is published in the library except Brand Mark's and Icon Button's, whose
-builders are written and not yet run.
+builders are written and not yet run; so is the builder of the Tabs overflow control, a part the
+headless Tabs draws.
 
 ```bash
 npm install @omkarux/vela
@@ -65,8 +66,8 @@ link to each, and the number of automated checks, written by the test runners ra
 | **Dependencies** | None in the core entry. `react` / `react-dom` are peers (18.3 or 19). The `/headless` entry needs one optional peer, `@base-ui/react` 1.9.x (MIT) |
 | **Icons** | 50 curated [Lucide](https://lucide.dev) 1.63.0 glyphs (ISC; a subset from Feather, MIT), compiled into the core entry at build time — no icon dependency, `lucide` is a devDependency only. The ISC notice ships in [`NOTICE`](NOTICE) |
 | **Format** | ESM, `preserveModules` for tree-shaking, full `.d.ts` |
-| **Tests** | 1731 automated checks — 1313 unit and contract (116 contrast pairs, each asserted in both themes), 415 browser (110 screenshots: 68 at four widths, 24 of the component tabs, 6 of the proposal and pattern pages, 6 of the doc pages and 6 of the Overview and two foundations at 1440, 303 playground, 2 docs), 3 Flutter — counted by `npm run checks` |
-| **Packed size** | 315.7 kB, 266 files (the Filter Grammar's modules and their .d.ts are most of the growth since 0.15.0), as `npm run verify` measures it (README and CHANGELOG ship in the tarball, so this moves when they do) |
+| **Tests** | 1777 automated checks — 1330 unit and contract (116 contrast pairs, each asserted in both themes), 444 browser (112 screenshots: 68 at four widths, 24 of the component tabs, 2 of the Tabs overflow stage, 6 of the proposal and pattern pages, 6 of the doc pages and 6 of the Overview and two foundations at 1440, 330 playground, 2 docs), 3 Flutter — counted by `npm run checks` |
+| **Packed size** | 332.0 kB, 268 files (the Filter Grammar's modules and their .d.ts are most of the growth since 0.15.0; Tabs overflow, its module and its longer spec, added 16.3 kB), as `npm run verify` measures it (README and CHANGELOG ship in the tarball, so this moves when they do) |
 
 ## The three ideas worth stealing
 
@@ -161,7 +162,7 @@ document.documentElement.removeAttribute('data-theme')        // follow the OS
 
 ```bash
 npm run dev        # demo showcase at localhost:5174
-npm test           # 1313 unit and contract tests, of 1731 checks in all — the numbers are generated into demo/checks.json
+npm test           # 1330 unit and contract tests, of 1777 checks in all — the numbers are generated into demo/checks.json
 npm run checks     # counts every automated check into demo/checks.json (diffed in verify)
 npm run contrast   # WCAG report for both themes
 npm run verify     # tokens:check + icons:check + rules:check + typecheck + tests + checks:check + build + pack-and-consume gate

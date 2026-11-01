@@ -2,6 +2,7 @@ import * as React from 'react'
 import { cn } from '../../lib/cn'
 import { useTabsMotion, usePreviewScale, type TabsMotion } from './motion'
 import { TabLayers } from './layers'
+import { useRowOverflow } from './overflow'
 
 interface TabsContextValue {
   value: string
@@ -106,6 +107,11 @@ function TabList({ children, className, ...rest }: TabListProps) {
 
   // Each trigger's Seed is a third of its width with a floor, so it is measured per tab.
   usePreviewScale(listRef, children)
+
+  // Overflow (tabs.md): the edge where more tabs are fades, and an opened, clicked or focused tab is
+  // scrolled wholly into view. The core has no "more" control and no sticky open tab: that is the
+  // headless Tabs' (the gap is named in the spec).
+  useRowOverflow(listRef, null, { sticky: false, report: false })
 
   // Roving focus. Reading the tabs off the DOM avoids a child registry that
   // would silently desync whenever a tab is conditionally rendered.

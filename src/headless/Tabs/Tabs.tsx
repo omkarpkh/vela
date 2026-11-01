@@ -4,11 +4,27 @@ import { cn } from '../../lib/cn'
 import type {
   TabsProps,
   TabListProps,
-  TabTriggerProps,
+  TabTriggerProps as CoreTabTriggerProps,
   TabPanelProps,
 } from '../../components/Tabs/Tabs'
 import { TabLayers } from '../../components/Tabs/layers'
 import { useTabsMotion, usePreviewScale, type TabsMotion } from '../../components/Tabs/motion'
+import { useRowOverflow, triggersOf, type RowItem } from '../../components/Tabs/overflow'
+import { DropdownList, type DropdownListItem } from '../DropdownList'
+import { Icon } from '../../components/Icon'
+
+/**
+ * The headless trigger: the core's props, plus `unseen`, which only the headless Tabs has, because
+ * only it has the overflow control that shows it (tabs.md, Overflow; `tabs-unseen-headless-only`).
+ */
+export interface TabTriggerProps extends CoreTabTriggerProps {
+  /**
+   * This tab holds changes the person has not seen. Set it when they arrive and clear it when the
+   * tab is opened. A hidden tab with `unseen` adds "· 1 new" to the "N more" control; the tab
+   * itself shows nothing.
+   */
+  unseen?: boolean
+}
 
 /**
  * Tabs on Base UI — the Phase 1 proving case for `@omkarux/vela/headless`.
@@ -33,6 +49,9 @@ import { useTabsMotion, usePreviewScale, type TabsMotion } from '../../component
  *   Each trigger renders the same two decorative layers as the core (the Seed and the line it grows
  *   into), and the motion state — pointer grows in place, keyboard is instant — and the Seed's
  *   measured size are the same hooks the core uses (`components/Tabs/motion.ts`).
+ * - **Overflow** (headless only). The list sits in a row with the "N more" control at its end,
+ *   outside the scroller: a Dropdown List of every tab. The count and the news are measured, never
+ *   props (`components/Tabs/overflow.ts`, shared with the core's fades and its scrolling into view).
  */
 
 // Vela's own provider guard, so the named error is the same one the core implementation throws
@@ -84,9 +103,25 @@ export function Tabs({
   )
 }
 
+/** The tabs the list offers: every one that can be opened, in row order, and the open one whatever it is. */
+const listItems = (items: RowItem[]): DropdownListItem[] =>
+  items
+    .filter((i) => !i.disabled || i.selected)
+    .map((i) => (i.selected ? { value: i.value, label: i.label, meta: 'open' } : i.unseen ? { value: i.value, label: i.label, meta: 'new' } : { value: i.value, label: i.label }))
+
+/**
+ * The control's spoken name. It starts with its visible words, in order, so speech input can say
+ * what it sees (WCAG 2.5.3, Label in Name), then says what it does: "6 more, 1 new. Show all tabs".
+ * The dot between the words is decoration, hidden from assistive technology, so the visible text is
+ * "6 more 1 new" and sits inside the name as it reads.
+ */
+export const moreName = (hidden: number, news: number) =>
+  `${hidden} more${news > 0 ? `, ${news} new` : ''}. Show all tabs`
+
 function TabList({ children, className, ...rest }: TabListProps) {
   const { moving, changes, settle, listProps } = useVelaTabs('List')
   const listRef = React.useRef<HTMLDivElement>(null)
+  const rowRef = React.useRef<HTMLDivElement>(null)
 
   // Base UI writes the new aria-selected during the commit that changes the selection; this runs
   // after it, so the layers' transitions already exist when settle() asks for them.
@@ -97,28 +132,81 @@ function TabList({ children, className, ...rest }: TabListProps) {
   // Each trigger's Seed is a third of its width with a floor, so it is measured per tab.
   usePreviewScale(listRef, children)
 
+  // tabs-overflow-count-measured: the count and the news are measured, never props.
+  const row = useRowOverflow(listRef, rowRef, { sticky: true, report: true })
+  const items = listItems(row.items)
+  const open = row.items.find((i) => i.selected)?.value
+
+  // tabs-overflow-announce-news: announced once, politely, when news arrives in a hidden tab. News
+  // arriving is a tab gaining `unseen` while it is hidden; a tab leaving the row with news it already
+  // had is not news, and neither is the first render.
+  const [announcement, setAnnouncement] = React.useState('')
+  const totalNews = row.items.filter((i) => i.unseen).length
+  const before = React.useRef({ overflow: false, news: 0, total: 0 })
+  React.useEffect(() => {
+    const prev = before.current
+    const news = row.overflow ? row.unseenHidden : 0
+    if (prev.overflow && row.overflow && news > prev.news && totalNews > prev.total) setAnnouncement(`All tabs, ${news} with new items`)
+    else if (news === 0) setAnnouncement('')
+    before.current = { overflow: row.overflow, news, total: totalNews }
+  }, [row.overflow, row.unseenHidden, totalNews])
+
+  // Choosing a tab in the list opens it as a click on it would; the row then scrolls it into view.
+  const choose = React.useCallback((value: string) => {
+    const list = listRef.current
+    if (!list) return
+    triggersOf(list).find((t) => t.getAttribute('data-vela-value') === value)?.click()
+  }, [])
+
+  const showControl = row.overflow && row.hidden > 0 && open !== undefined && items.length > 0
+
   return (
-    // activateOnFocus: the spec's automatic activation — an arrow key both moves focus and
-    // selects. loopFocus (Base UI's default) is the spec's "the list wraps".
-    <BaseTabs.List
-      ref={listRef}
-      activateOnFocus
-      {...listProps}
-      data-vela-moving={moving || undefined}
-      className={cn('vela-tabs__list', className)}
-      {...rest}
-    >
-      {children}
-    </BaseTabs.List>
+    <div ref={rowRef} className="vela-tabs__row">
+      {/* activateOnFocus: the spec's automatic activation — an arrow key both moves focus and
+          selects. loopFocus (Base UI's default) is the spec's "the list wraps". */}
+      <BaseTabs.List
+        ref={listRef}
+        activateOnFocus
+        {...listProps}
+        data-vela-moving={moving || undefined}
+        className={cn('vela-tabs__list', className)}
+        {...rest}
+      >
+        {children}
+      </BaseTabs.List>
+      {showControl ? (
+        <DropdownList
+          label="All tabs"
+          align="end"
+          items={items as [DropdownListItem, ...DropdownListItem[]]}
+          value={open}
+          onValueChange={choose}
+          trigger={
+            <button type="button" className="vela-tabs__more" aria-label={moreName(row.hidden, row.unseenHidden)}>
+              <span className="vela-tabs__more-label">
+                {row.hidden} more
+                {row.unseenHidden > 0 ? <span className="vela-tabs__more-news"> <span aria-hidden="true">·</span> {row.unseenHidden} new</span> : null}
+              </span>
+              <Icon name="chevron-down" tone="inherit" />
+            </button>
+          }
+        />
+      ) : null}
+      <span className="vela-sr-only" aria-live="polite">{announcement}</span>
+    </div>
   )
 }
 
-function TabTrigger({ value, children, count, disabled, className }: TabTriggerProps) {
+function TabTrigger({ value, children, count, disabled, unseen, className }: TabTriggerProps) {
   useVelaTabs('Trigger')
   return (
     <BaseTabs.Tab
       value={value}
       className={cn('vela-tabs__trigger', className)}
+      // For the overflow control: which tab this is, and whether it holds news. Read off the DOM by
+      // components/Tabs/overflow.ts, never styled.
+      data-vela-value={value}
+      data-vela-unseen={unseen || undefined}
       // The native attribute, not Base UI's `disabled` prop — see the note at the top. Base UI
       // stamps `aria-disabled="false"` on every tab it believes is enabled; passing our own value
       // last clears that on enabled tabs and keeps the disabled one consistent with its attribute.

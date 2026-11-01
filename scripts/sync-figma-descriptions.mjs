@@ -47,7 +47,15 @@ export const SETS = {
   'contextual-alert.md': { set: 'Contextual Alert', src: 'ContextualAlert', state: 'published', node: '77:15', export: 'ContextualAlert' },
   'status-indicator.md': { set: 'Status Indicator', src: 'StatusIndicator', state: 'published', node: '8:32', export: 'StatusIndicator' },
   'risk-pill.md': { set: 'Risk Pill', src: 'RiskPill', state: 'published', node: '127:14', export: 'RiskPill' },
-  'tabs.md': { set: 'Tab', src: 'Tabs', state: 'published', node: '11:20', export: 'Tabs.Trigger' },
+  // The headless Tabs also draws a set no one imports: the "N more" control at the end of an
+  // overflowing row (tabs.md, Overflow). A `kind: 'part'` entry under `also` is such a set: it has
+  // its own `state` and `node`, no `export` and no import, and says in `part` what draws it, so the
+  // map and the descriptions never claim an import for it. Its builder,
+  // scripts/figma/components/tabs-overflow-control.figma.js, is written and has not been run (1 Nov 2026).
+  'tabs.md': {
+    set: 'Tab', src: 'Tabs', state: 'published', node: '11:20', export: 'Tabs.Trigger',
+    also: [{ set: 'Tabs overflow control', kind: 'part', state: 'none', node: null, part: 'drawn by Tabs (headless) when tabs overflow' }],
+  },
   'icon.md': { set: 'Icon', src: 'Icon', state: 'published', node: '131:324', export: 'Icon' },
   // No set yet (1 Nov 2026): scripts/figma/components/brand-mark.figma.js is written and has not been run.
   'brand-mark.md': { set: 'Brand Mark', src: 'BrandMark', state: 'none', node: null, export: 'BrandMark' },
@@ -79,6 +87,8 @@ export const FILE_KEY = 'XO2rmeCcgOjyKe4oipgF4j'
 export const importOf = (e) => `import { ${(e.imports ?? [e.export.split('.')[0]]).join(', ')} } from '@omkarux/vela${e.entry === 'headless' ? '/headless' : ''}'`
 /** For a set that is one part of a compound component, the line that says which part. */
 const partOf = (e) => (e.export.includes('.') ? [`This set is one ${e.export}.`] : [])
+/** A set no one imports (`kind: 'part'`): the line that stands where the import would. */
+export const noImportOf = (a) => `No import: this set is ${a.part}.`
 
 // `[[rule: id | enforcement]]` is metadata for scripts/check-rules.mjs, not prose: it is stripped
 // here so it never reaches a Figma component description, and in demo/playground/Markdown.tsx so
@@ -97,8 +107,12 @@ for (const [f, e] of Object.entries(SETS)) {
   if (e.state === 'published' && !e.node) throw new Error(`SETS['${f}'] is published but has no node`)
   if (e.state === 'none' && e.node) throw new Error(`SETS['${f}'] has no set but names node ${e.node}`)
   for (const a of e.also ?? []) {
-    if (e.state === 'published' && !a.node) throw new Error(`SETS['${f}'].also '${a.set}' is published but has no node`)
-    if (e.state === 'none' && a.node) throw new Error(`SETS['${f}'].also '${a.set}' has no set but names node ${a.node}`)
+    // A part carries its own state; any other extra set is built with the entry's.
+    const state = a.kind === 'part' ? a.state : e.state
+    if (a.kind !== undefined && a.kind !== 'part') throw new Error(`SETS['${f}'].also '${a.set}' has kind "${a.kind}"; the only kind is 'part'`)
+    if (a.kind === 'part' && (!STATES.includes(a.state) || a.export || !a.part)) throw new Error(`SETS['${f}'].also '${a.set}' is a part: it needs its own state and a \`part\` line, and has no export`)
+    if (state === 'published' && !a.node) throw new Error(`SETS['${f}'].also '${a.set}' is published but has no node`)
+    if (state === 'none' && a.node) throw new Error(`SETS['${f}'].also '${a.set}' has no set but names node ${a.node}`)
   }
 }
 
@@ -129,7 +143,7 @@ function parse(file) {
   const describe = (part) => [
     intent, '',
     'Use the library component; do not rebuild it from this frame.',
-    'CODE', importOf(SETS[file]), ...partOf(part), code, '',
+    'CODE', ...(part.kind === 'part' ? [noImportOf(part)] : [importOf(SETS[file]), ...partOf(part)]), code, '',
     'FIGMA → PROP', mapping.join('  ·  '),
     ...(notes.length ? ['', ...notes] : []),
     '',
@@ -159,12 +173,14 @@ function parse(file) {
   }
   const nodeUrl = (node) => (node ? `https://www.figma.com/design/${FILE_KEY}/Vela-Design-System?node-id=${node.replace(':', '-')}` : null)
   if (SETS[file].also) {
-    map.also = SETS[file].also.map((a) => ({ set: a.set, state: SETS[file].state, node: a.node, url: nodeUrl(a.node), import: importOf({ ...SETS[file], ...a }), write: a.export }))
+    map.also = SETS[file].also.map((a) => (a.kind === 'part'
+      ? { set: a.set, kind: 'part', state: a.state, node: a.node, url: nodeUrl(a.node), import: null, write: null, part: a.part }
+      : { set: a.set, state: SETS[file].state, node: a.node, url: nodeUrl(a.node), import: importOf({ ...SETS[file], ...a }), write: a.export }))
   }
 
   const sets = [
     { name: SETS[file].set, description: body },
-    ...(SETS[file].also ?? []).map((a) => ({ name: a.set, description: describe({ ...SETS[file], ...a }) })),
+    ...(SETS[file].also ?? []).map((a) => ({ name: a.set, description: describe(a.kind === 'part' ? a : { ...SETS[file], ...a }) })),
   ]
   return { file, title, page, set: SETS[file].set, sets, description: body, map }
 }
@@ -178,7 +194,7 @@ if (isMain && process.argv.includes('--map')) {
   // the job Code Connect would do on an Organization plan, from the specs, on every plan.
   // Regenerate with `npm run figma:map`; src/styles/figma-map.test.ts fails when it is stale.
   const out = {
-    $comment: 'Generated by scripts/sync-figma-descriptions.mjs --map from guidelines/components/*.md — do not edit. When a Figma node is an instance of a set below, write `write` with props from `figmaToProp`, imported as `import`; never reproduce Figma-generated markup. `state` is published (in the library, with its node), built (in the file, not published; node null until known) or none (no set yet).',
+    $comment: 'Generated by scripts/sync-figma-descriptions.mjs --map from guidelines/components/*.md — do not edit. When a Figma node is an instance of a set below, write `write` with props from `figmaToProp`, imported as `import`; never reproduce Figma-generated markup. `state` is published (in the library, with its node), built (in the file, not published; node null until known) or none (no set yet). An `also` set of kind `part` is drawn by its component and never imported: `import` and `write` are null, and `part` says what draws it; write its component, not the part.',
     fileKey: FILE_KEY,
     sets: entries().map((e) => e.map),
   }

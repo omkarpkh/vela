@@ -570,7 +570,13 @@
 @media (max-width: 480px) { :root { --pg-tabs-height: calc(2 * var(--vela-space-10) + var(--vela-text-tab-line-height) + var(--vela-stroke-2)); } }
 .pg-tabs > .vela-tabs > .vela-tabs__panel > .shell-index { margin-bottom: var(--vela-space-20); }
 @media (min-height: 561px) {
-  .pg-tabs:has(.shell-index--strip) > .vela-tabs > .vela-tabs__list { position: sticky; top: var(--site-topbar-height); z-index: 11; background: var(--vela-bg-global); }
+  /* The tab list reaches a focus ring's width past the tabs on every side (Tabs.css), so it sticks
+     that much higher, leaving the tabs where they were, and paints the page only behind the tabs
+     (its content box): the ring's band below lies over the strip without hiding it. */
+  .pg-tabs:has(.shell-index--strip) > .vela-tabs > .vela-tabs__list {
+    position: sticky; top: calc(var(--site-topbar-height) - var(--vela-focus-ring-width) - var(--vela-focus-ring-offset)); z-index: 11;
+    background: var(--vela-bg-global); background-clip: content-box;
+  }
   .pg-tabs > .vela-tabs > .vela-tabs__panel > .shell-index--strip { position: sticky; top: calc(var(--site-topbar-height) + var(--pg-tabs-height)); z-index: 10; }
   html:has(.pg-tabs .shell-index--strip) { scroll-padding-top: calc(var(--site-topbar-height) + var(--pg-tabs-height) + var(--vela-control-height-40) + var(--vela-space-10)); }
 }

@@ -115,3 +115,23 @@ for (const theme of THEMES) {
     }
   })
 }
+
+// Tabs overflow (guidelines/components/tabs.md, Overflow): the Tabs Playground's stage, headless, at
+// a narrow stage (the stage width control at 412px), so the row has lost tabs into "N more · 1 new"
+// and the edge fades. Both themes, at 1440 only. The Linux baselines are written by the "Visual
+// baselines" workflow, never on a laptop.
+for (const theme of THEMES) {
+  test.describe(`tabs overflow · ${theme}`, () => {
+    test('tabs playground, headless, narrow stage', async ({ page }, testInfo) => {
+      test.skip(testInfo.project.name !== 'desktop', 'the tabs overflow stage is screenshotted at 1440 only')
+      await page.goto('/#/components/tabs?v=1&implementation=headless&w=412')
+      await setTheme(page, theme)
+      await page.evaluate(() => document.fonts.ready)
+      const stage = page.getByRole('region', { name: 'Live demo', exact: true })
+      await expect(stage).toBeVisible()
+      await expect(stage.locator('.vela-tabs__more').first()).toHaveText(/^\d+ more · 1 new$/)
+      await page.mouse.move(0, 0)
+      await expect(stage).toHaveScreenshot(`page-tabs-playground-narrow-headless-${theme}.png`)
+    })
+  })
+}
