@@ -318,3 +318,21 @@
 .pg-stage--responsive { grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); }
 .pg-stage--responsive.pg-stage--single { grid-template-columns: minmax(0, 1fr); }
 .pg-stage--responsive .pg-frame { min-width: 0; }
+
+/* ---------------------------------------------- page tabs, index and Next -- */
+/* Slice 1 of the playground uplift. What sticks above a component page's content (sweep T45): the
+   header always; on a tab with a section index, the page tabs and the strip under them too, but only
+   on a window at least 561 CSS px tall. Under that (200% zoom on a laptop is 720 by 450) only the
+   header sticks. scroll-padding-top is what sticks, summed from the same tokens, plus a space-10
+   breath, so a section's heading or a focused row is never under it (WCAG 2.4.11). Page tabs are
+   size large; under 480px they are regular (Playground.tsx), and the sum follows. */
+:root { --pg-tabs-height: calc(2 * var(--vela-space-10) + var(--vela-text-tab-large-line-height) + var(--vela-stroke-2)); }
+@media (max-width: 480px) { :root { --pg-tabs-height: calc(2 * var(--vela-space-10) + var(--vela-text-tab-line-height) + var(--vela-stroke-2)); } }
+.pg-tabs > .vela-tabs > .vela-tabs__panel > .shell-index { margin-bottom: var(--vela-space-20); }
+@media (min-height: 561px) {
+  .pg-tabs:has(.shell-index--strip) > .vela-tabs > .vela-tabs__list { position: sticky; top: var(--site-topbar-height); z-index: 11; background: var(--vela-bg-global); }
+  .pg-tabs > .vela-tabs > .vela-tabs__panel > .shell-index--strip { position: sticky; top: calc(var(--site-topbar-height) + var(--pg-tabs-height)); z-index: 10; }
+  html:has(.pg-tabs .shell-index--strip) { scroll-padding-top: calc(var(--site-topbar-height) + var(--pg-tabs-height) + var(--vela-control-height-40) + var(--vela-space-10)); }
+}
+/* The way on, at the end of each tab: sections and groups sit 60 apart. */
+.pg-next { margin-top: var(--vela-space-60); }

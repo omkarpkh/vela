@@ -1668,3 +1668,119 @@ test.describe('axe', () => {
         expect(results.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`)).toEqual([])
       })
 })
+
+// Slice 1 of the playground uplift, the shell (1 Nov 2026): the section index, what sticks, and the
+// marks that must survive forced colours. The parts themselves are unit-tested in
+// src/styles/site-shell-parts.test.tsx; the pressed states are linted by scripts/check-css.mjs.
+test.describe('slice 1 · the shell', () => {
+  /** The bottom edge of what sticks above the content, in CSS px. */
+  const stuckBottom = (page: Page) => page.evaluate(() => {
+    const bottoms = [...document.querySelectorAll<HTMLElement>('.topbar, .pg-tabs .vela-tabs__list, .shell-index--strip')]
+      .filter((el) => getComputedStyle(el).position === 'sticky' || getComputedStyle(el).position === 'fixed')
+      .map((el) => el.getBoundingClientRect().bottom)
+    return Math.max(0, ...bottoms)
+  })
+
+  test('index links write ?section= in place: Back leaves the page, and a reload keeps the place', async ({ page }) => {
+    await page.goto('/#/status')
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+    await page.evaluate(() => { window.location.hash = '#/components/button/rules' })
+    const index = page.getByRole('navigation', { name: 'On this tab' })
+    await expect(index).toBeVisible()
+    const entries = await page.evaluate(() => history.length)
+
+    await index.getByRole('link', { name: 'Browser 2' }).click()
+    await expect(page).toHaveURL(/#\/components\/button\/rules\?section=browser$/)
+    const heading = page.getByRole('heading', { level: 2, name: 'Proved in a real browser' })
+    await expect(heading).toBeFocused()
+    await expect(index.getByRole('link', { name: 'Browser 2' })).toHaveAttribute('aria-current', 'location')
+    await expect(index.locator('[aria-current]')).toHaveCount(1)
+    // The heading lands below what sticks, not under it.
+    expect((await heading.boundingBox())!.y).toBeGreaterThanOrEqual(await stuckBottom(page))
+
+    await index.getByRole('link', { name: 'States' }).click()
+    await expect(page).toHaveURL(/\?section=states$/)
+    await expect(page.getByRole('heading', { level: 2, name: 'States' })).toBeFocused()
+    // Replaced, never pushed: no history entry per section.
+    expect(await page.evaluate(() => history.length)).toBe(entries)
+
+    await page.reload()
+    const states = page.getByRole('heading', { level: 2, name: 'States' })
+    await expect(states).toBeFocused()
+    await expect(states).toBeInViewport()
+    await expect(page.getByRole('navigation', { name: 'On this tab' }).getByRole('link', { name: 'States' })).toHaveAttribute('aria-current', 'location')
+    // A section in the address is not a setting: the shared-link notice stays away.
+    await expect(page.locator('.pg-notice')).toHaveCount(0)
+
+    await page.goBack()
+    await expect(page).toHaveURL(/#\/status$/)
+  })
+
+  test('at 720 by 450 CSS px only the header sticks, and a focused row is below it', async ({ page }) => {
+    for (const size of [{ width: 1440, height: 900 }, { width: 720, height: 450 }]) {
+      await page.setViewportSize(size)
+      await page.goto('/#/components/button/rules')
+      await page.reload()
+      const strip = page.getByRole('navigation', { name: 'On this tab' })
+      await expect(strip).toBeVisible()
+      const tall = size.height > 560
+      const tabs = page.locator('.pg-tabs .vela-tabs__list')
+      if (tall) { await expect(strip).toHaveCSS('position', 'sticky'); await expect(tabs).toHaveCSS('position', 'sticky') }
+      else { await expect(strip).not.toHaveCSS('position', 'sticky'); await expect(tabs).not.toHaveCSS('position', 'sticky') }
+      // scroll-padding-top is what sticks, so focus never lands under it (WCAG 2.4.11).
+      const padding = await page.evaluate(() => parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop))
+      if (!tall) expect(padding).toBe(56)
+      // A row scrolled up under the top of the window, then focused, as Shift+Tab would land on it:
+      // the browser brings it out from under what sticks.
+      const row = page.locator('.pg-rule', { hasText: 'button-icons-left-only' })
+      await row.evaluate((el) => { window.scrollBy(0, el.getBoundingClientRect().top - 10) })
+      await row.evaluate((el) => { (el as HTMLElement).tabIndex = -1; (el as HTMLElement).focus() })
+      await expect(row).toBeFocused()
+      const box = (await row.boundingBox())!
+      const bottom = await stuckBottom(page)
+      expect(padding).toBeGreaterThanOrEqual(bottom)
+      expect(box.y, `${size.width} by ${size.height}`).toBeGreaterThanOrEqual(bottom)
+    }
+  })
+
+  test('forced colours keep a mark that is not a shadow on the index place and the chosen segment', async ({ page }) => {
+    await page.emulateMedia({ forcedColors: 'active' })
+    await page.goto('/#/components/button/rules')
+    const index = page.getByRole('navigation', { name: 'On this tab' })
+    await expect(index.locator('[aria-current="location"]')).toHaveCount(1)
+    const canvasText = await page.evaluate(() => {
+      const probe = document.createElement('div')
+      probe.style.cssText = 'forced-color-adjust: none; color: CanvasText'
+      document.body.appendChild(probe)
+      const c = getComputedStyle(probe).color
+      probe.remove()
+      return c
+    })
+    const place = await index.locator('[aria-current="location"]').evaluate((el) => {
+      const cs = getComputedStyle(el)
+      return { style: cs.borderBottomStyle, width: cs.borderBottomWidth, colour: cs.borderBottomColor, shadow: cs.boxShadow }
+    })
+    expect(place).toEqual({ style: 'solid', width: '2px', colour: canvasText, shadow: 'none' })
+    // Every other link's line is the page's own colour, so only the place shows one.
+    const other = await index.locator('a:not([aria-current])').first().evaluate((el) => getComputedStyle(el).borderBottomColor)
+    expect(other).not.toBe(canvasText)
+    // The strip keeps its edge when its fill goes.
+    await expect(index).toHaveCSS('border-top-style', 'solid')
+
+    // The chosen segment (Show, on this tab): a 2px border, never only a shadow.
+    const chosen = page.getByRole('group', { name: 'Show' }).locator('[aria-current="true"]')
+    const seg = await chosen.evaluate((el) => { const cs = getComputedStyle(el); return { style: cs.borderTopStyle, width: cs.borderTopWidth, shadow: cs.boxShadow } })
+    expect(seg).toEqual({ style: 'solid', width: '2px', shadow: 'none' })
+  })
+
+  test('every copy mark is at least 24 by 24', async ({ page }) => {
+    for (const path of ['/#/', '/#/components/button', '/#/components/popover', '/#/patterns/copy']) {
+      await page.goto(path)
+      await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+      const marks = page.locator('.shell-copy:visible, .shell-cm:visible')
+      expect(await marks.count(), path).toBeGreaterThan(0)
+      for (const box of await marks.evaluateAll((els) => els.map((el) => { const r = el.getBoundingClientRect(); return { w: r.width, h: r.height } })))
+        expect(Math.min(box.w, box.h), path).toBeGreaterThanOrEqual(24)
+    }
+  })
+})

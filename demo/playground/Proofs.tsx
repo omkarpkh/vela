@@ -94,18 +94,30 @@ function Rule({ r, commit, typescript }: { r: ProofRule; commit: string; typescr
   )
 }
 
-export function RulesFromProofs({ map, commit, built, intro }: { map: ProofMap; commit: string; built: string | undefined; intro?: string }) {
-  const [show, setShow] = useState<'all' | ProofLevel>('all')
-  const counts = GROUPS.map((g) => ({ ...g, count: map.rules.filter((r) => r.level === g.level).length })).filter((g) => g.count > 0)
+export type ProofShow = 'all' | ProofLevel
+
+/** The groups a proof map fills, in order, with their counts; a level with no rules has no group. */
+export const groupsOf = (map: ProofMap) =>
+  GROUPS.map((g) => ({ ...g, count: map.rules.filter((r) => r.level === g.level).length })).filter((g) => g.count > 0)
+
+/**
+ * `show` and `onShow` are the "Show" filter, held by the page when it also draws the section index,
+ * so the index lists only the groups on show.
+ */
+export function RulesFromProofs({ map, commit, built, intro, show: shown, onShow }: { map: ProofMap; commit: string; built: string | undefined; intro?: string; show?: ProofShow; onShow?: (s: ProofShow) => void }) {
+  const [own, setOwn] = useState<ProofShow>('all')
+  const show = shown ?? own
+  const setShow = onShow ?? setOwn
+  const counts = groupsOf(map)
   const words = (l: ProofLevel) => (l === 'browser' ? 'browser test' : l)
   const ref = /^[0-9a-f]{7,40}$/.test(commit) ? `commit ${commit}` : 'an unknown commit'
   return (
     <div className="pg-proofs">
-      {intro && <div className="pg-proofs__intro"><Markdown source={intro} /></div>}
-      <p className="pg-proofs__built">
+      {intro && <div className="pg-proofs__intro" data-arrive="1"><Markdown source={intro} /></div>}
+      <p className="pg-proofs__built" data-arrive="1">
         Every proof below passed in the build that published this page: {[version, ref, dateWords(built)].filter(Boolean).join(', ')}.
       </p>
-      <div className="pg-proofs__show">
+      <div className="pg-proofs__show" data-arrive="1">
         <span className="pg-toolbar__label" aria-hidden="true">Show</span>
         <Segments
           label="Show"
@@ -115,8 +127,9 @@ export function RulesFromProofs({ map, commit, built, intro }: { map: ProofMap; 
         />
       </div>
       {counts.filter((g) => show === 'all' || show === g.level).map((g) => (
-        <section key={g.level} className="pg-proofs__group" aria-labelledby={`pg-proofs-${g.level}`}>
-          <h2 id={`pg-proofs-${g.level}`} className="vela-h4 pg-h2">{g.heading}</h2>
+        <section key={g.level} className="pg-proofs__group" aria-labelledby={`pg-proofs-${g.level}`} data-arrive="3">
+          {/* A jump from the section index lands here, so the heading takes focus. */}
+          <h2 id={`pg-proofs-${g.level}`} className="vela-h4 pg-h2" tabIndex={-1}>{g.heading}</h2>
           {g.level === 'convention' && <p className="pg-proofs__note">Not mechanically enforced. A reviewer checks these; no test can.</p>}
           <ul className="pg-proofs__list">
             {map.rules.filter((r) => r.level === g.level).map((r) => <Rule key={r.id} r={r} commit={commit} typescript={map.typescript} />)}

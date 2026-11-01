@@ -37,6 +37,8 @@ export const queryOf = (hash: string) => (hash.includes('?') ? hash.slice(hash.i
  */
 export function readLink(query: string, name: string, controls: Control[], defaults: Values, implementations: string[] = []): LinkState {
   const params = new URLSearchParams(query)
+  // `section` is the section index's place on the page (demo/shell/SectionIndex.tsx), not a setting.
+  params.delete('section')
   const out: LinkState = { values: {}, notices: [] }
   if ([...params.keys()].length === 0) return out
   const v = params.get('v')
