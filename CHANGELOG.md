@@ -40,7 +40,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     16.13:1. css:check now counts `--vela-black-pure` as a primitive, so no stylesheet binds it.
   - A playground page (group Data), with Figma's regular size and regular's Figma locked, each with
     the move that gets there. Not on All states, so no visual baseline moves.
-    231 rules across 19 specs (was 225), 74 compiler-enforced (was 73). 1427 checks (was 1400):
+    231 rules across 19 specs (was 225), 74 compiler-enforced (was 73). 1429 checks (was 1400):
     1150 unit and contract (was 1124), 204 e2e (was 203); 109 contrast pairs (was 107).
 - **Filter Grammar, the first contract: a new area, `guidelines/contracts/`, and `src/grammar/` in
   the core entry** (`guidelines/contracts/filter-grammar.md`, approved by Omkar on 1 Nov 2026). One
