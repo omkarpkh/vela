@@ -9,10 +9,11 @@
  *
  * "No item matches" needs each item's negation. A condition's negation is its negated operator, or,
  * for a number or a time, the operators either side of it (`at-least` 5 is "not `less-than` 5").
- * Two cases have no negation in the grammar, and inside an `or` they throw rather than return a
- * query that is wrong: an ordering, `between` or `within-last` on a `many` field, and `is` on a
- * `many` boolean ("no element is greater than 5" is not "some element is at most 5"). A `within-last`
- * inside an `or` is negated against a fixed time, so it needs `now`.
+ * Two cases have no negation in the grammar, and inside an `or` they throw `LeftOutNotExpressible`
+ * rather than return a query that is wrong: an ordering, `between` or `within-last` on a `many`
+ * field, and `is` on a `many` boolean ("no element is greater than 5" is not "some element is at
+ * most 5"). A `within-last` inside an `or` is negated against a fixed time, so it needs `now`; without
+ * it, the error is a `TypeError`, as for any other missing option.
  *
  * The result can be deeper or longer than the limits on untrusted input: those limits are for
  * input. Its own conditions on a missing field are `unknown` or `match`, never a false "match".
@@ -21,6 +22,23 @@ import { canonical } from './check'
 import { NEGATES, isNegated, OPERATOR_WORDS, shapeOf } from './operators'
 import { durationMs } from './time'
 import type { Condition, FieldSpec, Fields, LeftOutOptions, Node, Operator, Query } from './types'
+
+/**
+ * Thrown by `leftOutQuery` when the left-out set needs a negation the grammar has no words for. The
+ * query is valid; only this count can't be written as a query. A host catches it by class, and
+ * counts what was left out some other way, or says it can't.
+ */
+export class LeftOutNotExpressible extends Error {
+  override readonly name = 'LeftOutNotExpressible'
+  /** The field and operator whose negation the grammar can't say. */
+  readonly field: string
+  readonly operator: Operator
+  constructor(message: string, field: string, operator: Operator) {
+    super(message)
+    this.field = field
+    this.operator = operator
+  }
+}
 
 const NONE = Symbol('matches nothing')
 type Built = Node | typeof NONE
@@ -63,7 +81,7 @@ class Builder {
     const pos = Object.entries(NEGATES).find(([, p]) => p === c.operator)
     const words = `${spec.label} ${OPERATOR_WORDS[c.operator]}`
     const cannot = (why: string): never => {
-      throw new TypeError(`leftOutQuery: the grammar can't say what "${words}" leaves out inside an 'or', ${why}`)
+      throw new LeftOutNotExpressible(`leftOutQuery: the grammar can't say what "${words}" leaves out inside an 'or', ${why}`, f, c.operator)
     }
     const several = `because ${spec.label} has several values, and the grammar has no operator for "no value ${OPERATOR_WORDS[c.operator]} …".`
     if (spec.type === 'boolean') return spec.many ? cannot(several) : cond(f, 'is', !v)
@@ -85,7 +103,7 @@ class Builder {
       case 'before': return or(cond(f, 'after', v), cond(f, 'between', { from: v, to: v }))
       case 'after': return or(cond(f, 'before', v), cond(f, 'between', { from: v, to: v }))
       case 'within-last': {
-        if (this.now === undefined) cannot('without `now`: pass `now`, as evaluate takes it.')
+        if (this.now === undefined) throw new TypeError(`leftOutQuery: "${words}" inside an 'or' is read against a fixed time: pass \`now\`, as evaluate takes it.`)
         const from = new Date(this.now! - durationMs(v as string)).toISOString()
         return or(cond(f, 'before', from), cond(f, 'after', new Date(this.now!).toISOString()))
       }

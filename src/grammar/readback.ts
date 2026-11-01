@@ -25,7 +25,6 @@ const plural = (one: string, many: string) => (n: number) => (n === 1 ? one : ma
 
 /** The English defaults. */
 export const ENGLISH: ReadbackStrings = {
-  locale: 'en-GB',
   operators: OPERATOR_WORDS,
   and: 'and',
   or: 'or',
@@ -45,10 +44,13 @@ export const ENGLISH: ReadbackStrings = {
 
 export const SHORT_LIST = 5
 
-type Ctx = { fields: Fields; s: ReadbackStrings; full: boolean; markTrust: boolean; timeZone: string; now?: Date }
+/** The default `locale`: British English, Vela's language. */
+export const DEFAULT_LOCALE = 'en-GB'
+
+type Ctx = { fields: Fields; s: ReadbackStrings; locale: string; full: boolean; markTrust: boolean; timeZone: string; now?: Date }
 
 function time(ctx: Ctx, ms: number): string {
-  return new Intl.DateTimeFormat(ctx.s.locale, {
+  return new Intl.DateTimeFormat(ctx.locale, {
     day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
     timeZone: ctx.timeZone, timeZoneName: 'short',
   }).format(ms)
@@ -143,15 +145,20 @@ function merge(input: StringsInput): ReadbackStrings {
   }
 }
 
-/** The readback sentence. `now` and `timeZone` are required when the query has a `within-last`. */
+/**
+ * The readback sentence. `now` and `timeZone` are required when the query has a `within-last`.
+ * `locale` (BCP 47, default "en-GB") is the one `Intl.DateTimeFormat` writes times in, and the one a
+ * capital letter is made in. It is an option, not one of the `strings`: the words are what a host
+ * translates, and the locale is how dates and capitals are written.
+ */
 export function readback<F extends Fields>(query: NoInfer<Query<F>>, fields: F, options: ReadbackOptions = {}): string {
   const q = canonical(query as Query<F>, fields, 'readback') as unknown as Query
   if (hasWithinLast(q.root) && (!(options.now instanceof Date) || Number.isNaN(options.now.getTime()) || !options.timeZone))
     throw new TypeError('readback: this query has \'within-last\', so pass `now` and `timeZone`. The sentence then says what it was read against, and a ledger line can be reproduced.')
-  const ctx: Ctx = { fields, s: merge(options.strings), full: !!options.full, markTrust: !!options.markTrust, timeZone: options.timeZone ?? 'UTC', now: options.now }
+  const ctx: Ctx = { fields, s: merge(options.strings), locale: options.locale ?? DEFAULT_LOCALE, full: !!options.full, markTrust: !!options.markTrust, timeZone: options.timeZone ?? 'UTC', now: options.now }
   let sentence = group(ctx, q.root)
   if (ctx.full && hasIp(fields, q.root)) sentence += `; ${ctx.s.ipv4Mapped}`
   // A sentence that starts on a multi-valued field starts with "any" or "no": give it its capital.
-  for (const w of [ctx.s.any, ctx.s.no]) if (w && sentence.startsWith(`${w} `)) sentence = w.charAt(0).toLocaleUpperCase(ctx.s.locale) + sentence.slice(1)
+  for (const w of [ctx.s.any, ctx.s.no]) if (w && sentence.startsWith(`${w} `)) sentence = w.charAt(0).toLocaleUpperCase(ctx.locale) + sentence.slice(1)
   return sentence
 }

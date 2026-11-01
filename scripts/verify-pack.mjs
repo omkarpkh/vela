@@ -373,10 +373,10 @@ export const shapes: [DropdownListProps, DropdownListAlign] = [{ label: 'L', tri
   // Conjunction, and the eight functions with their result types. Two shapes the types must refuse are
   // asserted here with @ts-expect-error, so a type that accepted them would fail this file too.
   writeFileSync(join(app, 'valid-grammar.tsx'), `
-import { defineFields, parseQuery, validateQuery, normalise, queryToText, readback, evaluate, leftOutQuery } from '@omkarux/vela'
+import { defineFields, parseQuery, validateQuery, normalise, queryToText, readback, evaluate, leftOutQuery, LeftOutNotExpressible } from '@omkarux/vela'
 import type { Fields, FieldName, FieldSpec, FieldTrust, Query, Group, Node, Condition, PositiveConjunction, ParseResult, ParseError, Evaluation, ReadbackStrings } from '@omkarux/vela'
 
-const SEVERITY_VALUES = [{ value: 'high', label: 'High' }, { value: 'critical', label: 'Critical' }] as const
+const SEVERITY_VALUES = [{ value: 'major', label: 'Major' }, { value: 'critical', label: 'Critical' }] as const
 const fields = defineFields({
   'sender.domain': { label: 'Authenticated sender domain', type: 'domain', trust: { kind: 'system-record', source: 'Mail gateway' } },
   'subject': { label: 'Subject', type: 'text', trust: { kind: 'untrusted', writtenBy: "the email's sender" } },
@@ -393,7 +393,7 @@ const q: Query<F> = { grammar: 1, root: { kind: 'group', join: 'and', items: [
   { kind: 'condition', field: name, operator: 'is-subdomain-of', value: 'northwind.example' },
   { kind: 'condition', field: 'subject', operator: 'contains', value: 'Invoice' },
   { kind: 'group', join: 'or', items: [
-    { kind: 'condition', field: 'severity', operator: 'is-one-of', value: ['high', 'critical'] },
+    { kind: 'condition', field: 'severity', operator: 'is-one-of', value: ['major', 'critical'] },
     { kind: 'condition', field: 'first_seen', operator: 'within-last', value: '7d' },
     { kind: 'condition', field: 'source.ip', operator: 'in-range', value: '10.0.0.0/8' },
     { kind: 'condition', field: 'size', operator: 'between', value: { from: 1, to: 10 } },
@@ -403,18 +403,19 @@ const q: Query<F> = { grammar: 1, root: { kind: 'group', join: 'and', items: [
 ] } }
 const lesson: PositiveConjunction<F> = { grammar: 1, root: { kind: 'group', join: 'and', items: [{ kind: 'condition', field: 'sender.domain', operator: 'is', value: 'northwind.example' }] } }
 // @ts-expect-error a Positive Conjunction takes no negation
-export const negated: PositiveConjunction<F> = { grammar: 1, root: { kind: 'group', join: 'and', items: [{ kind: 'condition', field: 'severity', operator: 'is-not', value: 'high' }] } }
+export const negated: PositiveConjunction<F> = { grammar: 1, root: { kind: 'group', join: 'and', items: [{ kind: 'condition', field: 'severity', operator: 'is-not', value: 'major' }] } }
 // @ts-expect-error a Positive Conjunction is joined by 'and'
-export const either: PositiveConjunction<F> = { grammar: 1, root: { kind: 'group', join: 'or', items: [{ kind: 'condition', field: 'severity', operator: 'is', value: 'high' }] } }
-const parsed: ParseResult<F> = parseQuery('severity is high', fields)
+export const either: PositiveConjunction<F> = { grammar: 1, root: { kind: 'group', join: 'or', items: [{ kind: 'condition', field: 'severity', operator: 'is', value: 'major' }] } }
+const parsed: ParseResult<F> = parseQuery('severity is major', fields)
 const checked: ParseResult<F> = validateQuery(JSON.parse('{}'), fields)
 const errors: ParseError[] = parsed.ok ? [] : parsed.errors
 const now = new Date('2026-10-31T14:15:00Z')
 const result: Evaluation = evaluate(q, { 'sender.domain': 'mail.northwind.example' }, fields, { now })
 const left: Query<F> = leftOutQuery(lesson, fields)
 const words: Partial<ReadbackStrings> = { and: 'and' }
-export const all = [checked, errors, result, left, words, normalise(q, fields), queryToText(lesson, fields),
-  readback(q, fields, { now, timeZone: 'Asia/Kolkata', full: true, markTrust: true, strings: { operators: { 'is-one-of': 'is one of' } } })]
+const gap: Error = new LeftOutNotExpressible('x', 'size', 'at-least')
+export const all = [checked, errors, result, left, words, gap.message, normalise(q, fields), queryToText(lesson, fields),
+  readback(q, fields, { now, timeZone: 'Asia/Kolkata', locale: 'en-IN', full: true, markTrust: true, strings: { operators: { 'is-one-of': 'is one of' } } })]
 export const shapes: [Fields, FieldSpec, FieldTrust, Group<F>, Node<F>, Condition<F>] = [
   fields, fields.severity, { kind: 'untrusted', writtenBy: 'x' }, q.root, lesson.root.items[0], lesson.root.items[0],
 ]
@@ -564,9 +565,9 @@ export const shapes: [Fields, FieldSpec, FieldTrust, Group<F>, Node<F>, Conditio
     ['grammar-types-closed', 'invented field type', `defineFields({ c: { label: "Colour", type: "colour", trust: { kind: "system-record", source: "Paint" } } })`],
     ['grammar-types-closed', 'contains on a domain', `queryToText({ grammar: 1, root: { kind: "group", join: "and", items: [{ kind: "condition", field: "d", operator: "contains", value: "northwind" }] } }, defineFields({ d: { label: "Domain", type: "domain", trust: { kind: "system-record", source: "Gateway" } } }))`],
     ['grammar-types-closed', 'ends-with on a domain', `queryToText({ grammar: 1, root: { kind: "group", join: "and", items: [{ kind: "condition", field: "d", operator: "ends-with", value: "northwind.example" }] } }, defineFields({ d: { label: "Domain", type: "domain", trust: { kind: "system-record", source: "Gateway" } } }))`],
-    ['grammar-types-closed', 'between on an enum', `queryToText({ grammar: 1, root: { kind: "group", join: "and", items: [{ kind: "condition", field: "s", operator: "between", value: { from: "high", to: "high" } }] } }, defineFields({ s: { label: "Severity", type: "enum", values: [{ value: "high", label: "High" }], trust: { kind: "system-record", source: "Pipeline" } } }))`],
-    ['grammar-types-closed', 'a list for is', `queryToText({ grammar: 1, root: { kind: "group", join: "and", items: [{ kind: "condition", field: "s", operator: "is", value: ["high"] }] } }, defineFields({ s: { label: "Severity", type: "enum", values: [{ value: "high", label: "High" }], trust: { kind: "system-record", source: "Pipeline" } } }))`],
-    ['grammar-types-closed', 'an enum value not in values', `queryToText({ grammar: 1, root: { kind: "group", join: "and", items: [{ kind: "condition", field: "s", operator: "is", value: "medium" }] } }, defineFields({ s: { label: "Severity", type: "enum", values: [{ value: "high", label: "High" }], trust: { kind: "system-record", source: "Pipeline" } } }))`],
+    ['grammar-types-closed', 'between on an enum', `queryToText({ grammar: 1, root: { kind: "group", join: "and", items: [{ kind: "condition", field: "s", operator: "between", value: { from: "major", to: "major" } }] } }, defineFields({ s: { label: "Severity", type: "enum", values: [{ value: "major", label: "Major" }], trust: { kind: "system-record", source: "Pipeline" } } }))`],
+    ['grammar-types-closed', 'a list for is', `queryToText({ grammar: 1, root: { kind: "group", join: "and", items: [{ kind: "condition", field: "s", operator: "is", value: ["major"] }] } }, defineFields({ s: { label: "Severity", type: "enum", values: [{ value: "major", label: "Major" }], trust: { kind: "system-record", source: "Pipeline" } } }))`],
+    ['grammar-types-closed', 'an enum value not in values', `queryToText({ grammar: 1, root: { kind: "group", join: "and", items: [{ kind: "condition", field: "s", operator: "is", value: "medium" }] } }, defineFields({ s: { label: "Severity", type: "enum", values: [{ value: "major", label: "Major" }], trust: { kind: "system-record", source: "Pipeline" } } }))`],
     ['grammar-types-closed', 'an invented operator', `queryToText({ grammar: 1, root: { kind: "group", join: "and", items: [{ kind: "condition", field: "d", operator: "equals", value: "northwind.example" }] } }, defineFields({ d: { label: "Domain", type: "domain", trust: { kind: "system-record", source: "Gateway" } } }))`],
     ['grammar-fields-declared', 'an undeclared field', `queryToText({ grammar: 1, root: { kind: "group", join: "and", items: [{ kind: "condition", field: "sender_domain", operator: "is", value: "northwind.example" }] } }, defineFields({ "sender.domain": { label: "Authenticated sender domain", type: "domain", trust: { kind: "system-record", source: "Gateway" } } }))`],
     ['grammar-trust-declared', 'a field without trust', `defineFields({ d: { label: "Domain", type: "domain" } })`],
@@ -603,15 +604,19 @@ export const shapes: [Fields, FieldSpec, FieldTrust, Group<F>, Node<F>, Conditio
   // and run a parse, a readback and an evaluate from the package root, as a backend would: a DOM
   // global touched at import or in the grammar would fail here.
   writeFileSync(join(app, 'grammar-node.mjs'), `
-import { defineFields, parseQuery, readback, evaluate } from '@omkarux/vela'
+import { defineFields, parseQuery, readback, evaluate, leftOutQuery, LeftOutNotExpressible } from '@omkarux/vela'
 const fields = defineFields({ 'sender.domain': { label: 'Authenticated sender domain', type: 'domain', trust: { kind: 'system-record', source: 'Gateway' } } })
 const r = parseQuery('sender.domain is-subdomain-of "northwind.example"', fields)
 if (!r.ok) throw new Error(r.errors[0].message)
-console.log(readback(r.query, fields), '|', evaluate(r.query, { 'sender.domain': 'evilnorthwind.example' }, fields))
+const many = defineFields({ size: { label: 'Size', type: 'number', many: true, trust: { kind: 'system-record', source: 'S' } } })
+const gap = parseQuery('size at-least 3 or size is-not-set', many)
+let caught = 'none'
+try { leftOutQuery(gap.query, many) } catch (e) { caught = e instanceof LeftOutNotExpressible ? e.name : 'another error' }
+console.log(readback(r.query, fields), '|', evaluate(r.query, { 'sender.domain': 'evilnorthwind.example' }, fields), '|', caught)
 `)
   let nodeOut = ''
   try { nodeOut = run('node', ['grammar-node.mjs'], app).trim() } catch (e) { nodeOut = String(e.stderr || e.message).split('\n')[0] }
-  check(nodeOut === 'Authenticated sender domain is northwind.example or one of its subdomains | no-match',
+  check(nodeOut === 'Authenticated sender domain is northwind.example or one of its subdomains | no-match | LeftOutNotExpressible',
     `Filter Grammar runs in Node from the package, with no DOM (${nodeOut})`)
 
   // 3. the stylesheet a consumer actually imports ---------------------------

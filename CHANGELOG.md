@@ -17,9 +17,9 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   Domains match on label boundaries, so `is-subdomain-of "northwind.example"` never matches
   `evilnorthwind.example`, and `contains` and `ends-with` on a domain don't compile; hidden
   characters are escaped wherever a value is shown, and ignored when matching an untrusted field.
-  Eight functions and their types, exported from the package root, with no dependencies and no
+  Eight functions, one error class and their types, exported from the package root, with no dependencies and no
   React, DOM or Node-only import; the pack gate runs them in plain Node from the installed package.
-  13 rules, 11 with proofs: 4 compiler rules with 16 fixtures, and 7 runtime rules proved by 50
+  13 rules, 11 with proofs: 4 compiler rules with 16 fixtures, and 7 runtime rules proved by 56
   unit tests in `src/grammar/`, among them a seeded property test of 400 queries over all 8 types
   and a brute-force check of `leftOutQuery` over 12,000 generated records. Experimental. The
   site shows the guideline under Foundations. The Override & Teach Panel's amendment follows in its
@@ -135,6 +135,29 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   allow on any field. `fromItem` moves out of the condition, which the grammar would reject, into
   `appliesTo.fromItems`, a list of `{ condition, item }` beside the conditions. Open question 6
   is closed for good. Still 26 rules, 23 with proofs; no rule id changed.
+- **Filter Grammar: four follow-ups from the spec thread's answers** (`guidelines/contracts/filter-grammar.md`,
+  *Details the build settled* and *Case folding*). Not yet released, so nothing breaks for anyone.
+  - `leftOutQuery` throws a named class, **`LeftOutNotExpressible`** (it extends `Error`, and
+    carries the `field` and `operator`), when the grammar has no words for the negation it needs.
+    It is exported from the package root. A missing `now` stays a `TypeError`.
+  - **`readback` takes `locale`** (BCP 47, default `"en-GB"`) as an option of its own, beside
+    `timeZone`. It moved out of `strings`, which are only words now. The default prints
+    "GMT+5:30" for Asia/Kolkata, and `locale: "en-IN"` prints "IST"; the guideline's examples
+    that show "IST" say they assume it.
+  - **Case folding is exact Unicode simple folding.** The 12 hand-picked mappings are replaced by
+    a table generated from Unicode 17.0.0's `CaseFolding.txt` (the version Node 22 ships, checked
+    against `process.versions.unicode`): the 198 code points where `toLowerCase` differs from the
+    C and S mappings. The data file is vendored unchanged in `scripts/grammar/`, with its licence
+    in NOTICE; `scripts/grammar/build-fold-table.mjs` writes `src/grammar/fold-table.ts`; and
+    `fold.test.ts` runs all 1,512 C and S entries through the fold and checks every other code
+    point folds to itself. Each code point is now folded on its own, so a word-final capital sigma
+    no longer depends on `toLowerCase` reading context. U+0130 folds to itself and no longer equals
+    "i" plus U+0307; U+0345, U+1C80–U+1C88 and U+FB05 now fold where they didn't. "ß" still
+    doesn't match "ss". The table ships as `dist/grammar/fold-table.js`, 3.3 KB (0.9 KB gzipped); with the
+    licence in NOTICE and the guideline's new words, the tarball grows by 4.3 KB, to 281.9 KB.
+  - The examples read `severity is-one-of [major, critical]`: "High" is a Risk word, and
+    Severity's six are success, info, warning, minor, major and critical. The tests' Severity
+    field now has those six.
 - **Patterns, Copy: paragraphs split to fit the site's 240-character limit** (from the icon thread).
   The opening paragraph is split between its two sentences. The Status paragraph is now a short
   line, with the status rule and the pressure-test note as two bullets under it and a blank line

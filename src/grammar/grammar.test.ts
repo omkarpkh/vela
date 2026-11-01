@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { readdirSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { defineFields, evaluate, leftOutQuery, normalise, parseQuery, queryToText, readback, validateQuery } from '..'
+import { defineFields, evaluate, leftOutQuery, LeftOutNotExpressible, normalise, parseQuery, queryToText, readback, validateQuery } from '..'
 import type { ParseResult, Query } from '..'
-import { FOLDS, fold } from './fold'
+import { fold } from './fold'
 import { HIDDEN_RANGES } from './hidden'
 import { operatorsOf } from './operators'
 import { punycodeDecode } from './domain'
@@ -12,7 +12,11 @@ import { punycodeDecode } from './domain'
 // three fields added for the Words table: a number without a unit, a multi-valued text field and a
 // multi-valued Source IP (the Words table reads "any Source IP", so the field is `many: true` here).
 // Hidden characters are made from their code points; none is typed into this file.
-const SEVERITY_VALUES = [{ value: 'high', label: 'High' }, { value: 'critical', label: 'Critical' }] as const
+// Severity's six words, in DESIGN.md's order (the three taxonomies). "High" is a Risk word, not one of these.
+const SEVERITY_VALUES = [
+  { value: 'success', label: 'Success' }, { value: 'info', label: 'Info' }, { value: 'warning', label: 'Warning' },
+  { value: 'minor', label: 'Minor' }, { value: 'major', label: 'Major' }, { value: 'critical', label: 'Critical' },
+] as const
 const fields = defineFields({
   'sender.domain': { label: 'Authenticated sender domain', type: 'domain', trust: { kind: 'system-record', source: 'Mail gateway (DMARC-aligned From)' } },
   'subject': { label: 'Subject', type: 'text', trust: { kind: 'untrusted', writtenBy: 'the email\'s sender' } },
@@ -87,7 +91,7 @@ describe('the text form', () => {
       { kind: 'condition', field: 'sender.domain', operator: 'is', value: 'northwind.example' },
       { kind: 'condition', field: 'subject', operator: 'contains', value: 'Invoice' },
     ] } })
-    const text = 'severity is-one-of [high, critical] and (first_seen within-last 7d or source.ip in-range 10.0.0.0/8)'
+    const text = 'severity is-one-of [major, critical] and (first_seen within-last 7d or source.ip in-range 10.0.0.0/8)'
     expect(queryToText(parsed(text), fields)).toBe(text)
   })
 
@@ -116,14 +120,14 @@ describe('untyped input is checked, never guessed', () => {
     const e = errorsOf(parseQuery('sender.domain contains "northwind"', fields))
     expect(e).toEqual([{ at: 14, length: 8, message: 'Authenticated sender domain can\'t use \'contains\'. Use \'is\', \'is one of\' or \'is a subdomain of\'.' }])
     expect(one(parseQuery('sender.domain ends-with "northwind.example"', fields))[0]).toMatch(/can't use 'ends-with'/)
-    expect(one(parseQuery('severity between high and critical', fields))[0]).toBe('Severity can\'t use \'between\'. Use \'is\' or \'is one of\'.')
+    expect(one(parseQuery('severity between major and critical', fields))[0]).toBe('Severity can\'t use \'between\'. Use \'is\' or \'is one of\'.')
     expect(one(parseQuery('sender.domain does-not-contain "x"', fields))[0]).toBe('Authenticated sender domain can\'t use \'does-not-contain\'. Use \'is not\', \'is none of\' or \'is not a subdomain of\'.')
   })
 
   it('rejects a value of the wrong shape, an enum value not in values, and malformed values', () => {
-    expect(one(parseQuery('severity is [high]', fields))).toEqual(['Severity \'is\' needs a value here.'])
-    expect(one(parseQuery('severity is-one-of high', fields))).toEqual(['Severity \'is one of\' takes a list in brackets, like [a, b].'])
-    expect(one(parseQuery('severity is medium', fields))).toEqual(['`medium` is not a value of Severity. Use \'high\' or \'critical\'.'])
+    expect(one(parseQuery('severity is [major]', fields))).toEqual(['Severity \'is\' needs a value here.'])
+    expect(one(parseQuery('severity is-one-of major', fields))).toEqual(['Severity \'is one of\' takes a list in brackets, like [a, b].'])
+    expect(one(parseQuery('severity is medium', fields))).toEqual(['`medium` is not a value of Severity. Use \'success\', \'info\', \'warning\', \'minor\', \'major\' or \'critical\'.'])
     expect(one(parseQuery('source.ip is 10.0.0.256', fields))).toEqual(['`10.0.0.256` is not an IP address.'])
     expect(one(parseQuery('source.ip in-range 10.0.0.0/33', fields))).toEqual(['`10.0.0.0/33` is not a range. Write a network and a prefix length, like 10.0.0.0/8.'])
     expect(one(parseQuery('first_seen before "2026-10-31"', fields))).toEqual(['`2026-10-31` is not a time with an offset. Write it like "2026-10-31T19:45:00+05:30".'])
@@ -133,7 +137,7 @@ describe('untyped input is checked, never guessed', () => {
     expect(one(parseQuery('vendor.listed is yes', fields))).toEqual(['`yes` is not true or false.'])
     expect(one(parseQuery('subject contains Invoice', fields))).toEqual(['Subject takes its value in double quotes, like "Invoice".'])
     expect(one(parseQuery('severity is-one-of []', fields))).toEqual(['A list needs at least one value.'])
-    expect(one(parseQuery('severity is-set high', fields))).toEqual(['Severity \'is set\' takes no value.'])
+    expect(one(parseQuery('severity is-set major', fields))).toEqual(['Severity \'is set\' takes no value.'])
   })
 
   it('reports every value error it can find, each at its own place', () => {
@@ -143,29 +147,29 @@ describe('untyped input is checked, never guessed', () => {
 
   // The Words table, word for word.
   it('mixed joins are an error, not a precedence rule (Words: Mixed joins)', () => {
-    const text = 'severity is high and subject contains "a" or subject contains "b"'
+    const text = 'severity is major and subject contains "a" or subject contains "b"'
     expect(errorsOf(parseQuery(text, fields))).toEqual([{ at: text.indexOf(' or ') + 1, length: 2, message: 'Add brackets to say which comes first: \'and\' and \'or\' are mixed here.' }])
-    expect(parseQuery('severity is high and (subject contains "a" or subject contains "b")', fields).ok).toBe(true)
+    expect(parseQuery('severity is major and (subject contains "a" or subject contains "b")', fields).ok).toBe(true)
   })
 
   it('groups nest 3 deep at most, the root being the first (Words: Too deep)', () => {
-    const three = '(severity is high or (severity is critical and subject contains "a"))'
+    const three = '(severity is major or (severity is critical and subject contains "a"))'
     expect(parseQuery(three, fields).ok).toBe(true)
-    const four = '(severity is high or (severity is critical and (subject contains "a" or subject contains "b")))'
+    const four = '(severity is major or (severity is critical and (subject contains "a" or subject contains "b")))'
     expect(errorsOf(parseQuery(four, fields))).toEqual([{ at: four.indexOf('(subject'), length: 1, message: 'Groups can be nested 3 deep at most.' }])
     const deep: unknown = { grammar: 1, root: { kind: 'group', join: 'and', items: [{ kind: 'group', join: 'and', items: [{ kind: 'group', join: 'and', items: [
-      { kind: 'group', join: 'and', items: [{ kind: 'condition', field: 'severity', operator: 'is', value: 'high' }] }] }] }] } }
+      { kind: 'group', join: 'and', items: [{ kind: 'condition', field: 'severity', operator: 'is', value: 'major' }] }] }] }] } }
     expect(one(validateQuery(deep, fields))).toEqual(['In group 4: Groups can be nested 3 deep at most.'])
   })
 
   it('an unknown key on any object is an error, not a silent drop (Words: Unknown key)', () => {
-    const agent: unknown = { grammar: 1, root: { kind: 'group', join: 'and', items: [{ kind: 'condition', field: 'severity', operator: 'is', value: 'high', boost: 2 }] } }
+    const agent: unknown = { grammar: 1, root: { kind: 'group', join: 'and', items: [{ kind: 'condition', field: 'severity', operator: 'is', value: 'major', boost: 2 }] } }
     expect(errorsOf(validateQuery(agent, fields))).toEqual([{ at: 0, length: 0, message: 'In condition 1: `boost` isn\'t part of a condition here.' }])
-    expect(one(validateQuery({ grammar: 1, root: { kind: 'group', join: 'and', items: [{ kind: 'condition', field: 'severity', operator: 'is', value: 'high' }], weight: 1 } }, fields)))
+    expect(one(validateQuery({ grammar: 1, root: { kind: 'group', join: 'and', items: [{ kind: 'condition', field: 'severity', operator: 'is', value: 'major' }], weight: 1 } }, fields)))
       .toEqual(['In group 1: `weight` isn\'t part of a group here.'])
     expect(one(validateQuery({ grammar: 1, root: { kind: 'group', join: 'and', items: [{ kind: 'condition', field: 'recipients', operator: 'between', value: { from: 1, to: 2, step: 1 } }] } }, fields)))
       .toEqual(['In condition 1: `step` isn\'t part of a range here.'])
-    expect(one(validateQuery({ grammar: 1, root: { kind: 'group', join: 'and', items: [{ kind: 'condition', field: 'severity', operator: 'is', value: 'high' }] }, note: 'x' }, fields)))
+    expect(one(validateQuery({ grammar: 1, root: { kind: 'group', join: 'and', items: [{ kind: 'condition', field: 'severity', operator: 'is', value: 'major' }] }, note: 'x' }, fields)))
       .toEqual(['`note` isn\'t part of a query here.'])
   })
 
@@ -174,19 +178,19 @@ describe('untyped input is checked, never guessed', () => {
     expect(one(validateQuery(q([{ kind: 'condition', field: 'sender_domain', operator: 'is', value: 'x.example' }]), fields)))
       .toEqual(['In condition 1: `sender_domain` is not a field here. Did you mean Authenticated sender domain?'])
     expect(one(validateQuery(q([
-      { kind: 'condition', field: 'severity', operator: 'is', value: 'high' },
+      { kind: 'condition', field: 'severity', operator: 'is', value: 'major' },
       { kind: 'condition', field: 'sender.domain', operator: 'contains', value: 'x' },
     ]), fields))).toEqual(['In condition 2: Authenticated sender domain can\'t use \'contains\'. Use \'is\', \'is one of\' or \'is a subdomain of\'.'])
-    expect(one(validateQuery(q([{ kind: 'condition', field: 'severity', operator: 'is', value: ['high'] }]), fields)))
+    expect(one(validateQuery(q([{ kind: 'condition', field: 'severity', operator: 'is', value: ['major'] }]), fields)))
       .toEqual(['In condition 1: Severity \'is\' takes one of its values, as a string.'])
     expect(one(validateQuery(q([{ kind: 'condition', field: 'recipients', operator: 'between', value: { from: 10, to: 1 } }]), fields)))
       .toEqual(['In condition 1: \'between\' needs the lower bound first: 10 is greater than 1.'])
     expect(one(validateQuery(q([]), fields))).toEqual(['In group 1: A group needs at least one item in `items`.'])
-    expect(one(validateQuery({ grammar: 1, root: [{ kind: 'condition', field: 'severity', operator: 'is', value: 'high' }] }, fields)))
+    expect(one(validateQuery({ grammar: 1, root: [{ kind: 'condition', field: 'severity', operator: 'is', value: 'major' }] }, fields)))
       .toEqual(['The root of a query is a group: { kind: \'group\', join, items }.'])
-    expect(one(validateQuery({ grammar: 2, root: { kind: 'group', join: 'and', items: [{ kind: 'condition', field: 'severity', operator: 'is', value: 'high' }] } }, fields)))
+    expect(one(validateQuery({ grammar: 2, root: { kind: 'group', join: 'and', items: [{ kind: 'condition', field: 'severity', operator: 'is', value: 'major' }] } }, fields)))
       .toEqual(['This query is written for grammar version 2. This version of Vela reads version 1.'])
-    expect(one(validateQuery('severity is high', fields))).toEqual(['A query is an object: { grammar: 1, root }.'])
+    expect(one(validateQuery('severity is major', fields))).toEqual(['A query is an object: { grammar: 1, root }.'])
     expect(one(validateQuery(q([{ kind: 'condition', field: '__proto__', operator: 'is', value: 'x' }]), fields))).toEqual(['In condition 1: `__proto__` is not a field here.'])
   })
 
@@ -218,13 +222,13 @@ describe('untyped input is checked, never guessed', () => {
   it('names the syntax errors in plain words', () => {
     expect(errorsOf(parseQuery('', fields))).toEqual([{ at: 0, length: 0, message: 'Type a condition: a field, an operator and a value.' }])
     expect(one(parseQuery('subject contains "Invoice', fields))).toEqual(['This quote is never closed.'])
-    expect(one(parseQuery('(severity is high', fields))).toEqual(['This bracket is never closed.'])
-    expect(one(parseQuery('severity is high)', fields))).toEqual(['This bracket closes nothing.'])
-    expect(one(parseQuery('severity is high and', fields))).toEqual(['Add a condition after \'and\'.'])
+    expect(one(parseQuery('(severity is major', fields))).toEqual(['This bracket is never closed.'])
+    expect(one(parseQuery('severity is major)', fields))).toEqual(['This bracket closes nothing.'])
+    expect(one(parseQuery('severity is major and', fields))).toEqual(['Add a condition after \'and\'.'])
     expect(one(parseQuery('severity', fields))).toEqual(['Add an operator after Severity, like \'is\'.'])
-    expect(one(parseQuery('severity is high subject contains "a"', fields))).toEqual(['Join conditions with \'and\' or \'or\'.'])
+    expect(one(parseQuery('severity is major subject contains "a"', fields))).toEqual(['Join conditions with \'and\' or \'or\'.'])
     expect(one(parseQuery('subject contains "a\\qb"', fields))).toEqual(['`\\q` is not an escape here. Use \\", \\\\ or \\u{…}.'])
-    expect(one(parseQuery(`severity${ZWSP} is high`, fields))).toEqual(['There is a hidden character here, ⟨U+200B⟩. Take it out, or write it inside a quoted value as \\u{200B}.'])
+    expect(one(parseQuery(`severity${ZWSP} is major`, fields))).toEqual(['There is a hidden character here, ⟨U+200B⟩. Take it out, or write it inside a quoted value as \\u{200B}.'])
   })
 
   it('every function but the two parsers throws on a query that isn\'t valid', () => {
@@ -245,13 +249,18 @@ describe('the readback says all of it', () => {
   })
 
   it('Words: Readback, a group, with the anchor from `now` in `timeZone`', () => {
-    const q = parsed('severity is-one-of [high, critical] and (first_seen within-last 7d or source.ip in-range 10.0.0.0/8)')
-    // The spec's words, exactly, when the locale is one whose short name for India's zone is "IST".
-    expect(readback(q, fields, { now: NOW, timeZone: 'Asia/Kolkata', strings: { locale: 'en-IN' } }))
-      .toBe('Severity is one of High and Critical, and (First seen is within the last 7 days (to 31 Oct 2026, 19:45 IST) or any Source IP is in 10.0.0.0/8)')
-    // The default locale is British English, and en-GB names the zone by its offset (Node 22, ICU 78).
-    expect(readback(q, fields, { now: NOW, timeZone: 'Asia/Kolkata' }))
-      .toBe('Severity is one of High and Critical, and (First seen is within the last 7 days (to 31 Oct 2026, 19:45 GMT+5:30) or any Source IP is in 10.0.0.0/8)')
+    const q = parsed('severity is-one-of [major, critical] and (first_seen within-last 7d or source.ip in-range 10.0.0.0/8)')
+    // The default locale is British English, and en-GB names India's zone by its offset (Node 22, ICU 78).
+    const gmt = 'Severity is one of Major and Critical, and (First seen is within the last 7 days (to 31 Oct 2026, 19:45 GMT+5:30) or any Source IP is in 10.0.0.0/8)'
+    expect(readback(q, fields, { now: NOW, timeZone: 'Asia/Kolkata' })).toBe(gmt)
+    expect(readback(q, fields, { now: NOW, timeZone: 'Asia/Kolkata', locale: 'en-GB' })).toBe(gmt)
+    // The spec's words, exactly, with `locale: "en-IN"`, whose short name for the zone is "IST".
+    expect(readback(q, fields, { now: NOW, timeZone: 'Asia/Kolkata', locale: 'en-IN' }))
+      .toBe('Severity is one of Major and Critical, and (First seen is within the last 7 days (to 31 Oct 2026, 19:45 IST) or any Source IP is in 10.0.0.0/8)')
+    // The locale is an option, not one of the words: translated strings keep the default locale.
+    expect(readback(q, fields, { now: NOW, timeZone: 'Asia/Kolkata', strings: { and: 'and' } })).toBe(gmt)
+    // @ts-expect-error `locale` moved out of `strings` into the options.
+    expect(() => readback(q, fields, { now: NOW, timeZone: 'Asia/Kolkata', strings: { locale: 'en-IN' } })).not.toThrow()
   })
 
   it('a within-last without `now`, or without `timeZone`, is an error', () => {
@@ -287,7 +296,7 @@ describe('the readback says all of it', () => {
   it('a multi-valued field reads "any …" or "no …"', () => {
     expect(readback(parsed('source.ip in-range 10.0.0.0/8'), fields)).toBe('Any Source IP is in 10.0.0.0/8')
     expect(readback(parsed('tags is-not "test"'), fields)).toBe('No Tag is "test"')
-    expect(readback(parsed('severity is high and tags is-not "test"'), fields)).toBe('Severity is High and no Tag is "test"')
+    expect(readback(parsed('severity is major and tags is-not "test"'), fields)).toBe('Severity is Major and no Tag is "test"')
   })
 
   it('the short form lists 5 values, then always ends "and n more"; the full form lists every value', () => {
@@ -301,21 +310,21 @@ describe('the readback says all of it', () => {
   it('with markTrust, a field that is not a system record carries its writer', () => {
     expect(readback(parsed('subject contains "Invoice"'), fields, { markTrust: true }))
       .toBe('Subject (could have been set by the email\'s sender) contains "Invoice"')
-    expect(readback(parsed('severity is high'), fields, { markTrust: true })).toBe('Severity is High')
+    expect(readback(parsed('severity is major'), fields, { markTrust: true })).toBe('Severity is Major')
     expect(readback(parsed('tags is "x"'), fields, { markTrust: true })).toBe('Any Tag (could have been set by the triage agent) is "x"')
   })
 
   it('never says "or" unless the query does', () => {
-    const q = parsed('severity is-one-of [high, critical] and source.ip is-one-of [10.0.0.1, 10.0.0.2]')
+    const q = parsed('severity is-one-of [major, critical] and source.ip is-one-of [10.0.0.1, 10.0.0.2]')
     expect(readback(q, fields, { full: true })).not.toMatch(/\bor\b/)
-    expect(readback(parsed('severity is high or severity is critical'), fields)).toBe('Severity is High or Severity is Critical')
+    expect(readback(parsed('severity is major or severity is critical'), fields)).toBe('Severity is Major or Severity is Critical')
   })
 
   it('takes its words from `strings`, so it can be translated; the text form cannot', () => {
-    const q = parsed('severity is-one-of [high, critical] and recipients at-least 3')
+    const q = parsed('severity is-one-of [major, critical] and recipients at-least 3')
     expect(readback(q, fields, { strings: { and: 'und', operators: { 'is-one-of': 'ist eines von', 'at-least': 'ist mindestens' } } }))
-      .toBe('Severity ist eines von High und Critical, und Recipients ist mindestens 3')
-    expect(queryToText(q, fields)).toBe('severity is-one-of [high, critical] and recipients at-least 3')
+      .toBe('Severity ist eines von Major und Critical, und Recipients ist mindestens 3')
+    expect(queryToText(q, fields)).toBe('severity is-one-of [major, critical] and recipients at-least 3')
   })
 
   it('the full form carries the IPv4-mapped note once', () => {
@@ -327,7 +336,8 @@ describe('the readback says all of it', () => {
   it('reads an absolute time in `timeZone`, or in UTC without one', () => {
     const q = parsed('first_seen before "2026-10-31T19:45:00+05:30"')
     expect(readback(q, fields)).toBe('First seen is before 31 Oct 2026, 14:15 UTC')
-    expect(readback(q, fields, { timeZone: 'Asia/Kolkata', strings: { locale: 'en-IN' } })).toBe('First seen is before 31 Oct 2026, 19:45 IST')
+    expect(readback(q, fields, { timeZone: 'Asia/Kolkata' })).toBe('First seen is before 31 Oct 2026, 19:45 GMT+5:30')
+    expect(readback(q, fields, { timeZone: 'Asia/Kolkata', locale: 'en-IN' })).toBe('First seen is before 31 Oct 2026, 19:45 IST')
   })
 })
 
@@ -368,10 +378,12 @@ describe('hidden characters are made visible', () => {
     expect(HIDDEN_RANGES.reduce((n, [a, b]) => n + b - a + 1, 0)).toBe(14)
   })
 
-  it('compares text with NFC and simple case folding, as far as fold.ts claims', () => {
-    for (const [a, b] of FOLDS) expect(fold(String.fromCodePoint(a))).toBe(fold(String.fromCodePoint(b)))
+  // fold.test.ts runs every C and S entry of CaseFolding.txt through the fold; these are what a filter sees.
+  it('compares text with NFC and simple case folding', () => {
     expect(fold('ΟΔΟΣ')).toBe(fold('οδος'))
     expect(fold('Straße')).not.toBe(fold('STRASSE'))
+    expect(evaluate(parsed('subject is "Straße"'), { subject: 'STRASSE' }, fields)).toBe('no-match')
+    expect(evaluate(parsed('subject is "İstanbul"'), { subject: 'istanbul' }, fields)).toBe('no-match')
     expect(fold('é')).toBe(fold('é'))
     expect(evaluate(parsed('subject is "ΟΔΟΣ"'), { subject: 'οδοσ' }, fields)).toBe('match')
     expect(evaluate(parsed('subject contains "invoice"'), { subject: 'INVOICE #4' }, fields)).toBe('match')
@@ -444,10 +456,10 @@ describe('ranges are real ranges', () => {
 // [[rule: grammar-missing-is-unknown]]
 describe('missing is not a match', () => {
   it('a condition on a field the record lacks is unknown, positive or negated', () => {
-    expect(evaluate(parsed('severity is high'), {}, fields)).toBe('unknown')
-    expect(evaluate(parsed('severity is-not high'), {}, fields)).toBe('unknown')
-    expect(evaluate(parsed('severity is-not high'), { severity: null }, fields)).toBe('unknown')
-    expect(evaluate(parsed('severity is-not high'), { severity: 'critical' }, fields)).toBe('match')
+    expect(evaluate(parsed('severity is major'), {}, fields)).toBe('unknown')
+    expect(evaluate(parsed('severity is-not major'), {}, fields)).toBe('unknown')
+    expect(evaluate(parsed('severity is-not major'), { severity: null }, fields)).toBe('unknown')
+    expect(evaluate(parsed('severity is-not major'), { severity: 'critical' }, fields)).toBe('match')
     expect(evaluate(parsed('tags is-not "test"'), { tags: [] }, fields)).toBe('unknown')
     expect(evaluate(parsed('tags is-not "test"'), { tags: ['a', 'test'] }, fields)).toBe('no-match')
     expect(evaluate(parsed('tags is "test"'), { tags: ['a', 'test'] }, fields)).toBe('match')
@@ -455,10 +467,10 @@ describe('missing is not a match', () => {
   })
 
   it('and is unknown unless another item is no-match; or is unknown unless another item is a match', () => {
-    const and = parsed('severity is high and recipients at-least 3')
+    const and = parsed('severity is major and recipients at-least 3')
     expect(evaluate(and, { recipients: 5 }, fields)).toBe('unknown')
     expect(evaluate(and, { recipients: 1 }, fields)).toBe('no-match')
-    const or = parsed('severity is high or recipients at-least 3')
+    const or = parsed('severity is major or recipients at-least 3')
     expect(evaluate(or, { recipients: 5 }, fields)).toBe('match')
     expect(evaluate(or, { recipients: 1 }, fields)).toBe('unknown')
   })
@@ -470,22 +482,41 @@ describe('missing is not a match', () => {
   })
 
   it('leftOutQuery matches exactly the unknown records', () => {
-    const q = parsed('severity is-not high')
+    const q = parsed('severity is-not major')
     const left = leftOutQuery(q, fields)
     expect(queryToText(left, fields)).toBe('severity is-not-set')
-    for (const r of [{}, { severity: 'high' }, { severity: 'critical' }]) expect(evaluate(left, r, fields) === 'match').toBe(evaluate(q, r, fields) === 'unknown')
+    for (const r of [{}, { severity: 'major' }, { severity: 'critical' }]) expect(evaluate(left, r, fields) === 'match').toBe(evaluate(q, r, fields) === 'unknown')
     // A query that can't be unknown leaves nothing out.
     const never = leftOutQuery(parsed('severity is-set'), fields)
-    for (const r of [{}, { severity: 'high' }]) expect(evaluate(never, r, fields)).toBe('no-match')
+    for (const r of [{}, { severity: 'major' }]) expect(evaluate(never, r, fields)).toBe('no-match')
   })
 
   it('leftOutQuery needs `now` for a within-last inside an or, and refuses what the grammar can\'t say', () => {
-    const q = parsed('first_seen within-last 7d or severity is high')
+    const q = parsed('first_seen within-last 7d or severity is major')
+    // A missing option is the caller's mistake, so a TypeError; the grammar's gap is its own class.
     expect(() => leftOutQuery(q, fields)).toThrow(/pass `now`/)
+    expect(() => leftOutQuery(q, fields)).toThrow(TypeError)
+    expect(() => leftOutQuery(q, fields)).not.toThrow(LeftOutNotExpressible)
     expect(leftOutQuery(q, fields, { now: NOW })).toBeTruthy()
-    const many = defineFields({ size: { label: 'Size', type: 'number', many: true, trust: { kind: 'system-record', source: 'S' } }, x: { label: 'X', type: 'boolean', trust: { kind: 'system-record', source: 'S' } } })
-    const r = parseQuery('size at-least 3 or x is true', many)
-    expect(r.ok && (() => leftOutQuery(r.query, many))).toThrow(/Size has several values/)
+    const many = defineFields({
+      size: { label: 'Size', type: 'number', many: true, trust: { kind: 'system-record', source: 'S' } },
+      flags: { label: 'Flag', type: 'boolean', many: true, trust: { kind: 'system-record', source: 'S' } },
+      x: { label: 'X', type: 'boolean', trust: { kind: 'system-record', source: 'S' } },
+    })
+    const caught = (text: string) => {
+      const r = parseQuery(text, many)
+      if (!r.ok) throw new Error(text)
+      try { leftOutQuery(r.query, many) } catch (e) { return e }
+      return undefined
+    }
+    for (const [text, field, operator] of [['size at-least 3 or x is true', 'size', 'at-least'], ['flags is true or x is true', 'flags', 'is']] as const) {
+      const e = caught(text)
+      expect(e, text).toBeInstanceOf(LeftOutNotExpressible)
+      expect(e).toBeInstanceOf(Error)
+      expect(e).toMatchObject({ name: 'LeftOutNotExpressible', field, operator })
+      expect((e as Error).message).toMatch(/has several values/)
+    }
+    expect(caught('size at-least 3 or x is true')).toMatchObject({ message: expect.stringMatching(/Size has several values/) })
     const fine = parseQuery('size at-least 3 and x is true', many)
     expect(fine.ok && leftOutQuery(fine.query, many)).toBeTruthy()
   })

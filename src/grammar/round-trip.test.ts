@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { defineFields, evaluate, leftOutQuery, normalise, parseQuery, queryToText, validateQuery } from '..'
+import { defineFields, evaluate, leftOutQuery, LeftOutNotExpressible, normalise, parseQuery, queryToText, validateQuery } from '..'
 import type { FieldRecord, FieldSpec, Query } from '..'
 
 // A small seeded generator, written here so CI is reproducible and the grammar gains no dependency.
@@ -32,7 +32,8 @@ const fields = defineFields({
   'nm': { label: 'Port', type: 'number', many: true, trust: sys('Firewall') },
   'tt': { label: 'First seen', type: 'time', trust: sys('Sensor clock') },
   'ttm': { label: 'Sign-in time', type: 'time', many: true, trust: sys('IdP') },
-  'e': { label: 'Severity', type: 'enum', values: [{ value: 'high', label: 'High' }, { value: 'critical', label: 'Critical' }, { value: 'Very low', label: 'Very low' }, { value: 'and', label: 'And' }], trust: sys('Pipeline') },
+  // Not Severity: "Very low" and "and" are here to test quoting, and are no severity's words.
+  'e': { label: 'Category', type: 'enum', values: [{ value: 'major', label: 'Major' }, { value: 'critical', label: 'Critical' }, { value: 'Very low', label: 'Very low' }, { value: 'and', label: 'And' }], trust: sys('Pipeline') },
   'em': { label: 'Category', type: 'enum', many: true, values: [{ value: 'phish', label: 'Phishing' }, { value: 'bec', label: 'BEC' }, { value: 'x_y-1', label: 'X' }], trust: sys('Pipeline') },
   'b': { label: 'Listed', type: 'boolean', trust: sys('Vendor master') },
   'bm': { label: 'Flag', type: 'boolean', many: true, trust: sys('Detectors') },
@@ -181,6 +182,7 @@ describe('leftOutQuery gives exactly the unknown set', () => {
       let left: Query<F>
       try { left = leftOutQuery(q, fields, { now: NOW }) } catch (e) {
         // The two cases the grammar has no negation for, inside an 'or'.
+        expect(e, `seed ${SEED + 1}, case ${i}`).toBeInstanceOf(LeftOutNotExpressible)
         expect((e as Error).message, `seed ${SEED + 1}, case ${i}`).toMatch(/has several values/)
         refused++
         continue

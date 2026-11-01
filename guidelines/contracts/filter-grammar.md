@@ -64,9 +64,10 @@ const q = parseQuery('sender.domain is "northwind.example" and subject contains 
 | `validateQuery` | `(unknownObject, fields) => ParseResult` | For anything not built by typed code: an agent's emitted object, a stored saved view, a value from the URL. The same errors as `parseQuery`, plus unknown keys. Returns the canonical object. |
 | `normalise` | `(query, fields) => Query` | The canonical form: domains lower-case, punycode and without a trailing dot; IPv4-mapped IPv6 written as IPv4; `is-one-of` lists de-duplicated and sorted. Idempotent. |
 | `queryToText` | `(query, fields) => string` | The canonical text form. `parseQuery(queryToText(normalise(q)))` gives back `normalise(q)`. |
-| `readback` | `(query, fields, { now?, timeZone?, strings?, markTrust?, full? }) => string` | The sentence people and screen readers get. `full: true` is the complete sentence a ledger and an accessible description use. Without it, the short form for chips and summaries. `now` and `timeZone` are required when the query has a `within-last`. |
+| `readback` | `(query, fields, { now?, timeZone?, locale?, strings?, markTrust?, full? }) => string` | The sentence people and screen readers get. `full: true` is the complete sentence a ledger and an accessible description use. Without it, the short form for chips and summaries. `now` and `timeZone` are required when the query has a `within-last`. `locale` (BCP 47, default `"en-GB"`) is the locale times are written in. |
 | `evaluate` | `(query, record, fields, { now? }) => "match" \| "no-match" \| "unknown"` | One record. `unknown` when the result depends on a field the record lacks. `now` is required when the query has a `within-last`. |
-| `leftOutQuery` | `(query, fields, { now? }) => Query` | A query that matches exactly the records where `query` is `unknown`, so any backend that runs the grammar can count what was left out. `now` is required when a `within-last` sits inside an `or`. |
+| `leftOutQuery` | `(query, fields, { now? }) => Query` | A query that matches exactly the records where `query` is `unknown`, so any backend that runs the grammar can count what was left out. `now` is required when a `within-last` sits inside an `or`. Throws `LeftOutNotExpressible` when the grammar has no words for the negation it needs (*Details the build settled*). |
+| `LeftOutNotExpressible` | `class extends Error`, with `field` and `operator` | What `leftOutQuery` throws for a query that is valid but whose left-out set the grammar can't write. A host catches it by class. |
 
 `normalise`, `queryToText`, `readback`, `evaluate` and `leftOutQuery` take a query typed code built, or one `parseQuery` or `validateQuery` returned. Given one that isn't valid, they throw a `TypeError` carrying the first error's words; they never work on a guess.
 
@@ -116,13 +117,13 @@ type Condition<F> = { [K in FieldName<F>]: { kind: "condition"; field: K } & Mat
 type PositiveConjunction<F> = { grammar: 1; root: { kind: "group"; join: "and"; items: [PositiveCondition<F>, ...PositiveCondition<F>[]] } }
 ```
 
-**A condition's value**, by its operator's shape: one value (`value: "northwind.example"`, `value: 3`, `value: true`); a non-empty list for `is-one-of` and `is-none-of` (`value: ["high", "critical"]`); a range for `between`, both bounds inclusive (`value: { from: 1, to: 10 }`); a CIDR string for `in-range` (`value: "10.0.0.0/8"`); a duration string for `within-last` (`value: "7d"`); and no `value` at all for `is-set` and `is-not-set`.
+**A condition's value**, by its operator's shape: one value (`value: "northwind.example"`, `value: 3`, `value: true`); a non-empty list for `is-one-of` and `is-none-of` (`value: ["major", "critical"]`); a range for `between`, both bounds inclusive (`value: { from: 1, to: 10 }`); a CIDR string for `in-range` (`value: "10.0.0.0/8"`); a duration string for `within-last` (`value: "7d"`); and no `value` at all for `is-set` and `is-not-set`.
 
 **The text form:**
 
 ```
 sender.domain is "northwind.example" and subject contains "Invoice"
-severity is-one-of [high, critical] and (first_seen within-last 7d or source.ip in-range 10.0.0.0/8)
+severity is-one-of [major, critical] and (first_seen within-last 7d or source.ip in-range 10.0.0.0/8)
 recipients between 1 and 10
 ```
 
@@ -180,14 +181,14 @@ recipients between 1 and 10
   - It joins with the group's word, puts brackets around every inner group, and quotes string values.
   - **With `full: true`, it lists every value.** The ledger, the Approval Queue's record and every `aria-describedby` use the full form.
   - **The short form** lists up to 5 values of `is-one-of`, then always ends "and *n* more". It is for chips and summaries only.
-  - Relative times give their anchor from `now` in `timeZone`: "within the last 7 days (to 31 Oct 2026, 19:45 IST)". Without `now`, a query with `within-last` is an error, so a ledger line and a test are reproducible.
+  - Relative times give their anchor from `now` in `timeZone`: "within the last 7 days (to 31 Oct 2026, 19:45 IST)", with `timeZone: "Asia/Kolkata"` and `locale: "en-IN"`. Without `now`, a query with `within-last` is an error, so a ledger line and a test are reproducible.
   - `is-subdomain-of` reads "is northwind.example or one of its subdomains", so nobody reading the ledger thinks the apex was left out.
   - A multi-valued field reads "any …" or "no …".
   - With `markTrust`, a field that isn't a system record carries its writer: 'Subject (could have been set by the email's sender) contains "Invoice"'.
   - It never says "or" unless the query does.
   [[rule: grammar-readback-complete | runtime]]
 - **Missing is not a match.**
-  - A condition on a field the record lacks gives `unknown`, whether the operator is positive or negated. "Severity is not High" doesn't match a record with no severity.
+  - A condition on a field the record lacks gives `unknown`, whether the operator is positive or negated. "Severity is not Major" doesn't match a record with no severity.
   - `and` with an `unknown` gives `unknown` unless another item is `no-match`. `or` gives `unknown` unless another item is `match`.
   - Surfaces that filter show how many records were left out as unknown, never fold them into "no match" silently.
   - `is-set` and `is-not-set` are how a person asks for missing values on purpose.
@@ -195,7 +196,7 @@ recipients between 1 and 10
     - for a condition, the field is not set;
     - for `and`, every item is match-or-unknown, and some item is unknown;
     - for `or`, no item matches, and some item is unknown.
-  - **For backend adapters.** SQL already behaves this way (a `NULL` severity makes `severity <> 'High'` unknown). Elasticsearch and OpenSearch don't: `must_not` keeps documents that lack the field. An adapter must add an `exists` to every negated condition. This is the mistake a host will make, so the guideline names it.
+  - **For backend adapters.** SQL already behaves this way (a `NULL` severity makes `severity <> 'Major'` unknown). Elasticsearch and OpenSearch don't: `must_not` keeps documents that lack the field. An adapter must add an `exists` to every negated condition. This is the mistake a host will make, so the guideline names it.
   [[rule: grammar-missing-is-unknown | runtime]]
 - **Domains match on label boundaries.**
   - `is-subdomain-of "northwind.example"` matches `northwind.example` and `mail.northwind.example`, never `evilnorthwind.example`.
@@ -224,7 +225,7 @@ recipients between 1 and 10
 | Moment | Default | Where |
 |---|---|---|
 | Readback, simple | "Authenticated sender domain is "northwind.example" and Subject contains "Invoice"" | `readback` |
-| Readback, a group | "Severity is one of High and Critical, and (First seen is within the last 7 days (to 31 Oct 2026, 19:45 IST) or any Source IP is in 10.0.0.0/8)" | `readback` |
+| Readback, a group | "Severity is one of Major and Critical, and (First seen is within the last 7 days (to 31 Oct 2026, 19:45 IST) or any Source IP is in 10.0.0.0/8)" | `readback`, with `locale: "en-IN"` |
 | Readback, a subdomain | "Authenticated sender domain is northwind.example or one of its subdomains" | `readback` |
 | Readback, hidden characters | "Subject contains \"Invoice\", ignoring hidden characters" | `readback`, `untrusted` fields |
 | Too large | "This query has more than 200 conditions. Split it, or save it as a view." | parse error |
@@ -239,7 +240,7 @@ recipients between 1 and 10
 The operator words in the readback ("is one of", "is a subdomain of", "is at least") come from `strings`, so they can be translated. The ids in the text form can't.
 
 How the words above appear in practice:
-- **"IST" comes from the locale.** `strings.locale` defaults to British English (`en-GB`), and `Intl.DateTimeFormat` names India's zone by its offset there: "(to 31 Oct 2026, 19:45 GMT+5:30)". With `strings: { locale: "en-IN" }` it prints "IST", the sentence in the table. Zone names come from the runtime's ICU data, so a host that needs one exact name tests the runtime it ships on.
+- **"IST" comes from the locale, and the examples that show it assume `locale: "en-IN"`.** The `locale` option defaults to British English (`en-GB`), and `Intl.DateTimeFormat` names India's zone by its offset there: "(to 31 Oct 2026, 19:45 GMT+5:30)". With `locale: "en-IN"` it prints "IST", the sentence in the table. Zone names come from the runtime's ICU data, so a host that needs one exact name tests the runtime it ships on.
 - **The "Readback, hidden characters" note, and the IPv4-mapped note, are in the full form.** The short form for chips leaves them out, as it leaves out values past the fifth. That is why "Readback, simple" has none, though Subject is `untrusted`.
 - **`validateQuery` errors say where they are in words**, because an object has no text: "In condition 1: `boost` isn't part of a condition here." Conditions are numbered as they read, from 1; groups likewise, the root being group 1. An error about the whole query ("This query has more than 200 conditions. …") has no prefix. The position is 0 with length 0.
 - **"Left out as unknown"** is a surface's sentence, with its count from running `leftOutQuery`. The core counts nothing, so it has no function that writes it.
@@ -251,27 +252,38 @@ The approved spec is silent on these. Each is the least surprising choice, writt
 - **Records are read by the key as declared**: `record["sender.domain"]`, never `record.sender.domain`. A field's values are those of its type: a missing key, `null`, a value of another type (a string in a `number` field, an enum value not in `values`) or an empty list all count as no value. So they are `unknown`, and `is-not-set` matches them, and `leftOutQuery` stays exact. A `many` field read as one value is a list of one; a field without `many` given a list has no value. A `time` in a record is an ISO 8601 string with an offset, or a `Date`.
 - **Depth counts the root.** The root group is 1 deep, so the text form has at most two levels of brackets.
 - **A group of one is written with `and`.** `normalise` sets its join to `and`, because the text form of one item has no join to say.
-- **List order.** `is-one-of` and `is-none-of` lists keep an enum's values in the schema's order (so `[high, critical]` stays as the Words example reads), IP addresses by address (IPv4 first), and everything else by code unit.
+- **List order.** `is-one-of` and `is-none-of` lists keep an enum's values in the schema's order (so `[major, critical]` stays as the Words example reads), IP addresses by address (IPv4 first), and everything else by code unit.
 - **Positive operators** for a Positive Conjunction are every operator but the seven negations and `is-not-set`.
 - **The readback**:
   - values are quoted for `text`, `identifier` and `domain`, except in the `is-subdomain-of` sentence, which reads as the Words table does; IPs, numbers, times, enum labels and booleans are not quoted;
   - a hidden character in a value is shown as `⟨U+200B⟩`, as the Evidence Locker shows it; the text form writes `\u{200B}`. Control characters, line separators and lone surrogates are escaped the same way, so a value can't break a line or a link;
-  - a comma comes before a group's join when one of its items has its own "and" or comma: an inner group, a list of two or more values, a `between`, or a note. "Severity is one of High and Critical, and (…)";
+  - a comma comes before a group's join when one of its items has its own "and" or comma: an inner group, a list of two or more values, a `between`, or a note. "Severity is one of Major and Critical, and (…)";
   - the short form shortens `is-none-of` lists as it does `is-one-of`;
   - `is-not-subdomain-of` reads "is neither northwind.example nor one of its subdomains";
   - a sentence that starts on a multi-valued field gets its capital: "Any Source IP is in 10.0.0.0/8";
   - an absolute time is read in `timeZone`, or in UTC without one;
   - a number with a `unit` carries it after each value: "between 1 MB and 10 MB, inclusive";
-  - the IPv4-mapped note ends the full sentence once, after a semicolon, whenever the query has a condition on an `ip` field.
+  - the IPv4-mapped note ends the full sentence once, after a semicolon, whenever the query has a condition on an `ip` field;
+  - **`locale` is an option of its own** (BCP 47, default `"en-GB"`), beside `timeZone`, and not one of the `strings`: the strings are words a host translates, and the locale is how times and capitals are written. It is the locale `Intl.DateTimeFormat` writes times in, and the one a sentence's first capital is made in. Translated `strings` keep the default locale unless `locale` is passed too.
 - **The text form**: IPs, ranges, numbers, durations and booleans are bare; text, identifiers, domains and times are quoted. An enum value spelt `and` or `or` is quoted, since those are the joins. A number is written in full, never with an exponent: `1e-7` is `0.0000001`.
 - **The limits.** A query `validateQuery` would accept but whose text form runs past 10,000 characters is rejected, so every valid query can be typed back. Characters are counted as code points.
 - **Domains.** A host name is at most 253 characters, its labels letters, digits, `-` and `_` once in punycode, and it is never an IPv4 address. A hidden character in a domain value is an error, not a character to drop.
 - **Errors**: positions are offsets in UTF-16 code units, as a text field's selection counts them. `parseQuery` reports every value error it finds, and stops at the first syntax error.
-- **`leftOutQuery`.** "No item matches" needs each item's negation. A number or a time negates through the operators either side of it ("not `before` t" is "`after` t, or `between` t and t"). Two cases have no negation in the grammar, and inside an `or` the function throws rather than return a wrong query: an ordering, `between` or `within-last` on a `many` field, and `is` on a `many` boolean. A `within-last` inside an `or` is negated against a fixed time, so it needs `now`. The result can be deeper or longer than the limits on untrusted input, which are for input; a query that can never be unknown leaves nothing out, written as "is set and is not set" on its first field.
+- **`leftOutQuery`.** "No item matches" needs each item's negation. A number or a time negates through the operators either side of it ("not `before` t" is "`after` t, or `between` t and t"). Two cases have no negation in the grammar, and inside an `or` the function throws rather than return a wrong query: an ordering, `between` or `within-last` on a `many` field, and `is` on a `many` boolean. It throws a **`LeftOutNotExpressible`**, an `Error` exported from the package root, carrying the `field` and `operator` it couldn't negate, so a host can tell "the grammar can't say this count" from a mistake in its own call. A `within-last` inside an `or` is negated against a fixed time, so it needs `now`; without it the error is a `TypeError`, as for any missing option. The result can be deeper or longer than the limits on untrusted input, which are for input; a query that can never be unknown leaves nothing out, written as "is set and is not set" on its first field.
+- **Case folding is exact simple folding, for the Unicode version the repo's Node ships** (17.0.0). A table generated from Unicode's `CaseFolding.txt`, of the 198 code points where `toLowerCase` differs from it, replaces the 12 mappings first chosen by hand. Twelve code points now compare differently: U+0130 no longer equals "i" plus U+0307, and U+0345, the Cyrillic variants U+1C80–U+1C88 and the "ſt" ligature now fold where they didn't (*Case folding*).
 
 ## Case folding
 
-`text` compares after NFC and Unicode simple case folding. JavaScript has no case-folding function, so `src/grammar/fold.ts` does `normalize("NFC")`, then `toLowerCase()`, then the simple-folding mappings `toLowerCase` leaves apart (final sigma, the Greek symbol variants, long s, the micro sign and the Greek prosgegrammeni), then NFC again. Each mapping is tested. It does not cover: U+0130 (capital I with dot above), which simple folding leaves as it is and `toLowerCase` turns into "i" plus U+0307; and full folding, so "ß" and "ss" stay different, as simple folding keeps them.
+`text` compares after NFC and Unicode simple case folding: the C and S mappings of Unicode's `CaseFolding.txt`. A code point with neither folds to itself. JavaScript has no case-folding function, so `src/grammar/fold.ts` does `normalize("NFC")`, then folds each code point on its own, then NFC again. A code point's fold is `toLowerCase` of it alone, unless a generated table says otherwise.
+
+- **The table** (`src/grammar/fold-table.ts`) lists every code point where `toLowerCase` differs from the C and S mappings: 198 for Unicode 17.0.0. 172 are Cherokee, which folds to its capital letters while `toLowerCase` goes the other way. The other 26 are the micro sign, U+0130, long s and long s with dot above, the two Greek iota subscripts, the Greek symbol variants, final sigma, the Cyrillic small letter variants (U+1C80–U+1C88), and three S mappings (two Greek letters with dialytika and oxia, and the "ſt" ligature).
+- **It is generated, never written by hand.** `scripts/grammar/build-fold-table.mjs` reads `scripts/grammar/CaseFolding.txt`, vendored unchanged with its licence header, for the Unicode version the repo's Node ships. The script refuses to run when `process.versions.unicode` is another version, since `toLowerCase` comes from that Node. `--check` fails on a stale table.
+- **The tests** (`src/grammar/fold.test.ts`) run every C and S entry of the file through the fold, check every other code point folds to itself, check that the file and Node have the same Unicode version and that the committed table is what the script writes, and check the file against the runtime's own simple folding (a regular expression with the `i` and `u` flags).
+- **One code point at a time,** because `toLowerCase` on a whole string reads context: it lowers a capital sigma at the end of a word to "ς". Simple folding doesn't, so "ΟΔΟΣ" folds to "οδοσ".
+- **U+0130** (capital I with dot above) has no C or S mapping, so it folds to itself. `toLowerCase` gives "i" plus U+0307; the table covers that, so "İ" equals neither "i" nor "i" plus U+0307.
+- **Simple, not full:** "ß" and "ss" stay different. Capital "ẞ" folds to "ß".
+- **NFC before and after.** NFC first can join letters into one that folds differently: "Α" and U+0345 become "ᾼ", which folds to "ᾳ".
+- **A new Node with a new Unicode version** means a new `CaseFolding.txt` and a new table, in the same change; the tests fail until both are in.
 
 ## Token bindings, Sizes, States, Motion
 
@@ -299,7 +311,7 @@ None. The grammar has no UI. The surfaces that show it own all four.
 
 | Entry point | Implementation | Dependencies | Status |
 |---|---|---|---|
-| `@omkarux/vela` | **core:** `src/grammar/`, exported from the package root: the eight functions and the types | none | Experimental |
+| `@omkarux/vela` | **core:** `src/grammar/`, exported from the package root: the eight functions, the `LeftOutNotExpressible` error and the types | none | Experimental |
 
 **Core, and UI-free,** so a backend in Node can import the same parser and readback the console uses. It imports no React, no DOM and no Node-only module. Root export: it has no dependencies and tree-shakes, and a subpath would add an exports entry, a second `.d.ts` and a second pack-gate check for nothing. `check-rules.mjs` reads `guidelines/contracts/` as it reads `guidelines/components/`, and the site lists this page under Foundations.
 
