@@ -215,10 +215,11 @@ test.describe('Tabs overflow, at 412px with ten tabs', () => {
           shadow: getComputedStyle(l).boxShadow,
           stuck: l.getAttribute('data-vela-stuck'),
         }))
-        await expect.poll(async () => (await probe()).shadow).toContain('inset')
+        // The row learns of the scroll from its scroll event, a frame or more later, so wait until it
+        // draws the line at the start edge too, not only for the first inset shadow.
+        await expect.poll(async () => (await probe()).shadow).toContain(`${canvasText} 1px 0px 0px 0px inset`)
         const p = await probe()
         expect(p.masks.every((m) => m === 'none')).toBe(true)
-        expect(p.shadow).toContain(canvasText)
         // A line at each edge: the open tab is not stuck here, so the list draws both.
         expect(p.stuck).toBeNull()
         expect(p.shadow).toContain(`${canvasText} 1px 0px 0px 0px inset`)
