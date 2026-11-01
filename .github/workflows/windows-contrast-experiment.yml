@@ -70,8 +70,9 @@ jobs:
       - name: Serve the site and take the shots
         shell: pwsh
         run: |
-          $server = Start-Process -PassThru -NoNewWindow npx -ArgumentList 'vite','preview','--config','vite.demo.config.ts','--port','4173','--strictPort'
+          $server = Start-Process -PassThru -NoNewWindow -FilePath node -ArgumentList 'node_modules/vite/bin/vite.js','preview','--config','vite.demo.config.ts','--port','4173','--strictPort'
           Start-Sleep -Seconds 8
+          try { (Invoke-WebRequest -UseBasicParsing http://localhost:4173/).StatusCode } catch { "server not up: $_" }
           node scripts/experiments/windows-contrast.mjs http://localhost:4173/ experiments/windows-contrast
           Stop-Process -Id $server.Id -ErrorAction SilentlyContinue
       - name: Commit what it saw
