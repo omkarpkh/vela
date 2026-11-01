@@ -1435,7 +1435,7 @@ test.describe('Product Mark: the Overview hero and its pulse', () => {
     await page.setViewportSize({ width: 1440, height: 900 })
     await page.goto('/')
     await expect(page.getByRole('heading', { level: 1, name: 'Vela Design System' })).toBeVisible()
-    await expect(page.getByRole('main').getByText('A token-first design system')).toBeVisible()
+    await expect(page.getByRole('main').getByText('For data-heavy products, built first for security consoles.')).toBeVisible()
     await expect.poll(() => asked.length, 'the still was asked for, and is still on its way').toBeGreaterThan(0)
     release()
     const image = () => page.locator('.ov-hero').evaluate((el) => getComputedStyle(el).backgroundImage)

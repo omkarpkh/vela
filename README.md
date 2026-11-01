@@ -4,7 +4,7 @@
 [![npm](https://img.shields.io/npm/v/%40omkarux%2Fvela?label=npm)](https://www.npmjs.com/package/@omkarux/vela)
 [![Licence: MIT](https://img.shields.io/badge/licence-MIT-blue)](LICENSE)
 
-A token-first design system. The tokens and the component specs are framework-agnostic;
+A design system for data-heavy products, built first for security consoles. The tokens and the component specs are framework-agnostic;
 this repository is a **React implementation** of them. Seventeen components, two themes, zero runtime
 dependencies in the core entry — and every design rule in the documentation is tagged with how it is
 enforced: 73 of the 225 by the TypeScript compiler, the rest at runtime, in a real browser, or by review
@@ -59,7 +59,7 @@ link to each, and the number of automated checks, written by the test runners ra
 | **Icons** | 50 curated [Lucide](https://lucide.dev) 1.63.0 glyphs (ISC; a subset from Feather, MIT), compiled into the core entry at build time — no icon dependency, `lucide` is a devDependency only. The ISC notice ships in [`NOTICE`](NOTICE) |
 | **Format** | ESM, `preserveModules` for tree-shaking, full `.d.ts` |
 | **Tests** | 1400 automated checks — 1124 unit and contract (107 contrast pairs, each asserted in both themes), 273 browser (68 screenshots at four widths, 203 playground, 2 docs), 3 Flutter — counted by `npm run checks` |
-| **Packed size** | 280.9 kB, 254 files (the Filter Grammar's modules and their .d.ts are most of the growth since 0.15.0), as `npm run verify` measures it (README and CHANGELOG ship in the tarball, so this moves when they do) |
+| **Packed size** | 281.2 kB, 254 files (the Filter Grammar's modules and their .d.ts are most of the growth since 0.15.0), as `npm run verify` measures it (README and CHANGELOG ship in the tarball, so this moves when they do) |
 
 ## The three ideas worth stealing
 
