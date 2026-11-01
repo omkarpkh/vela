@@ -73,6 +73,16 @@ describe('Tabs overflow: the row arithmetic', () => {
     expect(measureRow(row({ scroll: 400 })).tabs[1].hidden).toBe(true)
   })
 
+  // [[rule: tabs-overflow-count-measured]]
+  it('counts only what the list offers: a hidden disabled tab is not counted, nor is its news', () => {
+    const tabs = Array.from({ length: 10 }, (_, i) => tab(80, { selected: i === 1, disabled: i === 7, unseen: i === 7 || i === 8 }))
+    const r = measureRow(row({ tabs }))
+    // Tab 7 is hidden, and still cut geometrically (no Seed), but the list doesn't offer it.
+    expect(r.tabs[7].hidden).toBe(true)
+    expect(r.hiddenCount).toBe(6)
+    expect(r.unseenHidden).toBe(1)
+  })
+
   // [[rule: tabs-overflow-news-words]]
   it('counts the news of hidden tabs only: a tab in view with unseen adds nothing', () => {
     const tabs = Array.from({ length: 10 }, (_, i) => tab(80, { selected: i === 1, unseen: i === 0 || i === 8 || i === 9 }))
@@ -148,7 +158,7 @@ function Row({ unseen = [] as string[], value }: { unseen?: string[]; value?: st
     </HeadlessTabs>
   )
 }
-const control = () => screen.queryByRole('button', { name: /^All tabs/ })
+const control = () => screen.queryByRole('button', { name: /Show all tabs$/ })
 const settle = () => act(() => new Promise((r) => setTimeout(r, 40)))
 
 describe('Tabs overflow: the headless control', () => {
@@ -158,14 +168,21 @@ describe('Tabs overflow: the headless control', () => {
   // [[rule: tabs-overflow-news-words]]
   it('says how many tabs are hidden and how many of those have news, in words, and names itself in full', () => {
     render(<Row unseen={['sessions', 'overview']} />)
-    // Six 100px tabs in 250px: Overview and Alerts are whole; four are hidden. Overview is in view,
-    // so its news does not count; Sessions is hidden, so it does.
+    // Six 100px tabs in 250px: Overview and Alerts are whole; four are hidden, but Audit log is
+    // disabled and not in the list, so the count is three. Overview is in view, so its news does
+    // not count; Sessions is hidden, so it does.
     const more = control()!
-    expect(more).toHaveTextContent('4 more · 1 new')
-    expect(more).toHaveAccessibleName('All tabs, 4 hidden, 1 with new items')
-    expect(moreName(6, 0)).toBe('All tabs, 6 hidden')
+    expect(more).toHaveTextContent('3 more · 1 new')
+    // Label in Name (WCAG 2.5.3): the name starts with the visible words, in order, then says what
+    // the control does. The dot between them is hidden from assistive technology.
+    expect(more).toHaveAccessibleName('3 more, 1 new. Show all tabs')
+    expect(moreName(6, 0)).toBe('6 more. Show all tabs')
+    const visible = (el: Element): string => [...el.childNodes].map((n) => (n instanceof Element ? (n.getAttribute('aria-hidden') === 'true' ? '' : visible(n)) : n.textContent ?? '')).join('')
+    expect(visible(more).replace(/\s+/g, ' ').trim()).toBe('3 more 1 new')
+    expect(more.getAttribute('aria-label')!.toLowerCase().replace(/[,.]/g, '')).toContain('3 more 1 new')
     // The news is its own words, at a heavier weight in the stylesheet, never a dot.
     expect(more.querySelector('.vela-tabs__more-news')).toHaveTextContent('· 1 new')
+    expect(more.querySelector('.vela-tabs__more-news [aria-hidden="true"]')).toHaveTextContent('·')
     expect(more.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
     // Outside the tablist, which still holds only its tabs.
     const list = screen.getByRole('tablist')
@@ -222,7 +239,7 @@ describe('Tabs overflow: the headless control', () => {
     // Cleared: the region empties, which is not announced.
     rerender(<Row unseen={[]} />)
     await waitFor(() => expect(live).toHaveTextContent(''))
-    expect(control()).toHaveTextContent(/^4 more$/)
+    expect(control()).toHaveTextContent(/^3 more$/)
   })
 
   it('the core list has no control, no row and no live region', () => {

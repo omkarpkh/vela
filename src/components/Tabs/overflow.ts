@@ -78,7 +78,7 @@ export interface RowResult {
   /** The open tab is stuck at the start or the end edge. */
   stuck: 'start' | 'end' | null
   tabs: RowTabResult[]
-  /** How many tabs are not wholly in view. */
+  /** How many tabs the list offers (every one that is not disabled) are not wholly in view. */
   hiddenCount: number
   /** How many of those carry `unseen`. */
   unseenHidden: number
@@ -166,8 +166,11 @@ export function measureRow(input: RowInput): RowResult {
     return { hidden, fade: image, start: v }
   })
 
-  const hiddenCount = out.filter((t) => t.hidden).length
-  const unseenHidden = out.filter((t, i) => t.hidden && tabs[i].unseen).length
+  // The count is what the list offers: a disabled tab is not in the list, so it is not counted,
+  // even when hidden (it is reachable by scrolling the row only). The open tab never hides.
+  const offered = (i: number) => !tabs[i].disabled || tabs[i].selected
+  const hiddenCount = out.filter((t, i) => t.hidden && offered(i)).length
+  const unseenHidden = out.filter((t, i) => t.hidden && offered(i) && tabs[i].unseen).length
   return { overflow: true, moreStart, moreEnd, edgeStart, edgeEnd, winStart, winEnd, max, stuck, tabs: out, hiddenCount, unseenHidden }
 }
 
