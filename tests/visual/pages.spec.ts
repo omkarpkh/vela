@@ -51,6 +51,11 @@ for (const theme of THEMES) {
         // The page's sections load with its spec; the picture waits for them.
         await expect(page.getByRole('navigation', { name: 'On this page' })).toBeVisible()
         await page.mouse.move(0, 0)
+        // A whole page taller than the window scrolls while it is captured, and its section index marks
+        // a new current section as it goes, so two captures never match. Make the window as tall as the
+        // page first: nothing scrolls, and the index stays on its first section.
+        const height = await page.evaluate(() => Math.ceil(document.documentElement.scrollHeight))
+        await page.setViewportSize({ width: 1440, height })
         await expect(page.locator('main')).toHaveScreenshot(`page-${name}-${theme}.png`)
       })
     }
