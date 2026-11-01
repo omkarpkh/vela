@@ -23,8 +23,13 @@ import { KNOWN, type Mode } from './playground/tokens'
 import { TokensTab, tokensLine, variantsOf, boundInCode } from './playground/TokensTab'
 import { FigmaTab, figmaEntryFor, figmaLine, settingWords } from './playground/FigmaTab'
 import { rulesFromSpec, oneLine } from './playground/rules-read'
+import { liveProps, heldProps, rangeAt } from './playground/live'
+import { RangeStage } from './playground/RangeStage'
+import { Stage as StagePart } from './shell/Stage'
 import './playground.css'
 
+// The stage's layout: beside the controls, or across the row. Named Layout, because the section
+// heading above it already says Stage.
 const STAGE_OPTIONS = [
   { value: 'beside', label: 'Beside' },
   { value: 'full', label: 'Full width' },
@@ -180,6 +185,16 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
   }, [])
   const [typing, setTyping] = useState(false)
   const [expanded, setExpanded] = useState(false)
+  // The pinned plate's height, for the page's scroll padding on a phone (playground.css): its caption
+  // wraps differently per component, so it is measured, not summed from tokens.
+  useEffect(() => {
+    const el = document.querySelector<HTMLElement>('.pg-stage-region')
+    const root = document.documentElement
+    if (!el || typeof ResizeObserver === 'undefined') return
+    const ro = new ResizeObserver(() => root.style.setProperty('--pg-strip', `${Math.ceil(el.getBoundingClientRect().height)}px`))
+    ro.observe(el)
+    return () => { ro.disconnect(); root.style.removeProperty('--pg-strip') }
+  }, [entry.id, tab])
   const pageTheme = usePageTheme()
   // Page tabs are size large, the clearest mark of level 1; under 480px they are regular and scroll
   // sideways, as Tabs does, with the current tab in view (sweep T44).
@@ -308,6 +323,13 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
   const dirty = JSON.stringify(values) !== JSON.stringify(initial) || stage !== defaultStage || compare !== 'off' || width !== undefined
   const frames: Mode[] = compare === 'themes' ? ['light', 'dark'] : [pageTheme]
   const changedProps = controls.filter((c) => v[c.prop] !== initial[c.prop]).map((c) => c.prop)
+  // The Live caption: the closed props on show, from the Props table only (not a stage-only control).
+  const specControls = spec.controls.filter((c) => !entry.hide?.includes(c.prop) && !entry.noControl?.includes(c.prop))
+  const live = entry.live ? entry.live(v) : liveProps(entry.src, specControls, v)
+  // The resting stage: the range at the page's settings, and what those settings leave out.
+  const rangeItems = useMemo(() => entry.range?.items(controls) ?? [], [entry, controls])
+  const range = rangeItems.length > 0 ? rangeAt(rangeItems, v, entry.locks, entry.constrain) : null
+  const held = heldProps(entry.src, specControls, v, rangeItems)
   const levelOf = (rule: string) => entry.spec.match(new RegExp(`\\[\\[rule:\\s*${rule}\\s*\\|\\s*(\\w+)\\s*\\]\\]`))?.[1]
 
   // The address carries the settings (section 11), replaced, not pushed: no history entry per click.
@@ -380,57 +402,83 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
           </Tabs.List>
 
           <Tabs.Panel value="playground">
-            <div className={cn('pg', stage === 'full' && 'pg--full', (typing || expanded) && 'is-unpinned')} data-arrive="1">
+            {/* Slice 3 (s5-tabs, level 4): the stage leads. The real component sits only inside the
+                Stage part (a grey plate, a slab, a Live caption with its props, a region named "Live
+                demo"); the stage's own switches sit in its caption; the controls are beside it, set as
+                segments; the resting range sits under it; then the code. */}
+            <div className={cn('pg', stage === 'full' && 'pg--full', (typing || expanded) && 'is-unpinned')}>
               <div className="pg-main">
-                <div className="pg-toolbar">
-                  <span className="pg-toolbar__group"><span className="pg-toolbar__label" aria-hidden="true">Stage</span>
-                  <Segments label="Stage" value={stage} options={STAGE_OPTIONS} onChange={(st) => { setStage(st); setAnnounce(`Stage updated: ${st === 'full' ? 'full width' : 'beside the controls'}`) }} />
-                  </span>
-                  <span className="pg-toolbar__group"><span className="pg-toolbar__label" aria-hidden="true">Compare</span>
-                  <Segments label="Compare" value={compare} options={COMPARE_OPTIONS} onChange={(cmp) => { setCompare(cmp); setAnnounce(`Stage updated: ${cmp === 'themes' ? 'light and dark side by side' : 'one theme, the page\'s'}`) }} />
-                  </span>
-                  {entry.containerResponsive && avail !== null && (
-                    <StageWidth min={wMin} max={wMax} width={frameWidth} onChange={setWidth} phone={phone} />
-                  )}
-                  <div className="pg-toolbar__spacer" />
-                  <Toggle label="Reduced motion" size="tiny" checked={reduced} onChange={setReduced} />
-                  <span className="pg-reset">
-                    <Button size="tiny" appearance="hollow" disabled={!dirty} onClick={resetAll}>Reset</Button>
-                    {!dirty && <span className="pg-reset__why">Nothing to reset</span>}
-                  </span>
+                <div className="pg-stagehead">
+                  <h2 className="vela-h3 pg-stagehead__title">Stage</h2>
+                  <div className="pg-toolbar">
+                    <span className="pg-toolbar__group"><span className="pg-toolbar__label" aria-hidden="true">Layout</span>
+                    <Segments label="Layout" value={stage} options={STAGE_OPTIONS} onChange={(st) => { setStage(st); setAnnounce(`Stage updated: ${st === 'full' ? 'full width' : 'beside the controls'}`) }} />
+                    </span>
+                    <span className="pg-toolbar__group"><span className="pg-toolbar__label" aria-hidden="true">Compare</span>
+                    <Segments label="Compare" value={compare} options={COMPARE_OPTIONS} onChange={(cmp) => { setCompare(cmp); setAnnounce(`Stage updated: ${cmp === 'themes' ? 'light and dark side by side' : 'one theme, the page\'s'}`) }} />
+                    </span>
+                    <span className="pg-reset">
+                      <Button size="tiny" appearance="hollow" disabled={!dirty} onClick={resetAll}>Reset</Button>
+                      {!dirty && <span className="pg-reset__why">Nothing to reset</span>}
+                    </span>
+                  </div>
                 </div>
-                {entry.widthNote?.(v) && <p className="pg-width__note">{entry.widthNote(v)}</p>}
-                {/* A landmark of its own (spec section 13): header, nav, main, Stage, Controls and Code. */}
-                <section aria-label="Stage" className="pg-stage-region">
-                <button type="button" className="pg-expand vela-meta" aria-expanded={expanded} onClick={() => setExpanded((x) => !x)}>
-                  Expand stage
-                </button>
-                <StageBoundary
-                  key={`${entry.id}|${stage}|${compare}|${JSON.stringify(v)}|${attempt}`}
-                  component={entry.id}
-                  settings={closedSettings}
-                  onReset={() => { setValues(initial); setAttempt((n) => n + 1) }}
+                <StagePart
+                  className="pg-stage-region"
+                  arrive="1"
+                  props={live}
+                  tools={
+                    <>
+                      <Toggle label="Reduced motion" size="tiny" checked={reduced} onChange={setReduced} />
+                      {entry.containerResponsive && avail !== null && (
+                        <StageWidth min={wMin} max={wMax} width={frameWidth} onChange={setWidth} phone={phone} />
+                      )}
+                      <button type="button" className="pg-expand vela-meta" aria-expanded={expanded} onClick={() => setExpanded((x) => !x)}>
+                        Expand stage
+                      </button>
+                    </>
+                  }
                 >
-                  <ScrollRegion label="Stage, scrollable" className={cn('pg-stage', frames.length === 1 && 'pg-stage--single', entry.containerResponsive && 'pg-stage--responsive', reduced && 'pg-reduced')}>
-                    {frames.map((m, i) => (
-                      <div key={m} ref={i === 0 ? frameRef : undefined} className="vela-root pg-frame" data-theme={m}>
-                        <span className="pg-frame-label vela-meta">
-                          {m}{compare === 'off' ? ' · follows the page theme' : ''}{stage === 'full' ? ' · Full width' : ''}
-                        </span>
-                        {entry.containerResponsive ? (
-                          // Only the frame moves (section 5): a hairline at its edge, its width beside it.
-                          <div className={cn('pg-frame-body pg-frame-body--sized', frameWidth !== undefined && 'is-narrowed')} style={frameWidth !== undefined ? { width: frameWidth } : undefined}>
-                            <Rendered entry={entry} v={v} />
-                            {frameWidth !== undefined && <span className="pg-width__mark vela-meta" aria-hidden="true">{frameWidth}px</span>}
-                            {!phone && avail !== null && <WidthHandle width={frameWidth ?? wMax} min={wMin} max={wMax} onChange={setWidth} />}
-                          </div>
-                        ) : <div className="pg-frame-body"><Rendered entry={entry} v={v} /></div>}
-                      </div>
-                    ))}
-                  </ScrollRegion>
-                </StageBoundary>
-                </section>
+                  <StageBoundary
+                    key={`${entry.id}|${stage}|${compare}|${JSON.stringify(v)}|${attempt}`}
+                    component={entry.id}
+                    settings={closedSettings}
+                    onReset={() => { setValues(initial); setAttempt((n) => n + 1) }}
+                  >
+                    <ScrollRegion label="Stage, scrollable" className={cn('pg-stage', frames.length === 1 && 'pg-stage--single', entry.containerResponsive && 'pg-stage--responsive', reduced && 'pg-reduced')}>
+                      {frames.map((m, i) => (
+                        <div key={m} ref={i === 0 ? frameRef : undefined} className={cn('vela-root pg-frame', frames.length === 1 && 'pg-frame--single')} data-theme={m}>
+                          {/* Side by side, each frame names its theme; alone, it is the page's, and the slab is the frame. */}
+                          {frames.length > 1 && <span className="pg-frame-label vela-meta">{m}</span>}
+                          {entry.containerResponsive ? (
+                            // Only the frame moves (section 5): a hairline at its edge, its width beside it.
+                            <div className={cn('pg-frame-body pg-frame-body--sized', frameWidth !== undefined && 'is-narrowed')} style={frameWidth !== undefined ? { width: frameWidth } : undefined}>
+                              <Rendered entry={entry} v={v} />
+                              {frameWidth !== undefined && <span className="pg-width__mark vela-meta" aria-hidden="true">{frameWidth}px</span>}
+                              {!phone && avail !== null && <WidthHandle width={frameWidth ?? wMax} min={wMin} max={wMax} onChange={setWidth} />}
+                            </div>
+                          ) : <div className="pg-frame-body"><Rendered entry={entry} v={v} /></div>}
+                        </div>
+                      ))}
+                    </ScrollRegion>
+                  </StageBoundary>
+                </StagePart>
+                {entry.widthNote?.(v) && <p className="pg-width__note">{entry.widthNote(v)}</p>}
                 <p className="vela-sr-only" role="status">{announce}</p>
+                {range && (
+                  <RangeStage
+                    entry={entry}
+                    shown={range.shown}
+                    left={range.left}
+                    across={entry.range!.across}
+                    stack={entry.range!.stack}
+                    held={held}
+                    frames={frames}
+                    reduced={reduced}
+                    settings={closedSettings}
+                    onReset={() => { setValues(initial); setAttempt((n) => n + 1) }}
+                  />
+                )}
                 {stage === 'beside' && (
                   <CodeBar id={codeId} snippet={snippet} changedProps={changedProps} settle={settle}>
                     <p className="pg-p">Defaults from the Props table are omitted, exactly as the spec's own example writes them. A marked line carries a prop you changed.</p>
@@ -439,8 +487,9 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
               </div>
 
               <aside
-                className="pg-panel pg-props"
+                className="pg-props"
                 aria-label="Controls"
+                data-arrive="2"
                 onFocus={(e) => setTyping(isTextControl(e.target))}
                 onBlur={(e) => { if (!isTextControl(e.relatedTarget)) setTyping(false) }}
               >
@@ -453,7 +502,7 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
                   Skip to code
                 </a>
                 <div className="pg-props__head">
-                  <h2 className="vela-h4">Controls</h2>
+                  <h2 className="vela-h4">Set it</h2>
                   <p className="pg-props__lead">Every value the spec allows</p>
                 </div>
                 {link.notices.length > 0 && (
@@ -462,20 +511,6 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
                   </div>
                 )}
                 <div className="pg-controls">
-                  {/* Two entry points, one spec: the choice the header's import line follows. */}
-                  {entry.implementations && entry.implementations.length > 1 && (
-                    <div className="pg-control">
-                      <div className="pg-field" data-prop="implementation">
-                        <span className="pg-field__label">Built with</span>
-                        <Segments
-                          label="Implementation"
-                          value={impl?.id ?? entry.implementations[0].id}
-                          options={entry.implementations.map((i) => ({ value: i.id, label: i.id }))}
-                          onChange={(id) => setValues((s) => ({ ...s, implementation: id }))}
-                        />
-                      </div>
-                    </div>
-                  )}
                   {[...selects, ...texts, ...booleans].map((c) => (
                     <div key={c.prop} className="pg-control">
                       <ControlField
@@ -505,6 +540,21 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
                       )}
                     </div>
                   ))}
+                  {/* Two entry points, one spec: the choice the header's import line follows. Last, as
+                      it changes where the component comes from, not how it looks (s5-tabs, "Built with"). */}
+                  {entry.implementations && entry.implementations.length > 1 && (
+                    <div className="pg-control">
+                      <div className="pg-field" data-prop="implementation">
+                        <span className="pg-field__label">Built with</span>
+                        <Segments
+                          label="Implementation"
+                          value={impl?.id ?? entry.implementations[0].id}
+                          options={entry.implementations.map((i) => ({ value: i.id, label: i.id }))}
+                          onChange={(id) => setValues((s) => ({ ...s, implementation: id }))}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <AlsoInTheApi rows={uncontrolled} explain={entry.explain} />
               </aside>
