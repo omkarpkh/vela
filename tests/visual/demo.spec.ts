@@ -11,8 +11,10 @@ const slug = (s: string) => s.toLowerCase().replace(/\s+/g, '-')
 // carries its viewport width in the file name (see playwright.config.ts).
 const widthSuffix = (width: number | undefined) => (width === undefined || width === 1440 ? '' : `-${width}`)
 
+// The sections live on All states (#/states), the Overview until 1 Nov 2026. The screenshot names are
+// the arguments below, not the test titles or the route, so the committed baselines keep their names.
 async function open(page: Page, theme: (typeof THEMES)[number]) {
-  await page.goto('/')
+  await page.goto('/#/states')
   await setTheme(page, theme)
   // Open Sans loads from Google Fonts; a screenshot taken before it arrives is a fallback font.
   await page.evaluate(() => document.fonts.ready)

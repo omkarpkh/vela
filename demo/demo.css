@@ -64,14 +64,14 @@ body { margin: 0; background: var(--vela-bg-global); }
 .page-head h1 { margin: 0 0 var(--vela-space-5); }
 .page-head > .vela-meta:last-child { margin: 0; }
 
-/* ---------------------------------------------------------------- overview -- */
+/* ------------------------------------------------- all states (#/states) -- */
 .demo-section { padding: var(--vela-space-30) 0; border-bottom: 1px solid var(--vela-border-subtle); }
 .demo-note { margin: var(--vela-space-5) 0 0; }
 .demo-body { margin-top: var(--vela-space-20); display: flex; flex-direction: column; gap: var(--vela-space-15); }
 .demo-row { display: flex; flex-wrap: wrap; gap: var(--vela-space-15); align-items: center; }
 .demo-stack { display: flex; flex-direction: column; gap: var(--vela-space-10); align-items: flex-start; }
 .demo-stack > .vela-alert { align-self: stretch; }
-.demo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));   /* vela-allow: the Overview's column minimum; literal until a layout token exists */
+.demo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));   /* vela-allow: the All states page's column minimum; literal until a layout token exists */
   gap: var(--vela-space-20); }
 .demo-swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));   /* vela-allow: the swatch column minimum; literal until a layout token exists */
   gap: var(--vela-space-10); }

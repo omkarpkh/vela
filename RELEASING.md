@@ -16,9 +16,34 @@ npm version X.Y.Z --no-git-tag-version   # package.json and package-lock.json on
 npm run checks                            # demo/checks.json carries the version; verify diffs it
 ```
 
-Commit nothing yet.
+Commit nothing yet. The changelog comes next, before the gate, because the gate reads it.
 
-## 3. Gate
+## 3. Changelog
+
+Rename `## [Unreleased]` to `## [X.Y.Z] — YYYY-MM-DD` and open a fresh, empty `## [Unreleased]`
+above it. Read the entry as a consumer would: every number stated, every breaking change marked,
+every deprecation naming its removal release.
+
+Write the release's three highlights, directly under its heading and above its first `###`:
+
+```markdown
+**Highlights:**
+
+- One line a person reads on the site's Overview, in plain words.
+- A second.
+- A third.
+```
+
+Each line says what changed for someone using Vela, and each must be true of an entry below it.
+The site's Overview shows them under "New in X.Y.Z", with the heading's date, read at build time
+(`scripts/vite-site-facts.mjs`), and `npm test` fails while the version in `package.json` has no
+section with highlights. That is why this step comes before the gate.
+
+Add `X.Y.Z` to `versions` in `scripts/figma/pages/published.json` and set `checked` to today.
+The Figma Changelog page reads "on npm" from that file; the tag in step 8 publishes the version
+and its "Check it landed" line confirms the registry agrees.
+
+## 4. Gate
 
 ```bash
 npm run verify     # tokens:check + rules:check + typecheck + tests + checks:check + build + pack-and-consume gate
@@ -27,16 +52,6 @@ npm run test:e2e   # 68 screenshots at four widths against the Linux baselines, 
 
 Both green, with no baseline updated in this step. If a baseline must move, that happened in a
 reviewed PR before the release, with its reason in the changelog.
-
-## 4. Changelog
-
-Rename `## [Unreleased]` to `## [X.Y.Z] — YYYY-MM-DD` and open a fresh, empty `## [Unreleased]`
-above it. Read the entry as a consumer would: every number stated, every breaking change marked,
-every deprecation naming its removal release.
-
-Add `X.Y.Z` to `versions` in `scripts/figma/pages/published.json` and set `checked` to today.
-The Figma Changelog page reads "on npm" from that file; the tag in step 8 publishes the version
-and its "Check it landed" line confirms the registry agrees.
 
 ## 5. Decisions
 

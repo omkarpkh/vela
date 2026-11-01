@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 
 // Hash routes, so every page has a link that survives a reload and the back button works,
 // with no router dependency. `#/components/button`, `#/foundations/motion`, `#/adopt`, `#/how`,
-// `#/motion` (the motion review page), `#/status`, `#/changelog`, `#/roadmap`, `#/contributing`, `#/accessibility`, `#/`,
+// `#/motion` (the motion review page), `#/states` (every component in every state, the visual baselines' page), `#/status`, `#/changelog`, `#/roadmap`, `#/contributing`, `#/accessibility`, `#/`,
 // `#/proposals/evidence-locker` for a Proposal page (a spec that is not built), and
 // `#/patterns/copy` for a Pattern page (guidelines/patterns/, shown once its content is approved).
 // A component page's other tabs add a segment (`#/components/button/rules`); the Playground tab is
@@ -14,6 +14,7 @@ const isPageTab = (s: string | undefined): s is PageTab => (PAGE_TABS as readonl
 
 export type Route =
   | { kind: 'overview' }
+  | { kind: 'states' }
   | { kind: 'component'; id: string; tab?: PageTab }
   | { kind: 'proposal'; id: string }
   | { kind: 'pattern'; id: string }
@@ -30,6 +31,7 @@ export function parseHash(hash: string): Route {
   if (parts[0] === 'proposals' && parts[1]) return { kind: 'proposal', id: parts[1] }
   if (parts[0] === 'patterns' && parts[1]) return { kind: 'pattern', id: parts[1] }
   if (parts[0] === 'foundations' && parts[1]) return { kind: 'foundation', id: parts[1] }
+  if (parts[0] === 'states') return { kind: 'states' }
   if (parts[0] === 'adopt') return { kind: 'adopt' }
   if (parts[0] === 'motion') return { kind: 'motion' }
   if (parts[0] === 'how') return { kind: 'how' }
@@ -44,6 +46,7 @@ export const href = (r: Route): string =>
   : r.kind === 'proposal' ? `#/proposals/${r.id}`
   : r.kind === 'pattern' ? `#/patterns/${r.id}`
   : r.kind === 'foundation' ? `#/foundations/${r.id}`
+  : r.kind === 'states' ? '#/states'
   : r.kind === 'adopt' ? '#/adopt'
   : r.kind === 'motion' ? '#/motion'
   : r.kind === 'how' ? '#/how'
