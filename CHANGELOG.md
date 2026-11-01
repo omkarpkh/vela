@@ -220,13 +220,15 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     primary-500 in the page: the component names the colour rule's pair (primary-500, primary-300)
     and the stylesheet picks one with `light-dark()`. In forced colours they draw in CanvasText.
   - **`apple-touch-icon.png`**, 180px, rendered from `brand/vela-app-icon.svg` by
-    `npm run brand:touch-icon` (Playwright, never redrawn), 13 kB. It carries the SVG's SHA-256,
+    `npm run brand:touch-icon` (Playwright, never redrawn), full bleed on the tile's own teal so iOS
+    rounds its corners with no black slivers. It carries the SVG's SHA-256,
     and a unit test fails when the two drift. **`theme-color`** for light and dark, the two
     values of `--vela-bg-global`, held to the tokens by a unit test. No `mask-icon`: it needs a
     one-colour drawing that `brand/` does not have. The favicon is unchanged, and a new test holds
     it to the squircle tile.
   - **`README.md`** shows the logo beside its title: the light hero, or the dark hero under a dark
-    colour scheme, through `<picture>`.
+    colour scheme, through `<picture>`, with empty alt text. The title is now the full name, "Vela
+    Design System", so it reads once.
   - **One pair in `PAIRS`** (115 now): primary-300 on grey-950, the dark header (7.91:1).
   - Tests: 10 unit tests (the core marks' colour rule, the stylesheet's `light-dark()`, the header
     drawing the regular mark only; the favicon's tile; the touch icon's size, source and link;

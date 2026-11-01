@@ -3,8 +3,9 @@
  * 180 × 180, the size iOS asks for. Run it when the app icon changes, and commit the result.
  *
  * The app icon is rendered as it is drawn, never redrawn: headless Chromium through Playwright
- * paints the file at 180px on a transparent page, and the PNG is that screenshot. The squircle tile
- * is the file's own, so its corners are transparent.
+ * paints the file at 180px on a page the tile's own teal (primary-500, #0a6c7d), and the PNG is that
+ * screenshot. iOS fills transparent pixels with black and applies its own corner mask, so a full-bleed
+ * square in the tile's colour is what it needs: its mask rounds the corners, with no black slivers.
  *
  * The PNG carries the SHA-256 of the SVG it came from, in a tEXt chunk keyed `vela-source-sha256`.
  * src/styles/brand.test.ts reads it back and fails when the app icon has changed since the PNG was
@@ -30,9 +31,9 @@ try {
   const page = await browser.newPage({ viewport: { width: SIZE, height: SIZE }, deviceScaleFactor: 1 })
   // The file as an image, stretched to the square: its viewBox is 32 × 32, so nothing is cropped.
   const src = `data:image/svg+xml;base64,${svg.toString('base64')}`
-  await page.setContent(`<!DOCTYPE html><html><body style="margin:0;background:transparent"><img id="i" src="${src}" width="${SIZE}" height="${SIZE}" style="display:block"></body></html>`)
+  await page.setContent(`<!DOCTYPE html><html><body style="margin:0;background:#0a6c7d"><img id="i" src="${src}" width="${SIZE}" height="${SIZE}" style="display:block"></body></html>`)
   await page.waitForFunction(() => document.getElementById('i').complete)
-  const png = await page.locator('#i').screenshot({ omitBackground: true, animations: 'disabled' })
+  const png = await page.locator('#i').screenshot({ animations: 'disabled' })
   writeFileSync(join(root, OUT), withText(png, SOURCE_KEY, sha))
   console.log(`brand:touch-icon  ${OUT}  ${SIZE} × ${SIZE}, from ${SOURCE} (sha256 ${sha.slice(0, 16)}…)`)
 } finally {

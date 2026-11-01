@@ -129,11 +129,13 @@ describe('the apple-touch-icon', () => {
     return out
   }
 
-  it('is a 180 × 180 PNG with an alpha channel', () => {
+  // Full bleed, with no transparency: iOS fills transparent pixels with black and rounds the corners
+  // itself, so the icon is the tile's teal to every edge (truecolour, no alpha channel).
+  it('is a 180 × 180 PNG, full bleed, with no alpha channel', () => {
     expect(png.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))).toBe(true)
     const ihdr = chunks()[0]
     expect(ihdr.type).toBe('IHDR')
-    expect([ihdr.data.readUInt32BE(0), ihdr.data.readUInt32BE(4), ihdr.data[9]]).toEqual([180, 180, 6])
+    expect([ihdr.data.readUInt32BE(0), ihdr.data.readUInt32BE(4), ihdr.data[9]]).toEqual([180, 180, 2])
   })
 
   it('was rendered from the app icon as it is now', () => {
