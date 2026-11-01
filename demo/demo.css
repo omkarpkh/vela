@@ -25,6 +25,24 @@ body { margin: 0; background: var(--vela-bg-global); }
 .skip { position: absolute; left: var(--vela-space-10); top: var(--vela-space-10); transform: translateY(-200%); z-index: 100; padding: var(--vela-space-10) var(--vela-space-15); background: var(--vela-bg-raised); color: var(--vela-text-link); border: 1px solid var(--vela-border-default); border-radius: var(--vela-radius-4); }
 .skip:focus { transform: none; }
 
+/* ---------------------------------------------------------------- links -- */
+/* A plain link in the site is the link token in every state, so it never falls back to the
+   browser's blue and purple, which are off-token and fail in dark. Visited is the same colour on
+   purpose: the site is a reference read over and over, not a list to tick off. Every part of the
+   selector is inside :where(), so the rule weighs nothing: any rule a link already has
+   (.pg-lock a, .sitenav__link, .shell-action, a card) wins over it, and only the browser's
+   defaults lose. Underlined, as the browser draws it: these links sit in running text and tables,
+   where the link token is 1.27:1 against body text in light and 2.03:1 in dark, so colour alone
+   can't tell them apart (WCAG 1.4.1). The kit's text-link is never underlined because it is a
+   Button standing on its own, not a link inside a sentence; nav, card and button links set their
+   own decoration. Contrast: "Link text" and "Link text on container" in PAIRS. A link on the
+   raised surface is text-default instead (.pg-lock a, .shell-search__empty a): the link token
+   there is 4.35:1 in dark. */
+:where(.vela-root) :where(a:link, a:visited, a:any-link:hover, a:any-link:focus-visible, a:any-link:active) {
+  color: var(--vela-text-link);
+  text-decoration-line: underline;
+}
+
 .topbar { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: var(--vela-space-15); height: var(--site-topbar-height); padding: 0 var(--vela-space-20); background: var(--vela-bg-global); border-bottom: 1px solid var(--vela-border-subtle); }
 .topbar__menu { display: inline-flex; align-items: center; justify-content: center; width: var(--vela-control-height-35); height: var(--vela-control-height-35); border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4); background: transparent; color: var(--vela-text-default); cursor: pointer; padding: 0; transition: background-color var(--vela-duration-base) var(--vela-ease-standard); }
 @media (hover: hover) { .topbar__menu:hover { background: var(--vela-bg-hover); transition-duration: var(--vela-duration-fast); } }
@@ -141,14 +159,18 @@ body { margin: 0; background: var(--vela-bg-global); }
 .motion-sample__panel { margin: 0; color: var(--vela-text-de-emphasized); }
 .motion-curves { margin: 0; max-width: 480px; }   /* vela-allow: the curve plot's reading width; literal until a layout token exists */
 .motion-curves svg { display: block; width: 100%; height: auto; }
-.motion-curves figcaption { display: flex; flex-wrap: wrap; gap: var(--vela-space-5) var(--vela-space-15); margin-top: var(--vela-space-10); color: var(--vela-text-de-emphasized); }
+.motion-curves figcaption { margin-top: var(--vela-space-10); color: var(--vela-text-de-emphasized); }
+/* Each curve's name sits on the chart beside its curve (Motion.tsx, Curves), in the curve's colour,
+   so no curve is told apart by colour alone. The names are text on the page (Link text, Body text
+   on page, De-emphasized text in PAIRS); ease-standard is also dashed. */
+.motion-curves__plot { position: relative; }
 .motion-curve { fill: none; stroke-width: 2; }
 .motion-curve__rule { stroke: var(--vela-border-subtle); stroke-width: 1; stroke-dasharray: 3 3; }
-.motion-curve--standard { stroke: var(--vela-text-de-emphasized); color: var(--vela-text-de-emphasized); }
+.motion-curve--standard { stroke: var(--vela-text-de-emphasized); color: var(--vela-text-de-emphasized); stroke-dasharray: 6 4; }
 .motion-curve--out { stroke: var(--vela-text-default); color: var(--vela-text-default); }
 .motion-curve--spring { stroke: var(--vela-text-link); color: var(--vela-text-link); }
-.motion-key { display: inline-flex; align-items: center; gap: var(--vela-space-5); font-family: var(--vela-font-family-mono); }
-.motion-key::before { content: ''; width: var(--vela-space-15); height: var(--vela-stroke-2); background: currentColor; }
+.motion-curve__label { position: absolute; white-space: nowrap; font-family: var(--vela-font-family-mono); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); }
+.motion-curve__label--above { transform: translateY(-100%); }
 .motion-tokens td { overflow-wrap: anywhere; }
 .motion-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--vela-space-10); }
 .motion-controls { display: flex; flex-direction: column; align-items: flex-start; gap: var(--vela-space-20); }

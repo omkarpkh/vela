@@ -15,7 +15,13 @@ export interface StatusIndicatorProps {
   className?: string
 }
 
-const FALLBACK_LABEL: Record<Status, string> = {
+/**
+ * The words for each status: the text alternative of a dot with no label. `medium` is said
+ * "Degraded" (status-indicator.md, rule status-medium-is-degraded): "medium" is the middle of the
+ * risk score, a different taxonomy. Not exported from the package; the site reads it from here so a
+ * page never types the words again.
+ */
+export const STATUS_LABELS: Readonly<Record<Status, string>> = {
   unknown: 'Status unknown',
   healthy: 'Healthy',
   warning: 'Warning',
@@ -37,7 +43,7 @@ export function StatusIndicator({
     <span
       className={cn('vela-status', `vela-status--${status}`, `vela-status--${size}`, className)}
       role={label ? undefined : 'img'}
-      aria-label={label ? undefined : FALLBACK_LABEL[status]}
+      aria-label={label ? undefined : STATUS_LABELS[status]}
     >
       <span className="vela-status__dot" aria-hidden="true" />
       {label && <span className="vela-status__label">{label}</span>}

@@ -1,15 +1,22 @@
 import { useState } from 'react'
 import { Button, Toggle, Input, ContextualAlert, StatusIndicator, RiskPill, Tabs } from '../../src'
-import type { Severity, Status, Risk } from '../../src'
+import type { Severity } from '../../src'
 import { PlusIcon } from '../../src/lib/icons'
 import { PAIRS } from 'virtual:vela-site-facts'
+// The taxonomy lists the Overview uses, each checked by the compiler to hold every value of its type,
+// and the Status Indicator's own words for each status.
+import { SEVERITIES, STATUSES, RISKS, STATUS_WORDS } from './overview-facts'
 
-const SEVERITIES: Severity[] = ['success', 'info', 'warning', 'minor', 'major', 'critical']
-const STATUSES: Status[] = ['unknown', 'healthy', 'warning', 'medium', 'unhealthy']
-const RISKS: Risk[] = ['low', 'medium', 'high']
 const SIZES = ['tiny', 'regular', 'large', 'huge'] as const
 
-function Section({ title, note, children }: { title: string; note?: string; children: React.ReactNode }) {
+/**
+ * The components this page shows, one section each, in page order. The header counts this list, and
+ * a section's title must be one of them (or the Tokens section), so the count can't drift from the
+ * page; src/styles/site-states.test.tsx holds the two together.
+ */
+export const SHOWN = ['Button', 'Toggle', 'Input', 'Contextual Alert', 'Status Indicator', 'Risk Pill', 'Tabs'] as const
+
+function Section({ title, note, children }: { title: (typeof SHOWN)[number] | 'Tokens'; note?: string; children: React.ReactNode }) {
   return (
     <section className="demo-section">
       <h2 className="vela-h3">{title}</h2>
@@ -23,7 +30,7 @@ function Section({ title, note, children }: { title: string; note?: string; chil
 // 1 Nov 2026). The visual-regression baselines are taken here, section by section, so this page's
 // markup is deliberately stable: the sections are screenshotted, the header above them is not.
 export function States() {
-  const [alerts, setAlerts] = useState<Severity[]>(SEVERITIES)
+  const [alerts, setAlerts] = useState<Severity[]>([...SEVERITIES])
   const [notify, setNotify] = useState(true)
   const [tenant, setTenant] = useState('')
   const tenantError = tenant.length > 0 && tenant !== tenant.toLowerCase()
@@ -35,7 +42,7 @@ export function States() {
       <header className="page-head">
         <p className="vela-meta page-head__eyebrow">Start</p>
         <h1 className="vela-h2">Every component, every state</h1>
-        <p className="vela-meta">7 components · {PAIRS} contrast pairs, each asserted in both themes · set the theme in Appearance · <a href="#/how">how it is made</a></p>
+        <p className="vela-meta">{SHOWN.length} components · {PAIRS} contrast pairs, each asserted in both themes · set the theme in Appearance · <a href="#/how">how it is made</a></p>
       </header>
       <Section title="Button" note="variant encodes consequence · appearance encodes weight · sizes are a closed set of four">
         <div className="demo-row">
@@ -88,7 +95,7 @@ export function States() {
             </ContextualAlert>
           ))}
           {alerts.length < SEVERITIES.length && (
-            <Button size="tiny" appearance="hollow" onClick={() => setAlerts(SEVERITIES)}>Restore All</Button>
+            <Button size="tiny" appearance="hollow" onClick={() => setAlerts([...SEVERITIES])}>Restore All</Button>
           )}
         </div>
       </Section>
@@ -96,7 +103,7 @@ export function States() {
       <Section title="Status Indicator" note="five health states — not severity's six, not risk's three">
         <div className="demo-row">
           {STATUSES.map((s) => (
-            <StatusIndicator key={s} status={s} label={s[0].toUpperCase() + s.slice(1)} />
+            <StatusIndicator key={s} status={s} label={STATUS_WORDS[s]} />
           ))}
         </div>
         <p className="vela-meta">Without a visible label the dot still carries a text alternative:</p>

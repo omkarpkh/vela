@@ -37,6 +37,9 @@ resolve, you have the wrong taxonomy, not a gap.
 
 `--vela-signal-status-` + `unknown` | `healthy` | `warning` | `medium` | `unhealthy`.
 One row, five swatches, no other roles. Status Indicator only.
+`medium` is a token and prop name only: on screen the Status Indicator says it **Degraded**, the
+word it gives the dot (`components/status-indicator.md`). "Medium" is the middle of the risk score,
+so a status is never labelled with it.
 
 ## Contrast is a constraint, not an aspiration
 

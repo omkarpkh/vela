@@ -1501,6 +1501,67 @@ test.describe('All states', () => {
   })
 })
 
+// Fix 0 of the site evaluation: a plain link is the link token in both themes, never the browser's
+// blue or purple (demo.css, "links"), and it keeps its underline because it sits in running text or
+// a table. The value is read from the token on the page, so a re-pointed token moves the test with it.
+test.describe('plain links', () => {
+  const PAGES = [
+    { name: 'Status', path: '/#/status', link: '.status-table a' },
+    { name: 'All states', path: '/#/states', link: '.page-head a' },
+    { name: 'Not found', path: '/#/components/firewall-rule', link: '.pg-unknown a' },
+  ]
+  for (const p of PAGES)
+    for (const theme of ['Light', 'Dark'] as const)
+      test(`${p.name} in ${theme.toLowerCase()}: a plain link is the link token`, async ({ page }) => {
+        await page.goto(p.path)
+        await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+        await setTheme(page, theme)
+        const token = await page.evaluate(() => {
+          const probe = document.createElement('span')
+          probe.style.color = 'var(--vela-text-link)'
+          document.querySelector('.vela-root')!.appendChild(probe)
+          const c = getComputedStyle(probe).color
+          probe.remove()
+          return c
+        })
+        // The browser's own link colours, light and dark, unvisited and visited: never these.
+        expect(['rgb(0, 0, 238)', 'rgb(85, 26, 139)', 'rgb(158, 158, 255)', 'rgb(208, 173, 240)']).not.toContain(token)
+        const link = page.getByRole('main').locator(p.link).first()
+        await expect(link).toBeVisible()
+        expect(await link.getAttribute('class')).toBeNull()
+        await expect(link).toHaveCSS('color', token)
+        await expect(link).toHaveCSS('text-decoration-line', 'underline')
+        await link.hover()
+        await expect(link).toHaveCSS('color', token)
+      })
+})
+
+test.describe('the Motion review curves', () => {
+  test('each curve is named on the chart, not told apart by colour alone', async ({ page }) => {
+    await page.goto('/#/motion')
+    const plot = page.locator('.motion-curves__plot')
+    await expect(plot.getByRole('img', { name: /ease-standard, ease-out and the spring/ })).toBeVisible()
+    const box = (await plot.boundingBox())!
+    const labels = plot.locator('.motion-curve__label')
+    await expect(labels).toHaveText(['ease-standard', 'ease-out', 'ease-spring'])
+    const boxes = []
+    for (const l of await labels.all()) {
+      await expect(l).toBeVisible()
+      const b = (await l.boundingBox())!
+      // Inside the chart, and clear of each other.
+      expect(b.x).toBeGreaterThanOrEqual(box.x)
+      expect(b.y).toBeGreaterThanOrEqual(box.y)
+      expect(b.x + b.width).toBeLessThanOrEqual(box.x + box.width)
+      expect(b.y + b.height).toBeLessThanOrEqual(box.y + box.height)
+      for (const o of boxes) expect(b.x >= o.x + o.width || o.x >= b.x + b.width || b.y >= o.y + o.height || o.y >= b.y + b.height).toBe(true)
+      boxes.push(b)
+    }
+    // The two greys differ by pattern too.
+    await expect(page.locator('path.motion-curve--standard')).toHaveCSS('stroke-dasharray', /\d/)
+    await expect(page.locator('path.motion-curve--out')).toHaveCSS('stroke-dasharray', 'none')
+  })
+})
+
 test.describe('axe', () => {
   for (const path of ['/#/', '/#/states', '/#/components/button', '/#/components/tabs', '/#/components/dropdown-list', '/#/proposals/evidence-locker', '/#/patterns/copy', '/#/foundations/filter-grammar', '/#/components/brand-mark'])
     for (const theme of ['Light', 'Dark'] as const)

@@ -2,6 +2,7 @@ import pkg from '../../package.json'
 import checks from '../checks.json'
 import { LINKS, figmaUrl } from '../links'
 import { ScrollRegion } from '../shell/ScrollRegion'
+import { PAIRS } from 'virtual:vela-site-facts'
 
 // The claim the whole repository makes, on one page: one token file, five generated targets,
 // and a count of the checks that keep them honest. The count comes from the test runners
@@ -136,7 +137,7 @@ export function How() {
       <section className="demo-section">
         <h2 className="vela-h3">{checks.total} automated checks on every change</h2>
         <ul className="how-list vela-body">
-          <li><b>{checks.unit}</b> unit and contract tests, Vitest: every component's closed prop sets, token bindings and accessibility; every spec on this site parses and names only tokens that exist; 52 contrast pairs hold in both themes.</li>
+          <li><b>{checks.unit}</b> unit and contract tests, Vitest: every component's closed prop sets, token bindings and accessibility; every spec on this site parses and names only tokens that exist; {PAIRS} contrast pairs hold in both themes.</li>
           <li><b>{b.total}</b> browser tests, Playwright: {b.visual} visual regression screenshots against approved baselines, {b.e2e} end-to-end journeys through this site, {b.docs} documentation screenshots.</li>
           <li><b>{checks.flutter}</b> Flutter tests plus <code>flutter analyze</code> on the generated Dart.</li>
           <li>The generated stylesheet, Dart and Material UI theme are regenerated in CI and diffed against the token file; a hand edit fails the build. The Figma variables are read back and compared on every sync, from inside the file, because the plan has no API access to variables.</li>
