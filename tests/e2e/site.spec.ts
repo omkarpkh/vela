@@ -2749,10 +2749,15 @@ test.describe('uplift slice 7 · the deferrals', () => {
   test('on a phone the stage strip is the one thing that sticks: the page tabs and the index scroll away', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 })
     await page.goto('/#/components/tabs')
+    await expect(page.getByRole('spinbutton', { name: 'Container width' })).toBeVisible()
     await expect(page.getByRole('group', { name: 'Width' })).toHaveCount(0)
-    await page.evaluate(() => window.scrollBy(0, 900))
     const topbar = (await page.locator('.topbar').boundingBox())!
-    await expect.poll(async () => Math.round((await page.locator('.pg-stage-region').boundingBox())!.y)).toBe(Math.round(topbar.y + topbar.height))
+    // Scrolled well past the stage's own place, once the whole tab is on the page.
+    await expect(page.locator('.pg-next')).toBeAttached()
+    await expect.poll(async () => {
+      await page.evaluate(() => window.scrollTo(0, 1200))
+      return Math.round((await page.locator('.pg-stage-region').boundingBox())!.y)
+    }).toBe(Math.round(topbar.y + topbar.height))
     expect((await page.getByRole('tablist', { name: 'Tabs page' }).boundingBox())!.y).toBeLessThan(0)
   })
 
