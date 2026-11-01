@@ -39,8 +39,9 @@ async function shoot(label, launch, emulate) {
   await browser.close()
 }
 
-// The real theme: Edge, no emulation.
+// The real theme: Edge, no emulation, headless and then headed (headless may ignore the system theme).
 await shoot('real-edge', { channel: 'msedge' })
+await shoot('real-edge-headed', { channel: 'msedge', headless: false })
 // Chromium's emulation, both schemes, for comparison.
 await shoot('emulated-light', { channel: 'msedge' }, { forcedColors: 'active', colorScheme: 'light' })
 await shoot('emulated-dark', { channel: 'msedge' }, { forcedColors: 'active', colorScheme: 'dark' })

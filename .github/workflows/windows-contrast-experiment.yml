@@ -63,10 +63,13 @@ jobs:
           $hc.dwFlags = 1   # HCF_HIGHCONTRASTON
           $hc.lpszDefaultScheme = "High Contrast Black"
           $ok = [HC]::SystemParametersInfo(0x0043, $hc.cbSize, [ref]$hc, 3)   # SPI_SETHIGHCONTRAST, update and broadcast
-          "SPI_SETHIGHCONTRAST returned $ok (error $([System.Runtime.InteropServices.Marshal]::GetLastWin32Error()))"
+          New-Item -ItemType Directory -Force experiments/windows-contrast | Out-Null
+          "SPI_SETHIGHCONTRAST returned $ok (error $([System.Runtime.InteropServices.Marshal]::GetLastWin32Error()))" | Tee-Object -FilePath experiments/windows-contrast/theme.txt
           $theme = Get-ChildItem "C:\Windows\Resources\Ease of Access Themes\*.theme" -ErrorAction SilentlyContinue | Where-Object { $_.Name -match 'hcblack|hc2|nightsky' } | Select-Object -First 1
           if ($theme) { "Opening $($theme.FullName)"; Start-Process $theme.FullName; Start-Sleep -Seconds 15; Stop-Process -Name SystemSettings -ErrorAction SilentlyContinue }
-          Get-ItemProperty "HKCU:\Control Panel\Accessibility\HighContrast" -ErrorAction Continue
+          Get-ItemProperty "HKCU:\Control Panel\Accessibility\HighContrast" -ErrorAction Continue | Out-String | Tee-Object -FilePath experiments/windows-contrast/theme.txt -Append
+          Get-ChildItem "C:\Windows\Resources\Ease of Access Themes" -ErrorAction Continue | Select-Object -ExpandProperty Name | Out-String | Tee-Object -FilePath experiments/windows-contrast/theme.txt -Append
+          "Session: $([System.Diagnostics.Process]::GetCurrentProcess().SessionId), interactive: $([Environment]::UserInteractive)" | Tee-Object -FilePath experiments/windows-contrast/theme.txt -Append
       - name: Serve the site and take the shots
         shell: pwsh
         run: |
