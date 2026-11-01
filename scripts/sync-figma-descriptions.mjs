@@ -28,7 +28,7 @@ const version = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).ver
 
 // spec file → Figma component set name and source directory. `entry` is the source tree the
 // component lives in: `components` (the core, `@omkarux/vela`) unless it says `headless`
-// (`@omkarux/vela/headless` only — Checkbox, Radio Group, Popover, Tooltip, Dialog, Toast and Dropdown List have no core
+// (`@omkarux/vela/headless` only — Checkbox, Radio Group, Popover, Tooltip, Icon Button, Dialog, Toast and Dropdown List have no core
 // implementation).
 // `state` is a closed set: 'published' (the set is in the published library, `node` is its id),
 // 'built' (the set exists in the file but is not published; `node` is its id once the Figma
@@ -63,6 +63,8 @@ export const SETS = {
   },
   'popover.md': { set: 'Popover', src: 'Popover', entry: 'headless', state: 'published', node: '127:109', export: 'Popover' },
   'tooltip.md': { set: 'Tooltip', src: 'Tooltip', entry: 'headless', state: 'published', node: '127:114', export: 'Tooltip' },
+  // No set yet (1 Nov 2026): scripts/figma/components/icon-button.figma.js is written and has not been run.
+  'icon-button.md': { set: 'Icon Button', src: 'IconButton', entry: 'headless', state: 'none', node: null, export: 'IconButton' },
   'dialog.md': { set: 'Dialog', src: 'Dialog', entry: 'headless', state: 'published', node: '129:54', export: 'Dialog' },
   // A toast is raised with `toast.add(...)` from `useToast()`, inside the app's one ToastProvider.
   'toast.md': { set: 'Toast', src: 'Toast', entry: 'headless', state: 'published', node: '129:94', export: 'useToast', imports: ['ToastProvider', 'useToast'] },

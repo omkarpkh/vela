@@ -173,9 +173,9 @@ describe('the Status page', () => {
   })
 
   it('has one row per registered component, in registry order, each with its spec\'s label', () => {
-    expect(rows.map((r) => r.n)).toEqual(['Button', 'Toggle', 'Input', 'Text Area', 'Contextual Alert', 'Status Indicator', 'Risk Pill', 'Tabs', 'Icon', 'Checkbox', 'Radio Group', 'Table', 'Popover', 'Tooltip', 'Dialog', 'Toast', 'Dropdown List', 'Brand Mark'])
+    expect(rows.map((r) => r.n)).toEqual(['Button', 'Toggle', 'Input', 'Text Area', 'Contextual Alert', 'Status Indicator', 'Risk Pill', 'Tabs', 'Icon', 'Checkbox', 'Radio Group', 'Table', 'Popover', 'Tooltip', 'Dialog', 'Toast', 'Dropdown List', 'Brand Mark', 'Icon Button'])
     expect(rows.filter((r) => label(r) === 'Approved').map((r) => r.n)).toEqual(['Button', 'Toggle', 'Input', 'Contextual Alert', 'Status Indicator', 'Risk Pill', 'Tabs'])
-    for (const n of ['Text Area', 'Icon', 'Checkbox', 'Radio Group', 'Table', 'Popover', 'Tooltip', 'Dialog', 'Toast', 'Dropdown List', 'Brand Mark']) expect(label(rows.find((r) => r.n === n)!), n).toBe('Experimental')
+    for (const n of ['Text Area', 'Icon', 'Checkbox', 'Radio Group', 'Table', 'Popover', 'Tooltip', 'Dialog', 'Toast', 'Dropdown List', 'Brand Mark', 'Icon Button']) expect(label(rows.find((r) => r.n === n)!), n).toBe('Experimental')
   })
 
   it('names the headless entry point for a component born there', () => {
@@ -186,6 +186,7 @@ describe('the Status page', () => {
     expect(exp('Tooltip')).toBe('Tooltip · @omkarux/vela/headless')
     expect(exp('Dialog')).toBe('Dialog · @omkarux/vela/headless')
     expect(exp('Dropdown List')).toBe('DropdownList · @omkarux/vela/headless')
+    expect(exp('Icon Button')).toBe('IconButton · @omkarux/vela/headless')
   })
 
   it('fills Figma set, React export, Since and Spec from the repository', () => {
@@ -223,10 +224,14 @@ describe('the Status page', () => {
     const [, mset, mexp, msince, mspec] = cells('Brand Mark')
     expect([mset.chars, mexp.chars, msince.chars]).toEqual(['None yet — the builder is ready (brand-mark.figma.js)', 'BrandMark · @omkarux/vela', 'Unreleased'])
     expect(mspec.chars).toBe(onMain('guidelines/components/brand-mark.md') ? 'brand-mark.md' : 'brand-mark.md (branch)')
+    // Icon Button (1 Nov 2026), the same: no set yet, headless, unreleased, "(branch)" until it is on main.
+    const [, bbset, bbexp, bbsince, bbspec] = cells('Icon Button')
+    expect([bbset.chars, bbexp.chars, bbsince.chars]).toEqual(['None yet — the builder is ready (icon-button.figma.js)', 'IconButton · @omkarux/vela/headless', 'Unreleased'])
+    expect(bbspec.chars).toBe(onMain('guidelines/components/icon-button.md') ? 'icon-button.md' : 'icon-button.md (branch)')
     // No set is left built-but-unpublished.
     for (const r of rows) expect(cells(r.n)[1].chars, r.n).not.toBe('Built, not published')
     // Every other spec is on main, so no other row shows "(branch)".
-    for (const r of rows.filter((x) => x.n !== 'Dropdown List' && x.n !== 'Brand Mark')) expect(cells(r.n)[4].chars, r.n).not.toContain('(branch)')
+    for (const r of rows.filter((x) => !['Dropdown List', 'Brand Mark', 'Icon Button'].includes(x.n))) expect(cells(r.n)[4].chars, r.n).not.toContain('(branch)')
   })
 })
 

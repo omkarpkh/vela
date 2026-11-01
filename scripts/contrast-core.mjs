@@ -155,6 +155,11 @@ export const PAIRS = [
   // container. A mark is a non-text graphic.
   ['--vela-brand-mark', '--vela-bg-global',    'Brand mark on page',      'ui'],
   ['--vela-brand-mark', '--vela-bg-container', 'Brand mark on container', 'ui'],
+  // Icon Button (guidelines/components/icon-button.md): a brand mark or the word "npm" has no hover
+  // fill, so it never sits on --vela-btn-standard-hover-bg in Vela; asserted in case a host ever puts
+  // one on that fill. Icon Button's own glyph pairs (icon-strong on page, container, raised and the
+  // hover fill) are already asserted above, for Icon and Dialog's close.
+  ['--vela-brand-mark', '--vela-btn-standard-hover-bg', 'Brand mark on the standard hover fill', 'ui'],
   // Requested by the agentic-component specs (Phase 2): a card body on a raised
   // surface, a selected row's text, and the active border drawn on a container rather than the
   // page. Each is measured in both themes before it is relied on.

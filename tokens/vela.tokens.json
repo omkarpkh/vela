@@ -2499,6 +2499,16 @@
         }
       }
     },
+    "target-min": {
+      "$type": "dimension",
+      "$value": "{sizing.control-height-24}",
+      "$description": "The smallest pointer target a control may have: WCAG 2.2, 2.5.8 (Target Size, Minimum), 24 by 24px, stated once. Icon Button's tiny box is exactly this; nothing a person presses is smaller.",
+      "$extensions": {
+        "com.omkarux.vela": {
+          "figma": "control/target-min"
+        }
+      }
+    },
     "radius-3": {
       "$type": "dimension",
       "$value": {

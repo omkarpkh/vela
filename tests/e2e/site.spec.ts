@@ -1563,7 +1563,7 @@ test.describe('the Motion review curves', () => {
 })
 
 test.describe('axe', () => {
-  for (const path of ['/#/', '/#/states', '/#/components/button', '/#/components/tabs', '/#/components/dropdown-list', '/#/proposals/evidence-locker', '/#/patterns/copy', '/#/foundations/filter-grammar', '/#/components/brand-mark'])
+  for (const path of ['/#/', '/#/states', '/#/components/button', '/#/components/tabs', '/#/components/dropdown-list', '/#/proposals/evidence-locker', '/#/patterns/copy', '/#/foundations/filter-grammar', '/#/components/brand-mark', '/#/components/icon-button'])
     for (const theme of ['Light', 'Dark'] as const)
       test(`${path} in ${theme.toLowerCase()} has no WCAG A or AA violation`, async ({ page }) => {
         const { default: AxeBuilder } = await import('@axe-core/playwright')

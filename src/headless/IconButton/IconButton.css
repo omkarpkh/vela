@@ -1,0 +1,79 @@
+/* ------------------------------------------------------------ IconButton -- */
+/* guidelines/components/icon-button.md. One glyph in a token-bound box. The box is the hit area and
+   never moves: a pointer press scales the glyph inside it, not the box. A brand mark or the word "npm"
+   (`--still`) has no fill and never scales. The focus ring is the global one (base.css). */
+.vela-icon-button {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  /* Transparent at rest; forced colours draws it, so the box has an edge in a contrast theme. */
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--vela-icon-strong);
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  /* The press is this control's touch feedback: no browser flash on top of it, and no double-tap
+     zoom delay before it (icon-button-hit-area). */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  /* Hover out settles at duration-base; hover in is fast (below). */
+  transition: background-color var(--vela-duration-base) var(--vela-ease-standard);
+}
+.vela-icon-button--tiny    { width: var(--vela-control-height-24); height: var(--vela-control-height-24); min-width: var(--vela-target-min); min-height: var(--vela-target-min); border-radius: var(--vela-radius-3); }
+.vela-icon-button--regular { width: var(--vela-control-height-35); height: var(--vela-control-height-35); border-radius: var(--vela-radius-4); }
+
+/* The glyph's own box: the Icon inside takes its colour (tone inherit) and its size from Icon's tokens. */
+.vela-icon-button__glyph {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  /* The release: back to 1 at duration-base, decelerating. */
+  transition: transform var(--vela-duration-base) var(--vela-ease-out);
+}
+/* The word "npm": referential use, in Vela's monospace type, in the owners' black or white like the marks. */
+.vela-icon-button__word {
+  color: var(--vela-brand-mark);
+  font-family: var(--vela-font-family-mono);
+  font-weight: var(--vela-font-weight-semibold);
+  font-size: var(--vela-text-body-size);
+  line-height: var(--vela-text-body-line-height);
+  pointer-events: none;
+}
+.vela-icon-button--tiny .vela-icon-button__word { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); }
+
+/* Hover: the standard hover fill, pointer devices only, and never under a brand mark or the word. */
+@media (hover: hover) {
+  .vela-icon-button:not(.vela-icon-button--still):not(:disabled):hover {
+    background: var(--vela-btn-standard-hover-bg);
+    transition-duration: var(--vela-duration-fast);
+  }
+}
+/* Press: pointer only (the component sets the flag on pointerdown; a keyboard press sets nothing, and
+   :focus-visible excludes it anyway). The fill holds, the box holds, and the glyph goes to 88% at
+   duration-instant. */
+.vela-icon-button[data-vela-pressed]:not(.vela-icon-button--still):not(:disabled):not(:focus-visible) {
+  background: var(--vela-btn-standard-hover-bg);
+}
+.vela-icon-button[data-vela-pressed]:not(.vela-icon-button--still):not(:disabled):not(:focus-visible) .vela-icon-button__glyph {
+  transform: scale(0.88);
+  transition: transform var(--vela-duration-instant) var(--vela-ease-standard);
+}
+
+/* Disabled: native, silent and still. */
+.vela-icon-button:disabled { color: var(--vela-icon-disabled); cursor: not-allowed; }
+
+/* Forced colours: the transparent border is drawn in the system's colour, the glyph is currentColor
+   (ButtonText or LinkText), and a hover shows as a Highlight border. */
+@media (forced-colors: active) {
+  .vela-icon-button:not(:disabled):hover { border-color: Highlight; }
+  /* A brand mark and the word set their own colour (--vela-brand-mark), which forced colours replace
+     with CanvasText; inside a control they follow the control's system colour instead, as an Icon does. */
+  .vela-icon-button .vela-brand-mark,
+  .vela-icon-button__word { color: inherit; }
+}

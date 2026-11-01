@@ -1184,6 +1184,8 @@ abstract final class VelaSizing {
   static const double controlHeight48 = 48;
   /// Button and the input family do not share a height ramp.
   static const double controlHeight60 = 60;
+  /// The smallest pointer target a control may have: WCAG 2.2, 2.5.8 (Target Size, Minimum), 24 by 24px, stated once. Icon Button's tiny box is exactly this; nothing a person presses is smaller.
+  static const double targetMin = 24;
   static const double radius3 = 3;
   /// The default corner for every component.
   static const double radius4 = 4;

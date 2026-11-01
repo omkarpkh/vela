@@ -23,6 +23,7 @@ import dialogMd from '../../guidelines/components/dialog.md?facts'
 import toastMd from '../../guidelines/components/toast.md?facts'
 import dropdownListMd from '../../guidelines/components/dropdown-list.md?facts'
 import brandMarkMd from '../../guidelines/components/brand-mark.md?facts'
+import iconButtonMd from '../../guidelines/components/icon-button.md?facts'
 
 export type Group = 'Actions' | 'Inputs' | 'Feedback' | 'Overlays' | 'Data'
 export const GROUPS: Group[] = ['Actions', 'Inputs', 'Feedback', 'Overlays', 'Data']
@@ -66,6 +67,7 @@ export const CATALOG: CatalogEntry[] = [
   { id: 'toast', file: 'toast.md', src: 'Toast', imports: 'ToastProvider, useToast', name: 'Toast', group: 'Feedback', aliases: ['snackbar', 'notification', 'flash message', 'severity'], spec: toastMd },
   { id: 'dropdown-list', file: 'dropdown-list.md', src: 'DropdownList', name: 'Dropdown List', group: 'Overlays', aliases: ['dropdown', 'menu', 'overflow menu', 'view switcher'], spec: dropdownListMd },
   { id: 'brand-mark', file: 'brand-mark.md', src: 'BrandMark', name: 'Brand Mark', group: 'Data', aliases: ['github logo', 'figma logo', 'service logo', 'brand logo'], spec: brandMarkMd },
+  { id: 'icon-button', file: 'icon-button.md', src: 'IconButton', name: 'Icon Button', group: 'Actions', aliases: ['icon-only button', 'icon button', 'close button', 'glyph button', 'icon link'], spec: iconButtonMd },
 ]
 
 export function catalogEntry(id: string): CatalogEntry {

@@ -9,7 +9,7 @@ visual weight.
 - Action that stays in the page flow → **Button**.
 - Navigates to another page → a router `<Link>`, not a Button.
 - Flips a binary setting that takes effect immediately → **Toggle**.
-- Icon-only, no label → an Icon Button, which is **not in this kit**. Flag the gap.
+- Icon-only, no label → an [**Icon Button**](icon-button.md) (`@omkarux/vela/headless`).
 
 ## Props
 

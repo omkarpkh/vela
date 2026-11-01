@@ -57,6 +57,8 @@ const COMPONENTS = [
   // The overlays: Popover.css also carries the shared portal rule, so it comes first.
   'src/headless/Popover/Popover.css',
   'src/headless/Tooltip/Tooltip.css',
+  // Icon Button after Tooltip and Brand Mark, both of which it is built from.
+  'src/headless/IconButton/IconButton.css',
   'src/headless/Dialog/Dialog.css',
   'src/headless/Toast/Toast.css',
   'src/headless/DropdownList/DropdownList.css',

@@ -22,7 +22,10 @@ there is no core implementation, and its Figma set is published in the library (
   **inline text** beside the control (Input's `hint`, Checkbox's `description`). Tooltips are
   hidden from touch users and are not reliably announced.
 - An **icon-only** control's name → its `aria-label`. A tooltip may show the same words to sighted
-  users, but it is never what names the control (see Hard constraints).
+  users, but it is never what names the control (see Hard constraints). A glyph-only control is an
+  [**Icon Button**](icon-button.md), which brings its own label tooltip; don't wrap one in another.
+- The **same words as the control's name**, for sighted users → **Tooltip** `kind="label"`: shown,
+  and heard once. Any other words → the default `kind="description"`.
 
 ## Composition
 
@@ -38,6 +41,7 @@ there is no core implementation, and its Figma set is published in the library (
 | | `children` | `ReactElement` | — | **Required.** The **one** element it describes — a `Button`, a native `<button>`, a link. It keeps its own accessible name. |
 | | `placement` | `"top" \| "bottom" \| "start" \| "end"` | `"top"` | **These four only**, as Popover. It flips when there is no room. |
 | | `align` | `"start" \| "center" \| "end"` | `"center"` | **These three only.** |
+| | `kind` | `"description" \| "label"` | `"description"` | **These two only.** `description`: extra words, wired by `aria-describedby`. `label`: the trigger's own name, shown and not wired; `content` must equal that name. |
 
 ## Hard constraints
 
@@ -51,9 +55,15 @@ there is no core implementation, and its Figma set is published in the library (
   name — visible text or an `aria-label` — and the component throws a named error when it has
   none. An icon-only Button carries `aria-label`; the tooltip may repeat the words for sighted
   users. [[rule: tooltip-trigger-has-own-name | runtime]]
-- **The tooltip is a description.** The popup is `role="tooltip"`, and while it is rendered the
-  trigger's `aria-describedby` points at it — and only then: no dangling reference when it is
-  closed, and any description the trigger already had is kept. [[rule: tooltip-is-a-description | runtime]]
+- **The tooltip is a description.** With `kind="description"` (the default), the popup is
+  `role="tooltip"`, and while it is rendered the trigger's `aria-describedby` points at it — and
+  only then: no dangling reference when it is closed, and any description the trigger already had
+  is kept. [[rule: tooltip-is-a-description | runtime]]
+- **A label tooltip shows the name and is heard once.** With `kind="label"`, the popup is
+  `aria-hidden="true"` and nothing on the trigger points at it, so a screen reader announces the
+  name once. The component throws a named error when the trigger's accessible name (its
+  `aria-labelledby`, `aria-label` or text) is not `content`, so the words a sighted user reads
+  and the name a screen reader speaks can't drift apart (WCAG 2.5.3). Icon Button is built on it. [[rule: tooltip-label-kind-matches-name | runtime]]
 - **Hover waits, focus does not.** On hover it opens after `--vela-delay-tooltip` (600ms), read from
   the stylesheet, so a pointer crossing a toolbar does not flash every label; on keyboard focus it
   opens at once. [[rule: tooltip-opens-on-hover-and-focus | runtime]]
@@ -95,7 +105,8 @@ never grows a second size for a second paragraph — a second paragraph is a Pop
 
 ## States
 
-- **Closed / open** — nothing on the trigger changes except `aria-describedby` while open.
+- **Closed / open** — nothing on the trigger changes except `aria-describedby` while open (a
+  label tooltip changes nothing on the trigger).
 - **Hover** — opens after `--vela-delay-tooltip`; moving the pointer onto the tooltip keeps it
   open (WCAG 1.4.13, hoverable), moving off both closes it.
 - **Focus** — keyboard focus opens it at once; blur closes it.
@@ -123,7 +134,8 @@ targets. There is no density step for it; density tokens do not exist yet (see `
 
 ## Accessibility
 
-- The popup is `role="tooltip"`; while it is shown, the trigger's `aria-describedby` names it.
+- The popup is `role="tooltip"`; while it is shown, the trigger's `aria-describedby` names it. A
+  label tooltip (`kind="label"`) is `aria-hidden` instead and never wired: it repeats the name.
 - The trigger keeps its own **name** — text or `aria-label` — and the component refuses a trigger
   without one. Screen readers announce the name, then the tooltip as a description.
 - Opens on hover (after the delay) and on keyboard focus (at once); Escape closes it; it is
@@ -186,7 +198,8 @@ text binds `text/tooltip` in Body/Meta.** Nothing in this component is literal.
 ## Anti-patterns
 
 - ❌ A link, a button or a list in a tooltip → will not compile; that is a Popover.
-- ❌ A tooltip as the only name of an icon-only control → give the control an `aria-label`; the component throws without one.
+- ❌ A tooltip as the only name of an icon-only control → give the control an `aria-label`; the component throws without one. A glyph-only control is an [Icon Button](icon-button.md).
+- ❌ A description tooltip that repeats the control's name → `kind="label"`, or a screen reader reads the name twice.
 - ❌ A tooltip explaining why a control is disabled → say it in adjacent text; a disabled control cannot show a tooltip.
 - ❌ An infotip (ⓘ) that only opens a tooltip → a Popover, so touch and screen-reader users can open it.
 - ❌ A requirement or an error in a tooltip → inline text; touch users never see a tooltip.

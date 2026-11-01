@@ -18,7 +18,7 @@ const cli = (...args: string[]) => {
 const lintReport: Record<string, { problems: { rule: string; node: string; what: string; waived: boolean }[]; allow: { rule: string; reason: string }[] }> = JSON.parse(cli('--lint'))
 const dump = (name: string, set?: string) => JSON.parse(set ? cli('--dump', name, `--set=${set}`) : cli('--dump', name))
 const styles: any[] = JSON.parse(execFileSync('node', ['scripts/figma/text-styles.mjs', '--json'], { cwd: root, encoding: 'utf8' }))
-const BUILDERS = ['brand-mark', 'button', 'checkbox', 'contextual-alert', 'dialog', 'dropdown-list', 'icon', 'input', 'popover', 'radio-group', 'risk-pill', 'status-indicator', 'table', 'tabs', 'text-area', 'toast', 'toggle', 'tooltip']
+const BUILDERS = ['brand-mark', 'button', 'checkbox', 'contextual-alert', 'dialog', 'dropdown-list', 'icon', 'icon-button', 'input', 'popover', 'radio-group', 'risk-pill', 'status-indicator', 'table', 'tabs', 'text-area', 'toast', 'toggle', 'tooltip']
 // Extensions (<builder>.<id>.extend.figma.js) are reported under `<builder>.<id>`.
 const EXTENSIONS = ['dropdown-list.usage-locked', 'tabs.seed-hover']
 const tmp = () => mkdtempSync(join(tmpdir(), 'vela-figma-'))
@@ -271,6 +271,28 @@ describe('Brand Mark, as the builder creates it', () => {
     expect(pathsIn(builder)).toEqual([...pathsIn(owner('github/mark-github-16.svg')), ...pathsIn(owner('figma/figma-mono-line-black.svg'))])
     expect(builder).toContain("viewBox: '0 0 16 16'")
     expect(builder).toContain("viewBox: '212 340 600 600', path: '<path fill-rule=\"evenodd\" d=")
+  })
+})
+
+describe('Icon Button, as the builder creates it', () => {
+  const ib = dump('icon-button')
+
+  it('has State × Size, eight variants, an Icon instance-swap and a Label text property', () => {
+    expect(ib.variants.map((v: any) => v.n)).toEqual(['Rest', 'Hover', 'Pressed', 'Disabled'].flatMap((s) => ['Tiny', 'Regular'].map((z) => `State=${s}, Size=${z}`)))
+    expect(Object.entries(ib.defs).map(([k, v]) => `${k.replace(/#.*$/, '')}=${String(v).split('=')[0]}`).sort()).toEqual(['Icon=INSTANCE_SWAP', 'Label=TEXT', 'Size=VARIANT', 'State=VARIANT'])
+  })
+
+  it('binds the box to the control heights and the glyph to Icon\'s sizes; only Hover and Pressed fill', () => {
+    for (const v of ib.variants) {
+      const tiny = v.n.endsWith('Tiny')
+      expect(v.wh.slice(2)).toEqual(tiny ? ['control-height/24', 'control-height/24'] : ['control-height/35', 'control-height/35'])
+      expect(v.rad[1]).toBe(tiny ? 'radius/3' : 'radius/4')
+      expect(v.fill).toEqual(/State=(Hover|Pressed)/.test(v.n) ? ['button/standard-hover-bg'] : [])
+      const icon = v.ch.find((c: any) => c.n === 'Icon')
+      expect(icon).toMatchObject({ t: 'INSTANCE', main: 'Glyph=x' })
+      expect(icon.wh.slice(2)).toEqual(tiny ? ['icon/size', 'icon/size'] : ['icon/size-large', 'icon/size-large'])
+      expect(v.ch.find((c: any) => c.n === 'Label')).toMatchObject({ t: 'TEXT', hidden: true })
+    }
   })
 })
 

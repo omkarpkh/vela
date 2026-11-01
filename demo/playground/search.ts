@@ -54,7 +54,6 @@ export const MISSING: { id: string; title: string; aliases: string[]; stands: st
   // A form value: Dropdown List acts at once and is never in a form (its spec), so the nearest for a
   // form is Radio Group, for a few options that fit on screen (playground spec v1.2, section 10).
   { id: 'select-list', title: 'Select List', aliases: ['select', 'dropdown', 'picklist', 'form select'], stands: 'planned for Phase 1', sign: 'A form value, chosen from a list and submitted with the form.', closest: 'radio-group' },
-  { id: 'icon-button', title: 'Icon Button', aliases: ['icon-only button', 'icon button'], stands: 'specified, not built yet', sign: 'An action with an icon and no visible label.', closest: 'button' },
   { id: 'combobox', title: 'Combobox', aliases: ['autocomplete', 'typeahead', 'autosuggest'], stands: 'planned for Phase 1', sign: 'A text field that suggests values as you type.', closest: 'input' },
   { id: 'segmented-control', title: 'Segmented Control', aliases: ['segmented', 'button group', 'toggle group'], stands: 'specified, not built yet', sign: 'One choice from a few, every option visible at once.', closest: 'radio-group' },
   { id: 'tag', title: 'Tag', aliases: ['tag', 'chip', 'badge', 'label', 'lozenge'], stands: 'not planned yet', sign: 'A short label on an item. For an object\'s state Vela has Status Indicator; for a risk score, Risk Pill.', closest: 'status-indicator' },

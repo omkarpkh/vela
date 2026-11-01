@@ -268,6 +268,7 @@
   --vela-control-height-40: 40px;
   --vela-control-height-48: 48px;
   --vela-control-height-60: 60px;
+  --vela-target-min: var(--vela-control-height-24);   /* WCAG 2.5.8: the smallest target a control may have */
 
   /* ---- Radius ---- */
   --vela-radius-3: 3px;

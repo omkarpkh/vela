@@ -374,9 +374,9 @@ Accessibility
 
 Do not invent one silently. State that the kit has no component for the need and pick the
 closest match while flagging the gap. Not yet specced: Select List, Token Pill,
-Number Stepper, Icon Button, Actions Dropdown, View Switcher, Data Grid (arrow-key cell navigation,
+Number Stepper, Actions Dropdown, View Switcher, Data Grid (arrow-key cell navigation,
 `role="grid"`), Card List. Flag rather than guess. Checkbox (with Checkbox.Group), Radio Group,
-Popover, Tooltip, Dialog (with its `alert` variant — the kit's modal), Toast and Dropdown List are
+Popover, Tooltip, Icon Button, Dialog (with its `alert` variant — the kit's modal), Toast and Dropdown List are
 specced and ship from `@omkarux/vela/headless` only (Experimental); Table ships from the core entry (Experimental)
 and is read, not navigated cell by cell. The disambiguations agents most often get wrong
 — Toggle vs Checkbox, Radio Group vs Select List, Tabs vs View Switcher, Popover vs Tooltip vs

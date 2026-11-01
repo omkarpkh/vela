@@ -26,7 +26,9 @@ describe('search', () => {
   it('tags a missing component by where it stands: Planned only for what the roadmap plans', () => {
     const tagOf = (id: string) => index.find((i) => i.kind === 'missing' && i.id === id)!.tag
     expect([tagOf('select-list'), tagOf('combobox'), tagOf('spinner')]).toEqual(['Planned', 'Planned', 'Planned'])
-    expect([tagOf('icon-button'), tagOf('segmented-control')]).toEqual(['Specified', 'Specified'])
+    expect(tagOf('segmented-control')).toBe('Specified')
+    // Icon Button left the list when it was built (1 Nov 2026): a search for it finds the component.
+    expect(index.some((i) => i.kind === 'missing' && i.id === 'icon-button')).toBe(false)
     expect([tagOf('tag'), tagOf('side-navigation')]).toEqual(['Not in Vela', 'Not in Vela'])
     for (const m of MISSING) expect(['Planned', 'Specified', 'Not in Vela'], m.id).toContain(missingTag(m.stands))
   })

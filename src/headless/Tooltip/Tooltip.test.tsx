@@ -128,6 +128,59 @@ describe('Tooltip (headless)', () => {
     expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument()
   })
 
+  // [[rule: tooltip-label-kind-matches-name]]
+  it('kind="label" shows the trigger\'s own name, hidden from assistive technology and never wired', async () => {
+    withDelayToken('0ms')
+    render(
+      <Tooltip kind="label" content="Search">
+        <button type="button" aria-label="Search" aria-describedby="hint"><svg aria-hidden="true" /></button>
+      </Tooltip>,
+    )
+    const trigger = screen.getByRole('button', { name: 'Search' })
+    await userEvent.hover(trigger)
+    await wait(20)
+    const popup = screen.getByRole('tooltip', { hidden: true })
+    expect(popup).toHaveTextContent('Search')
+    expect(popup).toHaveAttribute('aria-hidden', 'true')
+    // Nothing points at it; what the trigger already described is left exactly as it was.
+    expect(trigger).toHaveAttribute('aria-describedby', 'hint')
+    expect(trigger.getAttribute('aria-describedby')).not.toContain(popup.id)
+  })
+
+  // [[rule: tooltip-label-kind-matches-name]]
+  it('kind="label" throws a named error when the trigger\'s name is not the tooltip\'s words', () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    expect(() =>
+      render(
+        <Tooltip kind="label" content="Search the logs">
+          <button type="button" aria-label="Search"><svg aria-hidden="true" /></button>
+        </Tooltip>,
+      ),
+    ).toThrow('<Tooltip kind="label">: the trigger\'s accessible name is "Search", but the tooltip says "Search the logs"')
+    spy.mockRestore()
+    // Text and aria-labelledby names count, spaces collapsed.
+    render(<Tooltip kind="label" content="Export  as CSV"><Button>Export as CSV</Button></Tooltip>)
+    render(
+      <>
+        <span id="n">Open audit log</span>
+        <Tooltip kind="label" content="Open audit log"><button type="button" aria-labelledby="n">↗</button></Tooltip>
+      </>,
+    )
+    expect(screen.getByRole('button', { name: 'Export as CSV' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Open audit log' })).toBeInTheDocument()
+  })
+
+  // [[rule: tooltip-is-a-description]]
+  it('is a description by default: kind="description" is today\'s behaviour', async () => {
+    withDelayToken('0ms')
+    render(<Tooltip kind="description" content="Download as CSV"><Button>Export</Button></Tooltip>)
+    const trigger = screen.getByRole('button', { name: 'Export' })
+    await userEvent.hover(trigger)
+    await wait(20)
+    expect(screen.getByRole('tooltip')).not.toHaveAttribute('aria-hidden')
+    expect(trigger).toHaveAccessibleDescription('Download as CSV')
+  })
+
   it('maps the logical placements onto the popup', async () => {
     withDelayToken('0ms')
     render(

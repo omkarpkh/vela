@@ -159,6 +159,11 @@
 .pg-brand-mark__lead { display: inline-flex; align-items: center; gap: var(--vela-space-5); margin: 0; color: var(--vela-text-heading); }
 .pg-brand-mark__set { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--vela-space-15); }
 .pg-brand-mark__cell { display: flex; align-items: center; gap: var(--vela-space-5); color: var(--vela-text-de-emphasized); }
+/* Icon Button: the stage control beside its name, then every glyph kind and both forms in a row. The
+   row's gap is space-20, so the Figma mark keeps its 20px clear space here too (7.5px inside its box). */
+.pg-icon-button { display: flex; flex-direction: column; gap: var(--vela-space-15); min-width: 0; }
+.pg-icon-button__lead { display: inline-flex; align-items: center; gap: var(--vela-space-10); margin: 0; color: var(--vela-text-de-emphasized); }
+.pg-icon-button__set { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; align-items: center; gap: var(--vela-space-20); }
 
 /* Table (Phase 1): the bounded height is the host's half of stickyHeader; the region fills it and
    scrolls, and the header pins to its top. */
