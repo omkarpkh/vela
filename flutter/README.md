@@ -9,7 +9,7 @@ Figma library, so one token edit lands in all three.
 | `VelaPrimitives` | The raw palette. Alias only — never bind in a widget. |
 | `VelaColors` | Every semantic colour as a field; a `ThemeExtension` with `light` and `dark` instances. |
 | `VelaSizing` | Spacing, icon, control-height, radius and focus scales in logical pixels, plus motion. |
-| `VelaMotion` | Two `Duration`s and the one `Cubic`, for feedback that matches the web. |
+| `VelaMotion` | Every motion token, for feedback that matches the web: nine `Duration`s (the four durations, the toast's dwell, the tooltip and preview delays, and the brand pulse's two, which are for the hero logo only) and three `Cubic` easings. `easeSpring` is ease-out as a `Cubic`; its spring's mass, stiffness and damping are there too, for a `SpringDescription`. |
 | `VelaTypography` | Font families, weights, sizes, and the ramp composed as `TextStyle`s. |
 | `velaThemeData(Brightness)` | A `ThemeData` seeded from the semantics, with `VelaColors` installed as an extension. |
 

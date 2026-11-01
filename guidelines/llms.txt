@@ -78,7 +78,7 @@ behaviour has no Figma expression at all.
 - [Tooltip](components/tooltip.md) — `@omkarux/vela/headless` only, Experimental
 - [Dialog](components/dialog.md) — `@omkarux/vela/headless` only, Experimental (with `variant="alert"`)
 - [Toast](components/toast.md) — `@omkarux/vela/headless` only, Experimental (`ToastProvider` + `useToast()`)
-- [Dropdown List](components/dropdown-list.md) — `@omkarux/vela/headless` only, Experimental (Base UI `Menu`; no Figma set yet)
+- [Dropdown List](components/dropdown-list.md) — `@omkarux/vela/headless` only, Experimental (Base UI `Menu`; Figma set published 31 Oct 2026)
 
 ## Contracts
 A contract has rules and no UI: plain functions every surface shares.

@@ -19,8 +19,8 @@ over memory.
 Every component carries one of four labels. Approved is the default and is not written down.
 Any other label is stated in the component's spec, as a `**Status:**` line directly under the
 intent paragraph, and the same word goes into the Figma set's description and onto the
-component's playground page. Today no component carries a label, so this is a rule in this file
-and not yet code; the first component to leave Approved brings the code with it.
+component's playground page. Ten components carry Experimental today: Icon, Text Area, Checkbox,
+Radio Group, Popover, Tooltip, Dialog, Table, Toast and Dropdown List.
 
 | Label | Meaning | What it promises |
 |---|---|---|

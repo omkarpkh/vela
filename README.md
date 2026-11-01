@@ -13,7 +13,7 @@ enforced: 73 of the 225 by the TypeScript compiler, the rest at runtime, in a re
 **Status:** every component carries a lifecycle label — Approved, Known bugs, Experimental or
 Retired, defined in [`GOVERNANCE.md`](GOVERNANCE.md). Seven are **Approved**; Icon, Text Area, Checkbox,
 Radio Group, Popover, Tooltip, Dialog, Table, Toast and Dropdown List are **Experimental**. Every
-component's Figma set is published in the library except Dropdown List's, which has a builder and no set yet.
+component's Figma set is published in the library.
 
 ```bash
 npm install @omkarux/vela
@@ -53,13 +53,13 @@ link to each, and the number of automated checks, written by the test runners ra
 | | |
 |---|---|
 | **Components** | Button · Toggle · Input · TextArea · ContextualAlert · StatusIndicator · RiskPill · Tabs · Icon · Table, from `@omkarux/vela` (Tabs also from `/headless`) · Checkbox (with Checkbox.Group) · RadioGroup · Popover · Tooltip · Dialog (with `variant="alert"`) · ToastProvider + useToast · DropdownList, from `@omkarux/vela/headless` only |
-| **Tokens** | 285 CSS custom properties, two layers (primitives → semantics) |
+| **Tokens** | 290 CSS custom properties, two layers (primitives → semantics) |
 | **Themes** | Light + dark. OS preference by default, `data-theme` to override |
 | **Dependencies** | None in the core entry. `react` / `react-dom` are peers (18.3 or 19). The `/headless` entry needs one optional peer, `@base-ui/react` 1.9.x (MIT) |
 | **Icons** | 50 curated [Lucide](https://lucide.dev) 1.63.0 glyphs (ISC; a subset from Feather, MIT), compiled into the core entry at build time — no icon dependency, `lucide` is a devDependency only. The ISC notice ships in [`NOTICE`](NOTICE) |
 | **Format** | ESM, `preserveModules` for tree-shaking, full `.d.ts` |
 | **Tests** | 1368 automated checks — 1099 unit and contract (102 contrast pairs, each asserted in both themes), 266 browser (68 screenshots at four widths, 196 playground, 2 docs), 3 Flutter — counted by `npm run checks` |
-| **Packed size** | 203.9 kB, 217 files (the fifty glyph modules and their .d.ts are most of the growth since 0.12.1), as `npm run verify` measures it (README and CHANGELOG ship in the tarball, so this moves when they do) |
+| **Packed size** | 279.8 kB, 254 files (the Filter Grammar's modules and their .d.ts are most of the growth since 0.15.0), as `npm run verify` measures it (README and CHANGELOG ship in the tarball, so this moves when they do) |
 
 ## The three ideas worth stealing
 
@@ -162,7 +162,8 @@ npm run verify     # tokens:check + icons:check + rules:check + typecheck + test
 
 The counts are copied from `demo/checks.json`, which `scripts/count-checks.mjs` writes from the
 test runners' own output and `verify` diffs, so that file cannot go stale. This README copy is
-checked at each release; the numbers here are for 0.14.0.
+updated when the counts change, so between releases it describes `main`, which can run ahead of the
+latest version on npm.
 
 ## Editing tokens — one source, five targets
 

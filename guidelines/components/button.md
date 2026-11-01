@@ -1,6 +1,6 @@
 # Button
 
-Triggers an action — save, submit, delete, apply, cancel. Carries a text label and an
+Triggers an action: save, submit, delete, apply, cancel. Carries a text label and an
 optional **left** icon. `variant` encodes the action's consequence; `appearance` encodes
 visual weight.
 
