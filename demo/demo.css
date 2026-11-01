@@ -46,6 +46,12 @@ body { margin: 0; background: var(--vela-bg-global); }
 .topbar { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: var(--vela-space-15); height: var(--site-topbar-height); padding: 0 var(--vela-space-20); background: var(--vela-bg-global); border-bottom: 1px solid var(--vela-border-subtle); }
 .topbar__menu { display: inline-flex; align-items: center; justify-content: center; width: var(--vela-control-height-35); height: var(--vela-control-height-35); border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4); background: transparent; color: var(--vela-text-default); cursor: pointer; padding: 0; transition: background-color var(--vela-duration-base) var(--vela-ease-standard); }
 @media (hover: hover) { .topbar__menu:hover { background: var(--vela-bg-hover); transition-duration: var(--vela-duration-fast); } }
+/* GitHub, npm and Figma as Icon Button links (desktop). Figma's Brand Book asks for clear space equal
+   to the mark's height, 20px, from any other element. Each 20px mark sits in a 35px box with no fill
+   or border at rest or on hover, so 7.5px of its clear space is inside its own box; the space-15 gap
+   adds 15px, so the nearest other mark, npm's word, is at least 22.5px away even if the word filled
+   its box. Figma is last, so nothing sits on its other side. tests/e2e/site.spec.ts measures it. */
+.topbar__marks { display: flex; align-items: center; gap: var(--vela-space-15); }
 .brand { display: flex; align-items: baseline; gap: var(--vela-space-10); text-decoration: none; color: var(--vela-text-heading); }
 .brand__name { font-size: var(--vela-text-h4-size); line-height: var(--vela-text-h4-line-height); font-weight: var(--vela-font-weight-semibold); }
 /* The full name in the header (the naming rule, 1 Nov 2026); a phone shows "Vela", and the page title keeps the full name. */

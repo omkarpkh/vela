@@ -227,6 +227,21 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   built.
 
 ### Changed
+- **The site header's GitHub, npm and Figma links are Icon Button links** on a wide screen (Omkar's
+  decision of 1 Nov 2026: the marks go live under Figma's Brand Book as written, without waiting for
+  Figma's reply). GitHub's mark, npm's word and Figma's mark, each `size="regular"` with
+  `opensInNewTab`, named "Vela on GitHub", "Vela on npm" and "Vela in Figma" (each with ", opens in
+  a new tab"), with the same addresses as before; the label tooltip shows the name on hover and
+  focus. On a phone the three stay written links in the menu, as before. Figma's clear space,
+  20px, is kept by the layout: each 20px mark sits in a 35px box with no fill or border at rest or
+  on hover (7.5px inside the box), and the three sit `--vela-space-15` apart, so npm's word is at
+  least 22.5px from Figma's mark (27.4px measured at 1440px), and Figma is last in the row. No new
+  literal in the site CSS. Four e2e tests replace the written-links one: the names, `target` and
+  `rel`, and the phone menu; the tooltip on hover and keyboard focus, never a description, with no
+  hover fill; the marks' computed colour, black in light, white in dark, and the link colour under
+  forced colours; and the distance from Figma's mark to every other visible element in the header,
+  at least 20px at four widths. The Overview's link test reads the header's Figma link by its new
+  name. 1461 checks (was 1458): 214 e2e (was 211).
 - **Who Vela is for, said once and the same everywhere** (Omkar's choice, from the refinement
   stage). The Overview's first line is now "For data-heavy products, built first for security
   consoles. Every rule that can be tested is tested before a change ships." README, DESIGN.md,
