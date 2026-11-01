@@ -47,6 +47,11 @@ export type { IconProps, IconSize, IconTone } from './components/Icon'
 export { ICON_NAMES } from './icons/names'
 export type { IconName } from './icons/names'
 
+// Another company's own logo, to link to its service: a closed set of two, kept apart from Icon
+// (guidelines/components/brand-mark.md). The owners' files and their source notes are in src/brand-marks/.
+export { BrandMark } from './components/BrandMark'
+export type { BrandMarkProps, BrandMarkName, BrandMarkSize } from './components/BrandMark'
+
 export { Table } from './components/Table'
 export type {
   TableProps,

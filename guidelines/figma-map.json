@@ -3,6 +3,27 @@
   "fileKey": "XO2rmeCcgOjyKe4oipgF4j",
   "sets": [
     {
+      "set": "Brand Mark",
+      "page": "Brand Mark",
+      "state": "none",
+      "node": null,
+      "url": null,
+      "import": "import { BrandMark } from '@omkarux/vela'",
+      "write": "BrandMark",
+      "figmaToProp": [
+        {
+          "figma": "Name",
+          "prop": "name — GitHub → \"github\", Figma → \"figma\""
+        },
+        {
+          "figma": "Size",
+          "prop": "size — Regular → \"regular\", Large → \"large\""
+        }
+      ],
+      "example": "<IconButton label=\"Vela on GitHub\" brandMark=\"github\" href=\"https://github.com/omkarpkh/vela\" opensInNewTab />   // Icon Button: the next change, not built yet\n<BrandMark name=\"github\" label=\"GitHub\" />          // standalone, rare: a caption needs a name",
+      "spec": "guidelines/components/brand-mark.md"
+    },
+    {
       "set": "Button",
       "page": "Button",
       "state": "published",

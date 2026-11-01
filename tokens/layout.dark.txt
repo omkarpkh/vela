@@ -46,6 +46,9 @@
   @icon-disabled
   @icon-on-brand
 
+  /* ---- Brand mark ---- */
+  @brand-mark
+
   /* ---- Button ---- */
   @btn-primary-bg
   @btn-primary-hover-bg

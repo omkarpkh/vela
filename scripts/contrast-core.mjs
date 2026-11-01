@@ -150,6 +150,11 @@ export const PAIRS = [
   ['--vela-icon-strong',  '--vela-bg-global',    'Icon, default tone, on page',      'ui'],
   ['--vela-icon-strong',  '--vela-bg-container', 'Icon, default tone, on container', 'ui'],
   ['--vela-icon-default', '--vela-bg-global',    'Icon, muted tone, on page',        'ui'],
+  // Brand Mark (guidelines/components/brand-mark.md): the owner's own black in light and white in
+  // dark, through --vela-brand-mark, on the page (the site header's background too) and on a
+  // container. A mark is a non-text graphic.
+  ['--vela-brand-mark', '--vela-bg-global',    'Brand mark on page',      'ui'],
+  ['--vela-brand-mark', '--vela-bg-container', 'Brand mark on container', 'ui'],
   // Requested by the agentic-component specs (Phase 2): a card body on a raised
   // surface, a selected row's text, and the active border drawn on a container rather than the
   // page. Each is measured in both themes before it is relied on.

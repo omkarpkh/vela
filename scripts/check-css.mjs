@@ -27,6 +27,13 @@
  *                   press response, so it must also set `-webkit-tap-highlight-color:
  *                   transparent`, or a touch press gets the browser's grey flash on top of it.
  *                   Not waivable.
+ *   brand-mark-still a `transition*`, `animation*`, `transform`, `translate`, `scale` or `rotate`
+ *                   declaration in a block whose selector reaches `.vela-brand-mark` or anything
+ *                   inside it (guidelines/components/brand-mark.md, brand-mark-never-moves). Another
+ *                   company's mark never moves, in any state or setting, so not even `none` is
+ *                   written there: nothing to lint means nothing to drift. Not waivable. A rule that
+ *                   reaches the mark without naming it (`.host > *`) is the browser check's to catch:
+ *                   tests/e2e/playground.spec.ts reads the computed style on the Brand Mark page.
  *
  * Allowed without a waiver: `0` in any unit; `1px` (and `-1px`) where it is a hairline or the
  * compensation for one — border*, outline*, inset*, margin*, top/right/bottom/left, box-shadow; `100%` and
@@ -79,7 +86,7 @@ thistle tomato turquoise violet wheat white whitesmoke yellow yellowgreen`.split
 const COLOUR_FN = /\b(rgba?|hsla?|oklch|oklab|lab|lch|hwb)\(/i
 const HEX = /#(?:[0-9a-f]{8}|[0-9a-f]{6}|[0-9a-f]{3,4})\b/i
 // Primitive families, as tokens.light.css declares them: a colour scale step or black/white.
-const PRIMITIVE = /var\(\s*(--vela-(?:grey|primary|blue|green|red|critical|yellow|orange)-\d+|--vela-(?:black|white))\s*[,)]/g
+const PRIMITIVE = /var\(\s*(--vela-(?:grey|primary|blue|green|red|critical|yellow|orange)-\d+|--vela-(?:black|white|black-pure))\s*[,)]/g
 const LENGTH = /(?<![\w.-])(-?\d*\.?\d+)(px|rem|em)\b/g
 // Where ±1px is a hairline, or the compensation for one. box-shadow: a rule drawn as an inset
 // shadow (Tabs' list rule, inside a scroll container's padding box); any other shadow length
@@ -93,6 +100,10 @@ const TIME = /^-?\d*\.?\d+m?s$/
 // The icon-stroke exception (foundations/motion.md, rule 1; decisions/004-icon-strokes-draw).
 const DRAWS = 'stroke-dashoffset'
 const ICON = /\.vela-icon(?![\w-])/
+// Brand Mark (brand-mark-never-moves): what may never be declared on the mark or inside it.
+// `.vela-brand-mark`, its modifiers (`--large`) and its parts (`__x`); not `.vela-brand-marks` or `.vela-brand-mark-x`.
+const MARK = /\.vela-brand-mark(?![a-z0-9]|-(?!-))/
+const STILL = /^(transition|animation)(-|$)|^(transform|translate|scale|rotate)$/
 /** Remove each `name(...)` matched by `fn` (a regex source ending in `\(`), parentheses balanced. */
 const dropFns = (v, fn) => {
   const re = new RegExp(fn, 'gi')
@@ -115,6 +126,16 @@ const dropFns = (v, fn) => {
 const inIcon = (selector) => !selector.startsWith('@') && topLevel(selector).every((s) => {
   const bare = dropFns(s, ':[\\w-]+\\(').replace(/\[[^\]]*\]/g, '')
   const at = bare.search(ICON)
+  return at >= 0 && !/[+~]/.test(bare.slice(at))
+})
+/**
+ * Whether a block's selector reaches a Brand Mark or anything inside it: any selector in the list
+ * names `.vela-brand-mark` as a compound of its own (not inside :not(), not in an attribute value),
+ * with no sibling combinator after it.
+ */
+const onMark = (selector) => !selector.startsWith('@') && topLevel(selector).some((s) => {
+  const bare = dropFns(s, ':not\\(').replace(/\[[^\]]*\]/g, '')
+  const at = bare.search(MARK)
   return at >= 0 && !/[+~]/.test(bare.slice(at))
 })
 /** Lengths on the icon grid: `transform-origin` whole, and the contents of translate(). */
@@ -219,6 +240,10 @@ export function lintCss(source) {
       }
     }
     if (prop === '-webkit-tap-highlight-color' && value.trim().toLowerCase() === 'transparent') tapCleared = true
+    // Not waivable: the mark is another company's drawing, and it never moves.
+    if (STILL.test(prop) && blocks.some(onMark))
+      findings.push({ rule: 'brand-mark-still', line: from, prop, value: rawValue.replace(/\s+/g, ' ').trim(),
+        what: `sets ${prop} on .vela-brand-mark or inside it — a brand mark never moves (brand-mark-never-moves)`, waived: false })
 
     for (const l of (icon ? gridless(prop, value) : value).matchAll(LENGTH)) {
       const n = Number(l[1])

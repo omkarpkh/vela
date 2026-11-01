@@ -136,7 +136,7 @@ if (proven.length) {
   try {
     proven.forEach((f, i) => {
       writeFileSync(join(dir, `f${i}.tsx`),
-        `import { Button, ContextualAlert, Icon, Input, RiskPill, StatusIndicator, Table, Tabs, TextArea, Toggle } from '${join(root, 'src')}'\n` +
+        `import { BrandMark, Button, ContextualAlert, Icon, Input, RiskPill, StatusIndicator, Table, Tabs, TextArea, Toggle } from '${join(root, 'src')}'\n` +
         // Filter Grammar (guidelines/contracts/) is plain functions from the core entry.
         `import { defineFields, parseQuery, validateQuery, normalise, queryToText, readback, evaluate, leftOutQuery } from '${join(root, 'src')}'\n` +
         // Checkbox, Radio Group, Popover, Tooltip, Dialog, Toast and Dropdown List ship from the headless entry only.

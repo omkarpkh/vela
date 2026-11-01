@@ -16,6 +16,7 @@ below, then open the per-component file for props, tokens, and anti-patterns.
 | Risk Pill | A read-only risk score (low/medium/high) on an object | `components/risk-pill.md` |
 | Tabs | Navigate between different content panels | `components/tabs.md` |
 | Icon | One of fifty curated glyphs beside text or in another component's icon slot — never a control, never a taxonomy mark | `components/icon.md` |
+| Brand Mark | GitHub's or Figma's own logo, unmodified, only to link to that company's service, inside a named control — never Vela's own mark, never an icon (Experimental) | `components/brand-mark.md` |
 | Checkbox | Recording intent until a Save — alone, or any-of-several in a Checkbox.Group (headless entry only) | `components/checkbox.md` |
 | Radio Group | Exactly one of two to five visible options, committed by a Save (headless entry only) | `components/radio-group.md` |
 | Table | Records compared across named columns — sortable headers, two densities, a scroll region (Experimental) | `components/table.md` |
@@ -26,8 +27,8 @@ below, then open the per-component file for props, tokens, and anti-patterns.
 | Dropdown List | One of a set where one is current, from a button, acting at once — a hidden tab, another saved view (headless entry only) | `components/dropdown-list.md` |
 
 Checkbox, Radio Group, Popover, Tooltip, Dialog, Toast and Dropdown List ship from
-`@omkarux/vela/headless` (Base UI as an optional peer) and are Experimental; the other ten ship from `@omkarux/vela` with no
-dependencies (Icon, Text Area and Table are Experimental there).
+`@omkarux/vela/headless` (Base UI as an optional peer) and are Experimental; the other eleven ship from `@omkarux/vela` with no
+dependencies (Icon, Brand Mark, Text Area and Table are Experimental there).
 
 ## Disambiguations (where AI usually picks wrong)
 
@@ -79,6 +80,10 @@ dependencies (Icon, Text Area and Table are Experimental there).
   severity marks (an Icon has no severity tone). A glyph you click (close, copy, more) → **Icon
   Button**, which is not in this kit; flag the gap. A glyph that is not in `ICON_NAMES` does not
   exist: name the closest curated one and flag it, never import another icon library.
+- **Icon vs Brand Mark** — a glyph that means a thing or an action in Vela → **Icon**. Another
+  company's own logo, to link to that company's service ("Vela on GitHub") → **Brand Mark**, two
+  only: `github` and `figma`. There is no `<Icon name="github">`. npm is the word "npm", never a
+  logo. Sign-in buttons, integration grids and Vela's own mark are neither; flag the gap.
 
 ## If no component fits
 

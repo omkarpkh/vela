@@ -89,15 +89,16 @@ describe('Figma → code map', () => {
     }
     // The library was published on 29 Oct 2026 (the second publish carried the 0.13.0 state): all
     // 18 sets — 16 entries, Table's two `also` sets among them — are published, each with its node.
+    // Brand Mark (1 Nov 2026) is the one set with none yet: its builder is written and not run.
     const all = map.sets.flatMap((s: any) => [s, ...(s.also ?? [])])
-    expect(all).toHaveLength(19)
+    expect(all).toHaveLength(20)
     const pub = all.filter((s: any) => s.state === 'published').map((s: any) => s.set).sort()
     expect(pub).toEqual(['Button', 'Checkbox', 'Contextual Alert', 'Dialog', 'Dropdown List item', 'Icon', 'Input', 'Popover', 'Radio', 'Risk Pill', 'Status Indicator', 'Tab', 'Table Cell', 'Table Header Cell', 'Table Row', 'Text Area', 'Toast', 'Toggle', 'Tooltip'])
     expect(map.sets.find((s: any) => s.set === 'Risk Pill')).toMatchObject({ state: 'published', node: '127:14' })
     // Dropdown List, built for 0.14.0 (R20), was published on 31 Oct 2026 (R21): no set is built-only.
     expect(map.sets.find((s: any) => s.set === 'Dropdown List item')).toMatchObject({ state: 'published', node: '164:85' })
     expect(all.filter((s: any) => s.state === 'built')).toEqual([])
-    expect(all.filter((s: any) => s.state === 'none')).toEqual([])
+    expect(all.filter((s: any) => s.state === 'none').map((s: any) => [s.set, s.node, s.url])).toEqual([['Brand Mark', null, null]])
   })
 
   it('maps the Tab set to Tabs.Trigger, because the set is one trigger', () => {
