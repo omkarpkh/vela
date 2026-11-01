@@ -292,6 +292,12 @@
   /* What sticks is the header and the plate, whose height the page measures into --pg-strip
      (Playground.tsx): its caption wraps by component. Until it is measured, the stage's own cap. */
   html:has(.pg:not(.is-unpinned)) { scroll-padding-top: calc(var(--site-topbar-height) + var(--pg-strip, var(--pg-strip-height)) + var(--vela-space-10)); }
+  /* Slice 7: the Playground tab has an index now. Here the page tabs and the index scroll away with
+     the page, so the strip is the one thing that sticks under the header and nothing covers it. The
+     selectors outrank slice 1's sticky rules below (one more class in each :has). */
+  .pg-tabs:has(.pg:not(.is-unpinned)) > .vela-tabs > .vela-tabs__list.vela-tabs__list,
+  .pg-tabs:has(.pg:not(.is-unpinned)) > .vela-tabs > .vela-tabs__panel > .shell-index--strip.shell-index { position: static; }
+  html:has(.pg:not(.is-unpinned)):has(.pg-tabs .shell-index--strip) { scroll-padding-top: calc(var(--site-topbar-height) + var(--pg-strip, var(--pg-strip-height)) + var(--vela-space-10)); }
   /* Inside the pinned plate nothing is ever under what sticks, so focus there never scrolls the page
      (slice 2's finding: a tab in the Tabs demo took focus and the page jumped). The margin cancels the
      scroll padding for the plate's own contents. */
@@ -582,3 +588,10 @@
 }
 /* The way on, at the end of each tab: sections and groups sit 60 apart. */
 .pg-next { margin-top: var(--vela-space-60); }
+
+/* ------------------------------------------------ the Playground tab's spec sections -- */
+/* Slice 7 (demo/playground/SpecSections.tsx): Props, States and Keyboard after the code, each the
+   spec's own words. Sections sit 60 apart, as on every tab. */
+.pg-spec { display: flex; flex-direction: column; gap: var(--vela-space-60); margin-top: var(--vela-space-60); min-width: 0; }
+.pg-spec__section { display: flex; flex-direction: column; gap: var(--vela-space-15); min-width: 0; }
+.pg-spec__section > h2 { margin: 0; }
