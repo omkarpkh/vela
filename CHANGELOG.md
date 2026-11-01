@@ -115,6 +115,12 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   built.
 
 ### Changed
+- **Docs: stale facts corrected** (from the omkarux.com site thread's check). README: 290 tokens
+  (was 285), the packed size measured again (279.8 kB, 254 files), the counts' note now says they
+  describe `main`, and every component's Figma set is published, Dropdown List's included (since
+  31 Oct). `llms.txt` says the same. GOVERNANCE.md lists the ten components that carry
+  Experimental, instead of saying none carries a label. Flutter's README describes `VelaMotion` as it
+  is: every motion token. Button's first line uses a colon, not a dash.
 - **Site: the gallery that was the Overview is now All states (`#/states`)**, the last link in
   Start, its own chunk, titled "All states · Vela Design System". Its sections are unchanged, and
   the visual tests open it there: the screenshots are named by the tests' own arguments, so the
