@@ -109,15 +109,18 @@ and the fifth. Each says whether the core keeps it ("both") or only the headless
 - **The Seed is never cut below 24px while the pointer is on any visible part of its tab (both).**
   On a tab that is not wholly in view the Seed doesn't show at all; the label's colour still answers
   the pointer, and a click brings the tab into view. [[rule: tabs-overflow-seed-never-cut | browser]]
-- **The count is measured, never a prop (headless).** "6 more" is the number of tabs not wholly in
-  view: cut by an edge, under a fade or under the stuck open tab. No prop sets it and no threshold
-  holds it back: it shows whenever one tab is hidden. [[rule: tabs-overflow-count-measured | runtime]]
+- **The count is measured, never a prop (headless).** "6 more" is the number of tabs the list
+  offers that are not wholly in view: cut by an edge, under a fade or under the stuck open tab. A
+  disabled tab is not in the list, so it is not counted, and the count always matches what the list
+  offers. No prop sets it and no threshold holds it back: it shows whenever one such tab is hidden.
+  [[rule: tabs-overflow-count-measured | runtime]]
 - **`unseen` is the headless trigger's only.** The core trigger has no overflow control to show it,
   so `unseen` on the core `Tabs.Trigger` doesn't compile. [[rule: tabs-unseen-headless-only | compiler]]
 - **News is words (headless).** The control reads "6 more · 1 new", where 1 is the number of hidden
   tabs with `unseen`; a tab in view adds nothing. The news is semibold `--vela-text-default` words,
-  never a colour or a dot alone. The control's spoken name is "All tabs, 6 hidden, 1 with new
-  items". [[rule: tabs-overflow-news-words | runtime]]
+  never a colour or a dot alone. The control's spoken name starts with its visible words, in order
+  (WCAG 2.5.3, Label in Name): "6 more, 1 new. Show all tabs", or "6 more. Show all tabs"; the dot
+  between the words is hidden from assistive technology. [[rule: tabs-overflow-news-words | runtime]]
 - **News is announced once, politely (headless).** When the number of hidden tabs with news grows,
   a polite live region says "All tabs, 1 with new items" once. Nothing is announced on the first
   render, or when news is cleared. [[rule: tabs-overflow-announce-news | runtime]]
@@ -280,7 +283,7 @@ with the fixes that keep it honest, and this section names what it lacks.
 | Part | What it is |
 |---|---|
 | Label | "6 more" while tabs are hidden; "6 more · 1 new" when hidden tabs have news. The count and the news are measured (`tabs-overflow-count-measured`). Numbers are tabular. |
-| Spoken name | "All tabs, 6 hidden, 1 with new items." News arriving is announced once, politely (`tabs-overflow-announce-news`). |
+| Spoken name | "6 more, 1 new. Show all tabs", or "6 more. Show all tabs": the visible words first, in order, then what it does (WCAG 2.5.3). News arriving is announced once, politely, as "All tabs, 1 with new items" (`tabs-overflow-announce-news`). |
 | Looks | An unselected tab, plus a 16px `chevron-down` in `currentColor` that never turns. No Seed: it opens a list, not a tab. |
 | Place | At the row's end, outside the scroller, `--vela-space-20` from it (`tabs-overflow-control-outside`). |
 | When | Whenever a tab is hidden. One rule, no threshold. |
@@ -296,10 +299,18 @@ it is needed (`tabs-overflow-one-line`, `tabs-overflow-nothing-when-fits`).
 **Why "new" and not "1 new" in the list.** `unseen` is a yes or no on a tab, not a count of its new
 items, so a tab's row in the list says "new"; the control counts tabs, so it says "1 new".
 
-**Disabled tabs.** A disabled tab that is hidden counts in "N more", because it is a tab you can't
-see, but it is not in the list: it can't be opened, and a Dropdown List item that can't be chosen
-must say why (`dropdown-list-locked-has-a-cause`), which a Tabs trigger has no prop to say. If a
-disabled tab is ever the open one, the list keeps it, so the list always has its current item.
+**Disabled tabs.** A disabled tab is not in the list: it can't be opened, and a Dropdown List item
+that can't be chosen must say why (`dropdown-list-locked-has-a-cause`), which a Tabs trigger has no
+prop to say. So it is not counted in "N more" either: the count is what the list offers. When it is
+hidden it is reachable by scrolling the row only, where it reads as disabled. If a disabled tab is
+ever the open one, the list keeps it, so the list always has its current item.
+
+**Recorded deviation: the open tab sticks at both edges.** The note of 30 Oct 2026 says the open
+tab sticks to the left edge. Built that way, a person scrolling the row back towards its start can
+push an open tab that lies further along out past the right edge, which breaks the decided rule
+that the open tab never leaves view (test 4). So it sticks to whichever edge it would leave by,
+the same way at both, with the same fade and, in forced colours, the same Canvas gap and line.
+Kept by Omkar's coordinator on 2 Nov 2026.
 
 **Core: what it does, and the gap.** The core has no "more" control, no list and no sticky open tab
 (Omkar, 30 Oct 2026). It scrolls, fades and reveals as above, so a hidden tab is always signalled and
@@ -389,11 +400,10 @@ This is the reason Tabs is more than a styled list:
   Home/End jump to the ends. Disabled tabs are skipped, and the list wraps.
 - The panel is focusable so keyboard users land in the content after activating a tab.
 - **Overflow (headless).** The "N more" control is a button outside the tablist, after it in the Tab
-  order, named "All tabs, 6 hidden, 1 with new items". It opens a menu of radio items (the Dropdown
-  List) on click, Enter, Space or Arrow Down, landing on the open tab. News arriving in a hidden tab
-  is announced once through a polite live region. Its visible words, "6 more", are not inside its
-  spoken name, which WCAG 2.5.3 (Label in Name) asks for so that speech input can say what it sees;
-  the name is the one decided, and the conflict is recorded for review.
+  order, named "6 more, 1 new. Show all tabs": its visible words first, so speech input can say what
+  it sees (WCAG 2.5.3, Label in Name; axe's `label-content-name-mismatch` runs on it). It opens a
+  menu of radio items (the Dropdown List) on click, Enter, Space or Arrow Down, landing on the open
+  tab. News arriving in a hidden tab is announced once through a polite live region.
 
 ## Figma mapping
 
