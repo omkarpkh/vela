@@ -598,6 +598,43 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     Typography in both themes at 1440, each taken in a window as tall as the page, written by the
     Visual baselines workflow. 1714 checks (was 1671): 1303 unit (was 1283), 110 screenshots (was
     104), 296 e2e (was 279).
+- **Site, slice 7 of the playground uplift: the approved deferrals** (approved by Omkar on 2 Nov
+  2026; s5-tabs and s5-proposal).
+  - **Thumbnails are generated stills.** `npm run stills` (`scripts/stills/`) draws every built
+    component's resting form, the real component at its real size, from a small harness Vite serves
+    from the source, in light and dark, at 2x. Each still is AVIF at 2x first, with a PNG at 1x as
+    the fallback; the PNG carries the SHA-256 of what it was drawn from (the component's source and
+    CSS, and its resting form), as the touch icon does, and `site-stills.test.ts` fails when a
+    component has no still or its still is stale. The five overlays are drawn open, since closed
+    they are only a trigger. 38 stills: 67.2 kB of AVIF, 172.4 kB of PNG fallbacks, about 1.8 kB a
+    page view per card. The Next card on every component tab and each built part in a proposal's
+    "Where it sits" show the still, in a `<picture>` with empty alt text inside the link that names
+    it, loaded lazily, in the page's theme; boxes in a row share its height. A proposal is not
+    built, so it has no still and no placeholder.
+  - **The Playground tab repeats the spec's Props table, its States, and what its Accessibility
+    section says about keys** (Keyboard), each only when the spec has it, in the spec's own words.
+    With the stage and Use it, four or more sections give the tab Slice 1's "On this tab" index;
+    Status Indicator, with three, has none. On a phone, where the stage pins as a strip, the page
+    tabs and the index scroll away, so nothing covers the strip.
+  - **Width presets.** On a component whose layout follows its container (Tabs), the stage's Width
+    leads with Full, 480 and 320 as segments, the slider beside them and then the field as the fine
+    control. A preset as wide as the stage is not offered; a width between presets marks none; on a
+    phone, where none fits, the field shows alone.
+  - **Copy: the three question cards and the "You need" strip**, under the live demo, as drawn. One
+    card per question in copy.md's opening line, with its answer and the mark that shows it; then You
+    need, The page can't and Status, read from the opening's Carried out by, Limits and Status
+    blocks, which the strip now stands in for, so they are not said twice.
+  - **Page weight.** The header logo had pulled the two hero drawings into every page's first
+    script. The core sizes and what every size shares move to `demo/shell/product-mark-core.tsx`,
+    which the header imports; the hero stays in `ProductMark.tsx`, which only the Overview imports,
+    so the drawings load with the Overview's chunk. First load: 503.06 kB to 480.73 kB of script
+    (162.60 kB to 157.53 kB gzipped).
+  - **Checks.** 53 more unit tests (the stills, 43; the Playground sections; the Copy cards and
+    strip; the hero kept out of the first chunk) and seven more e2e tests. No new token, no new
+    colour pair, no new site waiver. The visual captures of whole pages load the lazy stills before
+    they are taken. 1837 checks (was 1777): 1383 unit (was 1330), 337 e2e (was 330). The 24 component
+    tab baselines, the Tabs overflow stage, both proposal pages and the Copy page move, and are
+    written again by the Visual baselines workflow.
 - **Brand marks now use the interface's icon grey** (`--vela-brand-mark` points at `--vela-grey-700`
   in light and `--vela-grey-300` in dark, the same values as `--vela-icon-strong`). The live header
   showed GitHub's and Figma's marks, and the word "npm", in pure black, heavier than the icons beside
