@@ -22,6 +22,8 @@ export interface StageProps {
   props?: string
   /** The caption's word. "Live" unless the stage shows several states at once ("Live, every state"). */
   caption?: string
+  /** A plain line after the caption's word: what the demo is made with, when it is not the kit's own part. */
+  note?: ReactNode
   /** The stage's own controls, at the caption's end. */
   tools?: ReactNode
   /** The region's name. */
@@ -32,11 +34,12 @@ export interface StageProps {
   children: ReactNode
 }
 
-export function Stage({ props, caption = 'Live', tools, label = 'Live demo', arrive, className, children }: StageProps) {
+export function Stage({ props, caption = 'Live', note, tools, label = 'Live demo', arrive, className, children }: StageProps) {
   return (
     <section className={cn('shell-stage', className)} aria-label={label} data-arrive={arrive}>
       <div className="shell-stage__caption">
         <span className="shell-stage__live">{caption}</span>
+        {note && <span className="shell-stage__note">{note}</span>}
         {props && <code className="shell-stage__props">{props}</code>}
         {tools && <div className="shell-stage__tools">{tools}</div>}
       </div>

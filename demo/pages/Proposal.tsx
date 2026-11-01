@@ -9,7 +9,7 @@ import { WORKED_EXAMPLES, type WorkedExample } from '../playground/proposal-step
 import { undash } from '../playground/rules-read'
 import { LINKS } from '../links'
 import { href } from '../router'
-import { SectionIndex, type SectionLink } from '../shell/SectionIndex'
+import { SectionIndex, useIndexForm, type SectionLink } from '../shell/SectionIndex'
 import { NextCard } from '../shell/Card'
 import { ShowMore, Rest, SHOW_FIRST } from '../shell/Fold'
 import { useArrival } from '../shell/arrival'
@@ -36,21 +36,6 @@ const BUILT = REGISTRY.map((e) => e.name)
 
 type Page = ProposalDetail & { source: string }
 
-/** Under this many CSS pixels, the rail is a strip above the content (and one button under 600). */
-const RAIL_QUERY = '(max-width: 1100px)'
-
-function useMedia(query: string): boolean {
-  const [on, setOn] = useState(() => typeof window !== 'undefined' && window.matchMedia(query).matches)
-  useEffect(() => {
-    const m = window.matchMedia(query)
-    const on = () => setOn(m.matches)
-    on()
-    m.addEventListener('change', on)
-    return () => m.removeEventListener('change', on)
-  }, [query])
-  return on
-}
-
 export function Proposal({ id }: { id: string }) {
   const p = PROPOSALS.find((x) => x.id === id)
   const [page, setPage] = useState<Page | null>(null)
@@ -71,7 +56,7 @@ export function Proposal({ id }: { id: string }) {
 
   const [propsOpen, setPropsOpen] = useState(false)
   const propsButton = useRef<HTMLButtonElement>(null)
-  const narrowRail = useMedia(RAIL_QUERY)
+  const indexForm = useIndexForm()
 
   if (!p) return <p className="vela-body">No proposal called “{id}”.</p>
   const example = WORKED_EXAMPLES[id]
@@ -120,13 +105,13 @@ export function Proposal({ id }: { id: string }) {
         <p className="vela-body"><strong>This is a proposal, not a component.</strong> A written spec with no code yet, so there is nothing to install. Every picture on this page is a sketch.</p>
       </div>
 
-      <div className={cn('proposal__layout', narrowRail && 'is-narrow')} aria-busy={page ? undefined : true}>
+      <div className={cn('shell-railpage', indexForm === 'strip' && 'is-narrow')} aria-busy={page ? undefined : true}>
         {page && (
-          <aside className="proposal__rail" aria-label="On this page">
-            <SectionIndex items={index} form={narrowRail ? 'strip' : 'rail'} label="On this page" ready={!!page} />
-          </aside>
+          <div className="shell-railpage__rail">
+            <SectionIndex items={index} form={indexForm} label="On this page" ready={!!page} />
+          </div>
         )}
-        <div className="proposal__main">
+        <div className="shell-railpage__main proposal__main">
           {!page && <p className="vela-body">Loading this page…</p>}
           {page && (
             <>

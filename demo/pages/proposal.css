@@ -18,18 +18,7 @@
 .proposal__banner .vela-icon, .proposal__nostory .vela-icon { flex: none; color: var(--vela-icon-strong); }
 .prop-chip { border-style: dashed; }
 
-/* The layout: the content, and the rail beside it (the section index's rail form). Under 1100 CSS
-   px the index is a strip above the content that sticks under the header (one button under 600). */
-.proposal__layout { display: grid; grid-template-columns: minmax(0, 1fr) calc(10 * var(--vela-space-20)); grid-template-areas: "main rail"; gap: var(--vela-space-40); align-items: start; }
-.proposal__main { grid-area: main; display: flex; flex-direction: column; gap: var(--vela-space-60); min-width: 0; }
-.proposal__rail { grid-area: rail; position: sticky; top: calc(var(--site-topbar-height) + var(--vela-space-20)); }
-.proposal__layout.is-narrow { grid-template-columns: minmax(0, 1fr); grid-template-areas: "rail" "main"; gap: var(--vela-space-20); }
-.proposal__layout.is-narrow .proposal__rail { top: var(--site-topbar-height); z-index: 5; background: var(--vela-bg-global); }
-/* Under 560 CSS px tall only the header sticks (sweep T45): a zoomed page keeps its reading room. */
-@media (max-height: 560px) { .proposal__rail, .proposal__layout.is-narrow .proposal__rail { position: static; } }
-@media (min-height: 561px) {
-  html:has(.proposal__layout.is-narrow) { scroll-padding-top: calc(var(--site-topbar-height) + var(--vela-control-height-40) + var(--vela-space-10)); }
-}
+.proposal__main { display: flex; flex-direction: column; gap: var(--vela-space-60); }
 
 .proposal__section { display: flex; flex-direction: column; gap: var(--vela-space-20); min-width: 0; }
 .proposal__heading { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--vela-space-5) var(--vela-space-15); }
