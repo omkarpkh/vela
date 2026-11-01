@@ -41,7 +41,7 @@ describe('the counts on All states and How it is made', () => {
 
   it('How it is made states the contrast pairs the build counted', () => {
     const { container } = render(<How />)
-    expect(container.textContent).toContain(`${PAIRS.length} contrast pairs hold in both themes`)
+    expect(container.textContent).toContain(`${PAIRS.length} colour pairs held to contrast in both themes`)
   })
 
   it('no page under demo/ types a count of contrast pairs by hand', () => {
