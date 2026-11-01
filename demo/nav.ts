@@ -7,11 +7,14 @@ import spacingMd from '../guidelines/foundations/spacing.md?raw'
 import sizingMd from '../guidelines/foundations/sizing.md?raw'
 import radiusMd from '../guidelines/foundations/radius.md?raw'
 import motionMd from '../guidelines/foundations/motion.md?raw'
+import filterGrammarMd from '../guidelines/contracts/filter-grammar.md?raw'
 
 // The navigation is built from the same sources as the pages: the foundation docs and the
 // component registry. Adding a component to the registry adds it here; nothing is listed twice.
 const titleOf = (md: string, fallback: string) => (md.match(/^# (?:Foundation: )?(.+)$/m)?.[1] ?? fallback).trim()
 
+// A contract (guidelines/contracts/) has no UI, so it is read as a doc page beside the foundations,
+// and says what it is in its eyebrow.
 export const FOUNDATIONS = [
   { id: 'color', md: colorMd },
   { id: 'typography', md: typographyMd },
@@ -19,7 +22,8 @@ export const FOUNDATIONS = [
   { id: 'sizing', md: sizingMd },
   { id: 'radius', md: radiusMd },
   { id: 'motion', md: motionMd },
-].map((f) => ({ ...f, title: titleOf(f.md, f.id) }))
+  { id: 'filter-grammar', md: filterGrammarMd, kind: 'Contract' },
+].map((f) => ({ kind: 'Foundation', ...f, title: titleOf(f.md, f.id) }))
 
 export const COMPONENTS = REGISTRY.map((e) => {
   const status = statusOf(e.spec).label

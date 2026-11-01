@@ -7,7 +7,8 @@
  * a rule was documented with no proof behind it. This is that check.
  *
  * It reads the `[[rule: id | enforcement]]` tag on each bullet under `## Hard constraints`
- * in guidelines/components/*.md — the tag is metadata, stripped before the spec reaches the
+ * in guidelines/components/*.md and guidelines/contracts/*.md (a contract, such as the Filter
+ * Grammar, has no UI but states its rules the same way) — the tag is metadata, stripped before the spec reaches the
  * playground (demo/playground/Markdown.tsx) or a Figma description
  * (scripts/sync-figma-descriptions.mjs) — and asserts:
  *
@@ -46,14 +47,14 @@
  * are rejected by the types in `src`. verify-pack.mjs runs after the build and proves the same
  * fixtures are rejected by the .d.ts that is actually SHIPPED. Two different claims.
  *
- * `--write <dir>` also writes the proof map, one JSON file per component spec (playground spec,
+ * `--write <dir>` also writes the proof map, one JSON file per component or contract spec (playground spec,
  * section 8; slice 4): each rule's id, level and sentence; the file and line of its proof; and, for
  * a compiler rule, its fixture and the error the compiler gave for it. The site fetches the file for
  * the page being read (B8). `npm run proofs` writes them to demo/public/proofs/, which is generated,
  * never committed: the lines are only true of the commit they were read from.
  */
 import { execFileSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -66,10 +67,16 @@ const fail = (msg) => problems.push(msg)
 
 // ---------- the specification ----------
 const specDir = join(root, 'guidelines/components')
+// A contract (guidelines/contracts/) is a spec with no UI: the same tags, the same proofs.
+const contractDir = join(root, 'guidelines/contracts')
+const specFiles = [
+  ...readdirSync(specDir).filter((f) => f.endsWith('.md')).map((file) => ({ file, dir: 'guidelines/components' })),
+  ...(existsSync(contractDir) ? readdirSync(contractDir).filter((f) => f.endsWith('.md')).map((file) => ({ file, dir: 'guidelines/contracts' })) : []),
+]
 const rules = []
-for (const file of readdirSync(specDir).filter((f) => f.endsWith('.md'))) {
-  const md = readFileSync(join(specDir, file), 'utf8')
-  const section = md.match(/^## Hard constraints[^\n]*\n([\s\S]*?)(?=^## |\Z)/m)
+for (const { file, dir } of specFiles) {
+  const md = readFileSync(join(root, dir, file), 'utf8')
+  const section = md.match(/^## Hard constraints[^\n]*\n([\s\S]*?)(?=^## |(?![\s\S]))/m)
   if (!section) { fail(`${file}: no "## Hard constraints" section`); continue }
 
   // A bullet is "- " plus any indented continuation lines.
@@ -90,7 +97,7 @@ for (const file of readdirSync(specDir).filter((f) => f.endsWith('.md'))) {
     }
     const [, id, level] = tag
     if (!LEVELS.includes(level)) fail(`${file}: rule "${id}" has unknown enforcement "${level}" (expected ${LEVELS.join(', ')})`)
-    rules.push({ id, level, file, text, sentence: bullet.replace(/^- /, '').replace(/\s*\[\[rule:[^\]]*\]\]\s*/, ' ').replace(/\s+/g, ' ').trim() })
+    rules.push({ id, level, file, dir, text, sentence: bullet.replace(/^- /, '').replace(/\s*\[\[rule:[^\]]*\]\]\s*/, ' ').replace(/\s+/g, ' ').trim() })
   }
 }
 
@@ -130,6 +137,8 @@ if (proven.length) {
     proven.forEach((f, i) => {
       writeFileSync(join(dir, `f${i}.tsx`),
         `import { Button, ContextualAlert, Icon, Input, RiskPill, StatusIndicator, Table, Tabs, TextArea, Toggle } from '${join(root, 'src')}'\n` +
+        // Filter Grammar (guidelines/contracts/) is plain functions from the core entry.
+        `import { defineFields, parseQuery, validateQuery, normalise, queryToText, readback, evaluate, leftOutQuery } from '${join(root, 'src')}'\n` +
         // Checkbox, Radio Group, Popover, Tooltip, Dialog, Toast and Dropdown List ship from the headless entry only.
         `import { Checkbox, RadioGroup, Popover, Tooltip, Dialog, ToastProvider, useToast, DropdownList } from '${join(root, 'src/headless')}'\n` +
         `export const X = () => (${f.snippet})\n`)
@@ -264,7 +273,8 @@ if (writeAt > 0) {
         ...(fx ? { fixture: { name: fx.f.name, snippet: fx.f.snippet, error: (compilerSays.get(fx.i) ?? []).join('\n') } } : {}),
       }
     })
-    writeFileSync(join(out, file.replace(/\.md$/, '.json')), JSON.stringify({ spec: `guidelines/components/${file}`, typescript, rules: own }, null, 2) + '\n')
+    const dir = rules.find((r) => r.file === file).dir
+    writeFileSync(join(out, file.replace(/\.md$/, '.json')), JSON.stringify({ spec: `${dir}/${file}`, typescript, rules: own }, null, 2) + '\n')
   }
   console.log(`  Proof map written to ${out.startsWith(root) ? rel(out) : out}/ (${new Set(rules.map((r) => r.file)).size} files)`)
 }
@@ -278,6 +288,10 @@ console.log(`  ${rules.length} rules across ${new Set(rules.map((r) => r.file)).
 console.log(`  ${fixtures.length} fixtures, ${rejected.size} proved rejected by the types; ` +
   `${count('runtime')} runtime rules referenced by unit tests, ` +
   `${count('browser')} browser rules by specs`)
+for (const file of new Set(rules.filter((r) => r.dir === 'guidelines/contracts').map((r) => r.file))) {
+  const own = rules.filter((r) => r.dir === 'guidelines/contracts' && r.file === file)
+  console.log(`  contract ${file}: ${own.length} rules, ${own.filter((r) => r.level !== 'convention').length} with proofs`)
+}
 if (patternFiles.length)
   console.log(`  ${patternFiles.length} pattern(s) checked (pattern-cites-real-rules)` +
     (patternNotes.length ? `; not built yet:\n    ${patternNotes.join('\n    ')}` : ''))

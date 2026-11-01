@@ -4,8 +4,8 @@
 > deliberately separate status taxonomies, full light and dark theming, zero runtime dependencies
 > in the core entry (the `/headless` entry needs one optional peer, Base UI, and is where Checkbox,
 > Radio Group, Popover, Tooltip, Dialog, Toast and Dropdown List ship from).
-> 69 of the 212 design rules are enforced by the TypeScript types; the rest are checked at runtime, in a
-> real browser, or by review. Each rule in the component guidelines is tagged with its level.
+> 73 of the 225 design rules are enforced by the TypeScript types; the rest are checked at runtime, in a
+> real browser, or by review. Each rule in the component and contract guidelines is tagged with its level.
 >
 > THESE SPECS ARE FRAMEWORK-AGNOSTIC. The published package is a React implementation of them, and
 > the code samples below are React — but the tokens, the closed prop sets, the taxonomies and the
@@ -79,3 +79,7 @@ behaviour has no Figma expression at all.
 - [Dialog](components/dialog.md) — `@omkarux/vela/headless` only, Experimental (with `variant="alert"`)
 - [Toast](components/toast.md) — `@omkarux/vela/headless` only, Experimental (`ToastProvider` + `useToast()`)
 - [Dropdown List](components/dropdown-list.md) — `@omkarux/vela/headless` only, Experimental (Base UI `Menu`; no Figma set yet)
+
+## Contracts
+A contract has rules and no UI: plain functions every surface shares.
+- [Filter Grammar](contracts/filter-grammar.md) — `@omkarux/vela`, Experimental: `defineFields` declares a host's fields once (type and trust); every filter, typed, linked, saved or emitted by an agent, is checked against it, with one text form and one readback sentence. Never invent a filter syntax.

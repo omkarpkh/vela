@@ -53,6 +53,11 @@ describe('search', () => {
     expect(search(index, 'changelog')).toEqual([])
   })
 
+  it('finds the Filter Grammar contract, listed under Foundations, by "filter"', () => {
+    const [hit] = search(index, 'filter')
+    expect(hit.item).toMatchObject({ kind: 'foundation', id: 'filter-grammar', title: 'Filter Grammar', href: '#/foundations/filter-grammar', sign: 'Contract' })
+  })
+
   it('returns nothing for nothing', () => {
     expect(search(index, '   ')).toEqual([])
     expect(search(index, 'zzzz')).toEqual([])
