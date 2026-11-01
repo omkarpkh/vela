@@ -227,7 +227,7 @@ their rows as "not built yet".
 
 1. **A parent pattern, "Confirm an invisible result"**, shared with download, undo and refresh. *Proposed:* not until a second case exists.
 2. **Firefox.** The morph is unverified there. *Proposed:* the browser rules run in all three Playwright engines before the components' PRs merge.
-3. **Figures and the playground's theme switch.** The figures follow the system's light or dark setting, which may differ from the playground's switch. *Proposed:* the playground shows live examples, and the static figures stay for the repo's Markdown.
+3. **Figures and the playground's theme switch.** The figures follow the system's light or dark setting, not the playground's switch. *Proposed:* the playground shows live examples; the static figures stay for the repo's Markdown.
 
 <details>
 <summary><b>Decisions and sources</b></summary>
