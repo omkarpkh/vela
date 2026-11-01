@@ -6,7 +6,7 @@ add the rules for one component. Read this, then the spec, then act.
 
 ## Purpose and scope
 
-Vela is a token-first design system for security products. The tokens are the only place a
+Vela is a design system for data-heavy products, built first for security consoles. The tokens are the only place a
 value is written (`tokens/vela.tokens.json`), and they compile to CSS, a Figma library, a
 Flutter theme and a Material UI theme from that one source. **The guideline is the
 specification and the source is one implementation of it**: do not infer an API from

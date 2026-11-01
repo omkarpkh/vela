@@ -74,7 +74,7 @@ export function Overview({ theme }: { theme: 'light' | 'dark' }) {
         </div>
         <div className="ov-hero__panel">
           <h1 className="vela-h1">Vela Design System</h1>
-          <p className="vela-body ov-hero__claim">A token-first design system for security products. Every enforceable rule carries a proof, or the build fails.</p>
+          <p className="vela-body ov-hero__claim">For data-heavy products, built first for security consoles. Every rule that can be tested is tested before a change ships.</p>
           <Install />
           <div className="ov-hero__actions">
             <ActionLink weight="primary" href={TARGETS.components}>Browse components</ActionLink>

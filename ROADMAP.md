@@ -7,7 +7,7 @@ closes when its exit criteria pass, not when its time is up.
 ## The direction
 
 From a six-component, zero-dependency design system to the open, agent-ready design system for
-security products: one that AI coding tools build screens from, that analysts review agents
+data-heavy products, built first for security consoles: one that AI coding tools build screens from, that analysts review agents
 through, and that measures whether either worked.
 
 Decisions that hold through every phase:

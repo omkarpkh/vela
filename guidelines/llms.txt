@@ -1,6 +1,6 @@
 # Vela Design System
 
-> A token-first design system. Two-layer colour architecture (primitives -> semantics), three
+> A design system for data-heavy products, built first for security consoles. Two-layer colour architecture (primitives -> semantics), three
 > deliberately separate status taxonomies, full light and dark theming, zero runtime dependencies
 > in the core entry (the `/headless` entry needs one optional peer, Base UI, and is where Checkbox,
 > Radio Group, Popover, Tooltip, Dialog, Toast and Dropdown List ship from).

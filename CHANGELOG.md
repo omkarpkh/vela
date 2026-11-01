@@ -149,6 +149,13 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   built.
 
 ### Changed
+- **Who Vela is for, said once and the same everywhere** (Omkar's choice, from the refinement
+  stage). The Overview's first line is now "For data-heavy products, built first for security
+  consoles. Every rule that can be tested is tested before a change ships." README, DESIGN.md,
+  ROADMAP, `llms.txt` and the package description say "a design system for data-heavy products,
+  built first for security consoles" in place of "a token-first design system (for security
+  products)". The old line shut out teams outside security, and "token-first" told a visitor how
+  Vela is made, not who it is for; How it is made still tells that story.
 - **Docs: stale facts corrected** (from the omkarux.com site thread's check). README: 290 tokens
   (was 285), the packed size measured again (279.8 kB, 254 files), the counts' note now says they
   describe `main`, and every component's Figma set is published, Dropdown List's included (since
