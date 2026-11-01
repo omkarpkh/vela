@@ -1,4 +1,10 @@
-# Vela
+<h1>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="brand/vela-hero-96plus.svg">
+    <img src="brand/vela-hero-96plus-light.svg" alt="" width="96" height="96" align="middle">
+  </picture>
+  Vela Design System
+</h1>
 
 [![CI](https://img.shields.io/github/actions/workflow/status/omkarpkh/vela/ci.yml?branch=main&label=CI)](https://github.com/omkarpkh/vela/actions/workflows/ci.yml)
 [![npm](https://img.shields.io/npm/v/%40omkarux%2Fvela?label=npm)](https://www.npmjs.com/package/@omkarux/vela)
