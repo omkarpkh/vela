@@ -61,3 +61,24 @@ for (const theme of THEMES) {
     }
   })
 }
+
+// Slice 5 of the playground uplift: How it is made, Component status and Not found, whole, in both
+// themes, at 1440 only. The suite runs with reduced motion, so How it is made is shown with every
+// part already there. The Linux baselines are written by the "Visual baselines" workflow, never on a laptop.
+const SLICE_5 = [['doc-how', '/#/how'], ['doc-status', '/#/status'], ['doc-not-found', '/#/components/firewall-rule']] as const
+
+for (const theme of THEMES) {
+  test.describe(`doc pages · ${theme}`, () => {
+    for (const [name, path] of SLICE_5) {
+      test(name, async ({ page }, testInfo) => {
+        test.skip(testInfo.project.name !== 'desktop', 'the doc pages are screenshotted at 1440 only')
+        await page.goto(path)
+        await setTheme(page, theme)
+        await page.evaluate(() => document.fonts.ready)
+        await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+        await page.mouse.move(0, 0)
+        await expect(page.locator('main')).toHaveScreenshot(`page-${name}-${theme}.png`)
+      })
+    }
+  })
+}

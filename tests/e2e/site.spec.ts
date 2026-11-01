@@ -497,9 +497,11 @@ test.describe('find', () => {
 
   test('a link to a component that does not exist suggests the closest names', async ({ page }) => {
     await page.goto('/#/components/modal-window')
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('There\'s no component called “modal-window”.')
-    await expect(page.getByRole('link', { name: 'Dialog', exact: true }).last()).toHaveAttribute('href', '#/components/dialog')
-    await expect(page.getByRole('main').getByRole('link', { name: 'Browse all components' })).toBeVisible()
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('There is no component called “modal-window”')
+    await expect(page.getByRole('heading', { level: 2, name: 'Closest by meaning' })).toBeVisible()
+    await expect(page.getByRole('main').locator('.nf-card').first()).toHaveAttribute('href', '#/components/dialog')
+    await expect(page.getByRole('main').locator('.nf-card').first()).toContainText('Also called modal')
+    await expect(page.getByRole('main').getByRole('link', { name: /Component status/ })).toHaveAttribute('href', '#/status')
   })
 
   test('on a phone the search button is the icon alone, named "Search"', async ({ page }) => {
@@ -1312,7 +1314,7 @@ test.describe('the Overview', () => {
     const opens: [string | RegExp, string, string | RegExp][] = [
       ['Browse components', '#/status', 'Component status'],
       ['See the rules', '#/components/button/rules', 'Button'],
-      ['How they run', '#/how', 'One file, five targets'],
+      ['How they run', '#/how', 'How it is made'],
       ['See the status', '#/status', 'Component status'],
       [/^Components \d+ built/, '#/status', 'Component status'],
       [/^Patterns/, '#/patterns/copy', 'Copy'],
@@ -1404,7 +1406,7 @@ test.describe('Product Mark: the Overview hero and its pulse', () => {
     // A route change back to the Overview does not replay it.
     const nav = page.getByRole('navigation', { name: 'Site' })
     await nav.getByRole('link', { name: 'How it is made' }).click()
-    await expect(page.getByRole('main').getByRole('heading', { level: 1 })).toHaveText('One file, five targets')
+    await expect(page.getByRole('main').getByRole('heading', { level: 1 })).toHaveText('How it is made')
     await nav.getByRole('link', { name: 'Overview' }).click()
     await expect(replay(page)).toBeVisible()
     await page.waitForTimeout(300)
@@ -1577,7 +1579,7 @@ test.describe('plain links', () => {
   const PAGES = [
     { name: 'Status', path: '/#/status', link: '.status-table a' },
     { name: 'All states', path: '/#/states', link: '.page-head a' },
-    { name: 'Not found', path: '/#/components/firewall-rule', link: '.pg-unknown a' },
+    { name: 'Not found', path: '/#/components/firewall-rule', link: '.nf-gap a' },
   ]
   for (const p of PAGES)
     for (const theme of ['Light', 'Dark'] as const)
@@ -2151,4 +2153,159 @@ test.describe('slice 4 · proposals and Copy', () => {
       expect(await noSidewaysScroll(page), path).toBe(true)
     }
   })
+})
+
+// Slice 5 of the playground uplift (1 Nov 2026): the doc pages. How it is made, told as four ideas
+// that land as you reach them; Component status as one table with pictures and a key written once;
+// Not found, which says what was asked for and names the closest parts by meaning; the project
+// documents with no markdown leaks and a rail; and the footer in a reader's words.
+test.describe('uplift slice 5 · doc pages', () => {
+  const checks = JSON.parse(readFileSync(resolve(process.cwd(), 'demo/checks.json'), 'utf8'))
+  /** Every word the main region shows outside code. */
+  const words = (page: Page) => page.locator('main').evaluate((root) => {
+    const out: string[] = []
+    const walk = document.createTreeWalker(root, NodeFilter.SHOW_TEXT)
+    for (let n = walk.nextNode(); n; n = walk.nextNode()) if (!n.parentElement?.closest('code, pre')) out.push(n.textContent ?? '')
+    return out.join('\n')
+  })
+
+  test('How it is made: four ideas in order, the numbers from the build, a rail, and the detail folded', async ({ page }) => {
+    await page.goto('/#/how')
+    const main = page.getByRole('main')
+    await expect(main.getByRole('heading', { level: 1 })).toHaveText('How it is made')
+    expect((await main.locator('.how-step h2').allTextContents())).toEqual(['A change is written once', 'It becomes five outputs', 'Each output is checked', 'Only then does it ship'])
+    await expect(page.locator('.how-checks__number')).toHaveText(String(checks.total))
+    await expect(main.getByText(`${checks.unit} unit tests`, { exact: false })).toBeVisible()
+    await expect(main.getByText(`All ${checks.total} checks pass.`)).toBeVisible()
+    // The five outputs, as a list a screen reader counts, inside a named figure.
+    await expect(page.getByRole('figure', { name: 'The token file makes five outputs' }).getByRole('listitem')).toHaveCount(5)
+    const rail = page.getByRole('navigation', { name: 'On this page' })
+    await expect(rail.getByRole('link')).toHaveText(['1 Written once', '2 Five outputs', '3 Each one checked', '4 Then it ships', 'In detail'])
+    await expect(page.getByRole('table', { name: 'Generated targets' })).toBeHidden()
+    // With reduced motion (the suite's setting) nothing waits: every part is simply there.
+    await expect(page.locator('[data-how]')).toHaveCount(0)
+    expect(await words(page)).not.toMatch(/[—–]|\bCI\b|ESM/)
+  })
+
+  test('How it is made: each idea lands as you reach it, part by part, on the motion tokens, once', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'no-preference' })
+    await page.goto('/#/how')
+    const steps = page.locator('.how-step')
+    await expect(steps.first()).toHaveAttribute('data-how', 'play')
+    // The last idea is below the window: it waits, and its parts are not shown yet.
+    await expect(steps.last()).toHaveAttribute('data-how', 'wait')
+    await expect(steps.last().locator('.how-gate__card').first()).toHaveCSS('opacity', '0')
+    await steps.nth(1).scrollIntoViewIfNeeded()
+    await expect(steps.nth(1)).toHaveAttribute('data-how', 'play')
+    const timing = await steps.nth(1).evaluate((el) => el.getAnimations({ subtree: true }).map((a) => {
+      const t = a.effect!.getComputedTiming()
+      return { duration: Number(t.duration), delay: Number(t.delay), iterations: t.iterations }
+    }))
+    // The file, the trunk, the spine, and a branch and a card for each of the five outputs.
+    expect(timing.length).toBe(3 + 2 * 5)
+    for (const t of timing) {
+      // 120ms (a branch, a fast step) to 240ms (travel): never a loop, never longer than 300ms a part.
+      expect(t.iterations).toBe(1)
+      expect(t.duration).toBeGreaterThanOrEqual(120)
+      expect(t.duration).toBeLessThanOrEqual(300)
+    }
+    const done = Math.max(...timing.map((t) => t.delay + t.duration))
+    expect(done).toBeLessThanOrEqual(1100)
+    // Played once: a step that has played never waits again.
+    await page.mouse.wheel(0, -3000)
+    await expect(steps.nth(1)).toHaveAttribute('data-how', 'play')
+  })
+
+  test('Component status: one table of every component, with pictures, and each promise written once', async ({ page }) => {
+    await page.goto('/#/status')
+    const table = page.getByRole('table', { name: /Every component, its label/ })
+    // As many rows as the site's navigation lists components (a thumbnail's own table is not counted).
+    const listed = await page.getByRole('navigation', { name: 'Site' }).locator('a[href^="#/components/"]').count()
+    await expect(table.locator(':scope > tbody > tr')).toHaveCount(listed)
+    await expect(page.locator('.status__lede')).toContainText(`${listed} components`)
+    // Pictures are the real components, inert and hidden from assistive technology.
+    const thumbs = table.locator('.status-table__thumb')
+    await expect(thumbs.first()).toHaveAttribute('aria-hidden', 'true')
+    expect(await thumbs.first().evaluate((el) => (el as HTMLElement).inert)).toBe(true)
+    await expect(thumbs.first().locator('.vela-btn')).toHaveCount(1)
+    // The promise is the column's key, once, never repeated per row.
+    for (const promise of ['Semver applies in full: a breaking change waits for a major release.', 'May change in a minor release, without a deprecation window.'])
+      await expect(page.getByText(promise)).toHaveCount(1)
+    const text = await words(page)
+    expect(text).not.toMatch(/GOVERNANCE\.md|scripts\/|\.figma\.js|[—–]/)
+    await expect(table.getByRole('row', { name: /Text Area/ })).toContainText('Approved once the API has been reviewed.')
+  })
+
+  test('Not found: "firewall-rule" names no part by a word of a spec, flags the gap, and searches the words typed', async ({ page }) => {
+    await page.goto('/#/components/firewall-rule')
+    const main = page.getByRole('main')
+    await expect(main.getByRole('heading', { level: 1 })).toHaveText('There is no component called “firewall-rule”')
+    await expect(main.getByText('#/components/firewall-rule')).toBeVisible()
+    await expect(main.getByText('Text Area')).toHaveCount(0)
+    await expect(main.getByText('Toggle')).toHaveCount(0)
+    await expect(main.getByRole('heading', { level: 2, name: 'Not in Vela' })).toBeVisible()
+    await expect(main.getByText('Vela has no Firewall Rule')).toBeVisible()
+    await expect(main.getByRole('link', { name: 'Ask for it on GitHub' })).toHaveAttribute('href', /issues\/new\?template=component-request\.yml/)
+    await main.getByRole('button', { name: 'Search Vela for “firewall rule”' }).click()
+    await expect(page.getByRole('dialog', { name: 'Search' }).getByRole('combobox')).toHaveValue('firewall rule')
+    await page.keyboard.press('Escape')
+    await expect(main.getByRole('link', { name: /proposals/ })).toHaveAttribute('href', /#\/proposals\//)
+    await expect(page).toHaveTitle('Not found · Vela Design System')
+  })
+
+  test('Not found: an address that names no page says so, a slip of spelling finds the part, and the skip link stays on the page', async ({ page }) => {
+    await page.goto('/#/settings/billing')
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('There is no page at “settings/billing”')
+    await page.goto('/#/components/buton')
+    await expect(page.getByRole('heading', { level: 2, name: 'Did you mean' })).toBeVisible()
+    await expect(page.locator('.nf-card').first()).toHaveAttribute('href', '#/components/button')
+    await page.goto('/#/how')
+    await page.keyboard.press('Tab')
+    await page.getByRole('link', { name: 'Skip to content' }).press('Enter')
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('How it is made')
+  })
+
+  test('project documents: no markdown mark reaches the page, long ones have a rail, the Roadmap leads with its phases', async ({ page }) => {
+    for (const path of ['/#/changelog', '/#/roadmap', '/#/contributing', '/#/accessibility', '/#/foundations/filter-grammar']) {
+      await page.goto(path)
+      await expect(page.locator('.doc__body .pg-p').first(), path).toBeVisible()
+      expect(await words(page), path).not.toMatch(/\*\*|\]\(|[—–]|\[\[|`|^\s*- /m)
+      expect(await noSidewaysScroll(page), path).toBe(true)
+    }
+    await page.goto('/#/roadmap')
+    const phases = page.getByRole('list', { name: 'The phases, in order' })
+    await expect(phases.getByRole('link')).toHaveCount(7)
+    await expect(phases.getByRole('listitem').first()).toContainText('In progress')
+    await phases.getByRole('link', { name: /^Phase 2b/ }).click()
+    await expect(page).toHaveURL(/#\/roadmap\?section=phase-2b/)
+    await expect(page.getByRole('heading', { level: 2, name: /^Phase 2b/ })).toBeFocused()
+    await expect(page.getByRole('navigation', { name: 'On this page' }).getByRole('link', { name: 'Phase 2b' })).toHaveAttribute('aria-current', 'location')
+    await page.goto('/#/changelog')
+    await expect(page.getByRole('navigation', { name: 'On this page' }).getByRole('link').first()).toHaveText('Unreleased')
+  })
+
+  test('the footer is in a reader\'s words', async ({ page }) => {
+    await page.goto('/#/status')
+    await expect(page.locator('.demo-footer')).toHaveText('No runtime dependencies · Light and dark · Contrast checked to WCAG 2.1 AA on every change')
+  })
+
+  test('at 390 the doc pages fit, and How it is made reads top to bottom', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 })
+    for (const path of ['/#/how', '/#/status', '/#/components/firewall-rule', '/#/roadmap']) {
+      await page.goto(path)
+      await expect(page.getByRole('heading', { level: 1 }), path).toBeVisible()
+      expect(await noSidewaysScroll(page), path).toBe(true)
+    }
+  })
+
+  for (const path of ['/#/how', '/#/status', '/#/components/firewall-rule', '/#/roadmap', '/#/changelog'])
+    for (const theme of ['Light', 'Dark'] as const)
+      test(`axe: ${path} in ${theme.toLowerCase()}`, async ({ page }) => {
+        const { default: AxeBuilder } = await import('@axe-core/playwright')
+        await page.goto(path)
+        await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+        await setTheme(page, theme)
+        const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze()
+        expect(results.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`)).toEqual([])
+      })
 })
