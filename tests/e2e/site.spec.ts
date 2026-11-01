@@ -1304,6 +1304,188 @@ test.describe('the Overview', () => {
   })
 })
 
+// The Overview's brand parts (1 Nov 2026): the hero mark, the stand-in for Product Mark
+// (demo/shell/ProductMark.tsx), and the mood stills behind the hero. The props, the masters and the
+// names are unit tests (src/styles/site-product-mark.test.tsx); these are the spec's browser rules.
+// The suite runs with reduced motion by default (playwright.config.ts), so the pulse tests ask for
+// motion first. No screenshots are compared here: the Overview has no visual baseline.
+test.describe('Product Mark: the Overview hero and its pulse', () => {
+  /** Counts each ring animation that starts, by name, from before the page's first script runs. */
+  const countPulses = (page: Page) => page.addInitScript(() => {
+    const w = window as unknown as { __pm: Record<string, number> }
+    w.__pm = {}
+    document.addEventListener('animationstart', (e) => {
+      if ((e.target as Element).classList?.contains('pm-ring--inner')) w.__pm[e.animationName] = (w.__pm[e.animationName] ?? 0) + 1
+    }, true)
+  })
+  const plays = (page: Page, name = 'pm-pulse') => page.evaluate((n) => (window as unknown as { __pm: Record<string, number> }).__pm[n] ?? 0, name)
+  const replay = (page: Page) => page.getByRole('main').getByRole('button', { name: 'Play the pulse' })
+
+  test('one pulse on load, none after navigating away and back, one more per press, and a press during play is ignored', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'no-preference' })
+    await countPulses(page)
+    await page.goto('/')
+    const button = replay(page)
+    await expect(button).toBeVisible()
+    await expect.poll(() => plays(page)).toBe(1)
+    // Each ring scales about its own centre, in the master's user space.
+    const origins = await page.locator('.ov-hero .pm-ring').evaluateAll((els) => els.map((e) => getComputedStyle(e).transformOrigin))
+    expect(origins).toEqual(['16px 16px', '16.8px 16.8px'])
+    // Timed by the two pulse tokens: 900ms, the outer ring 120ms later (read during a replay, below).
+    await expect(button).not.toHaveAttribute('data-playing')
+
+    // A route change back to the Overview does not replay it.
+    const nav = page.getByRole('navigation', { name: 'Site' })
+    await nav.getByRole('link', { name: 'How it is made' }).click()
+    await expect(page.getByRole('main').getByRole('heading', { level: 1 })).toHaveText('One file, five targets')
+    await nav.getByRole('link', { name: 'Overview' }).click()
+    await expect(replay(page)).toBeVisible()
+    await page.waitForTimeout(300)
+    expect(await plays(page), 'back on the Overview').toBe(1)
+    await expect(replay(page)).not.toHaveAttribute('data-playing')
+
+    // A press plays it once; a second press while it plays is ignored.
+    await replay(page).click()
+    await expect(replay(page)).toHaveAttribute('data-playing', 'pulse')
+    const timing = await page.locator('.ov-hero .pm-ring').evaluateAll((els) => els.map((e) => {
+      const cs = getComputedStyle(e)
+      return [cs.animationName, cs.animationDuration, cs.animationDelay]
+    }))
+    expect(timing).toEqual([['pm-pulse', '0.9s', '0s'], ['pm-pulse', '0.9s', '0.12s']])
+    await replay(page).click()
+    await expect(replay(page)).not.toHaveAttribute('data-playing')
+    expect(await plays(page), 'one press, one pulse; the press during play did nothing').toBe(2)
+    await replay(page).click()
+    await expect.poll(() => plays(page)).toBe(3)
+
+    // A full reload is a new visit.
+    await page.reload()
+    await expect(replay(page)).toBeVisible()
+    await expect.poll(() => plays(page)).toBe(1)
+  })
+
+  test('under reduced motion nothing plays on arrival, and a press fades the rings in, with no scale', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await countPulses(page)
+    await page.goto('/')
+    await expect(replay(page)).toBeVisible()
+    await page.waitForTimeout(1200)
+    expect(await plays(page)).toBe(0)
+    await expect(replay(page)).not.toHaveAttribute('data-playing')
+    await replay(page).click()
+    const during = await page.locator('.ov-hero .pm-ring--inner').evaluate((el) => {
+      const cs = getComputedStyle(el)
+      return { name: cs.animationName, duration: cs.animationDuration, transform: cs.transform }
+    })
+    expect(during).toEqual({ name: 'pm-fade', duration: '0.18s', transform: 'none' })
+    await expect(replay(page)).not.toHaveAttribute('data-playing')
+    expect(await plays(page, 'pm-fade')).toBe(1)
+    expect(await plays(page, 'pm-pulse')).toBe(0)
+  })
+
+  test('replay: the outer ring at 75%, 100% on focus with the tooltip, and held colour on press', async ({ page }) => {
+    await page.goto('/')
+    const button = replay(page)
+    const ring = page.locator('.ov-hero .pm-ring--outer > g')
+    await expect(ring).toHaveCSS('opacity', '0.75')
+    await button.focus()
+    await expect(ring).toHaveCSS('opacity', '1')
+    await expect(page.getByRole('tooltip')).toHaveText('Play the pulse')
+    // Held: primary-500 turns primary-600 on light, at once.
+    const ink = page.locator('.ov-hero .pm-dot .pm-ink')
+    await expect(ink).toHaveCSS('fill', 'rgb(10, 108, 125)')
+    const box = (await button.boundingBox())!
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
+    await page.mouse.down()
+    await expect(ink).toHaveCSS('fill', 'rgb(7, 84, 98)')
+    await page.mouse.up()
+  })
+
+  test('the hero mark is 128px beside the panel, 96px above it when stacked, and never smaller, at 320', async ({ page }) => {
+    const measure = () => page.evaluate(() => {
+      const r = (s: string) => document.querySelector(s)!.getBoundingClientRect()
+      const [mark, panel, hero] = [r('.ov-hero .pm'), r('.ov-hero__panel'), r('.ov-hero')]
+      return {
+        width: Math.round(mark.width), above: mark.bottom <= panel.top, beside: mark.right <= panel.left,
+        // Clear space round the mark: to the hero's edges, and to the panel.
+        clear: Math.round(Math.min(mark.top - hero.top, mark.left - hero.left, hero.bottom - mark.bottom, Math.max(panel.left - mark.right, panel.top - mark.bottom))),
+      }
+    })
+    await page.setViewportSize({ width: 1440, height: 900 })
+    await page.goto('/')
+    await expect(replay(page)).toBeVisible()
+    const wide = await measure()
+    expect({ ...wide, clear: wide.clear >= 32 }).toEqual({ width: 128, above: false, beside: true, clear: true })
+    for (const width of [500, 320]) {
+      await page.setViewportSize({ width, height: 900 })
+      // Polled: the site's layout settles over a frame or two after a resize (the nav answers it).
+      await expect.poll(async () => { const m = await measure(); return { ...m, clear: m.clear >= 24 } }, `${width}px`)
+        .toEqual({ width: 96, above: true, beside: false, clear: true })
+      expect((await measure()).width, `${width}px`).toBeGreaterThanOrEqual(96)
+      expect(await noSidewaysScroll(page), `${width}px`).toBe(true)
+    }
+  })
+
+  test('the stills are the background, by width and theme, and never hold up the text', async ({ page }) => {
+    // Hold every still back: the panel's text must render without them.
+    let release!: () => void
+    const held = new Promise<void>((r) => { release = r })
+    const asked: string[] = []
+    await page.route('**/brand/mood-*', async (route) => { asked.push(route.request().url()); await held; await route.continue() })
+    await page.setViewportSize({ width: 1440, height: 900 })
+    await page.goto('/')
+    await expect(page.getByRole('heading', { level: 1, name: 'Vela Design System' })).toBeVisible()
+    await expect(page.getByRole('main').getByText('A token-first design system')).toBeVisible()
+    await expect.poll(() => asked.length, 'the still was asked for, and is still on its way').toBeGreaterThan(0)
+    release()
+    const image = () => page.locator('.ov-hero').evaluate((el) => getComputedStyle(el).backgroundImage)
+    expect(await image()).toMatch(/mood-desktop-light-\d+\.\d\d@1x\.avif/)
+    await setTheme(page, 'Dark')
+    expect(await image()).toMatch(/mood-desktop-dark-\d+\.\d\d@1x\.avif/)
+    await page.setViewportSize({ width: 500, height: 900 })
+    expect(await image()).toMatch(/mood-phone-dark-\d+\.\d\d@1x\.avif/)
+    // Text stays on the solid panel.
+    expect(await page.locator('.ov-hero__panel').evaluate((el) => getComputedStyle(el).backgroundColor)).not.toBe('rgba(0, 0, 0, 0)')
+  })
+
+  for (const scheme of ['light', 'dark'] as const) {
+    test(`in forced colours (${scheme}) the stills go, the panel keeps its background, and the mark is visible`, async ({ page }) => {
+      await page.emulateMedia({ forcedColors: 'active', colorScheme: scheme })
+      await page.goto('/')
+      await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+      const hero = await page.evaluate(() => {
+        const cs = (s: string) => getComputedStyle(document.querySelector(s)!)
+        const mark = document.querySelector('.ov-hero .pm')!.getBoundingClientRect()
+        return {
+          image: cs('.ov-hero').backgroundImage,
+          panel: cs('.ov-hero__panel').backgroundColor,
+          ink: cs('.ov-hero .pm-dot .pm-ink').fill,
+          canvas: cs('body').backgroundColor,
+          finish: [...document.querySelectorAll('.ov-hero .pm-finish')].every((e) => getComputedStyle(e).display === 'none'),
+          markWidth: Math.round(mark.width),
+        }
+      })
+      expect(hero.image).toBe('none')
+      expect(hero.panel).not.toBe('rgba(0, 0, 0, 0)')
+      expect(hero.ink).not.toBe(hero.canvas)
+      expect(hero.finish).toBe(true)
+      expect(hero.markWidth).toBeGreaterThanOrEqual(96)
+      await expect(page.locator('.ov-hero .pm')).toBeVisible()
+      // For the pull request (the playground thread asked for them): FORCED_SHOTS=<dir>.
+      const dir = process.env.FORCED_SHOTS
+      if (dir) {
+        await page.evaluate(() => document.fonts.ready)
+        await page.getByRole('banner').screenshot({ path: `${dir}/header-${scheme}.png` })
+        await page.locator('.ov-hero').screenshot({ path: `${dir}/overview-hero-${scheme}.png` })
+        await page.goto('/#/components/button')
+        await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+        await page.evaluate(() => document.fonts.ready)
+        await page.screenshot({ path: `${dir}/component-button-${scheme}.png` })
+      }
+    })
+  }
+})
+
 test.describe('All states', () => {
   test('the gallery that was the Overview is at #/states, last in Start', async ({ page }) => {
     await page.goto('/#/states')

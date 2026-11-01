@@ -1,4 +1,4 @@
-import { useId, type ReactNode } from 'react'
+import { useId, type CSSProperties, type ReactNode } from 'react'
 import { StatusIndicator, RiskPill } from '../../src'
 import { PROPOSALS } from '../nav'
 import { figmaUrl } from '../links'
@@ -6,9 +6,10 @@ import { href } from '../router'
 import { CopyButton, CopyStatus, useCopy } from '../shell/Copy'
 import { ActionLink } from '../shell/ActionLink'
 import { SeverityTag } from '../shell/SeverityTag'
+import { ProductMark } from '../shell/ProductMark'
 import {
   FACTS, RULES, RELEASED, STAMP, TARGETS, FOUNDATIONS_LINE,
-  SEVERITIES, STATUSES, RISKS, STATUS_WORDS,
+  SEVERITIES, STATUSES, RISKS, STATUS_WORDS, moodStyle,
 } from './overview-facts'
 import './overview.css'
 
@@ -17,8 +18,10 @@ import './overview.css'
 // unit test can take them away and find no digit left (src/styles/site-overview.test.tsx). The
 // gallery that was here is All states, #/states.
 //
-// Brand parts come in a second pass: the hero's mark (the empty slot below) and the mood
-// background behind the hero panel. The panel is solid so that background never shows through it.
+// The brand parts (approved by Omkar on 1 Nov 2026: the logo states at 09:34 IST, the Overview at
+// 09:45 IST): the Pulse mark beside the heading, which pulses once per visit and replays when
+// pressed (demo/shell/ProductMark.tsx), and the mood stills behind the hero, for the theme the page
+// resolved to. The panel is solid, so the text never sits on the image.
 
 const INSTALL = 'npm install @omkarux/vela'
 
@@ -60,12 +63,15 @@ function Way({ title, line, to }: { title: string; line: ReactNode; to: string }
   )
 }
 
-export function Overview() {
+/** `theme` is the site's resolved theme (Appearance: System resolves to light or dark). */
+export function Overview({ theme }: { theme: 'light' | 'dark' }) {
   return (
     <article className="ov">
-      <div className="ov-hero">
-        {/* The mark's slot (second pass): 128px beside the panel, 96px above it at 520px and below. Empty, it takes no space. */}
-        <div className="ov-hero__mark" aria-hidden="true" />
+      <div className="ov-hero" style={moodStyle(theme) as CSSProperties}>
+        {/* 128px beside the panel; 96px above it at 520px and below, and never smaller. */}
+        <div className="ov-hero__mark">
+          <ProductMark size="hero" on={theme} decorative animate="once" replay={{ label: 'Play the pulse' }} />
+        </div>
         <div className="ov-hero__panel">
           <h1 className="vela-h1">Vela Design System</h1>
           <p className="vela-body ov-hero__claim">A token-first design system for security products. Every enforceable rule carries a proof, or the build fails.</p>

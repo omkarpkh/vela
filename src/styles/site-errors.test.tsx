@@ -35,9 +35,9 @@ vi.mock('../../demo/playground/catalog', async (importOriginal) => {
 vi.mock('../../demo/pages/Overview', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../demo/pages/Overview')>()
   return {
-    Overview: () => {
+    Overview: (props: Parameters<typeof actual.Overview>[0]) => {
       if (flags.overviewThrows) throw new Error('The overview broke')
-      return actual.Overview()
+      return actual.Overview(props)
     },
   }
 })

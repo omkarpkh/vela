@@ -21,8 +21,12 @@ export function loadThemes() {
   return { light, dark }
 }
 
-/** Follow var(--a) -> var(--b) -> #hex. Throws on a dangling reference. */
+/**
+ * Follow var(--a) -> var(--b) -> #hex. Throws on a dangling reference. A pair may also name a colour
+ * no token holds by its hex (`#f7f9f9`, a tone of the light mood still): it is its own value.
+ */
 export function resolve(map, name, seen = new Set()) {
+  if (/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(name)) return name
   if (seen.has(name)) throw new Error(`Circular token reference at ${name}`)
   seen.add(name)
   const raw = map.get(name)
@@ -224,6 +228,16 @@ export const PAIRS = [
   ['--vela-primary-500', '--vela-white',       'Logo: primary-500 mark on white',            'ui'],
   ['--vela-primary-500', '--vela-grey-50',     'Logo: primary-500 mark on grey-50',          'ui'],
   ['--vela-primary-300', '--vela-grey-900',    'Logo: primary-300 mark on grey-900 (dark)',  'ui'],
+  // The Overview's hero (demo/shell/ProductMark.tsx) sits on the mood still, not on a token. The
+  // light still's tones are named by hex: its base #f7f9f9, then #eef2f2 and #dde3e4 toward the
+  // corners (brand/README.md, "The mood"). The light hero is primary-500 on them, and primary-600
+  // while its replay is held. The dark hero is white on grey-900, as the spec measures the dark
+  // mood; held, it is primary-300 on grey-900, the pair above.
+  ['--vela-primary-500', '#f7f9f9',            'Logo: primary-500 hero on the light mood base (#f7f9f9)', 'ui'],
+  ['--vela-primary-500', '#eef2f2',            'Logo: primary-500 hero on the light mood (#eef2f2)',      'ui'],
+  ['--vela-primary-500', '#dde3e4',            'Logo: primary-500 hero on the light mood (#dde3e4)',      'ui'],
+  ['--vela-primary-600', '#f7f9f9',            'Logo: primary-600 hero, held, on the light mood base',    'ui'],
+  ['--vela-white',       '--vela-grey-900',    'Logo: white hero on grey-900 (dark)',                     'ui'],
   // The Tabs hover preview (the Seed, guidelines/components/tabs.md) is deliberately NOT a pair, like
   // the Tooltip's edge above. It is --vela-border-active drawn at --vela-opacity-preview (0.55) over
   // the surface: 2.46:1 on the page and 2.34:1 on a container in light, 2.59:1 and 2.48:1 in dark,

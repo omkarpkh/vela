@@ -93,6 +93,40 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   - `DESIGN.md`: brand assets are the one place primitives are named directly, because they are
     images, not interface. `NOTICE`: the hash function in `brand/mood-o.frag.glsl` is after Dave
     Hoskins (MIT).
+- **Site: the Overview's hero gets Vela's logo and the mood** (the logo states approved by Omkar
+  at 09:34 IST and the Overview at 09:45 IST, 1 Nov 2026). Nothing in the npm package changes.
+  - **The hero mark**, 128px beside the panel, and 96px above it when the hero stacks at 520px and
+    below; never smaller, even at 320px. It is `demo/shell/ProductMark.tsx`, a shell part that
+    stands in for Product Mark (spec draft, not in the kit), so it is never exported and the two
+    pulse tokens stay out of `src/`. Its props are the spec's closed set as TypeScript unions, and
+    `npm run typecheck` holds ten forbidden combinations (`hero` without `on`, `replay` without
+    `decorative`, `animate` on `large`, `label` with `decorative`, and more).
+  - **Drawn from `brand/`, never redrawn.** Each size imports its master as text and draws it as it
+    is; the hero's inner ring, outer ring and dot are wrapped in groups so they can move. Gradient
+    and filter ids are unique to each instance. A unit test holds every `d` to its file.
+  - **The pulse plays once per visit**: on the first render of the Overview, not on a route change
+    back to it, and again after a full reload. Pressing the mark (a button named "Play the pulse",
+    with the kit's Tooltip) plays it once more; a press while it plays is ignored. Under reduced
+    motion nothing plays on arrival, and a press fades the rings in over `--vela-duration-base`,
+    with no scale. Hover and focus take the outer ring from 75% to 100%; held, the mark turns
+    primary-600 on light and primary-300 on dark.
+  - **The mood stills** are the hero's CSS background: AVIF first, then WebP, at 1× and 2×; the
+    desktop still above 520px and the phone still at 520px and below; light or dark with the
+    page's theme. Their names carry the release seed, which the site's facts plugin now reads from
+    `package.json` (`MOOD_SEED`), so a new minor version asks for its own stills. The text stays on
+    the solid panel, and the stills never hold it up. In forced colours they are dropped, and the
+    mark draws in `CanvasText`.
+  - **Five pairs in `PAIRS`** (107 now), which can now name a colour no token holds by its hex: the
+    light hero, primary-500, on the light mood's three tones, #f7f9f9 (5.75:1), #eef2f2 (5.39:1)
+    and #dde3e4 (4.69:1); held, primary-600 on #f7f9f9 (8.10:1); and the dark hero, white on
+    grey-900 (16.13:1).
+  - The site header still shows the name and no mark, so it gets no logo states yet.
+  - Tests: 13 unit tests (the masters, the rings, the ids, the names, the pulse's state, the
+    stills' URLs and seed) and 1 type test; 7 e2e tests (one pulse on load, none on returning,
+    one per press, none overlapping; reduced motion; the replay's states; the sizes at 1440, 500
+    and 320; the stills by width and theme, with the text shown while they load; forced colours,
+    light and dark). The Overview has no visual baseline, and gets none here. 1394 checks (was
+    1362): 1118 unit and contract, 203 e2e.
 - **Patterns: a new area, `guidelines/patterns/`, and its first page, Copy** (`copy.md`, with nine
   figures in `copy/`). A pattern records the decisions a component can't make alone: who may read
   a secret, where the "last copied" mark lives, whether a row is clickable, whether the page copies

@@ -23,4 +23,6 @@ declare module 'virtual:vela-site-facts' {
   export const DEPENDENCIES: number
   /** package.json's version, its date in CHANGELOG.md (YYYY-MM-DD) and the section's highlights. */
   export const RELEASE: { version: string; date: string | null; highlights: string[] }
+  /** The release seed in the mood stills' names, from package.json's version ("0.15"). */
+  export const MOOD_SEED: string
 }

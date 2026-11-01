@@ -2,12 +2,13 @@
 /* The site's home (#/). Laid out against its own width, not the viewport (DESIGN.md, "Responsive and
    density"): five facts, three security cards and three Ways in across; at 760px two facts across
    with the last spanning both, one security card, one news column and two Ways in; at 520px one
-   Ways in and the hero stacked. Everything sits on the page's own surface, so every pair here is one
-   PAIRS already asserts on --vela-bg-global. */
+   Ways in and the hero stacked. Everything but the hero's mark sits on the page's own surface, so
+   every pair here is one PAIRS already asserts on --vela-bg-global; the mark sits on the mood still,
+   and its pairs are the "Logo: … hero" ones. */
 .ov {
   container-type: inline-size;
   display: flex; flex-direction: column; gap: var(--vela-space-40);
-  /* The hero mark's size, for the second pass: 128px, and 96px when the hero stacks. */
+  /* The hero mark's size: 128px, and 96px when the hero stacks, never less. */
   --ov-mark: calc(8 * var(--vela-icon-size));
 }
 .ov p, .ov ul, .ov h1, .ov h2, .ov h3 { margin: 0; }
@@ -17,10 +18,21 @@
 .ov-link { color: var(--vela-text-link); font-weight: var(--vela-font-weight-semibold); text-decoration: none; }
 .ov-link:hover { text-decoration: underline; }
 
-/* The hero: a solid panel, so the background the second pass adds never shows through it. */
-.ov-hero { display: flex; align-items: center; gap: var(--vela-space-30); }
-.ov-hero__mark { flex: none; width: var(--ov-mark); height: var(--ov-mark); }
-.ov-hero__mark:empty { display: none; }
+/* The hero: the mark and a solid panel on the mood. The mood stills (brand/README.md, "The mood")
+   are the background: AVIF first, then WebP, each at 1x and 2x, for the theme the page resolved to
+   (Overview.tsx sets --ov-mood-wide and --ov-mood-narrow, named with the release seed). A CSS
+   background never blocks the page, and the text never sits on it: it stays on the panel. The
+   mark's clear space is a quarter of its width (32px, or 24px stacked; never under 4px, because the
+   mark is never under 96px), held by the hero's padding and the gap. */
+.ov-hero {
+  --ov-clear: calc(var(--ov-mark) / 4);
+  display: flex; align-items: center; gap: var(--ov-clear); padding: var(--ov-clear);
+  border-radius: var(--vela-radius-4);
+  background-color: var(--vela-bg-global);
+  background-image: var(--ov-mood-wide, none);
+  background-position: right bottom; background-size: cover; background-repeat: no-repeat;
+}
+.ov-hero__mark { flex: none; width: var(--ov-mark); }
 .ov-hero__panel { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--vela-space-15); box-sizing: border-box; padding: var(--vela-space-30); background: var(--vela-bg-global); border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4); color: var(--vela-text-default); }
 .ov-hero__claim { max-width: 60ch; }
 .ov-hero__actions { display: flex; flex-wrap: wrap; gap: var(--vela-space-10); }
@@ -67,11 +79,14 @@
   .ov-ways { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @container (max-width: 520px) {
-  .ov { --ov-mark: calc(6 * var(--vela-icon-size)); }
   .ov-ways { grid-template-columns: minmax(0, 1fr); }
-  .ov-hero { flex-direction: column; align-items: stretch; }
+  /* Stacked: the mark above the panel, at 96px, on the phone still. (Set on the hero, not on .ov:
+     a container query never styles its own container.) */
+  .ov-hero { --ov-mark: calc(6 * var(--vela-icon-size)); flex-direction: column; align-items: stretch; background-image: var(--ov-mood-narrow, none); }
   .ov-hero__panel { padding: var(--vela-space-20); }
 }
 @media (forced-colors: active) {
   .ov-card, .ov-way, .ov-hero__panel { border-color: CanvasText; }
+  /* The stills go; the panel keeps its own Canvas and edge, and the mark draws in CanvasText. */
+  .ov-hero { background-image: none; }
 }

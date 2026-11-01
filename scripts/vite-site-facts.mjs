@@ -12,6 +12,9 @@
  *                  (`## [X.Y.Z] — YYYY-MM-DD`), and the three lines under that section's
  *                  `**Highlights:**` (RELEASING.md, step 3). Empty when the section or its
  *                  highlights are missing; src/styles/site-overview.test.tsx fails the build then.
+ *   MOOD_SEED      the release seed of package.json's version as the mood stills' names carry it
+ *                  (`seedLabel(markSeed(version))`, scripts/brand/mark-seed.mjs: "0.15" for 0.15.x),
+ *                  so the Overview asks for the stills of the version it was built from.
  *
  * Everything else the Overview counts (rules, components, proposals, checks) is already in the
  * site's first chunk, read from the same sources as the nav, so it is counted there.
@@ -20,6 +23,7 @@ import { readFileSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { PAIRS } from './contrast-core.mjs'
+import { markSeed, seedLabel } from './brand/mark-seed.mjs'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const read = (rel) => readFileSync(join(root, rel), 'utf8')
@@ -62,6 +66,7 @@ export function siteFacts() {
     PAIRS_LINE: contrast.slice(0, contrast.indexOf('export const PAIRS')).split('\n').length,
     DEPENDENCIES: Object.keys(pkg.dependencies ?? {}).length,
     RELEASE: releaseFacts(read('CHANGELOG.md'), pkg.version),
+    MOOD_SEED: seedLabel(markSeed(pkg.version)),
   }
 }
 

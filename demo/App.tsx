@@ -106,6 +106,9 @@ export function App() {
   const [navOpen, setNavOpen] = useState(() => window.matchMedia('(min-width: 901px)').matches)
   // The phone header shows Search as an icon named "Search" (playground spec, section 3).
   const phone = useMedia('(max-width: 600px)')
+  // The theme the page resolves to: System follows the screen. The Overview's mark and stills read it.
+  const systemDark = useMedia('(prefers-color-scheme: dark)')
+  const resolved = theme === 'system' ? (systemDark ? 'dark' : 'light') : theme
 
   useEffect(() => {
     const root = document.documentElement
@@ -211,7 +214,7 @@ export function App() {
 
         <main id="main" className="content">
           <Suspense fallback={<p className="vela-meta site-loading">Loading this page…</p>}>
-          {route.kind === 'overview' && <Overview />}
+          {route.kind === 'overview' && <Overview theme={resolved} />}
           {route.kind === 'states' && <States />}
           {route.kind === 'component' && <Playground key={route.id} id={route.id} tab={route.tab} />}
           {route.kind === 'proposal' && <Proposal key={route.id} id={route.id} />}

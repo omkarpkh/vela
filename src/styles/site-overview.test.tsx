@@ -84,7 +84,7 @@ describe('every number on the Overview is counted from its source', () => {
 
 describe('the Overview page', () => {
   it('has no digit that the build did not generate', () => {
-    const { container } = render(<Overview />)
+    const { container } = render(<Overview theme="light" />)
     const generated = [...container.querySelectorAll('[data-generated]')]
     // Every counted value is on the page, marked.
     const marked = generated.map((n) => n.textContent ?? '')
@@ -99,7 +99,7 @@ describe('the Overview page', () => {
   })
 
   it('has one h1, then h2 sections, then h3 cards', () => {
-    const { container } = render(<Overview />)
+    const { container } = render(<Overview theme="light" />)
     const levels = [...container.querySelectorAll('h1, h2, h3, h4, h5, h6')].map((h) => Number(h.tagName[1]))
     expect(levels.filter((l) => l === 1)).toHaveLength(1)
     expect(levels[0]).toBe(1)
@@ -111,7 +111,7 @@ describe('the Overview page', () => {
   })
 
   it('has one primary call to action, and the install line names what it copies', () => {
-    const { container } = render(<Overview />)
+    const { container } = render(<Overview theme="light" />)
     expect(container.querySelectorAll('.shell-action--primary')).toHaveLength(1)
     expect(within(container).getByRole('link', { name: 'Browse components' })).toHaveAttribute('href', TARGETS.components)
     expect(within(container).getByRole('button', { name: 'Copy install command' })).toBeInTheDocument()
