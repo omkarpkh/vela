@@ -30,11 +30,13 @@ export function StatusIndicator({
   className,
 }: StatusIndicatorProps) {
   // Colour alone is not an accessible signal (WCAG 1.4.1). With no visible
-  // label the dot still carries a text alternative.
+  // label the dot is an image named for its status. With one, the visible
+  // text is the name: no role, because an image is named only by its
+  // aria-label, never by the text inside it.
   return (
     <span
       className={cn('vela-status', `vela-status--${status}`, `vela-status--${size}`, className)}
-      role="img"
+      role={label ? undefined : 'img'}
       aria-label={label ? undefined : FALLBACK_LABEL[status]}
     >
       <span className="vela-status__dot" aria-hidden="true" />

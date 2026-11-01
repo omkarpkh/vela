@@ -223,6 +223,14 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   (`verdict-lesson-named` · runtime): 29 rules, 23 with proofs. The nine proposals now plan 216
   rules, 174 with proofs.
 
+### Fixed
+- **Status Indicator: a labelled indicator had no accessible name.** With a visible `label` it
+  still carried `role="img"`, and an image takes its name only from `aria-label`, so axe reported
+  it (`role-img-alt`) and a screen reader could skip it. With a label it now has no role and its
+  text is read as text, as its spec says ("the visible text is the accessible name"); with no
+  label it is still an image named for its status. Found by axe on the new Overview and All
+  states pages.
+
 ## [0.15.0] — 2026-10-31
 
 ### Changed
