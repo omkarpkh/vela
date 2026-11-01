@@ -87,6 +87,18 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   says Start. Search still leaves Start pages out, All states with them.
 - **`RELEASING.md`: the changelog step comes before the gate** (now steps 3 and 4), because the
   gate's unit tests read the release's highlights.
+- **Proposal, Override & Teach Panel: a lesson's conditions use the Filter Grammar — breaking, to
+  the spec only** (`guidelines/proposals/override-and-teach-panel.md`). The proposal is a written
+  spec with no code, so no code changes. The five changes the grammar's guideline lists:
+  `appliesTo.conditions` is a `PositiveConjunction<F>` over the host's `Fields`, with a new required
+  `fields` prop for the `defineFields` schema; a condition no longer carries `fieldTrust`, `source`
+  or `writtenBy`, because trust is the field's declared `trust`; `teach-lenient-needs-system-record`
+  reads that trust from the schema; the readback is the grammar's `readback` with `markTrust`, so
+  the host no longer passes one; and the operators are the grammar's positive ones for each field's
+  type, so a `domain` field takes `is-subdomain-of` and never `ends-with`, which the panel used to
+  allow on any field. `fromItem` moves out of the condition, which the grammar would reject, into
+  `appliesTo.fromItems`, a list of `{ condition, item }` beside the conditions. Open question 6
+  is closed for good. Still 26 rules, 23 with proofs; no rule id changed.
 - **Patterns, Copy: paragraphs split to fit the site's 240-character limit** (from the icon thread).
   The opening paragraph is split between its two sentences. The Status paragraph is now a short
   line, with the status rule and the pressure-test note as two bullets under it and a blank line
