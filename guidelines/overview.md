@@ -22,11 +22,12 @@ below, then open the per-component file for props, tokens, and anti-patterns.
 | Table | Records compared across named columns — sortable headers, two densities, a scroll region (Experimental) | `components/table.md` |
 | Popover | A non-modal panel opened from a button — filters, detail, a short edit — with the page still usable (headless entry only) | `components/popover.md` |
 | Tooltip | A short text-only label on hover and focus; supplementary, never the only copy (headless entry only) | `components/tooltip.md` |
+| Icon Button | A button or a link drawn as one glyph people already know — close, copy, search, a link to GitHub — always named by its `label`, with a label tooltip (headless entry only) | `components/icon-button.md` |
 | Dialog | A modal decision that blocks the task; `variant="alert"` confirms a destructive action (headless entry only) | `components/dialog.md` |
 | Toast | A floating, polite confirmation that something already happened — never the only record, never the only Undo (headless entry only) | `components/toast.md` |
 | Dropdown List | One of a set where one is current, from a button, acting at once — a hidden tab, another saved view (headless entry only) | `components/dropdown-list.md` |
 
-Checkbox, Radio Group, Popover, Tooltip, Dialog, Toast and Dropdown List ship from
+Checkbox, Radio Group, Popover, Tooltip, Icon Button, Dialog, Toast and Dropdown List ship from
 `@omkarux/vela/headless` (Base UI as an optional peer) and are Experimental; the other eleven ship from `@omkarux/vela` with no
 dependencies (Icon, Brand Mark, Text Area and Table are Experimental there).
 
@@ -78,18 +79,19 @@ dependencies (Icon, Brand Mark, Text Area and Table are Experimental there).
 - **Icon vs Contextual Alert vs Icon Button** — a glyph that reinforces text, or labels a cell
   → **Icon**. The mark of an event the user must read → **Contextual Alert**, which owns the
   severity marks (an Icon has no severity tone). A glyph you click (close, copy, more) → **Icon
-  Button**, which is not in this kit; flag the gap. A glyph that is not in `ICON_NAMES` does not
+  Button** (`label` and `icon`, headless entry). A glyph that is not in `ICON_NAMES` does not
   exist: name the closest curated one and flag it, never import another icon library.
 - **Icon vs Brand Mark** — a glyph that means a thing or an action in Vela → **Icon**. Another
   company's own logo, to link to that company's service ("Vela on GitHub") → **Brand Mark**, two
   only: `github` and `figma`. There is no `<Icon name="github">`. npm is the word "npm", never a
-  logo. Sign-in buttons, integration grids and Vela's own mark are neither; flag the gap.
+  logo. A link to any of the three → **Icon Button** with `brandMark` or `word="npm"`. Sign-in buttons, integration grids and Vela's own mark are neither; flag the gap.
 
 ## If no component fits
 
 Do not invent one silently. State that the kit has no component for the need and pick the
 closest match while flagging the gap. Not yet specced: Select List, Token Pill,
-Number Stepper, Icon Button, Actions Dropdown, View Switcher, Data Grid, Card List.
+Number Stepper, Actions Dropdown, View Switcher, Data Grid, Card List. A toggle icon button
+(pin, mute: a glyph that stays on or off) is not specced either.
 Flag rather than guess.
 
 ## How each component file is structured

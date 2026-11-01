@@ -1,8 +1,8 @@
 import { useState, type ReactNode } from 'react'
 import { Button, Toggle, Input, TextArea, ContextualAlert, StatusIndicator, RiskPill, Tabs, Icon, ICON_NAMES, Table, BrandMark } from '../../src'
 import type { Severity, Status, Risk, IconName, IconSize, IconTone, TableSortDirection, BrandMarkName, BrandMarkProps, BrandMarkSize } from '../../src'
-import { Tabs as HeadlessTabs, Checkbox, RadioGroup, Popover, Tooltip, Dialog, ToastProvider, useToast, DropdownList } from '../../src/headless'
-import type { ToastLimit, ToastPlacement, ToastSeverity, DropdownListAlign, DropdownListItem } from '../../src/headless'
+import { Tabs as HeadlessTabs, Checkbox, RadioGroup, Popover, Tooltip, Dialog, ToastProvider, useToast, DropdownList, IconButton } from '../../src/headless'
+import type { ToastLimit, ToastPlacement, ToastSeverity, DropdownListAlign, DropdownListItem, IconButtonProps, IconButtonSize, TooltipPlacement } from '../../src/headless'
 import { PlusIcon } from '../../src/lib/icons'
 import { printJsx, type Control, type Spec } from './spec'
 import { catalogEntry as factsEntry, type CatalogEntry } from './catalog'
@@ -169,6 +169,23 @@ function TableStage({ v }: { v: Values }) {
 const defaultsOf = (spec: Spec) => Object.fromEntries(spec.controls.map((c) => [c.prop, c.default]))
 const str = (v: string | boolean | undefined) => (typeof v === 'string' ? v : '')
 const bool = (v: string | boolean | undefined) => v === true
+
+/** The Icon Button stage's props from the page's values: one glyph, one form, a name for the glyph when the label is empty. */
+function iconButtonProps(v: Values): IconButtonProps {
+  const size = (str(v.size) || 'regular') as IconButtonSize
+  const glyph = str(v.glyph) || 'icon'
+  const mark = str(v.brandMark) === 'figma' ? 'figma' : 'github'
+  const icon = (str(v.icon) || 'x') as IconName
+  const named = { x: 'Close', search: 'Search', copy: 'Copy', settings: 'Settings', ellipsis: 'More actions' } as Record<string, string>
+  const fallback = glyph === 'brandMark' ? (mark === 'figma' ? 'Vela in Figma' : 'Vela on GitHub') : glyph === 'word' ? 'Vela on npm' : named[icon] ?? icon.replace(/-/g, ' ').replace(/^./, (c) => c.toUpperCase())
+  const label = str(v.label).trim() || fallback
+  const g = glyph === 'brandMark' ? (mark === 'figma' ? { brandMark: 'figma' as const, size: 'regular' as const } : { brandMark: 'github' as const, size }) : glyph === 'word' ? { word: 'npm' as const, size } : { icon, size }
+  const tooltipPlacement = (str(v.tooltipPlacement) || 'top') as TooltipPlacement
+  const href = str(v.href).trim()
+  return (href
+    ? { label, ...g, tooltipPlacement, href, opensInNewTab: bool(v.opensInNewTab) }
+    : { label, ...g, tooltipPlacement, onClick: () => {}, type: (str(v.type) || 'button') as 'button' | 'submit', disabled: bool(v.disabled) }) as IconButtonProps
+}
 
 /**
  * The Toast stage: a Save button that raises a toast with the page's current options. The page
@@ -759,6 +776,81 @@ toast.add({ ${opts} })`
         value: 'view',
         onValueChange: 'setView',
       }),
+  },
+  // Icon Button: one glyph, named by its label. Exactly one of icon, brandMark or word is set, so the
+  // page has a `glyph` choice and shows the matching prop; the other two are never printed. A link is
+  // a non-empty href; the button-only and link-only props lock with the move that gets there
+  // (icon-button-button-or-link), and Figma's mark locks tiny (icon-button-glyph-closed).
+  {
+    ...catalogEntry('icon-button'),
+    // An empty label is the seed on purpose: the stage then names the control for its glyph, so
+    // switching to GitHub never leaves a GitHub mark called "Close". A typed label wins.
+    seed: { label: '', glyph: 'icon', icon: 'x', brandMark: 'github', href: '' },
+    implementations: [{ id: 'headless', entry: '@omkarux/vela/headless' }],
+    extra: [
+      { prop: 'glyph', kind: 'select', type: '"icon" | "brandMark" | "word"', options: ['icon', 'brandMark', 'word'], default: 'icon', notes: 'Not a prop: which one of `icon`, `brandMark` or `word` is set. Exactly one is.' },
+      { prop: 'icon', kind: 'select', type: 'IconName', options: [...ICON_NAMES], default: 'x', notes: "With glyph icon: one of Icon's fifty." },
+      { prop: 'brandMark', kind: 'select', type: 'BrandMarkName', options: ['github', 'figma'], default: 'github', notes: 'With glyph brandMark: GitHub or Figma. Figma is regular only.' },
+    ],
+    explain: {
+      word: '`word` is the only other glyph: the word "npm", in Vela\'s monospace type, for a link to npm. Choose it with the glyph control.',
+      onClick: '`onClick` makes it a button. Leave `href` empty here and the stage is the button form.',
+    },
+    constrain: (v) => {
+      const link = str(v.href).trim() !== ''
+      const figma = v.glyph === 'brandMark' && v.brandMark === 'figma'
+      return { ...v, ...(link ? { disabled: false, type: 'button' } : { opensInNewTab: false }), ...(figma ? { size: 'regular' } : {}) }
+    },
+    locks: (v) => {
+      const out: Record<string, Record<string, Lock>> = {}
+      const link = str(v.href).trim() !== ''
+      const LINK = { rule: 'icon-button-button-or-link' }
+      if (link) {
+        out.disabled = { true: { heading: 'disabled needs the button form', reason: 'disabled is button form only.', ...LINK, keep: 'Keep the link', moves: [{ label: 'Make it a button, disabled', patch: { href: '', disabled: true, opensInNewTab: false } }] } }
+        out.type = { submit: { heading: 'submit needs the button form', reason: 'type is button form only.', ...LINK, keep: 'Keep the link', moves: [{ label: 'Make it a submit button', patch: { href: '', type: 'submit', opensInNewTab: false } }] } }
+      } else {
+        out.opensInNewTab = { true: { heading: 'opensInNewTab needs a link', reason: 'opensInNewTab is link form only.', ...LINK, keep: 'Keep the button', moves: [{ label: 'Make it a link to GitHub', patch: { href: 'https://github.com/omkarpkh/vela', opensInNewTab: true, disabled: false, type: 'button' } }] } }
+      }
+      if (v.glyph === 'brandMark') {
+        const FIGMA = { reason: "Figma's mark is 20px only.", rule: 'icon-button-glyph-closed' }
+        if (v.brandMark === 'figma') out.size = { tiny: { heading: 'tiny needs github', ...FIGMA, keep: 'Keep figma', moves: [{ label: 'Use github, tiny', patch: { brandMark: 'github', size: 'tiny' } }] } }
+        if (v.size === 'tiny') out.brandMark = { figma: { heading: 'figma needs regular', ...FIGMA, keep: 'Keep tiny', moves: [{ label: 'Use figma, regular', patch: { brandMark: 'figma', size: 'regular' } }] } }
+      }
+      return out
+    },
+    highlight: (v) => (t) => {
+      const tiny = str(v.size) === 'tiny'
+      const still = v.glyph === 'brandMark' || v.glyph === 'word'
+      return t === (tiny ? '--vela-control-height-24' : '--vela-control-height-35') || (tiny && t === '--vela-target-min') ||
+        t === (tiny ? '--vela-radius-3' : '--vela-radius-4') ||
+        (still ? t === '--vela-brand-mark' : t === '--vela-icon-strong' || t === '--vela-btn-standard-hover-bg' || (bool(v.disabled) && t === '--vela-icon-disabled'))
+    },
+    render: (v) => {
+      const p = iconButtonProps(v)
+      return (
+        <div className="pg-icon-button">
+          <p className="vela-body pg-icon-button__lead">
+            <IconButton {...p} />
+            <span className="vela-meta">{p.label}{p.href && p.opensInNewTab ? ', opens in a new tab' : ''}</span>
+          </p>
+          {/* Every glyph kind and both sizes, each its own tab stop, as the header uses them. */}
+          <ul className="pg-icon-button__set" aria-label="Glyphs, sizes and forms">
+            <li><IconButton label="Close" icon="x" size="tiny" onClick={() => {}} /></li>
+            <li><IconButton label="Search" icon="search" onClick={() => {}} /></li>
+            <li><IconButton label="Copy" icon="copy" onClick={() => {}} disabled /></li>
+            <li><IconButton label="Vela on GitHub" brandMark="github" href="https://github.com/omkarpkh/vela" opensInNewTab /></li>
+            <li><IconButton label="Vela on npm" word="npm" href="https://www.npmjs.com/package/@omkarux/vela" opensInNewTab /></li>
+            <li><IconButton label="Vela in Figma" brandMark="figma" href="https://www.figma.com/design/XO2rmeCcgOjyKe4oipgF4j/Vela-Design-System" opensInNewTab /></li>
+          </ul>
+        </div>
+      )
+    },
+    code: (v, spec) => {
+      const p = iconButtonProps(v) as unknown as Record<string, unknown>
+      const glyph = v.glyph === 'brandMark' ? { brandMark: p.brandMark as string } : v.glyph === 'word' ? { word: 'npm' } : { icon: p.icon as string }
+      const vals = { label: p.label as string, ...glyph, size: v.size, href: p.href as string | undefined, opensInNewTab: p.href ? v.opensInNewTab : undefined, type: p.href ? undefined : v.type, disabled: p.href ? undefined : v.disabled, tooltipPlacement: v.tooltipPlacement }
+      return printJsx('IconButton', vals, defaultsOf(spec), undefined, p.href ? {} : { onClick: 'handleClick' })
+    },
   },
   // Brand Mark: another company's own drawing, to link to its service. Figma's mark is large only
   // (brand-mark-closed), so Figma locks regular and regular locks Figma, each with the move that

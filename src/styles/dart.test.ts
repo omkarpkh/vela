@@ -54,7 +54,8 @@ describe('Dart target', () => {
 
   it('carries every sizing and typography value, as logical pixels, FontWeight, Duration or Cubic', () => {
     for (const [name, t] of Object.entries({ ...doc.sizing, ...doc.typography, ...doc.motion } as Record<string, any>)) {
-      if (t.$type === 'dimension') expect(dart, name).toContain(`static const double ${ident(name)} = ${t.$value.value};`)
+      // A dimension alias (target-min names control-height-24) holds the value it resolves to.
+      if (t.$type === 'dimension') expect(dart, name).toContain(`static const double ${ident(name)} = ${all[terminal(name, 'light')].$value.value};`)
       // A typography number is a weight; a sizing number (the scrim opacity, the overlay layer) a double.
       else if (t.$type === 'number' && name in doc.typography) expect(dart, name).toContain(`static const FontWeight ${ident(name)} = FontWeight.w${t.$value};`)
       else if (t.$type === 'number') expect(dart, name).toContain(`static const double ${ident(name)} = ${t.$value};`)

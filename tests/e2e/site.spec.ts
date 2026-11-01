@@ -757,21 +757,111 @@ test.describe('slice 5 · phone and Appearance', () => {
     await expect(page.getByRole('button', { name: /^Appearance/ })).toBeFocused()
   })
 
-  test('the header links are written words with their names; on a phone they move into the menu', async ({ page }) => {
+  // The header's three links are Icon Button links on a wide screen (icon-button.md), and written
+  // links in the menu on a phone.
+  const MARKS = [
+    { name: 'Vela on GitHub, opens in a new tab', href: 'https://github.com/omkarpkh/vela', glyph: '.vela-brand-mark' },
+    { name: 'Vela on npm, opens in a new tab', href: 'https://www.npmjs.com/package/@omkarux/vela', glyph: '.vela-icon-button__word' },
+    { name: 'Vela in Figma, opens in a new tab', href: /^https:\/\/www\.figma\.com\/design\/XO2rmeCcgOjyKe4oipgF4j\/Vela-Design-System\?node-id=0-1$/, glyph: '.vela-brand-mark' },
+  ]
+  test('the header links are GitHub\'s and Figma\'s marks and npm\'s word, named in words, opening a new tab; on a phone they are written links in the menu', async ({ page }) => {
     await page.goto('/#/components/button')
     const banner = page.getByRole('banner')
-    for (const name of ['GitHub', 'npm', 'Figma']) await expect(banner.getByRole('link', { name, exact: true })).toBeVisible()
+    for (const m of MARKS) {
+      const link = banner.getByRole('link', { name: m.name, exact: true })
+      await expect(link).toBeVisible()
+      await expect(link).toHaveAttribute('href', m.href)
+      await expect(link).toHaveAttribute('target', '_blank')
+      await expect(link).toHaveAttribute('rel', 'noopener noreferrer')
+      await expect(link).toHaveClass(/vela-icon-button--regular/)
+      await expect(link.locator(m.glyph)).toHaveAttribute('aria-hidden', 'true')
+    }
+    // The written words are gone from the wide header.
+    for (const name of ['GitHub', 'npm', 'Figma']) await expect(banner.getByRole('link', { name, exact: true })).toHaveCount(0)
     // The full name, once per page (the naming rule, 1 Nov 2026): in the header, and in the title.
     await expect(banner.locator('.brand__name')).toHaveText('Vela Design System')
     await expect(page).toHaveTitle('Button · Vela Design System')
     await page.setViewportSize({ width: 390, height: 844 })
     await page.reload()
-    for (const name of ['GitHub', 'npm', 'Figma']) await expect(banner.getByRole('link', { name, exact: true })).toHaveCount(0)
+    for (const m of MARKS) await expect(banner.getByRole('link', { name: m.name })).toHaveCount(0)
     await expect(banner.getByRole('button', { name: 'Search' })).toBeVisible()
     await expect(banner.getByRole('button', { name: 'Appearance', exact: true })).toBeVisible()
     await banner.getByRole('button', { name: 'Show navigation' }).click()
     const nav = page.getByRole('navigation', { name: 'Site' })
     for (const name of ['GitHub', 'npm', 'Figma']) await expect(nav.getByRole('link', { name, exact: true })).toHaveCount(1)
+    await expect(nav.getByRole('link', { name: 'Figma', exact: true })).toBeVisible()
+  })
+
+  test('the header marks show their name in a tooltip on hover and on keyboard focus, heard once', async ({ page }) => {
+    await page.goto('/#/components/button')
+    const banner = page.getByRole('banner')
+    for (const m of MARKS) {
+      const link = banner.getByRole('link', { name: m.name, exact: true })
+      await link.hover()
+      const tip = page.locator('.vela-tooltip', { hasText: m.name })
+      await expect(tip).toBeVisible()
+      await expect(tip).toHaveText(m.name)
+      await expect(tip).toHaveAttribute('aria-hidden', 'true')
+      await expect(link).not.toHaveAttribute('aria-describedby')
+      // No fill under a mark on hover: nothing enters Figma's clear space.
+      await expect(link).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)')
+      await page.mouse.move(700, 600)
+      await expect(tip).toHaveCount(0)
+    }
+    // From the keyboard: each in turn, the tooltip at once.
+    await banner.getByRole('button', { name: /^Appearance/ }).focus()
+    for (const m of MARKS) {
+      await page.keyboard.press('Tab')
+      await expect(banner.getByRole('link', { name: m.name, exact: true })).toBeFocused()
+      await expect(page.locator('.vela-tooltip', { hasText: m.name })).toBeVisible()
+    }
+  })
+
+  test('the header marks are the owners\' black in light and white in dark; in forced colours they follow the link colour', async ({ page }) => {
+    await page.goto('/#/components/button')
+    const banner = page.getByRole('banner')
+    const colours = () => Promise.all(MARKS.map((m) => banner.getByRole('link', { name: m.name, exact: true }).locator(m.glyph).evaluate((el) => getComputedStyle(el).color)))
+    await setTheme(page, 'light')
+    expect(await colours()).toEqual(['rgb(0, 0, 0)', 'rgb(0, 0, 0)', 'rgb(0, 0, 0)'])
+    await setTheme(page, 'dark')
+    expect(await colours()).toEqual(['rgb(255, 255, 255)', 'rgb(255, 255, 255)', 'rgb(255, 255, 255)'])
+    await page.emulateMedia({ forcedColors: 'active' })
+    const linkText = await banner.evaluate((host) => { const p = document.createElement('i'); p.style.cssText = 'forced-color-adjust: none; color: LinkText'; host.appendChild(p); const v = getComputedStyle(p).color; p.remove(); return v })
+    expect(await colours()).toEqual([linkText, linkText, linkText])
+  })
+
+  test('Figma\'s mark keeps 20px of clear space from every other visible element in the header', async ({ page }) => {
+    for (const width of [1440, 1280, 901, 601]) {
+      await page.setViewportSize({ width, height: 900 })
+      await page.goto('/#/components/button')
+      await page.evaluate(() => document.fonts.ready)
+      const banner = page.getByRole('banner')
+      const figma = banner.getByRole('link', { name: 'Vela in Figma, opens in a new tab', exact: true })
+      await expect(figma).toBeVisible()
+      const found = await figma.evaluate((link) => {
+        const mark = link.querySelector('.vela-brand-mark')!.getBoundingClientRect()
+        const header = link.closest('header')!
+        // Every visible thing in the header that is not the Figma link or inside it: the leaves (a
+        // mark, a word, a text node's box), and any element that paints a fill or a border.
+        const boxes: { what: string; r: DOMRect }[] = []
+        const paints = (el: Element) => { const cs = getComputedStyle(el); return cs.backgroundColor !== 'rgba(0, 0, 0, 0)' || (parseFloat(cs.borderTopWidth) > 0 && cs.borderTopStyle !== 'none' && cs.borderTopColor !== 'rgba(0, 0, 0, 0)') }
+        for (const el of header.querySelectorAll('*')) {
+          if (el === link || link.contains(el)) continue
+          const cs = getComputedStyle(el)
+          if (cs.display === 'none' || cs.visibility === 'hidden' || cs.opacity === '0') continue
+          const r = el.getBoundingClientRect()
+          // Nothing to see: an empty box, or the 1px clipped box of visually hidden text.
+          if (r.width <= 1 || r.height <= 1) continue
+          const leaf = el instanceof SVGSVGElement || (el.children.length === 0 && (el.textContent ?? '').trim() !== '')
+          if (leaf || paints(el)) boxes.push({ what: `${el.tagName.toLowerCase()}.${String(el.getAttribute('class') ?? '')}`, r })
+        }
+        // The distance between the two boxes' nearest edges (negative if they overlap).
+        const gap = (r: DOMRect) => Math.max(r.left - mark.right, mark.left - r.right, r.top - mark.bottom, mark.top - r.bottom)
+        return boxes.map((b) => ({ what: b.what, gap: Math.round(gap(b.r) * 10) / 10 }))
+      })
+      expect(found.length, `${width}px`).toBeGreaterThan(3)
+      for (const f of found) expect(f.gap, `${width}px: ${f.what} is ${f.gap}px from Figma's mark`).toBeGreaterThanOrEqual(20)
+    }
   })
 
   test('on a phone the stage pins as a strip, and no focused control sits under it', async ({ page }) => {
@@ -1236,7 +1326,7 @@ test.describe('the Overview', () => {
     // Off the site: the repository at the built commit, the Figma library the header links to.
     await expect(link('See package.json')).toHaveAttribute('href', new RegExp(`^https://github\\.com/omkarpkh/vela${sha.source}package\\.json$`))
     await expect(link('See the pairs')).toHaveAttribute('href', new RegExp(`^https://github\\.com/omkarpkh/vela${sha.source}scripts/contrast-core\\.mjs#L\\d+$`))
-    const figma = await page.getByRole('banner').getByRole('link', { name: 'Figma' }).getAttribute('href')
+    const figma = await page.getByRole('banner').getByRole('link', { name: 'Vela in Figma, opens in a new tab', exact: true }).getAttribute('href')
     await expect(link('Open the Figma library')).toHaveAttribute('href', figma!)
     await expect(link(/^Figma library/)).toHaveAttribute('href', figma!)
     await expect(link('Governance')).toHaveAttribute('href', 'https://github.com/omkarpkh/vela/blob/main/GOVERNANCE.md')
@@ -1563,7 +1653,7 @@ test.describe('the Motion review curves', () => {
 })
 
 test.describe('axe', () => {
-  for (const path of ['/#/', '/#/states', '/#/components/button', '/#/components/tabs', '/#/components/dropdown-list', '/#/proposals/evidence-locker', '/#/patterns/copy', '/#/foundations/filter-grammar', '/#/components/brand-mark'])
+  for (const path of ['/#/', '/#/states', '/#/components/button', '/#/components/tabs', '/#/components/dropdown-list', '/#/proposals/evidence-locker', '/#/patterns/copy', '/#/foundations/filter-grammar', '/#/components/brand-mark', '/#/components/icon-button'])
     for (const theme of ['Light', 'Dark'] as const)
       test(`${path} in ${theme.toLowerCase()} has no WCAG A or AA violation`, async ({ page }) => {
         const { default: AxeBuilder } = await import('@axe-core/playwright')

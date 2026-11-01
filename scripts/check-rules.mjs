@@ -139,8 +139,8 @@ if (proven.length) {
         `import { BrandMark, Button, ContextualAlert, Icon, Input, RiskPill, StatusIndicator, Table, Tabs, TextArea, Toggle } from '${join(root, 'src')}'\n` +
         // Filter Grammar (guidelines/contracts/) is plain functions from the core entry.
         `import { defineFields, parseQuery, validateQuery, normalise, queryToText, readback, evaluate, leftOutQuery } from '${join(root, 'src')}'\n` +
-        // Checkbox, Radio Group, Popover, Tooltip, Dialog, Toast and Dropdown List ship from the headless entry only.
-        `import { Checkbox, RadioGroup, Popover, Tooltip, Dialog, ToastProvider, useToast, DropdownList } from '${join(root, 'src/headless')}'\n` +
+        // Checkbox, Radio Group, Popover, Tooltip, Icon Button, Dialog, Toast and Dropdown List ship from the headless entry only.
+        `import { Checkbox, RadioGroup, Popover, Tooltip, Dialog, ToastProvider, useToast, DropdownList, IconButton } from '${join(root, 'src/headless')}'\n` +
         `export const X = () => (${f.snippet})\n`)
     })
     writeFileSync(join(dir, 'tsconfig.json'), JSON.stringify({

@@ -18,10 +18,16 @@ import { fromKeyboard, sideOf, useOverlayPortal, type OverlayAlign, type Overlay
  *   applies, which is the token's value.
  * - **Content.** Base UI's popup takes any node. The spec's `content` is a `string`: a tooltip
  *   holds no links, no buttons, nothing a pointer could not reach before it closed.
+ * - **Two kinds.** A `description` (the default) is wired as above. A `label` repeats the trigger's
+ *   own name for sighted users and is heard once: the popup is `aria-hidden`, nothing on the trigger
+ *   points at it, and the component throws when the trigger's name is not the tooltip's words.
+ *   Icon Button is built on it (`guidelines/components/icon-button.md`).
  */
 
 export type TooltipPlacement = OverlayPlacement
 export type TooltipAlign = OverlayAlign
+/** `description` adds words to the trigger's name; `label` repeats the name, and is never heard twice. */
+export type TooltipKind = 'description' | 'label'
 
 export interface TooltipProps {
   /** Required. The text. A string, so a tooltip can never hold a link, a button or a list. */
@@ -35,6 +41,12 @@ export interface TooltipProps {
   placement?: TooltipPlacement
   /** Where it lines up along that side. */
   align?: TooltipAlign
+  /**
+   * `description` (the default): extra words, wired to the trigger by `aria-describedby` while open.
+   * `label`: the trigger's own name, shown to sighted users; the popup is `aria-hidden`, nothing
+   * points at it, and `content` must equal the trigger's accessible name.
+   */
+  kind?: TooltipKind
   className?: string
 }
 
@@ -55,8 +67,22 @@ const hasOwnName = (el: Element) =>
     el.getAttribute('title')?.trim()
   )
 
+/** Spaces collapsed and ends trimmed, as an accessible name is compared. */
+const squash = (s: string | null | undefined) => (s ?? '').replace(/\s+/g, ' ').trim()
+
+/**
+ * The trigger's accessible name, as far as a label tooltip needs it: aria-labelledby (the text of
+ * each element it names), then aria-label, then the element's text. Enough for the triggers the kit
+ * hands a label tooltip; not a full accname implementation.
+ */
+const accessibleName = (el: Element) => {
+  const ids = squash(el.getAttribute('aria-labelledby'))
+  if (ids) return squash(ids.split(' ').map((id) => el.ownerDocument.getElementById(id)?.textContent ?? '').join(' '))
+  return squash(el.getAttribute('aria-label')) || squash(el.textContent)
+}
+
 /** A short supplementary label on hover and keyboard focus. Never the only place information lives. */
-export function Tooltip({ content, children, placement = 'top', align = 'center', className }: TooltipProps) {
+export function Tooltip({ content, children, placement = 'top', align = 'center', kind = 'description', className }: TooltipProps) {
   const anchor = React.useRef<HTMLButtonElement | null>(null)
   const portal = useOverlayPortal(anchor)
   const popupId = `${React.useId()}-tooltip`
@@ -72,8 +98,15 @@ export function Tooltip({ content, children, placement = 'top', align = 'center'
         '<Tooltip> trigger has no accessible name of its own. Give it an aria-label (or visible text): the tooltip describes the control, it does not name it.',
       )
     }
+    // A label tooltip shows the name, so the words a sighted user reads and the name a screen reader
+    // speaks are the same words (WCAG 2.5.3). Anything else would be a second, silent name.
+    if (kind === 'label' && accessibleName(el) !== squash(content)) {
+      throw new Error(
+        `<Tooltip kind="label">: the trigger's accessible name is "${accessibleName(el)}", but the tooltip says "${squash(content)}". A label tooltip repeats the name exactly; for other words use kind="description".`,
+      )
+    }
     setDelay(readDelay(el))
-  }, [])
+  }, [kind, content])
 
   const handleOpenChange = React.useCallback((next: boolean, details: BaseTooltip.Root.ChangeEventDetails) => {
     setInstant(fromKeyboard(details))
@@ -81,9 +114,10 @@ export function Tooltip({ content, children, placement = 'top', align = 'center'
   }, [])
 
   // The description is wired only while the tooltip is rendered: a dangling aria-describedby is
-  // worse than none. Whatever the element already described is kept.
+  // worse than none. Whatever the element already described is kept. A label tooltip is never
+  // wired: it repeats the name, and a screen reader would read the name twice.
   const own = (children.props as { 'aria-describedby'?: string })['aria-describedby']
-  const describedBy = [own, open ? popupId : null].filter(Boolean).join(' ') || undefined
+  const describedBy = [own, open && kind === 'description' ? popupId : null].filter(Boolean).join(' ') || undefined
   const trigger = React.cloneElement(children as React.ReactElement<Record<string, unknown>>, { 'aria-describedby': describedBy })
 
   return (
@@ -94,6 +128,7 @@ export function Tooltip({ content, children, placement = 'top', align = 'center'
           <BaseTooltip.Popup
             id={popupId}
             role="tooltip"
+            aria-hidden={kind === 'label' || undefined}
             className={cn('vela-tooltip', className)}
             data-vela-instant={instant || undefined}
           >

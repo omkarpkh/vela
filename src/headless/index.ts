@@ -2,7 +2,7 @@
  * @omkarux/vela/headless — the Base UI-backed entry point. Experimental (GOVERNANCE.md).
  *
  * Same specs, same CSS, same tests as `@omkarux/vela` where a component ships from both (Tabs);
- * Checkbox, Radio Group, the three overlays (Popover, Tooltip, Dialog), Toast and Dropdown List were
+ * Checkbox, Radio Group, the three overlays (Popover, Tooltip, Dialog), Icon Button, Toast and Dropdown List were
  * born here and ship from this entry only. The behaviour comes from Base UI
  * (`@base-ui/react`, MIT), which is an OPTIONAL peer dependency: install it to import from here.
  * The default entry point `@omkarux/vela` does not import this module and keeps zero runtime
@@ -27,7 +27,11 @@ export type { RadioGroupProps, RadioProps } from './RadioGroup'
 export { Popover } from './Popover'
 export type { PopoverProps, PopoverPlacement, PopoverAlign, PopoverSize } from './Popover'
 export { Tooltip } from './Tooltip'
-export type { TooltipProps, TooltipPlacement, TooltipAlign } from './Tooltip'
+export type { TooltipProps, TooltipPlacement, TooltipAlign, TooltipKind } from './Tooltip'
+// Icon Button, headless-born (guidelines/components/icon-button.md): one glyph, named by its label,
+// with a label tooltip. Headless because the tooltip is Base UI's.
+export { IconButton } from './IconButton'
+export type { IconButtonProps, IconButtonButtonProps, IconButtonLinkProps, IconButtonSize } from './IconButton'
 export { Dialog } from './Dialog'
 export type { DialogProps, DialogCloseProps, DialogSize, DialogVariant } from './Dialog'
 

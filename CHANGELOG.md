@@ -6,6 +6,48 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Unreleased]
 
 ### Added
+- **Icon Button, a new headless component** (`guidelines/components/icon-button.md`; the spec
+  thread's draft of 30 Oct 2026 with the repo thread's amendment of 1 Nov 2026, approved by Omkar
+  the same day). A button or a link drawn as one glyph people already know, always named by
+  `label`: `<IconButton label="Close" icon="x" size="tiny" onClick={close} />`, or a link with
+  `href`, and `opensInNewTab` for `target="_blank"`, `rel="noopener noreferrer"` and ", opens in a
+  new tab" on the name. Exactly one glyph: one of Icon's fifty, GitHub's or Figma's own mark
+  (`brandMark`), or the word "npm" (`word`). Two sizes on the control heights, 24px with a 16px
+  glyph and 35px with a 20px one. Its tooltip is Tooltip's new label kind: it shows the name on
+  hover and focus and is heard once. A pointer press scales the glyph to 88%, never the box. With a
+  brand mark or the word, the glyph is `--vela-brand-mark` in every state, never scales, and has
+  no hover or pressed fill, so nothing sits inside Figma's 20px clear space. From
+  `@omkarux/vela/headless` only, because the tooltip is Base UI's. Experimental, with no Figma set
+  yet: `scripts/figma/components/icon-button.figma.js` (State × Size, 8 variants, an `Icon`
+  instance swap and a `Label` text property) is written, passes the builder lint, and has not been
+  run.
+  - **12 rules, 10 with proofs.** Four compiler rules (`icon-button-label-required`,
+    `-glyph-closed`, `-button-or-link`, `-size-closed`): 18 rejections in `scripts/verify-pack.mjs`
+    against the `/headless` entry, beside a valid control that must compile (no label;
+    `aria-label`, `title`, children; two glyphs, none, a node, an invented name, a third mark or
+    word; Figma at `tiny`; `href` with `onClick`, neither, `disabled` or `type` on a link,
+    `opensInNewTab` on a button; a third size, a number). Four runtime rules
+    (`-named-by-label`, `-tooltip-repeats-name`, `-link-form`, `-disabled-native`): unit tests.
+    Two browser rules: `-hit-area`, under Chromium's touch emulation (the box holds its place and
+    size, the glyph scales, a mark or the word never scales and gets no fill), and with a mouse
+    (no hover fill under a mark, the owner's black in light and white in dark, the tooltip on hover
+    and focus); and `-forced-colours`, both forms, under forced-colours emulation. Two conventions.
+  - **Tooltip gains `kind: "description" | "label"`.** The default, `description`, is today's
+    behaviour, unchanged. A `label` tooltip is `aria-hidden`, never wired by `aria-describedby`,
+    and throws a named error when the trigger's accessible name is not its `content`. New rule
+    `tooltip-label-kind-matches-name` (runtime), with two unit tests; the existing Tooltip tests
+    pass as they were.
+  - **A new token, `--vela-target-min`** (24px, aliasing `--vela-control-height-24`; Figma
+    `control/target-min`): WCAG 2.2's 2.5.8 minimum target, stated once in `foundations/sizing.md`.
+    The Dart and Figma-drift builds now resolve a sizing alias to its value. One new contrast pair,
+    "Brand mark on the standard hover fill", 16.18:1 light, 11.14:1 dark, in case a host puts a
+    mark on that fill; Icon Button's own glyph pairs were already asserted.
+  - Button, Icon and Tooltip now link to `icon-button.md` where they said "an Icon Button, which is
+    not in this kit", and Icon Button leaves the "Not yet specced" lists and the site search's
+    missing list. A playground page (group Actions), on the axe list in both themes.
+    244 rules across 20 specs (was 231), 78 compiler-enforced (was 74). 1458 checks (was 1429):
+    1174 unit and contract (was 1150), 211 e2e (was 206); 110 contrast pairs (was 109); 293 tokens
+    (was 292).
 - **Brand Mark, a new core component** (`guidelines/components/brand-mark.md`; Omkar said "go" on
   1 Nov 2026). Another company's own logo, drawn as its owner drew it, used only to link to that
   company's service, and kept apart from Icon: `<BrandMark name="github" label="GitHub" />`, or
@@ -185,6 +227,21 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   built.
 
 ### Changed
+- **The site header's GitHub, npm and Figma links are Icon Button links** on a wide screen (Omkar's
+  decision of 1 Nov 2026: the marks go live under Figma's Brand Book as written, without waiting for
+  Figma's reply). GitHub's mark, npm's word and Figma's mark, each `size="regular"` with
+  `opensInNewTab`, named "Vela on GitHub", "Vela on npm" and "Vela in Figma" (each with ", opens in
+  a new tab"), with the same addresses as before; the label tooltip shows the name on hover and
+  focus. On a phone the three stay written links in the menu, as before. Figma's clear space,
+  20px, is kept by the layout: each 20px mark sits in a 35px box with no fill or border at rest or
+  on hover (7.5px inside the box), and the three sit `--vela-space-15` apart, so npm's word is at
+  least 22.5px from Figma's mark (27.4px measured at 1440px), and Figma is last in the row. No new
+  literal in the site CSS. Four e2e tests replace the written-links one: the names, `target` and
+  `rel`, and the phone menu; the tooltip on hover and keyboard focus, never a description, with no
+  hover fill; the marks' computed colour, black in light, white in dark, and the link colour under
+  forced colours; and the distance from Figma's mark to every other visible element in the header,
+  at least 20px at four widths. The Overview's link test reads the header's Figma link by its new
+  name. 1461 checks (was 1458): 214 e2e (was 211).
 - **Who Vela is for, said once and the same everywhere** (Omkar's choice, from the refinement
   stage). The Overview's first line is now "For data-heavy products, built first for security
   consoles. Every rule that can be tested is tested before a change ships." README, DESIGN.md,

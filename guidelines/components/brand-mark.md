@@ -2,7 +2,7 @@
 
 Another company's own logo, drawn as its owner drew it, used only to link to that company's service: "Vela on GitHub", "Vela in Figma". It is a separate closed set, kept apart from Icon. It never moves, is always its owner's own black (white in the dark theme), and never stands for Vela itself.
 
-**Status:** Experimental — specced, built and tested in the core entry; no Figma set yet (the builder, `scripts/figma/components/brand-mark.figma.js`, is ready and has not been run). Nothing uses it yet: Icon Button's `brandMark` glyph and the site header come in later changes.
+**Status:** Experimental — specced, built and tested in the core entry; no Figma set yet (the builder, `scripts/figma/components/brand-mark.figma.js`, is ready and has not been run). Its consumer is [Icon Button](icon-button.md)'s `brandMark` glyph, and the playground's header links to GitHub and Figma through it.
 
 **Dependencies:** none (core).
 
@@ -35,12 +35,12 @@ The playground's header links to GitHub, npm and Figma. As glyph-only links, the
 - **npm, or any service whose logo needs permission** → the word, set by Icon Button, not a mark.
 - **Vela's own logo or wordmark** → never a Brand Mark.
 
-Icon Button is not built yet (it is the next change). Until it is, a glyph-only link to GitHub or Figma has no Vela control to sit in: flag the gap, keep the link written, and don't wrap a bare Brand Mark in an `<a>` of your own.
+A glyph-only link to GitHub or Figma is an [Icon Button](icon-button.md) with `brandMark`. Don't wrap a bare Brand Mark in an `<a>` of your own.
 
 ## Props
 
 ```tsx
-<IconButton label="Vela on GitHub" brandMark="github" href="https://github.com/omkarpkh/vela" opensInNewTab />   // Icon Button: the next change, not built yet
+<IconButton label="Vela on GitHub" brandMark="github" href="https://github.com/omkarpkh/vela" opensInNewTab />   // the usual way: inside an Icon Button (headless)
 <BrandMark name="github" label="GitHub" />          // standalone, rare: a caption needs a name
 ```
 
@@ -149,8 +149,8 @@ Library file **Vela Design System** → page `Brand Mark`. Proposed set "Brand M
 - ❌ A filled single-colour Figma mark from an icon set (Phosphor, akar-icons, Simple Icons) → Figma's own mono-line icon.
 - ❌ GitHub's 24px drawing at 20px → `mark-github-16`, scaled.
 
-## Changes to other specs (NOT in this PR; Icon Button comes next)
-Icon Button's glyph becomes `{ icon } | { brandMark } | { word: "npm" }`; with a word the glyph is `--vela-text-heading`; a brandMark keeps its own `--vela-brand-mark`; the press scale is not applied to either. The button's hover fill under a mark is a pair for that change.
+## Changes to other specs (made in the Icon Button change)
+Icon Button's glyph is `{ icon } | { brandMark } | { word: "npm" }`. A brand mark keeps its own `--vela-brand-mark`, and the word "npm" uses the same token, so the three read as one set (amended 1 Nov 2026; this section first said `--vela-text-heading` for the word). The press scale is not applied to either, and neither has a hover or pressed fill. `--vela-brand-mark` on `--vela-btn-standard-hover-bg` is asserted in `PAIRS` in case a host puts a mark on that fill. See `icon-button.md`.
 
 ## Open questions
 1. 24px: not until a consumer needs it.

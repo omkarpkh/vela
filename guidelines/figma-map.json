@@ -20,7 +20,7 @@
           "prop": "size — Regular → \"regular\", Large → \"large\""
         }
       ],
-      "example": "<IconButton label=\"Vela on GitHub\" brandMark=\"github\" href=\"https://github.com/omkarpkh/vela\" opensInNewTab />   // Icon Button: the next change, not built yet\n<BrandMark name=\"github\" label=\"GitHub\" />          // standalone, rare: a caption needs a name",
+      "example": "<IconButton label=\"Vela on GitHub\" brandMark=\"github\" href=\"https://github.com/omkarpkh/vela\" opensInNewTab />   // the usual way: inside an Icon Button (headless)\n<BrandMark name=\"github\" label=\"GitHub\" />          // standalone, rare: a caption needs a name",
       "spec": "guidelines/components/brand-mark.md"
     },
     {
@@ -159,6 +159,35 @@
       ],
       "example": "<DropdownList\n  label=\"All tabs\"\n  trigger={<button className=\"vela-tabs__more\">6 more · 1 new</button>}\n  items={[\n    { value: 'alerts', label: 'Alerts' },\n    { value: 'firewall', label: 'Firewall', meta: '1 new' },\n    { value: 'archive', label: 'Archive', locked: { reason: 'Needs retention on' } },\n  ]}\n  value={tab}\n  onValueChange={setTab}\n/>",
       "spec": "guidelines/components/dropdown-list.md"
+    },
+    {
+      "set": "Icon Button",
+      "page": "Icon Button",
+      "state": "none",
+      "node": null,
+      "url": null,
+      "import": "import { IconButton } from '@omkarux/vela/headless'",
+      "write": "IconButton",
+      "figmaToProp": [
+        {
+          "figma": "Size",
+          "prop": "size — Tiny → \"tiny\", Regular → \"regular\""
+        },
+        {
+          "figma": "Icon",
+          "prop": "icon — the glyph's name, e.g. x"
+        },
+        {
+          "figma": "Label",
+          "prop": "label"
+        },
+        {
+          "figma": "State",
+          "prop": "none — Hover and Pressed are the pointer's; Disabled is disabled"
+        }
+      ],
+      "example": "<IconButton label=\"Close\" icon=\"x\" size=\"tiny\" onClick={close} />\n<IconButton label=\"Search\" icon=\"search\" onClick={openSearch} />\n<IconButton label=\"Vela on GitHub\" brandMark=\"github\" href=\"https://github.com/omkarpkh/vela\" opensInNewTab />\n<IconButton label=\"Vela on npm\" word=\"npm\" href=\"https://www.npmjs.com/package/@omkarux/vela\" opensInNewTab />",
+      "spec": "guidelines/components/icon-button.md"
     },
     {
       "set": "Icon",

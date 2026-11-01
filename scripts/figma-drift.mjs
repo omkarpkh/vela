@@ -38,7 +38,8 @@ for (const name of set.order) {
   if (!figma) continue
   const key = collectionOf[t.group] + '|' + figma
   if (t.$type === 'color') expected[key] = { css: name, light: resolveColor(name, 'light'), dark: resolveColor(name, 'dark') }
-  else if (t.$type === 'dimension') expected[key] = { css: name, value: pxOf(t.$value, name) }
+  // A dimension alias (control/target-min) reads back as the value it resolves to.
+  else if (t.$type === 'dimension') expected[key] = { css: name, value: pxOf(set.resolved(name), name) }
   // an opacity is a percent in Figma, as sync-figma.mjs writes it: opacity/scrim 0.5 reads back 50
   else if (t.$type === 'number') expected[key] = { css: name, value: isFigmaPercent(t, figma) ? toFigmaPercent(t.$value) : t.$value }
   // Figma keeps timing in seconds and an easing as a bezier object (see sync-figma.mjs)

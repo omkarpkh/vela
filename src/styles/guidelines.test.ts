@@ -64,17 +64,19 @@ describe('the agent-facing contract is complete', () => {
     // Tooltip when Dialog and Tooltip arrived; the sentence that names the rest has to survive, and
     // it must no longer call any of them missing.
     const notInKit = overview.match(/Not yet specced: ([^.]+)\./)?.[1] ?? ''
-    for (const missing of ['Select List', 'Token Pill', 'Icon Button', 'Actions Dropdown', 'View Switcher'])
+    for (const missing of ['Select List', 'Token Pill', 'Actions Dropdown', 'View Switcher'])
       expect(notInKit).toContain(missing)
     // Toast joined in Phase 1 too; it was never on this list, but the specs that called it missing must not.
-    for (const shipped of ['Checkbox', 'Radio', 'Modal', 'Tooltip', 'Popover', 'Dialog', 'Toast']) expect(notInKit).not.toContain(shipped)
+    // Icon Button left it on 1 Nov 2026 (headless entry).
+    for (const shipped of ['Checkbox', 'Radio', 'Modal', 'Tooltip', 'Popover', 'Dialog', 'Toast', 'Icon Button']) expect(notInKit).not.toContain(shipped)
     // DESIGN.md carries the same list, and the same removals.
     const designNotInKit = readFileSync(resolve(root, 'DESIGN.md'), 'utf8').match(/Not yet specced: ([^.]+)\./)?.[1] ?? ''
-    for (const shipped of ['Modal', 'Tooltip', 'Toast']) expect(designNotInKit).not.toContain(shipped)
+    for (const shipped of ['Modal', 'Tooltip', 'Toast', 'Icon Button']) expect(designNotInKit).not.toContain(shipped)
     // No spec still sends an agent to a Toast that is "not in this kit".
     for (const file of specs) {
       const md = readFileSync(resolve(root, 'guidelines/components', file), 'utf8')
       expect(md, `${file} still calls Toast missing`).not.toMatch(/toast[^.\n]*not in this kit/i)
+      expect(md, `${file} still calls Icon Button missing`).not.toMatch(/Icon Button[^.\n]*not in (this|the) kit/)
     }
     expect(designNotInKit).toContain('Select List')
   })
@@ -82,10 +84,10 @@ describe('the agent-facing contract is complete', () => {
   it('keeps a shipped component out of both "not in the kit" lists', () => {
     const design = readFileSync(resolve(root, 'DESIGN.md'), 'utf8')
     const notYet = (md: string) => md.match(/Not yet specced:([\s\S]*?)Flag rather than guess/)![1]
-    // Icon is matched as a word not followed by "Button": Icon Button is genuinely not in the kit.
+    // Icon is matched as a word not followed by "Button", so "Icon Button" is not read as Icon.
     const named = (list: string, c: string) => new RegExp(`\\b${c}\\b(?! Button)`).test(list)
     expect(named(' Icon Button, Modal', 'Icon')).toBe(false)
-    for (const shipped of ['Text Area', 'Input', 'Tabs', 'Icon', 'Checkbox', 'Radio Group', 'Table', 'Popover', 'Tooltip', 'Dialog', 'Dropdown List'])
+    for (const shipped of ['Text Area', 'Input', 'Tabs', 'Icon', 'Icon Button', 'Checkbox', 'Radio Group', 'Table', 'Popover', 'Tooltip', 'Dialog', 'Dropdown List'])
       for (const [name, md] of [['overview.md', overview], ['DESIGN.md', design]] as const)
         expect(named(notYet(md), shipped), `${shipped} is listed as missing in ${name}`).toBe(false)
   })

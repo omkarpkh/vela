@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
 import { cn } from '../src'
+import { IconButton } from '../src/headless'
 import pkg from '../package.json'
 import './demo.css'
 import { useRoute, href, sameRoute, type Route } from './router'
@@ -76,7 +77,21 @@ function MenuIcon() {
   )
 }
 
-/** GitHub, npm and Figma, written as words. Each says where it goes, so no mark or tooltip is needed. */
+/**
+ * GitHub, npm and Figma on a wide screen: each its own mark, or npm's word, in an Icon Button link
+ * named in words, with a label tooltip. Figma's mark keeps its 20px clear space (.topbar__marks).
+ */
+function SiteMarks() {
+  return (
+    <div className="topbar__marks">
+      <IconButton label="Vela on GitHub" brandMark="github" href={LINKS.github} opensInNewTab tooltipPlacement="bottom" />
+      <IconButton label="Vela on npm" word="npm" href={LINKS.npm} opensInNewTab tooltipPlacement="bottom" />
+      <IconButton label="Vela in Figma" brandMark="figma" href={figmaUrl()} opensInNewTab tooltipPlacement="bottom" />
+    </div>
+  )
+}
+
+/** GitHub, npm and Figma, written as words, in the phone's menu. Each says where it goes, so no mark or tooltip is needed. */
 function SiteLinks({ className }: { className: string }) {
   return (
     <>
@@ -152,9 +167,9 @@ export function App() {
         <div className="topbar__right">
           {/* Only the Appearance panel sets the page's theme and brand (section 9). */}
           <Appearance theme={theme} onTheme={setTheme} compact={phone} />
-          {/* Written links until BrandMark's three marks can ship together (section 3); on a phone
-              they move into the menu, after the nav. */}
-          {!phone && <SiteLinks className="topbar__link vela-meta" />}
+          {/* The three marks, as Icon Button links (section 3); on a phone they are written links in
+              the menu, after the nav. */}
+          {!phone && <SiteMarks />}
         </div>
       </header>
 

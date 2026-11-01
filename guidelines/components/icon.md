@@ -20,8 +20,9 @@ kit's own inline glyphs (`src/lib/icons.tsx`) have moved onto it; see `GOVERNANC
   An Icon in a severity colour is not a substitute (there is no severity `tone`).
 - A risk score or an object's health → **Risk Pill** or **Status Indicator**. A shield is not a
   risk level and a circle is not a status dot.
-- A clickable glyph (close, copy, more) → an **Icon Button**, which is **not in this kit**. Flag
-  the gap; do not put a click handler on an Icon (it will not compile) or wrap it in a `<div>`.
+- A clickable glyph (close, copy, more) → an [**Icon Button**](icon-button.md)
+  (`@omkarux/vela/headless`), which takes the glyph as `icon`. Do not put a click handler on an
+  Icon (it will not compile) or wrap it in a `<div>`.
 - Inside a Button → pass the Icon to Button's `icon` slot with `tone="inherit"`, so the glyph takes
   the label colour; Button keeps owning the slot's size.
 
@@ -52,7 +53,7 @@ kit's own inline glyphs (`src/lib/icons.tsx`) have moved onto it; see `GOVERNANC
   `"unhealthy"` tone: a glyph in a taxonomy's colour belongs to the component that owns the
   taxonomy. [[rule: icon-tone-closed-set | compiler]]
 - **An icon is not a control.** No `onClick`, no `tabIndex`, no `style`: the props are closed and
-  the compiler rejects them. A clickable glyph is an Icon Button, not in the kit. [[rule: icon-not-interactive | compiler]]
+  the compiler rejects them. A clickable glyph is an [Icon Button](icon-button.md). [[rule: icon-not-interactive | compiler]]
 - **An unknown name throws a named error.** For the JavaScript caller the type cannot reach,
   `<Icon name="shield">` throws `not in Vela's curated set` rather than React's "element type is
   invalid". [[rule: icon-unknown-name-throws | runtime]]
@@ -148,7 +149,7 @@ Vela console; a glyph is not used for anything else.
 | `move-right` | Changes from → to — a before and after | Action Impact card, Agent Action Ledger |
 | `check` | Done, selected, confirmed inline | Lists, menus |
 | `minus` | Remove one, collapse | Steppers, disclosure |
-| `x` | Close, clear, remove | Dismiss controls (an Icon Button, not in the kit) |
+| `x` | Close, clear, remove | Dismiss controls (an [Icon Button](icon-button.md)) |
 | `plus` | Add, create | Button icon slot |
 | `search` | Search | Search fields |
 | `funnel` | Filter (Lucide's name for filter) | Table toolbars |
@@ -236,7 +237,7 @@ Figma expression: a label is code-only, and an inherited colour is the instance'
 
 - ❌ `<Icon name="filter" />` or `name="trash-2"` → Lucide 1.x names: `funnel`, `trash` (will not compile).
 - ❌ `<Icon name="shield-x" tone="critical" />` → there is no severity tone; an event's mark is a Contextual Alert (will not compile).
-- ❌ `<Icon name="x" onClick={close} />` or a `<div onClick>` around it → that is an Icon Button, not in the kit.
+- ❌ `<Icon name="x" onClick={close} />` or a `<div onClick>` around it → that is an [Icon Button](icon-button.md): `<IconButton label="Close" icon="x" onClick={close} />`.
 - ❌ `size={24}` or `className` that sets width or colour → three sizes, two tones, from the tokens.
 - ❌ A labelled glyph with the label repeating the adjacent text → `aria-hidden` (no `label`) when the text is there.
 - ❌ A bare `shield-check` in a table cell as the only sign a row is allowed → the word, or a label.

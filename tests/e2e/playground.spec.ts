@@ -58,7 +58,7 @@ test('the Button page locks what the types forbid, says why, and offers the lega
 test('navigation reaches every component and each page lists its tokens', async ({ page }) => {
   await page.goto('/')
   const nav = page.getByRole('navigation', { name: 'Site' })
-  for (const name of ['Button', 'Toggle', 'Input', 'Text Area', 'Contextual Alert', 'Status Indicator', 'Risk Pill', 'Tabs', 'Icon', 'Checkbox', 'Radio Group', 'Table', 'Popover', 'Tooltip', 'Dialog', 'Toast', 'Dropdown List', 'Brand Mark']) {
+  for (const name of ['Button', 'Toggle', 'Input', 'Text Area', 'Contextual Alert', 'Status Indicator', 'Risk Pill', 'Tabs', 'Icon', 'Checkbox', 'Radio Group', 'Table', 'Popover', 'Tooltip', 'Dialog', 'Toast', 'Dropdown List', 'Brand Mark', 'Icon Button']) {
     // A lifecycle tag is part of the link's name ("Popover Experimental"); Approved has none.
     await nav.getByRole('link', { name: new RegExp(`^${name}( (Experimental|Known bugs|Retired))?$`) }).click()
     await expect(page.getByRole('heading', { level: 1, name })).toBeVisible()
@@ -122,6 +122,162 @@ test('the Brand Mark page: no mark ever moves, and Figma is large only', async (
   await expect(lead).toHaveAttribute('aria-hidden', 'true')
   await expect(page.locator('.pg-frame[data-theme="light"] .pg-brand-mark__lead')).toContainText('Vela in Figma')
   await still()
+})
+
+// ---------------------------------------------------------------------------------------------
+// Icon Button (guidelines/components/icon-button.md): the two browser rules, and the amended rules
+// for a brand mark or the word (its colour is --vela-brand-mark, it has no hover or pressed fill, and
+// the label tooltip still shows on hover and focus). All on the Icon Button page's set row, which
+// holds every glyph kind and both forms.
+// ---------------------------------------------------------------------------------------------
+const iconButtonSet = (page: import('@playwright/test').Page, theme: 'light' | 'dark' = 'light') =>
+  page.locator(`.pg-frame[data-theme="${theme}"] .pg-icon-button__set`)
+async function openIconButton(page: import('@playwright/test').Page) {
+  await page.goto('/#/components/icon-button')
+  await expect(page.getByRole('heading', { level: 1, name: 'Icon Button' })).toBeVisible()
+  await expect(iconButtonSet(page).getByRole('link', { name: 'Vela in Figma, opens in a new tab' })).toBeVisible()
+}
+/** What the press could move: the box, the fill, every transform inside, and the touch settings. */
+const pressState = (el: HTMLElement) => {
+  const r = el.getBoundingClientRect(), cs = getComputedStyle(el)
+  const glyph = el.querySelector('.vela-icon-button__glyph')
+  return {
+    box: [r.x, r.y, r.width, r.height], fill: cs.backgroundColor, pressed: el.hasAttribute('data-vela-pressed'),
+    glyph: glyph ? getComputedStyle(glyph).transform : null,
+    moved: [...el.querySelectorAll('*')].filter((n) => n !== glyph && getComputedStyle(n).transform !== 'none').length,
+    tap: cs.getPropertyValue('-webkit-tap-highlight-color'), touch: cs.touchAction,
+  }
+}
+
+test.describe('Icon Button', () => {
+  test.describe('on a touch screen', () => {
+    test.use({ hasTouch: true, isMobile: true })
+    // [[rule: icon-button-hit-area]]
+    test('a press scales the glyph, never the box; a brand mark or the word never scales and gets no fill', async ({ page }) => {
+      await openIconButton(page)
+      expect(await page.evaluate(() => matchMedia('(hover: hover)').matches)).toBe(false)
+      const cdp = await page.context().newCDPSession(page)
+      const set = iconButtonSet(page)
+      const cases = [
+        { name: 'Close', size: 24, glyph: true },
+        { name: 'Search', size: 35, glyph: true },
+        { name: 'Vela on GitHub, opens in a new tab', size: 35, glyph: false },
+        { name: 'Vela on npm, opens in a new tab', size: 35, glyph: false },
+        { name: 'Vela in Figma, opens in a new tab', size: 35, glyph: false },
+      ]
+      for (const c of cases) {
+        const control = set.getByRole(c.glyph ? 'button' : 'link', { name: c.name, exact: true })
+        await control.scrollIntoViewIfNeeded()
+        const before = await control.evaluate(pressState)
+        // The box is the hit area: at least --vela-target-min at tiny, 35px at regular.
+        expect(before.box.slice(2), c.name).toEqual([c.size, c.size])
+        expect(before.box[2]).toBeGreaterThanOrEqual(await page.evaluate(() => parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--vela-target-min'))))
+        expect([before.tap, before.touch], c.name).toEqual(['rgba(0, 0, 0, 0)', 'manipulation'])
+        // A finger down and held: the press, measured mid-press.
+        const [x, y] = [before.box[0] + before.box[2] / 2, before.box[1] + before.box[3] / 2]
+        await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y }] })
+        await expect.poll(() => control.evaluate((el) => el.hasAttribute('data-vela-pressed')), c.name).toBe(true)
+        // The press and its fill transition in (collapsed under reduced motion, but still a frame
+        // late), so the glyph is read once it has landed, then everything else.
+        if (c.glyph) await expect.poll(() => control.evaluate((el) => getComputedStyle(el.querySelector('.vela-icon-button__glyph')!).transform), c.name).toBe('matrix(0.88, 0, 0, 0.88, 0, 0)')
+        else await page.waitForTimeout(100)
+        const during = await control.evaluate(pressState)
+        expect(during.pressed, c.name).toBe(true)
+        expect(during.box, `${c.name}: the box never moves`).toEqual(before.box)
+        expect(during.moved, c.name).toBe(0)
+        if (c.glyph) expect(during.fill, `${c.name}: the pressed fill`).not.toBe('rgba(0, 0, 0, 0)')
+        else {
+          expect(during.glyph, c.name).toBeNull()
+          expect(during.fill, `${c.name}: no pressed fill under a mark`).toBe('rgba(0, 0, 0, 0)')
+        }
+        await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
+        await expect.poll(() => control.evaluate((el) => el.hasAttribute('data-vela-pressed'))).toBe(false)
+      }
+    })
+  })
+
+  // [[rule: icon-button-hit-area]]
+  test('with a mouse: an icon gets the hover fill; a brand mark or the word gets none, in the owner\'s black or white, and its tooltip shows on hover and focus', async ({ page }) => {
+    await openIconButton(page)
+    await compareThemes(page)
+    const ids = ['Vela on GitHub, opens in a new tab', 'Vela on npm, opens in a new tab', 'Vela in Figma, opens in a new tab']
+    for (const theme of ['light', 'dark'] as const) {
+      const set = iconButtonSet(page, theme)
+      const ink = await set.evaluate((el) => getComputedStyle(el).getPropertyValue('--vela-brand-mark').trim())
+      expect(ink).toBe(theme === 'light' ? '#000000' : '#ffffff')
+      for (const name of ids) {
+        const link = set.getByRole('link', { name, exact: true })
+        // The mark (or the word) is the owner's black in light and white in dark: --vela-brand-mark.
+        const glyph = link.locator('.vela-brand-mark, .vela-icon-button__word')
+        await expect(glyph).toHaveCSS('color', theme === 'light' ? 'rgb(0, 0, 0)' : 'rgb(255, 255, 255)')
+        await link.hover()
+        await expect(link, `${name}: no hover fill`).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)')
+        // The label tooltip shows the name on hover, and is hidden from assistive technology.
+        const tip = page.locator('.vela-tooltip', { hasText: name })
+        await expect(tip).toBeVisible()
+        await expect(tip).toHaveAttribute('aria-hidden', 'true')
+        await expect(link).not.toHaveAttribute('aria-describedby')
+        await page.mouse.move(0, 0)
+        await expect(tip).toHaveCount(0)
+      }
+      const search = set.getByRole('button', { name: 'Search', exact: true })
+      await search.hover()
+      await expect(search).not.toHaveCSS('background-color', 'rgba(0, 0, 0, 0)')
+      await page.mouse.move(0, 0)
+    }
+    // Keyboard focus shows the tooltip at once, and the global focus ring.
+    const figma = iconButtonSet(page).getByRole('link', { name: ids[2], exact: true })
+    await iconButtonSet(page).getByRole('link', { name: ids[1], exact: true }).focus()
+    await page.keyboard.press('Tab')
+    await expect(figma).toBeFocused()
+    await expect(page.locator('.vela-tooltip', { hasText: ids[2] })).toBeVisible()
+    await expect(figma).not.toHaveCSS('outline-style', 'none')
+    await page.keyboard.press('Escape')
+    await expect(page.locator('.vela-tooltip', { hasText: ids[2] })).toHaveCount(0)
+    await expect(figma).toBeFocused()
+  })
+
+  // [[rule: icon-button-forced-colours]]
+  test('in forced colours both forms keep an edge, the glyph follows ButtonText or LinkText, hover is Highlight and focus shows', async ({ page }) => {
+    await page.emulateMedia({ forcedColors: 'active' })
+    await openIconButton(page)
+    const set = iconButtonSet(page)
+    const sys = () => set.evaluate((host) => {
+      const one = (c: string) => { const p = document.createElement('i'); p.style.cssText = `forced-color-adjust: none; color: ${c}`; host.appendChild(p); const v = getComputedStyle(p).color; p.remove(); return v }
+      return { buttonText: one('ButtonText'), linkText: one('LinkText'), highlight: one('Highlight') }
+    })
+    const s = await sys()
+    const read = (l: import('@playwright/test').Locator) => l.evaluate((el) => {
+      const cs = getComputedStyle(el), svg = el.querySelector('svg, .vela-icon-button__word')!
+      return { edge: `${cs.borderTopWidth} ${cs.borderTopStyle}`, border: cs.borderTopColor, colour: cs.color, glyph: getComputedStyle(svg).color, adjust: getComputedStyle(svg).forcedColorAdjust }
+    })
+    const forms = [
+      { l: set.getByRole('button', { name: 'Search', exact: true }), text: s.buttonText },
+      { l: set.getByRole('link', { name: 'Vela on GitHub, opens in a new tab', exact: true }), text: s.linkText },
+      { l: set.getByRole('link', { name: 'Vela on npm, opens in a new tab', exact: true }), text: s.linkText },
+    ]
+    for (const { l, text } of forms) {
+      await page.mouse.move(0, 0)
+      const r = await read(l)
+      // The transparent border is drawn: an edge in the system's colour, not transparent.
+      expect(r.edge).toBe('1px solid')
+      expect(r.border).not.toBe('rgba(0, 0, 0, 0)')
+      // The glyph is currentColor, which the system sets: ButtonText for a button, LinkText for a link.
+      expect([r.colour, r.glyph]).toEqual([text, text])
+      expect(r.adjust).not.toBe('none')
+      await l.hover()
+      await expect.poll(async () => (await read(l)).border).toBe(s.highlight)
+    }
+    // The focus ring shows on both forms, from the keyboard.
+    await page.mouse.move(0, 0)
+    for (const { l } of forms) {
+      await l.focus()
+      await page.keyboard.press('Shift+Tab')
+      await page.keyboard.press('Tab')
+      await expect(l).toBeFocused()
+      await expect(l).not.toHaveCSS('outline-style', 'none')
+    }
+  })
 })
 
 // [[rule: text-area-never-resizes-horizontally]]

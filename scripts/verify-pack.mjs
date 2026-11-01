@@ -375,6 +375,40 @@ export const shapes: [DropdownListProps, DropdownListAlign] = [{ label: 'L', tri
   check(dropdownOk, 'headless DropdownList typechecks in every documented shape')
   rmSync(join(app, 'valid-dropdown-list.tsx'))
 
+  // -- the headless Icon Button: every documented shape compiles --
+  // The four compiler rules' rejections below prove nothing unless every shape the spec allows
+  // compiles: both forms, both sizes, all three glyph kinds, Figma at regular, a ref and a native
+  // attribute forwarded, and the exported types.
+  writeFileSync(join(app, 'valid-icon-button.tsx'), `
+import { createRef } from 'react'
+import { IconButton } from '@omkarux/vela/headless'
+import type { IconButtonProps, IconButtonButtonProps, IconButtonLinkProps, IconButtonSize, TooltipKind } from '@omkarux/vela/headless'
+import { Tooltip } from '@omkarux/vela/headless'
+
+export const A = () => <IconButton label="Close" icon="x" size="tiny" onClick={() => {}} />
+export const B = () => <IconButton label="Search" icon="search" onClick={(e) => e.currentTarget.blur()} type="submit" tooltipPlacement="bottom" />
+export const C = () => <IconButton label="Copy" icon="copy" onClick={() => {}} disabled data-testid="copy" />
+export const D = () => <IconButton label="Vela on GitHub" brandMark="github" href="https://github.com/omkarpkh/vela" opensInNewTab />
+export const E = () => <IconButton label="Vela on GitHub" brandMark="github" size="tiny" href="https://github.com/omkarpkh/vela" />
+export const F = () => <IconButton label="Vela in Figma" brandMark="figma" size="regular" href="https://www.figma.com/" opensInNewTab />
+export const G = () => <IconButton label="Vela on npm" word="npm" href="https://www.npmjs.com/package/@omkarux/vela" opensInNewTab tooltipPlacement="end" />
+export const H = () => <IconButton ref={createRef<HTMLButtonElement | HTMLAnchorElement>()} label="More actions" icon="ellipsis" onClick={() => {}} />
+export const T = (k: TooltipKind) => <Tooltip kind={k} content="Search"><button type="button" aria-label="Search">⌕</button></Tooltip>
+export const shapes: [IconButtonProps, IconButtonButtonProps, IconButtonLinkProps, IconButtonSize] = [
+  { label: 'Close', icon: 'x', onClick: () => {} },
+  { label: 'Close', word: 'npm', onClick: () => {}, size: 'tiny' },
+  { label: 'Figma', brandMark: 'figma', href: '/f' },
+  'regular',
+]
+`)
+  let iconButtonOk = true
+  try { run(tsc, ['--noEmit', '-p', 'tsconfig.json'], app) } catch (e) {
+    iconButtonOk = false
+    console.log((e.stdout || '').toString().split('\n').slice(0, 8).join('\n'))
+  }
+  check(iconButtonOk, 'headless IconButton typechecks in every documented shape, and Tooltip takes kind')
+  rmSync(join(app, 'valid-icon-button.tsx'))
+
   // -- Filter Grammar: every documented shape compiles --
   // The grammar fixtures below prove nothing unless a valid schema and query compile against the same
   // shipped .d.ts: every type, `many`, all three trusts, each value shape, a nested group, a Positive
@@ -527,6 +561,26 @@ export const shapes: [Fields, FieldSpec, FieldTrust, Group<F>, Node<F>, Conditio
     ['tooltip-wraps-one-element', 'tooltip around a bare string', `<Tooltip content="Download as CSV">Export</Tooltip>`],
     ['tooltip-wraps-one-element', 'tooltip around two elements', `<Tooltip content="Download as CSV"><Button>Export</Button><Button>Print</Button></Tooltip>`],
     ['tooltip-placement-closed', 'invented tooltip placement', `<Tooltip content="Download as CSV" placement="auto"><Button>Export</Button></Tooltip>`],
+    // Icon Button ships from `@omkarux/vela/headless` only. Each fixture is valid apart from the one
+    // thing it names (the valid shapes above compile).
+    ['icon-button-label-required', 'icon button with no label', `<IconButton icon="x" onClick={() => {}} />`],
+    ['icon-button-label-required', 'icon button named by aria-label', `<IconButton aria-label="Close" icon="x" onClick={() => {}} />`],
+    ['icon-button-label-required', 'icon button with a title', `<IconButton label="Close" title="Close" icon="x" onClick={() => {}} />`],
+    ['icon-button-label-required', 'icon button with children', `<IconButton label="Close" icon="x" onClick={() => {}}>×</IconButton>`],
+    ['icon-button-glyph-closed', 'icon button with two glyphs', `<IconButton label="Close" icon="x" word="npm" onClick={() => {}} />`],
+    ['icon-button-glyph-closed', 'icon button with no glyph', `<IconButton label="Close" onClick={() => {}} />`],
+    ['icon-button-glyph-closed', 'icon button glyph as a node', `<IconButton label="Close" icon={<svg />} onClick={() => {}} />`],
+    ['icon-button-glyph-closed', 'icon button with an invented icon name', `<IconButton label="Close" icon="close" onClick={() => {}} />`],
+    ['icon-button-glyph-closed', 'icon button with a third brand mark', `<IconButton label="Vela on GitLab" brandMark="gitlab" href="/g" />`],
+    ['icon-button-glyph-closed', 'icon button with another word', `<IconButton label="Vela on PyPI" word="pypi" href="/p" />`],
+    ['icon-button-glyph-closed', 'figma mark at tiny', `<IconButton label="Vela in Figma" brandMark="figma" size="tiny" href="/f" />`],
+    ['icon-button-button-or-link', 'icon button with both href and onClick', `<IconButton label="Close" icon="x" href="/x" onClick={() => {}} />`],
+    ['icon-button-button-or-link', 'icon button with neither href nor onClick', `<IconButton label="Close" icon="x" />`],
+    ['icon-button-button-or-link', 'disabled on the link form', `<IconButton label="Vela on GitHub" brandMark="github" href="/g" disabled />`],
+    ['icon-button-button-or-link', 'type on the link form', `<IconButton label="Vela on GitHub" brandMark="github" href="/g" type="button" />`],
+    ['icon-button-button-or-link', 'opensInNewTab on the button form', `<IconButton label="Close" icon="x" onClick={() => {}} opensInNewTab />`],
+    ['icon-button-size-closed', 'a third icon button size', `<IconButton label="Close" icon="x" size="large" onClick={() => {}} />`],
+    ['icon-button-size-closed', 'icon button size as a number', `<IconButton label="Close" icon="x" size={16} onClick={() => {}} />`],
     ['dialog-title-required', 'dialog with no title', `<Dialog trigger={<Button>Edit Policy</Button>}>Body</Dialog>`],
     ['dialog-title-required', 'dialog title as a node', `<Dialog trigger={<Button>Edit Policy</Button>} title={<b>Edit</b>}>Body</Dialog>`],
     ['dialog-description-is-text', 'dialog description holding a control', `<Dialog title="Edit policy" description={<Button>Undo</Button>}>Body</Dialog>`],
@@ -599,7 +653,7 @@ export const shapes: [Fields, FieldSpec, FieldTrust, Group<F>, Node<F>, Conditio
     writeFileSync(join(app, 'invalid.tsx'),
       `import { BrandMark, Button, ContextualAlert, Icon, Input, RiskPill, StatusIndicator, Table, Tabs, TextArea, Toggle } from '@omkarux/vela'\n` +
       `import { defineFields, parseQuery, validateQuery, normalise, queryToText, readback, evaluate, leftOutQuery } from '@omkarux/vela'\n` +
-      `import { Checkbox, RadioGroup, Popover, Tooltip, Dialog, ToastProvider, useToast, DropdownList } from '@omkarux/vela/headless'\nexport const X = () => (${snippet})\n`)
+      `import { Checkbox, RadioGroup, Popover, Tooltip, Dialog, ToastProvider, useToast, DropdownList, IconButton } from '@omkarux/vela/headless'\nexport const X = () => (${snippet})\n`)
     let rejected = false
     try { run(tsc, ['--noEmit', '-p', 'tsconfig.json'], app) } catch { rejected = true }
     check(rejected, `compiler rejects: ${name}  [${id}]`)
@@ -648,6 +702,8 @@ console.log(readback(r.query, fields), '|', evaluate(r.query, { 'sender.domain':
     'shipped CSS carries the overlay styles and the tokens they bind')
   check(css.includes('.vela-toast-region') && css.includes('--vela-toast-width:') && css.includes('--vela-duration-toast:'),
     'shipped CSS carries the Toast styles, its width and its dwell')
+  check(css.includes('.vela-icon-button--still') && css.includes('--vela-target-min:'),
+    'shipped CSS carries the Icon Button styles and --vela-target-min')
   check(css.includes('.vela-dropdown-list__item') && css.includes('--vela-bg-raised-hover:') && css.includes('--vela-dropdown-list-width-min:'),
     'shipped CSS carries the Dropdown List styles, the highlight token and the minimum width they bind')
 } finally {

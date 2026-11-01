@@ -151,7 +151,9 @@ export function generateDart(set, version) {
     const id = ident(name)
     if (t.$description) w(`  /// ${t.$description}`)
     deprecated(t)
-    if (t.$type === 'dimension') w(`  static const double ${id} = ${pxOf(t.$value, name)};`)
+    // A sizing alias (--vela-target-min names --vela-control-height-24) is written as the value it
+    // resolves to, as the CSS resolves it.
+    if (t.$type === 'dimension') w(`  static const double ${id} = ${pxOf(set.resolved(name), name)};`)
     else if (t.$type === 'duration') w(`  static const Duration ${id} = ${ms(t.$value, name)};`)
     else if (t.$type === 'cubicBezier') w(`  static const Cubic ${id} = Cubic(${cubicBezierOf(t.$value, name).join(', ')});`)
     // A sizing-group number (the scrim opacity, the overlay layer) is a plain double: in Flutter the
