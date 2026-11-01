@@ -330,6 +330,12 @@
 .pm--regular { width: calc(1.5 * var(--vela-icon-size)); height: calc(1.5 * var(--vela-icon-size)); }
 .pm--large { width: calc(2 * var(--vela-icon-size)); height: calc(2 * var(--vela-icon-size)); }
 .pm--hero { width: 100%; height: auto; min-width: calc(6 * var(--vela-icon-size)); aspect-ratio: 1; }
+/* The core marks (regular and large) take their colour rule's pair, which the component names as
+   --pm-ink-light (primary-500) and --pm-ink-dark (primary-300): light-dark() follows the page's
+   color-scheme, which the token files set, so it holds under the OS setting, the Appearance panel
+   and a themed subtree. A browser without light-dark() keeps the first, the master's own colour.
+   Forced colours do not reach an SVG's own colour, so they are restated below. */
+.pm--core { color: var(--pm-ink-light); color: light-dark(var(--pm-ink-light), var(--pm-ink-dark)); }
 
 /* The pulse: each ring scales from 0.82 and fades in, about its own centre in the master's user
    space (the origin is set on the ring from the path data, in view-box units). The outer ring starts
@@ -360,9 +366,11 @@
 .pm-replay:not([data-playing]):active .pm-ink { fill: var(--pm-held); }
 
 /* Forced colours: the solid parts take CanvasText, and Highlight while held; the ramp and the glow
-   are finish, and go. */
+   are finish, and go. A core mark, drawn in currentColor, is CanvasText too (LinkText in a link that
+   says so: the header's). */
 @media (forced-colors: active) {
   .pm--hero .pm-ink { fill: CanvasText; }
+  .pm--core { color: CanvasText; }
   .pm-replay:not([data-playing]):active .pm-ink { fill: Highlight; }
   .pm--hero .pm-finish { display: none; }
 }

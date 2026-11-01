@@ -41,7 +41,17 @@
  *   through `--pm-held`; the stylesheet itself binds no primitive. In forced colours the solid
  *   parts take `CanvasText`, and the ramp and the glow, which are finish, are dropped.
  *
- * The header logo is not this part: it stays a link with no mark (the site's header shows none).
+ * - **The core marks follow the theme, in their own colours only.** `regular` and `large` are drawn
+ *   in currentColor, and their masters set it to primary-500 on the root. A master in the page takes
+ *   the colour rule the master's own comment gives: primary-500 on light, primary-300 on dark. So the
+ *   two are named here, as primitives (see Colour), and reach the stylesheet as `--pm-ink-light` and
+ *   `--pm-ink-dark`; `.pm--core` picks between them with `light-dark()`, which follows the page's
+ *   `color-scheme` (the token files set it), so it is right under the OS setting, the Appearance
+ *   panel and a themed subtree alike. A browser without `light-dark()` keeps primary-500. `small` is the
+ *   favicon, whose tile sets its own colours.
+ *
+ * The site header's logo is `<ProductMark size="regular" decorative />` inside the header's link
+ * (demo/App.tsx): never `hero`, so it never pulses, and named by the link, never by the mark.
  */
 import { Fragment, useEffect, useId, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { cn } from '../../src'
@@ -199,6 +209,9 @@ const MASTERS: Record<MasterKey, Master> = {
 /** The colour a held `replay` turns the mark's solid parts (the spec's Motion table). Primitives: see the header. */
 const HELD: Record<'light' | 'dark', string> = { light: 'var(--vela-primary-600)', dark: 'var(--vela-primary-300)' }
 
+/** The core marks' colour rule (brand/README.md, Colours; each master's comment). Primitives: see the header. */
+export const CORE_INK = { '--pm-ink-light': 'var(--vela-primary-500)', '--pm-ink-dark': 'var(--vela-primary-300)' } as const
+
 // ------------------------------------------------------------------------------------ rendering --
 
 const camel = (name: string) => (/^(aria|data)-/.test(name) ? name : name.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase()))
@@ -274,13 +287,19 @@ export function ProductMark(props: ProductMarkProps) {
     setPlaying(reducedMotion() ? 'fade' : 'pulse')
   }
 
+  // A core mark's root colour is the master's primary-500; in the page it is the colour rule's pair
+  // instead, through --pm-ink-light and --pm-ink-dark (see the header). Nothing else in the style moves.
+  const core = props.size === 'regular' || props.size === 'large'
+  const rootStyle = master.rootStyle ? styleObject(master.rootStyle) : undefined
+  const style = core ? { ...rootStyle, color: undefined, ...CORE_INK } as CSSProperties : rootStyle
+
   const named = replay || props.decorative ? { 'aria-hidden': true as const } : { role: 'img', 'aria-label': props.label }
   const svg = (
     <svg
       ref={svgRef}
-      className={cn('pm', `pm--${props.size}`, hero && `pm--on-${hero.on}`)}
+      className={cn('pm', `pm--${props.size}`, core && 'pm--core', hero && `pm--on-${hero.on}`)}
       viewBox={master.viewBox}
-      style={master.rootStyle ? styleObject(master.rootStyle) : undefined}
+      style={style}
       focusable="false"
       data-playing={playing ?? undefined}
       {...named}

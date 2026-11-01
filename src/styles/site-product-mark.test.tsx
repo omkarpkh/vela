@@ -177,6 +177,47 @@ describe('Product Mark: the pulse plays once per visit, then only on a press', (
   // tests/e2e/site.spec.ts: src/styles/brand.test.ts allows no file under src/ to name the tokens.
 })
 
+describe('Product Mark: the core marks in the page, and the header logo', () => {
+  it('regular and large take the colour rule (primary-500 light, primary-300 dark), not the master\'s fixed colour', async () => {
+    const { ProductMark, CORE_INK, MASTER_FILES } = await fresh()
+    expect(CORE_INK).toEqual({ '--pm-ink-light': 'var(--vela-primary-500)', '--pm-ink-dark': 'var(--vela-primary-300)' })
+    for (const size of ['regular', 'large'] as const) {
+      // The master's own colour is the light half of the rule, so nothing is recoloured.
+      expect(read(MASTER_FILES[size]), size).toContain('<svg style="color:#0a6c7d"')
+      expect(read('src/styles/tokens.light.css'), size).toContain('--vela-primary-500: #0a6c7d;')
+      const { container, unmount } = render(<ProductMark size={size} decorative />)
+      const svg = container.querySelector('svg')!
+      expect(svg, size).toHaveClass('pm--core')
+      expect(svg.style.color, size).toBe('')
+      expect(svg.style.getPropertyValue('--pm-ink-light'), size).toBe('var(--vela-primary-500)')
+      expect(svg.style.getPropertyValue('--pm-ink-dark'), size).toBe('var(--vela-primary-300)')
+      unmount()
+    }
+    // The favicon and the heroes set their own colours.
+    const { container } = render(<>
+      <ProductMark size="small" decorative />
+      <ProductMark size="hero" on="light" decorative />
+    </>)
+    for (const svg of container.querySelectorAll('svg')) {
+      expect(svg).not.toHaveClass('pm--core')
+      expect(svg.style.getPropertyValue('--pm-ink-light')).toBe('')
+    }
+  })
+
+  it('the stylesheet picks the pair with light-dark(), and binds no primitive itself', () => {
+    const css = read('demo/shell/shell.css')
+    expect(css).toContain('.pm--core { color: var(--pm-ink-light); color: light-dark(var(--pm-ink-light), var(--pm-ink-dark)); }')
+    expect(css).not.toMatch(/var\(--vela-primary-\d+\)/)
+  })
+
+  it('the header draws the regular mark, decorative, inside its one link, and never a hero', () => {
+    const app = read('demo/App.tsx')
+    const header = app.slice(app.indexOf('<header'), app.indexOf('</header>'))
+    expect(header.match(/<ProductMark [^>]*\/>/g)).toEqual(['<ProductMark size="regular" decorative />'])
+    expect(header).not.toMatch(/animate=|replay=|size="hero"/)
+  })
+})
+
 describe('the mood stills behind the hero', () => {
   const seed = seedLabel(markSeed(pkg.version))
 
