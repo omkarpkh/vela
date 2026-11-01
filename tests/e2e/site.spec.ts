@@ -930,12 +930,12 @@ test.describe('slice 2b · stage width', () => {
     await expect(page.locator('.pg-width__mark')).toHaveCount(0)
   })
 
-  test('Tabs says where overflow lives, and that the "more" control is not built; a component that does not respond to width has no control', async ({ page }) => {
+  test('Tabs says where overflow lives: the core fades and scrolls, the headless row has the "more" control; a component that does not respond to width has no control', async ({ page }) => {
     await page.goto('/#/components/tabs')
-    await expect(page.getByText('Core Tabs scrolls the row sideways when it is full. The "more" control will be in the headless Tabs; it is designed but not built yet.')).toBeVisible()
+    await expect(page.getByText('Core Tabs scrolls the row sideways when it is full, with a fade where more tabs are. The "more" control is in the headless Tabs.')).toBeVisible()
     await page.goto('about:blank')
     await page.goto('/#/components/tabs?v=1&implementation=headless')
-    await expect(page.getByText('Tabs scrolls the row sideways when it is full. The "more" control for the headless Tabs is designed but not built yet.')).toBeVisible()
+    await expect(page.getByText('When the row is full, the tabs that don\'t fit go into "N more", and the open tab stays in view. Sessions has news.')).toBeVisible()
     await page.goto('/#/components/button')
     await expect(page.getByRole('spinbutton', { name: 'Container width' })).toHaveCount(0)
   })
