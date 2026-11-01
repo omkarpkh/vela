@@ -6,8 +6,8 @@
 //
 // Each variant is a box bound to icon/size (16, `size="regular"`) or icon/size-large (20,
 // `size="large"`) holding one flattened vector, `Mark / <Name>`, drawn from the owner's own file and
-// scaled into the box (constraints SCALE). The fill binds brand-mark/fill — the owner's own black
-// in light and white in dark — and there is no stroke. Nothing in a variant moves or carries an effect.
+// scaled into the box (constraints SCALE). The fill binds brand-mark/fill, the interface's icon grey,
+// and there is no stroke. Nothing in a variant moves or carries an effect.
 //
 // The path data is the owners', unchanged (src/brand-marks/<name>/, with each file's source note):
 //   GitHub: Primer Octicons 19.42.0 build/svg/mark-github-16.svg, MIT, Copyright (c) 2026 GitHub Inc.

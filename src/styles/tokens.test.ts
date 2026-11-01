@@ -97,7 +97,7 @@ describe('token source', () => {
     // Found by the read-back: 46 numeric tokens carried names like text/h1-size where the
     // library has size/h1. Values matched, names did not, and nothing had checked the names.
     const RULE: Record<string, RegExp> = {
-      // `brand-mark/` (1 Nov 2026): Brand Mark's fill, another company's own black or white, kept out of icon/.
+      // `brand-mark/` (1 Nov 2026): Brand Mark's fill, the icon grey for another company's mark, kept out of icon/.
       color: /^(surface|border|text|icon|button|control|severity|risk|status|focus|brand-mark)\//,
       // `control/` carries the Checkbox and Radio geometry (control/checkbox/size, control/radio/dot) since Phase 1.
       // `popover/`, `dialog/`, `tooltip/`, `opacity/` and `layer/` carry the overlay geometry since Phase 1.

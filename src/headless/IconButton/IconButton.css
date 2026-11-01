@@ -36,7 +36,7 @@
   /* The release: back to 1 at duration-base, decelerating. */
   transition: transform var(--vela-duration-base) var(--vela-ease-out);
 }
-/* The word "npm": referential use, in Vela's monospace type, in the owners' black or white like the marks. */
+/* The word "npm": referential use, in Vela's monospace type, in the same grey as the marks. */
 .vela-icon-button__word {
   color: var(--vela-brand-mark);
   font-family: var(--vela-font-family-mono);

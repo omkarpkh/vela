@@ -150,9 +150,9 @@ export const PAIRS = [
   ['--vela-icon-strong',  '--vela-bg-global',    'Icon, default tone, on page',      'ui'],
   ['--vela-icon-strong',  '--vela-bg-container', 'Icon, default tone, on container', 'ui'],
   ['--vela-icon-default', '--vela-bg-global',    'Icon, muted tone, on page',        'ui'],
-  // Brand Mark (guidelines/components/brand-mark.md): the owner's own black in light and white in
-  // dark, through --vela-brand-mark, on the page (the site header's background too) and on a
-  // container. A mark is a non-text graphic.
+  // Brand Mark (guidelines/components/brand-mark.md): the interface's icon grey in both themes (the
+  // owners' black and white until 1 Nov 2026), through --vela-brand-mark, on the page (the site
+  // header's background too) and on a container. A mark is a non-text graphic.
   ['--vela-brand-mark', '--vela-bg-global',    'Brand mark on page',      'ui'],
   ['--vela-brand-mark', '--vela-bg-container', 'Brand mark on container', 'ui'],
   // Icon Button (guidelines/components/icon-button.md): a brand mark or the word "npm" has no hover

@@ -4,8 +4,8 @@ import { FIGMA_MARK } from '../../brand-marks/figma/mark'
 /**
  * Another company's own logo, drawn as its owner drew it, used only to link to that company's
  * service. A closed set of two, kept apart from Icon: an icon means a thing or an action in Vela;
- * a brand mark means "go to that service". It never moves, and it is always its owner's own black
- * (white in the dark theme), --vela-brand-mark, set by its stylesheet and by no prop.
+ * a brand mark means "go to that service". It never moves, and it is always the interface's icon
+ * grey, --vela-brand-mark, set by its stylesheet and by no prop.
  */
 export type BrandMarkName = 'github' | 'figma'
 

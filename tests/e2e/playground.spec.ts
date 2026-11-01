@@ -197,19 +197,19 @@ test.describe('Icon Button', () => {
   })
 
   // [[rule: icon-button-hit-area]]
-  test('with a mouse: an icon gets the hover fill; a brand mark or the word gets none, in the owner\'s black or white, and its tooltip shows on hover and focus', async ({ page }) => {
+  test('with a mouse: an icon gets the hover fill; a brand mark or the word gets none, in the interface\'s icon grey, and its tooltip shows on hover and focus', async ({ page }) => {
     await openIconButton(page)
     await compareThemes(page)
     const ids = ['Vela on GitHub, opens in a new tab', 'Vela on npm, opens in a new tab', 'Vela in Figma, opens in a new tab']
     for (const theme of ['light', 'dark'] as const) {
       const set = iconButtonSet(page, theme)
       const ink = await set.evaluate((el) => getComputedStyle(el).getPropertyValue('--vela-brand-mark').trim())
-      expect(ink).toBe(theme === 'light' ? '#000000' : '#ffffff')
+      expect(ink).toBe(theme === 'light' ? '#49555a' : '#c8d0d2')
       for (const name of ids) {
         const link = set.getByRole('link', { name, exact: true })
-        // The mark (or the word) is the owner's black in light and white in dark: --vela-brand-mark.
+        // The mark (or the word) is the interface's icon grey: --vela-brand-mark, the value of --vela-icon-strong.
         const glyph = link.locator('.vela-brand-mark, .vela-icon-button__word')
-        await expect(glyph).toHaveCSS('color', theme === 'light' ? 'rgb(0, 0, 0)' : 'rgb(255, 255, 255)')
+        await expect(glyph).toHaveCSS('color', theme === 'light' ? 'rgb(73, 85, 90)' : 'rgb(200, 208, 210)')
         await link.hover()
         await expect(link, `${name}: no hover fill`).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)')
         // The label tooltip shows the name on hover, and is hidden from assistive technology.

@@ -47,7 +47,7 @@
   --vela-icon-on-brand: var(--vela-white);
 
   /* ---- Brand mark ---- */
-  --vela-brand-mark: var(--vela-white);
+  --vela-brand-mark: var(--vela-grey-300);
 
   /* ---- Button ---- */
   --vela-btn-primary-bg: var(--vela-primary-500);
