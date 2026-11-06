@@ -2934,7 +2934,7 @@
     "font-family-display": {
       "$type": "fontFamily",
       "$value": "\"Open Sans\", -apple-system, sans-serif",
-      "$description": "Headlines, brand moments and big stat numbers. Open Sans by default, so a big number and the words beside it are one family (decisions/007-display-face-open-sans). A brand theme may re-point it for headlines and brand moments, never for numbers people compare; wherever it shows a number, the figures are tabular (CSS font-variant-numeric: tabular-nums).",
+      "$description": "Headlines, brand moments and big headline numbers. Open Sans by default, so a big number and the words beside it are one family (decisions/007-display-face-open-sans). A brand theme may re-point it for headlines and brand moments, never for numbers people compare, which bind font-family-primary. Wherever it shows a number the figures are tabular (CSS font-variant-numeric: tabular-nums).",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "font-family-display",

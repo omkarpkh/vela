@@ -220,7 +220,7 @@ export function generateDart(set, version) {
   const styles = typ.filter(([n]) => /^text-.+-size$/.test(n)).map(([n]) => n.slice(5, -5))
   w(`  // Composed styles — one per size in the ramp. All use ${ident(FAMILY)}; ${ident('font-family-display')}`)
   w(`  // (Open Sans by default, a brand may re-point it for headlines) is for headlines, brand moments and big`)
-  w(`  // stat numbers, and has no text style of its own, as in the CSS. A number in it uses tabular figures.`)
+  w(`  // headline numbers, and has no text style of its own, as in the CSS. A number in it uses tabular figures.`)
   for (const s of styles) {
     const size = `text-${s}-size`, lh = `text-${s}-line-height`, wt = `text-${s}-weight`, tr = `text-${s}-tracking`
     if (!all[lh]) throw new Error(`${size} has no matching line-height token`)

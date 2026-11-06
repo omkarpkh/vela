@@ -75,7 +75,7 @@ Three families, each a token, each with a fallback stack so the kit degrades rat
 | Token | Stack | For |
 |---|---|---|
 | `--vela-font-family-primary` | `"Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif` | all UI text |
-| `--vela-font-family-display` | `"Oswald", "Open Sans", -apple-system, sans-serif` | large stat and number displays only |
+| `--vela-font-family-display` | `"Open Sans", -apple-system, sans-serif` | headlines, brand moments and big headline numbers; the one family a brand may re-point |
 | `--vela-font-family-mono` | `ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", Menlo, Consolas, monospace` | identifiers, hashes, IPs, timestamps, counts that must align |
 
 The mono stack is **system fonts only** — no web font is downloaded; each platform's own
@@ -83,6 +83,17 @@ monospace answers first. It is used at Meta's size, line height, weight and trac
 (`--vela-text-meta-*`), which Figma carries as the text style **`Mono/Meta`** in Roboto Mono
 (Figma names one family per style, and Roboto Mono is the stack's Google-hosted member). Sizes
 are triples: never take a size without its line height.
+
+**The display face is Open Sans by default, and a brand may change it for headlines only**
+(`decisions/007-display-face-open-sans`). A big number gets its presence from size and weight, as
+H1 to H3 do, not from a second family. The display token is a brand setting that a white-label
+theme may re-point, under one rule: **a brand may choose a display face for headlines and brand
+moments, never for numbers people compare.** Numbers read against each other (a table column, one
+measure across a row of stat cards) bind `--vela-font-family-primary`, so a brand's face never
+reaches them; wherever the display face does show a number, the figures are tabular
+(`font-variant-numeric: tabular-nums`), and `scripts/check-css.mjs` fails a block that sets the
+display face without them (`display-tabular`). Which numbers are compared is a reviewer's check.
+The rule in full is in `foundations/typography.md`.
 
 ## The three taxonomies
 
@@ -249,6 +260,11 @@ return on the two-layer architecture and the reason components bind semantics: a
 binds a primitive or a raw value simply does not respond to the theme. **Both themes are real**:
 never hardcode a colour that only works in light mode, and never ship a pair you have only
 looked at in one theme.
+
+A brand theme for white-label use, which is planned and not built, re-points semantics the same
+way. The display face, `--vela-font-family-display`, is the one type setting it may change, for
+headlines and brand moments only (*Typography*, above). Until it lands, a host re-points the token
+on `:root` or a subtree, under the same rule.
 
 ## Responsive and density
 

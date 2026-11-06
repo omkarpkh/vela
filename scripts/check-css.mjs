@@ -38,10 +38,11 @@
  *                   var(--vela-font-family-display) without `font-variant-numeric: tabular-nums` in
  *                   the same block (foundations/typography.md, "The display face and brands";
  *                   decisions/007-display-face-open-sans). The display face is the one family a
- *                   brand may re-point, and in the kit and the site it shows numbers, which are
- *                   read against each other: tabular figures keep them aligned whatever face a
- *                   brand chooses. A display-face headline with no figures to compare is waived on
- *                   the font-family line with a reason.
+ *                   brand may re-point, and on the site it shows headline numbers: tabular figures
+ *                   keep their digits one width whatever face a brand chooses. A display-face
+ *                   headline with no figures in it is waived on the font-family line with a reason.
+ *                   Which numbers are compared (and so bind the UI face instead) is a reviewer's
+ *                   check: the lint cannot see it.
  *
  * Two more for the site only (slice 1 of the playground uplift), neither waivable:
  *
