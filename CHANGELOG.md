@@ -307,6 +307,33 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   built.
 
 ### Changed
+- **The display face is Open Sans; Oswald retires from the default** (Omkar's decision of 6 Nov
+  2026, `decisions/007-display-face-open-sans`). `--vela-font-family-display` is now
+  `"Open Sans", -apple-system, sans-serif` (was `"Oswald", "Open Sans", -apple-system, sans-serif`):
+  a big number gets its presence from size and weight, as H1 to H3 do, and sits in the same family
+  as the words beside it. On an earlier enterprise design system the owner led, big numbers moved
+  from Oswald to Open Sans because Oswald's narrow figures were hard to read and compare in dense
+  tables and stat cards, and two families side by side looked mixed up; Vela used Oswald for exactly
+  that. The token keeps its name, so nothing that binds it breaks. The CSS and Flutter tokens are
+  regenerated (`fontFamilyDisplayFallback` is now empty).
+  - **The brand override rule** (`DESIGN.md`, *Typography* and *Theming*;
+    `foundations/typography.md`, *The display face and brands*): the display face stays a brand
+    setting a white-label theme may re-point, for headlines and brand moments, never for numbers
+    people compare. Numbers read against each other bind `--vela-font-family-primary`; wherever the
+    display face shows a number, the figures are tabular.
+  - **A new CSS check, `display-tabular`** (`scripts/check-css.mjs`): a block that sets the display
+    face without `font-variant-numeric: tabular-nums` fails `npm test`, in the kit and on the site,
+    unless the line is waived with a reason. The Overview facts, the How it is made step numbers and
+    check count, and the Foundation page's display sample now set it. Open Sans's default figures
+    are already tabular, so no number moves; it is there for a brand face.
+  - **Screenshots before and after**, at 1440 and 390 in both themes, with real Open Sans: the
+    Overview facts and the How it is made numbers are pixel-identical (the site never loaded Oswald,
+    so it already drew them in Open Sans); the Foundation page changes only in the printed stack.
+    No size or weight was adjusted. The Overview, How it is made and Typography baselines move (the
+    check count, and the Typography page's new section and stack line).
+  - **`NOTICE` and `LICENSE-DESIGN.md` no longer name Oswald**: no theme, page or Figma style uses
+    it. `guidelines/setup.md` says Open Sans is the one family to load.
+  - 1838 checks (was 1837): 1384 unit and contract (was 1383).
 - **Tabs (core and headless): a full row fades at the edge where more tabs are, and keeps a tab you
   reach wholly in view** (see *Tabs overflow* under Added). Nothing changes while every tab fits.
   On the playground's Tabs page, whose stage is narrower than its ten tabs at 1440, the core row now

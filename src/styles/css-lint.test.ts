@@ -197,6 +197,25 @@ describe('the CSS checker', () => {
     expect(lintCss('.vela-brand-mark { transform: none; } /* vela-allow: just this once */').findings.map((f) => f.waived)).toEqual([false])
   })
 
+  // foundations/typography.md, "The display face and brands" (decisions/007-display-face-open-sans):
+  // a brand may re-point the display face, so a number set in it keeps tabular figures.
+  it('fails a block that sets the display face without tabular figures, in the kit and on the site, unless waived', () => {
+    const display = (css: string, site = false) => lintCss(css, { site }).findings.filter((f) => f.rule === 'display-tabular').map((f) => `${f.line}:${f.prop}:${f.waived}`)
+    expect(display('.n { font-family: var(--vela-font-family-display); }')).toEqual(['1:font-family:false'])
+    expect(display('.n { font-family: var(--vela-font-family-display); }', true)).toEqual(['1:font-family:false'])
+    expect(display('.n { font: var(--vela-font-weight-light) var(--vela-text-h1-size) var(--vela-font-family-display); }')).toEqual(['1:font:false'])
+    // The figures belong to the same block, in either order and beside other numeric features.
+    expect(display('.n { font-family: var(--vela-font-family-display); font-variant-numeric: tabular-nums; }')).toEqual([])
+    expect(display('.n {\n  font-variant-numeric: lining-nums tabular-nums;\n  font-family: var(--vela-font-family-display)\n}')).toEqual([])
+    // Another block's figures do not count, nor does a nested block's.
+    expect(display('.n { font-family: var(--vela-font-family-display); }\n.n span { font-variant-numeric: tabular-nums; }')).toEqual(['1:font-family:false'])
+    expect(display('@media (min-width: 1px) { .n { font-family: var(--vela-font-family-display); } }')).toEqual(['1:font-family:false'])
+    // Naming the token in a custom property, or binding another family, sets nothing.
+    expect(display('.n { --face: var(--vela-font-family-display); font-family: var(--vela-font-family-primary); }')).toEqual([])
+    // A display-face headline with no figures to compare is waived on its line, with a reason.
+    expect(display('.h { font-family: var(--vela-font-family-display); } /* vela-allow: a headline, no figures */')).toEqual(['1:font-family:true'])
+  })
+
   // Slice 1 of the playground uplift: the site's own two rules, neither waivable.
   it('site: every page control (cursor: pointer) has a pressed rule beside it', () => {
     const site = (css: string) => lintCss(css, { site: true }).findings.filter((f) => f.rule === 'pressed-state').map((f) => f.value)

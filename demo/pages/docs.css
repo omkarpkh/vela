@@ -16,7 +16,7 @@
 .how-step__head h2:focus { outline: none; }
 .how-step__head h2:focus-visible { outline: var(--vela-focus-ring-width) solid var(--vela-focus-ring-color); outline-offset: var(--vela-focus-ring-offset); }
 .how-step__n {
-  flex: none; font-family: var(--vela-font-family-display); font-size: var(--vela-text-h1-size); line-height: var(--vela-text-h1-line-height);
+  flex: none; font-family: var(--vela-font-family-display); font-variant-numeric: tabular-nums; font-size: var(--vela-text-h1-size); line-height: var(--vela-text-h1-line-height);
   font-weight: var(--vela-font-weight-light); color: var(--vela-text-de-emphasized); min-width: var(--vela-space-25);
 }
 .how-step__line { margin: var(--vela-space-5) 0 0; max-width: 64ch; color: var(--vela-text-default); }
@@ -60,7 +60,7 @@
 /* 3 · The checks */
 .how-checks { display: flex; flex-direction: column; gap: var(--vela-space-20); }
 .how-checks__total { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--vela-space-5) var(--vela-space-15); margin: 0; color: var(--vela-text-default); font-size: var(--vela-text-h4-size); line-height: var(--vela-text-h4-line-height); }
-.how-checks__number { font-family: var(--vela-font-family-display); font-size: calc(2 * var(--vela-text-h1-size)); line-height: 1; color: var(--vela-text-heading); }
+.how-checks__number { font-family: var(--vela-font-family-display); font-variant-numeric: tabular-nums; font-size: calc(2 * var(--vela-text-h1-size)); line-height: 1; color: var(--vela-text-heading); }
 .how-checks__kinds { margin: 0; padding-left: var(--vela-space-20); display: flex; flex-direction: column; gap: var(--vela-space-5); max-width: 72ch; color: var(--vela-text-default); }
 .how-checks__outputs { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(calc(12 * var(--vela-space-20)), 1fr)); gap: var(--vela-space-10) var(--vela-space-20); }
 .how-checks__output { display: flex; align-items: flex-start; gap: var(--vela-space-10); padding: var(--vela-space-15); border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4); color: var(--vela-text-default); }

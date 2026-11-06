@@ -74,8 +74,11 @@ theme cheap rather than a rewrite.
 
 ## Fonts
 
-Open Sans (300/400/600) for UI text; Oswald for large stat displays. Both have system
-fallbacks in the font stack, so the kit degrades rather than breaks if you do not load them.
+Open Sans (300/400/600) for UI text, and by default for the display face
+(`--vela-font-family-display`) too, so one family is all you load. The stack has system
+fallbacks, so the kit degrades rather than breaks if you do not load it. A brand may re-point the
+display face for headlines and brand moments, never for numbers people compare
+(`foundations/typography.md`); if you do, load that face yourself.
 `--vela-font-family-mono` is a system monospace stack and needs nothing loaded.
 
 ## Framework

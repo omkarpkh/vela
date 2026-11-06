@@ -50,10 +50,10 @@
 .ov-console__screen .vela-table-scroll, .ov-console__screen .vela-table-wrap { overflow: hidden; }
 .ov-console__caption { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
 
-/* Check it yourself: lighter than before. The number at H3's size in the display face, a short line, the link. */
+/* Check it yourself: lighter than before. The number at H3's size in the display face, with tabular figures, a short line, the link. */
 .ov-facts { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--vela-space-20); }
 .ov-fact { display: flex; flex-direction: column; gap: var(--vela-space-5); padding-top: var(--vela-space-10); border-top: 1px solid var(--vela-border-subtle); min-width: 0; }
-.ov-fact__n { font-family: var(--vela-font-family-display); font-size: var(--vela-text-h3-size); line-height: var(--vela-text-h3-line-height); font-weight: var(--vela-font-weight-regular); color: var(--vela-text-heading); }
+.ov-fact__n { font-family: var(--vela-font-family-display); font-variant-numeric: tabular-nums; font-size: var(--vela-text-h3-size); line-height: var(--vela-text-h3-line-height); font-weight: var(--vela-font-weight-regular); color: var(--vela-text-heading); }
 .ov-fact__line { flex: 1; font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
 .ov-fact .ov-link { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); }
 .ov-stamp { color: var(--vela-text-de-emphasized); }

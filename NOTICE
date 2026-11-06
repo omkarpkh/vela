@@ -16,14 +16,8 @@ Open Sans
   Copyright 2020 The Open Sans Project Authors
   Licence: SIL Open Font License 1.1 — https://openfontlicense.org/open-font-license-official-text/
   Source: https://github.com/googlefonts/opensans
-  Use: named by the typography tokens as the UI face. Not bundled in the npm package; the demo
-  site loads it from Google Fonts, a consumer loads it however they choose.
-
-Oswald
-  Copyright 2016 The Oswald Project Authors
-  Licence: SIL Open Font License 1.1 — https://openfontlicense.org/open-font-license-official-text/
-  Source: https://github.com/googlefonts/OswaldFont
-  Use: named by the typography tokens for large stat displays. Not bundled.
+  Use: named by the typography tokens as the UI face and the default display face. Not bundled in
+  the npm package; the demo site loads it from Google Fonts, a consumer loads it however they choose.
 
 Roboto Mono
   Copyright The Roboto Mono Project Authors

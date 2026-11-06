@@ -1286,8 +1286,9 @@ abstract final class VelaMotion {
 abstract final class VelaTypography {
   static const String fontFamilyPrimary = 'Open Sans';
   static const List<String> fontFamilyPrimaryFallback = <String>['Segoe UI', 'Roboto'];
-  static const String fontFamilyDisplay = 'Oswald';
-  static const List<String> fontFamilyDisplayFallback = <String>['Open Sans'];
+  /// Headlines, brand moments and big headline numbers. Open Sans by default, so a big number and the words beside it are one family (decisions/007-display-face-open-sans). A brand theme may re-point it for headlines and brand moments, never for numbers people compare, which bind font-family-primary. Wherever it shows a number the figures are tabular (CSS font-variant-numeric: tabular-nums).
+  static const String fontFamilyDisplay = 'Open Sans';
+  static const List<String> fontFamilyDisplayFallback = <String>[];
   /// System monospace stack, no web font: identifiers, hashes, IPs, timestamps and counts that must align. Figma text style Mono/Meta draws it in Roboto Mono.
   static const String fontFamilyMono = 'SF Mono';
   static const List<String> fontFamilyMonoFallback = <String>['Cascadia Mono', 'Roboto Mono', 'Menlo', 'Consolas'];
@@ -1334,7 +1335,8 @@ abstract final class VelaTypography {
   static const double textTabLargeLineHeight = 25;
 
   // Composed styles — one per size in the ramp. All use fontFamilyPrimary; fontFamilyDisplay
-  // (Oswald) is for large stat displays only and has no text style of its own, as in the CSS.
+  // (Open Sans by default, a brand may re-point it for headlines) is for headlines, brand moments and big
+  // headline numbers, and has no text style of its own, as in the CSS. A number in it uses tabular figures.
   static const TextStyle h1 = TextStyle(
     fontFamily: fontFamilyPrimary,
     fontFamilyFallback: fontFamilyPrimaryFallback,
