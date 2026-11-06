@@ -34,6 +34,14 @@
  *                   written there: nothing to lint means nothing to drift. Not waivable. A rule that
  *                   reaches the mark without naming it (`.host > *`) is the browser check's to catch:
  *                   tests/e2e/playground.spec.ts reads the computed style on the Brand Mark page.
+ *   display-tabular a block that sets `font-family` (or the `font` shorthand) to
+ *                   var(--vela-font-family-display) without `font-variant-numeric: tabular-nums` in
+ *                   the same block (foundations/typography.md, "The display face and brands";
+ *                   decisions/007-display-face-open-sans). The display face is the one family a
+ *                   brand may re-point, and in the kit and the site it shows numbers, which are
+ *                   read against each other: tabular figures keep them aligned whatever face a
+ *                   brand chooses. A display-face headline with no figures to compare is waived on
+ *                   the font-family line with a reason.
  *
  * Two more for the site only (slice 1 of the playground uplift), neither waivable:
  *
@@ -115,6 +123,9 @@ const ICON = /\.vela-icon(?![\w-])/
 // `.vela-brand-mark`, its modifiers (`--large`) and its parts (`__x`); not `.vela-brand-marks` or `.vela-brand-mark-x`.
 const MARK = /\.vela-brand-mark(?![a-z0-9]|-(?!-))/
 const STILL = /^(transition|animation)(-|$)|^(transform|translate|scale|rotate)$/
+// The display face (display-tabular): a block that sets it, and the figures that must come with it.
+const DISPLAY = /var\(\s*--vela-font-family-display\s*[,)]/
+const TABULAR = /\btabular-nums\b/
 /** Remove each `name(...)` matched by `fn` (a regex source ending in `\(`), parentheses balanced. */
 const dropFns = (v, fn) => {
   const re = new RegExp(fn, 'gi')
@@ -233,6 +244,7 @@ export function lintCss(source, { site = false } = {}) {
   const selectors = []   // every rule's selectors, { sel, forced }
   const controls = []    // selectors that set cursor: pointer, { sel, line }
   const shadows = []     // state selectors that draw a box-shadow, outside forced colours, { sel, line }
+  const faces = []       // per open block: where it sets the display face, and whether it sets tabular figures
   const flush = (isDecl) => {
     const text = buf
     buf = ''
@@ -274,6 +286,9 @@ export function lintCss(source, { site = false } = {}) {
       }
     }
     if (prop === '-webkit-tap-highlight-color' && value.trim().toLowerCase() === 'transparent') tapCleared = true
+    const face = faces[faces.length - 1]
+    if (face && (prop === 'font-family' || prop === 'font') && DISPLAY.test(rawValue)) face.display = { line: from, prop, value: rawValue.replace(/\s+/g, ' ').trim(), waived }
+    if (face && (prop === 'font-variant-numeric' || prop === 'font-variant') && TABULAR.test(rawValue)) face.tabular = true
     if (site) {
       const inner = blocks[blocks.length - 1] ?? ''
       const forced = blocks.some((b) => FORCED.test(b))
@@ -303,10 +318,16 @@ export function lintCss(source, { site = false } = {}) {
         const forced = blocks.some((b) => FORCED.test(b))
         for (const sel of splitSelectors(selector)) selectors.push({ sel, forced })
       }
-      blocks.push(selector); flush(false); start = line; continue
+      blocks.push(selector); faces.push({ display: null, tabular: false }); flush(false); start = line; continue
     }
     if (ch === ';') { flush(true); start = line; continue }
-    if (ch === '}') { flush(true); blocks.pop(); start = line; continue }
+    if (ch === '}') {
+      flush(true)
+      const face = faces.pop()
+      if (face?.display && !face.tabular) findings.push({ rule: 'display-tabular', ...face.display,
+        what: `${blocks[blocks.length - 1] ?? 'this block'} sets the display face without font-variant-numeric: tabular-nums — numbers people compare keep tabular figures whatever face a brand chooses (foundations/typography.md); a headline with no figures to compare is waived on this line with a reason` })
+      blocks.pop(); start = line; continue
+    }
     if (!buf.trim() && ch !== '\n') start = line
     buf += ch
   }

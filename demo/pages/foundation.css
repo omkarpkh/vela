@@ -63,7 +63,7 @@
 .fd-face__big { font-size: var(--vela-control-height-48); line-height: var(--vela-control-height-60); color: var(--vela-text-heading); }
 .fd-face__sample { font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height); color: var(--vela-text-default); overflow-wrap: anywhere; }
 .fd-face--primary { font-family: var(--vela-font-family-primary); font-weight: var(--vela-font-weight-light); }
-.fd-face--display { font-family: var(--vela-font-family-display); }
+.fd-face--display { font-family: var(--vela-font-family-display); font-variant-numeric: tabular-nums; }
 .fd-face--mono { font-family: var(--vela-font-family-mono); }
 .fd-face__sample.fd-face--primary { font-weight: var(--vela-font-weight-regular); }
 .fd-face__sample.fd-face--display { font-size: var(--vela-text-h1-size); line-height: var(--vela-text-h1-line-height); }
