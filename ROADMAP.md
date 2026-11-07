@@ -74,6 +74,10 @@ a Score Badge with its explanation and calibration; a Row State cell with a rule
 Reference Picker with "where used"; a Rule Builder with a dry-run impact card; a Multi-Location
 Status Grid; a Review Queue and Bulk Edit sheet.
 
+When the first stat component is specced (a stat card or any number shown large), it comes with a
+stat-number setting a brand cannot re-point, so a brand's display face never reaches numbers people
+compare (decision 007, option D; agreed on 7 November 2026 for when a stat component exists).
+
 ## Phase 3 — Agent delivery
 
 A shadcn-compatible registry of universal items served from the docs site (`/r/{name}.json`,

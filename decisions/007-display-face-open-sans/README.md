@@ -125,17 +125,26 @@ in a foundation would be neither gated nor counted. The mechanical half of the r
 check above; the half that decides which numbers are compared is a reviewer's check, and the
 documents say so.
 
+## Answered (7 November 2026)
+
+Omkar answered the open items on 7 November 2026:
+
+1. **A stat-number setting a brand cannot change (option D): yes, later.** It is built when a stat
+   component exists, not now; it is on the roadmap (`ROADMAP.md`, Phase 2b) for that moment.
+2. **The Overview facts keep the display face.** They are five unrelated headline numbers, not
+   numbers people compare.
+3. **A reviewer deciding which numbers are compared is enough for now.** The CSS check holds the
+   tabular half; which numbers are read against each other stays a review call, as the documents
+   say.
+4. **Release: 0.16.0 is held until the end of the refinement stage.** The change stays under
+   Unreleased until then; no release work is done for it now.
+
 ## Still open
 
-1. **A stat-number token or class (option D).** Decide whether a stat number gets its own binding
-   that a brand cannot re-point, before the first stat component is specced.
-2. **The Overview facts.** They are five unlike quantities, each with its own words, and are
-   treated as headline figures, so they keep the display face. If they are read as numbers people
-   compare, they move to the primary face: one line in `demo/pages/overview.css`.
-3. **The brand theme itself** is planned and not built. Until it lands, a host re-points the token
+1. **The brand theme itself** is planned and not built. Until it lands, a host re-points the token
    on `:root` or a subtree, under the same rule.
-4. **Figma.** No text style or variable carries Oswald or the display face:
+2. **Figma.** No text style or variable carries Oswald or the display face:
    `scripts/figma/text-styles.mjs` draws every style in Open Sans (Mono/Meta in Roboto Mono), and
    `npm run tokens:figma` skips `fontFamily` tokens, so the variable sync pushes nothing for
    `font-family-display`. The live library was not read for a hand-made Oswald style.
-5. **A change of mind** is a new record that names this one.
+3. **A change of mind** is a new record that names this one.
