@@ -2479,9 +2479,34 @@ test.describe('uplift slice 5 · doc pages', () => {
     const end = Math.max(...parts.map((a) => Number(a.startTime) + Number(a.effect!.getComputedTiming().endTime)))
     return { i, played: true, start, end }
   }))
+  /**
+   * The next idea starts in the frame the last one lands, so their times can differ by float rounding
+   * (a few hundredths of a millisecond, seen in CI). Anything under a millisecond is the same moment.
+   */
+  const EPS = 1
   /** Every idea that has played has finished. */
   const allLanded = (page: Page) => page.locator('.how-step[data-how="play"]').evaluateAll((steps) =>
     Promise.all(steps.flatMap((el) => el.getAnimations({ subtree: true }).map((a) => a.finished))).then(() => true))
+  /**
+   * The queue has run dry: every idea that will play on its own has played and landed. An idea takes its
+   * turn a frame after the one before it lands, so waiting once for the ideas playing now can return
+   * while the next one is still pending (its animations not started). Wait, then look again, until the
+   * number playing holds and nothing is pending or running.
+   */
+  const settled = async (page: Page) => {
+    let before = -1
+    for (let k = 0; k < 20; k++) {
+      await allLanded(page)
+      await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))))
+      const now = await page.locator('.how-step[data-how="play"]').evaluateAll((steps) => ({
+        playing: steps.length,
+        busy: steps.some((el) => el.getAnimations({ subtree: true }).some((a) => a.startTime === null || a.playState !== 'finished')),
+      }))
+      if (now.playing === before && !now.busy) return
+      before = now.playing
+    }
+    throw new Error('the How it is made queue never settled')
+  }
 
   test('How it is made: each idea lands as you reach it, part by part, on the motion tokens, once', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'no-preference' })
@@ -2523,17 +2548,17 @@ test.describe('uplift slice 5 · doc pages', () => {
     // While the first plays, the second waits its turn.
     await expect(steps.nth(1)).toHaveAttribute('data-how', 'wait')
     await expect(steps.nth(1)).toHaveAttribute('data-how', 'play')
-    await allLanded(page)
+    await settled(page)
     const [one, two] = await turns(page)
     expect(two.played).toBe(true)
-    expect(two.start).toBeGreaterThanOrEqual(one.end)
+    expect(two.start).toBeGreaterThanOrEqual(one.end - EPS)
     // Reached by scrolling while another plays: each waits its turn, in the order reached.
     await page.mouse.wheel(0, 5000)
     await expect(steps.last()).toHaveAttribute('data-how', 'play')
-    await allLanded(page)
+    await settled(page)
     const all = (await turns(page)).filter((t) => t.played).sort((a, b) => a.start - b.start)
     expect(all.map((t) => t.i)).toEqual([0, 1, 2, 3])
-    for (let k = 1; k < all.length; k++) expect(all[k].start, `idea ${all[k].i + 1}`).toBeGreaterThanOrEqual(all[k - 1].end)
+    for (let k = 1; k < all.length; k++) expect(all[k].start, `idea ${all[k].i + 1}`).toBeGreaterThanOrEqual(all[k - 1].end - EPS)
   })
 
   test('How it is made: in a tall window the ideas on screen still play one after another, in page order', async ({ page }) => {
@@ -2542,12 +2567,12 @@ test.describe('uplift slice 5 · doc pages', () => {
     await page.goto('/#/how')
     const steps = page.locator('.how-step')
     await expect(steps.nth(2)).toHaveAttribute('data-how', 'play', { timeout: 10_000 })
-    await allLanded(page)
+    await settled(page)
     const played = (await turns(page)).filter((t) => t.played)
     expect(played.length).toBeGreaterThanOrEqual(3)
     for (let k = 1; k < played.length; k++) {
       expect(played[k].i).toBe(played[k - 1].i + 1)
-      expect(played[k].start, `idea ${played[k].i + 1}`).toBeGreaterThanOrEqual(played[k - 1].end)
+      expect(played[k].start, `idea ${played[k].i + 1}`).toBeGreaterThanOrEqual(played[k - 1].end - EPS)
     }
   })
 
