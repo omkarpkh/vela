@@ -130,6 +130,8 @@ describe('Figma sync: variable scopes match the property each token is for', () 
     // layer opacity, the z-index layer has no Figma property, the scrim is a fill, tooltip text a text fill.
     ['popover-width', ['WIDTH_HEIGHT']],
     ['dropdown-list-width-min', ['WIDTH_HEIGHT']],
+    // Identifiers: the narrowest an identifier's column gets is a width.
+    ['identifier-width-min', ['WIDTH_HEIGHT']],
     ['dialog-width-wide', ['WIDTH_HEIGHT']],
     ['opacity-scrim', ['OPACITY']],
     ['layer-overlay', []],

@@ -168,3 +168,69 @@ describe('Table', () => {
     expect(css).not.toMatch(/--vela-[a-z]+-(severity|status|risk)-/)
   })
 })
+
+describe('Table identifiers', () => {
+  const NAMES = [
+    'vpn-edge-east',
+    'db-primary-eu-west-1',
+    '/var/log/syslog',
+    'ana.ito@example.com',
+    'k8s_node--pool..b//3',
+    '-leading-dash',
+    'trailing/',
+    'sha256:9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08',
+    'plain',
+    '',
+  ]
+  const named = (name: string) =>
+    render(
+      <Table caption="Assets">
+        <Table.Body>
+          <Table.Row>
+            <Table.HeaderCell scope="row" identifier>{name}</Table.HeaderCell>
+            <Table.Cell identifier>{name}</Table.Cell>
+            <Table.Cell>{name}</Table.Cell>
+          </Table.Row>
+        </Table.Body>
+      </Table>,
+    )
+
+  // [[rule: table-identifier-text-is-the-value]]
+  it.each(NAMES)('gives back exactly the value as its text, with nothing inserted: %j', (name) => {
+    const { container } = named(name)
+    const [header, cell, plain] = [...container.querySelectorAll('tbody tr > *')] as HTMLElement[]
+    for (const el of [header, cell]) {
+      expect(el.textContent).toBe(name)
+      // No soft hyphen, zero-width space, word joiner or BOM, and no non-breaking hyphen standing in.
+      expect(el.textContent).not.toMatch(/[­​‌‍⁠﻿‐‑]/)
+      expect(el).toHaveClass('vela-table__cell--identifier')
+    }
+    expect(plain.textContent).toBe(name)
+    expect(plain).not.toHaveClass('vela-table__cell--identifier')
+    expect(plain.querySelector('wbr, .vela-identifier-join')).toBeNull()
+  })
+
+  it('puts a break opportunity before each run of separators, and keeps the run with the next character', () => {
+    const { container } = named('vpn-edge-east')
+    const cell = container.querySelector('td.vela-table__cell--identifier')!
+    expect(cell.innerHTML).toBe('vpn<wbr><span class="vela-identifier-join">-e</span>dge<wbr><span class="vela-identifier-join">-e</span>ast')
+    // A run of separators is one unit: no opportunity between the two dots, nor after the slashes.
+    const { container: c2 } = named('pool..b//3')
+    expect(c2.querySelector('td.vela-table__cell--identifier')!.innerHTML).toBe(
+      'pool<wbr><span class="vela-identifier-join">..b</span><wbr><span class="vela-identifier-join">//3</span>',
+    )
+    // A name with no separator is left as it is.
+    const { container: c3 } = named('localhost')
+    expect(c3.querySelector('td.vela-table__cell--identifier')!.innerHTML).toBe('localhost')
+  })
+
+  it('keeps the joined run on one line, lets a too-wide segment break inside, and floors the column on the token', () => {
+    const base = readFileSync(resolve(process.cwd(), 'src/styles/base.css'), 'utf8')
+    expect(base).toMatch(/\.vela-identifier-join\s*\{\s*white-space:\s*nowrap;\s*\}/)
+    const rule = ruleFor('.vela-table__cell--identifier')
+    expect(rule).toMatch(/min-inline-size:\s*var\(--vela-identifier-width-min\)/)
+    // break-word, not anywhere: anywhere would lower the column's min-content to one character.
+    expect(rule).toMatch(/overflow-wrap:\s*break-word/)
+    expect(rule).toMatch(/box-sizing:\s*border-box/)
+  })
+})

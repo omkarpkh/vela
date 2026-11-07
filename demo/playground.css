@@ -212,6 +212,8 @@
 /* Table (Phase 1): the bounded height is the host's half of stickyHeader; the region fills it and
    scrolls, and the header pins to its top. */
 .pg-table-bounded { max-block-size: 220px; }   /* vela-allow: the stage's bounded host for stickyHeader; any height shorter than the rows will do */
+/* Fixed layout: the host gives the identifier column its width, at least the kit's floor. */
+.pg-table-identifier-col { inline-size: var(--vela-identifier-width-min); }
 
 /* ----------------------------------------------------- workbench (slice 2) -- */
 .pg-reset { display: inline-flex; align-items: center; gap: var(--vela-space-5); }

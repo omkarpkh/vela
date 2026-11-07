@@ -336,6 +336,9 @@
   @opacity-scrim
   @layer-overlay
 
+  /* ---- Identifiers: the narrowest an identifier's column gets ---- */
+  @identifier-width-min   /* see DESIGN.md, Identifiers, and table.md, Responsive behaviour */
+
   /* ---- Toast (headless) ---- */
   @toast-width
 

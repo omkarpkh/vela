@@ -41,7 +41,7 @@ Review Queue) build on it. Its three Figma sets are published in the library (bu
     {rows.length === 0 && <Table.Empty colSpan={4}>No assets match these filters</Table.Empty>}
     {rows.map((r) => (
       <Table.Row key={r.id} selected={picked.has(r.id)}>
-        <Table.HeaderCell scope="row">{r.name}</Table.HeaderCell>
+        <Table.HeaderCell scope="row" identifier>{r.name}</Table.HeaderCell>
         <Table.Cell><StatusIndicator status={r.status} label={r.statusLabel} /></Table.Cell>
         <Table.Cell><RiskPill risk={r.risk} /></Table.Cell>
         <Table.Cell numeric>{r.findings}</Table.Cell>
@@ -65,8 +65,10 @@ Review Queue) build on it. Its three Figma sets are published in the library (bu
 | `Table.HeaderCell` | `scope` | `"col" \| "row"` | `"col"` | **These two only.** `row` for the cell that names a body row. |
 | | `sort` | `{ direction: "ascending" \| "descending" \| "none"; onSort: (next) => void }` | — | Column headers only. Renders a button in the `<th>`; `aria-sort` while sorted. |
 | | `align` | `"start" \| "end"` | `"start"` | **These two only.** `end` over a numeric column. |
-| | `children` | `ReactNode` | — | **Required.** The label. **A `string` when `sort` is set** — the button's name is built from it. |
+| | `identifier` | `boolean` | `false` | Row headers only (`scope="row"`). The row's name is an identifier; see *Identifiers*. |
+| | `children` | `ReactNode` | — | **Required.** The label. **A `string` when `sort` or `identifier` is set**: the button's name is built from it, and an identifier is exactly its text. |
 | `Table.Cell` | `numeric` | `boolean` | `false` | Tabular numerals, end-aligned, unwrapped. Takes no `align`. |
+| | `identifier` | `boolean` | `false` | The cell's text is an identifier: it breaks only before `.` `-` `_` `/`, and its column keeps a floor. Never with `numeric`; its children are a `string`. See *Identifiers*. |
 | | `align` | `"start" \| "end"` | `"start"` | **These two only.** |
 | `Table.Empty` | `colSpan` | `number` | — | **Required.** The header's column count. |
 | | `children` | `string` | — | **Required.** What the empty table means — "No assets match these filters". |
@@ -74,6 +76,27 @@ Review Queue) build on it. Its three Figma sets are published in the library (bu
 Every part also takes `className`. Nothing else is forwarded: no `onClick` on a row (see
 *Anti-patterns*), no `colSpan` or `rowSpan` on a cell yet (a gap, flagged for Phase 2's grouped
 rows), no `style`.
+
+### Identifiers
+
+Host names, asset names, ids, paths and email addresses are names, and `DESIGN.md` (*Identifiers*)
+says how they break: only before `.` `-` `_` `/`, inside a segment only when that segment alone is
+wider than the line, with no hyphen added and nothing cut. Mark the cell that holds one
+`identifier`: a `Table.Cell`, or the `Table.HeaderCell` with `scope="row"` that names its row (the
+usual place for an asset's name). The cell then
+
+- renders the value with a break opportunity before each separator, and keeps each separator with
+  the character after it, so the browser can no longer break after a hyphen or a slash;
+- adds nothing to the text, so a reader who selects or copies the cell gets exactly the value;
+- keeps its column at least `--vela-identifier-width-min` wide in `auto` layout (see *Responsive
+  behaviour* for `fixed`).
+
+Its children are a `string`, checked by the compiler. A cell that holds a node (a link to the
+asset, a name beside an icon) is not marked: the kit cannot know which text inside a node is the
+name, so the rule reaches strings only. A link around a name is a gap until a part exists for it,
+and an inline marker for a name inside free text is the same gap (Toast, Contextual Alert and a
+Dropdown List item's label). An opaque value (a hash, a key, a fingerprint) is an identifier too,
+and is shown in full: Copyable Value, next phase, gives it a short form.
 
 ## Hard constraints
 
@@ -127,7 +150,26 @@ rows), no `style`.
   screen reader, so the checkbox is what carries the state. [[rule: table-selection-has-a-control | convention]]
 - **Never truncate.** No ellipsis on a cell: a hostname or a hash cut short is a different
   hostname. Auto layout widens the column and the region scrolls; fixed layout wraps inside the
-  column. [[rule: table-never-truncates | convention]]
+  column. A hash, a key or a fingerprint is shown in full until Copyable Value ships. [[rule: table-never-truncates | convention]]
+- **An identifier is a `string`.** `identifier` on a cell whose children are a node or a number
+  does not compile: the break rule and the copy promise are about the text, and the kit cannot
+  find the name inside a node. [[rule: table-identifier-is-a-string | compiler]]
+- **An identifier is never `numeric`.** A number is not a name and a name is not end-aligned
+  digits, so a cell with both does not compile. [[rule: table-identifier-not-numeric | compiler]]
+- **Only a row header is an identifier header.** `identifier` on a column header does not
+  compile: a column header is a label, not a name. [[rule: table-identifier-row-headers-only | compiler]]
+- **An identifier breaks only before its separators.** A rendered line never ends with `.` `-`
+  `_` or `/`, at any width, in either layout; it breaks inside a segment only when that segment
+  alone is wider than the line. [[rule: table-identifier-breaks-before-separators | browser]]
+- **An identifier's text is exactly the value.** The cell's `textContent`, and what a reader
+  selects and copies, is the string passed, character for character: no soft hyphen, no
+  zero-width space, no swapped character. [[rule: table-identifier-text-is-the-value | runtime]]
+- **An identifier column keeps its floor.** In `auto` layout its column is never narrower than
+  `--vela-identifier-width-min`; a table that cannot hold that scrolls inside its region and the
+  page does not. [[rule: table-identifier-column-floor | browser]]
+- **In `fixed` layout the host gives an identifier column its floor.** Fixed layout takes widths
+  from the header row, where the kit cannot tell a name column from any other, so the host binds
+  `--vela-identifier-width-min`, or more, on that column's header. [[rule: table-identifier-fixed-floor-is-the-hosts | convention]]
 
 ## Token bindings
 
@@ -150,7 +192,8 @@ in dark) puts links at 4.35:1 and de-emphasized text at 3.99:1, so a hovered row
 `--vela-bg-row-hover` (`grey-50` light, `grey-900` dark). On both, every pair a console row
 carries — body text, de-emphasized text, a link, the marker and all five status dots — is in
 `PAIRS` and passes in both themes; the tightest is the `unknown` dot on a selected row at 3.22:1.
-The marker is `--vela-stroke-2` wide. Type: header cells use the H6 metrics
+The marker is `--vela-stroke-2` wide. An identifier cell's column is at least
+`--vela-identifier-width-min` wide (the whole cell, padding included). Type: header cells use the H6 metrics
 (`--vela-text-h6-size`, `--vela-text-h6-weight`, `--vela-text-h6-line-height`) in
 `--vela-text-default`; body cells `--vela-text-body-size` and `--vela-text-body-line-height`; the
 caption the H5 metrics (`--vela-text-h5-size`). The sort glyph is `--vela-icon-12`; the sort
@@ -187,10 +230,18 @@ spacing, not targets.
 ## Responsive behaviour
 
 **Minimum width.** The table's minimum is its content's: in `auto` layout, the sum of each
-column's longest unbreakable run (a hostname, a hash, a header label — header labels do not
-wrap); in `fixed` layout, the widths the host gives the first row's cells through `className`
-(Vela has no column-width tokens). Above the minimum the table fills its container
-(`inline-size: 100%`).
+column's longest unbreakable run (a hash, or a header label, since header labels do not wrap), where an
+`identifier` column counts as at least `--vela-identifier-width-min`; in `fixed` layout, the widths
+the host gives the first row's cells through `className` (Vela has no column-width tokens beyond
+that floor). Above the minimum the table fills its container (`inline-size: 100%`).
+
+**Identifier columns, in both layouts.** In `auto` layout the cell sets the floor itself. In
+`fixed` layout the first row decides every width and the browser ignores a minimum on a cell, so the
+host gives the identifier column's header a width of `--vela-identifier-width-min` or more through
+`className`. Then the two layouts agree: below the sum of the floors the region scrolls, and above
+it a long name breaks before a separator. A table that cannot scroll at all, such as a picture of a
+console, may set its own floor on the cell through `className` (`min-inline-size: 0`); its names
+still break only before their separators.
 
 **Below the minimum it scrolls, inside itself.** The wrapper is an inline-size container
 (`container-type: inline-size`), so its width is never taken from the table: a 1200px table in a
@@ -199,8 +250,9 @@ scrolls horizontally instead, and because it is focusable a keyboard user tabs t
 with the arrow keys. The page never scrolls sideways because of a table.
 
 **It never truncates and never collapses columns.** In `auto` layout a long value widens its
-column; in `fixed` layout it wraps inside the column (`overflow-wrap: anywhere`). Numeric cells
-do not wrap in `auto` layout. Nothing is hidden behind an ellipsis.
+column; in `fixed` layout it wraps inside the column (`overflow-wrap: anywhere`). An `identifier`
+wraps only before its separators in both, and inside a segment only when the segment alone is wider
+than the column. Numeric cells do not wrap in `auto` layout. Nothing is hidden behind an ellipsis.
 
 **Sticky header.** `stickyHeader` pins the header row to the top of the region. The region only
 scrolls vertically when the host bounds the table's height — a height or max-height on the
@@ -260,8 +312,10 @@ are published in the library.
 | `Label text` (Header Cell) | the header cell's children |
 | `Value text` (Cell) | the cell's children |
 
-**Tabular numerals, the scroll region, the sticky header and the sort button's name have no Figma
-expression.** The Figma cell shows a number end-aligned; the code sets `tabular-nums` on it. Every
+**Tabular numerals, the scroll region, the sticky header, the sort button's name and `identifier`
+have no Figma expression.** A Figma text layer cannot hold break opportunities, so the Table Cell's
+`Value text` shows a name on one line; the floor is the `identifier/width-min` variable, for a
+designer who sizes a name column by hand. The Figma cell shows a number end-aligned; the code sets `tabular-nums` on it. Every
 fill, stroke and text binds a variable: the header on surface/global with a border/default rule,
 cells with a border/subtle rule, the hovered and selected rows on surface/row-hover and
 surface/row-selected, the selected and current marker a 2px border/active stroke on the row's
@@ -274,6 +328,8 @@ start edge.
 - ❌ Zebra striping → competes with the hover and selected tints and reads as grouping; the row rules already track the eye.
 - ❌ A red row for a critical finding, an amber row for a degraded host → colour on a row is meaning by colour alone; put a Status Indicator or a Risk Pill in a cell.
 - ❌ `text-overflow: ellipsis` on a cell → a truncated hostname is a different hostname; let it widen or wrap.
+- ❌ A host name broken after its hyphen (`vpn-edge-` then `east`), or a soft hyphen or zero-width space added to make it break → mark the cell `identifier`.
+- ❌ `<Table.Cell identifier numeric>`, `identifier` on a column header, or an identifier cell holding a link or an icon → will not compile; pass the name as a `string`.
 - ❌ `overflow-x: auto` on the page or a parent to fit a wide table → the region already scrolls; the page never does.
 - ❌ Restyling `<tr>` into cards below a breakpoint → breaks header association; render a card list (not in this kit) instead.
 - ❌ Holding sort state in the table, or sorting inside a cell renderer → the host sorts and passes `direction`.

@@ -2869,6 +2869,19 @@
         }
       }
     },
+    "identifier-width-min": {
+      "$type": "dimension",
+      "$value": {
+        "value": 160,
+        "unit": "px"
+      },
+      "$description": "The narrowest an identifier's column gets (Table, identifier). In auto layout the column never shrinks below it and the table scrolls in its region instead; in fixed layout the host binds it on that column's header. Copyable Value, next phase, takes the same minimum.",
+      "$extensions": {
+        "com.omkarux.vela": {
+          "figma": "identifier/width-min"
+        }
+      }
+    },
     "popover-width-wide": {
       "$type": "dimension",
       "$value": {

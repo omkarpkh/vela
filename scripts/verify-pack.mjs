@@ -196,6 +196,13 @@ export const T = (direction: TableSortDirection, isNumeric: boolean) => (
         <Table.Cell align="end">x</Table.Cell>
         <Table.Cell><StatusIndicator status="healthy" label="Healthy" /></Table.Cell>
       </Table.Row>
+      <Table.Row>
+        <Table.HeaderCell scope="row" identifier>vpn-edge-east</Table.HeaderCell>
+        <Table.Cell identifier>{'/var/log/' + direction}</Table.Cell>
+        <Table.Cell identifier align="end">ana.ito@example.com</Table.Cell>
+        <Table.Cell identifier={false}><b>not a name</b></Table.Cell>
+        <Table.HeaderCell scope="row" identifier={false}><b>row</b></Table.HeaderCell>
+      </Table.Row>
     </Table.Body>
   </Table>
 )
@@ -571,6 +578,12 @@ export const shapes: [Fields, FieldSpec, FieldTrust, Group<F>, Node<F>, Conditio
     ['table-sort-label-is-a-string', 'sortable header labelled with a node', `<Table.HeaderCell sort={{ direction: 'none', onSort: () => {} }}><b>Asset</b></Table.HeaderCell>`],
     ['table-align-closed', 'invented cell alignment', `<Table.Cell align="center">42</Table.Cell>`],
     ['table-align-closed', 'numeric cell aligned to the start', `<Table.Cell numeric align="start">42</Table.Cell>`],
+    ['table-identifier-is-a-string', 'identifier cell holding a link', `<Table.Cell identifier><a href="/assets/vpn-edge-east">vpn-edge-east</a></Table.Cell>`],
+    ['table-identifier-is-a-string', 'identifier cell holding a number', `<Table.Cell identifier>{443}</Table.Cell>`],
+    ['table-identifier-is-a-string', 'identifier row header holding a node', `<Table.HeaderCell scope="row" identifier><b>vpn-edge-east</b></Table.HeaderCell>`],
+    ['table-identifier-not-numeric', 'identifier and numeric on one cell', `<Table.Cell identifier numeric>vpn-edge-east</Table.Cell>`],
+    ['table-identifier-row-headers-only', 'identifier on a column header', `<Table.HeaderCell identifier>Asset</Table.HeaderCell>`],
+    ['table-identifier-row-headers-only', 'identifier on a sortable column header', `<Table.HeaderCell identifier sort={{ direction: 'none', onSort: () => {} }}>Asset</Table.HeaderCell>`],
     ['table-empty-requires-text', 'empty state with no message', `<Table.Empty colSpan={3} />`],
     ['table-empty-requires-text', 'empty state message as a node', `<Table.Empty colSpan={3}><b>None</b></Table.Empty>`],
     // Popover, Tooltip and Dialog ship from `@omkarux/vela/headless` only, like Checkbox and Radio Group.

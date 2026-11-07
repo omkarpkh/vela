@@ -148,7 +148,9 @@ function TableStage({ v }: { v: Values }) {
       <Table.Head>
         <Table.Row>
           <Table.HeaderCell><span className="vela-sr-only">Selected</span></Table.HeaderCell>
-          <Table.HeaderCell sort={sortOf('name')}>Asset</Table.HeaderCell>
+          {/* Fixed layout takes its widths from this row, so the host gives the identifier column the
+              kit's floor here (table.md, Responsive behaviour); auto layout needs nothing. */}
+          <Table.HeaderCell sort={sortOf('name')} className={str(v.layout) === 'fixed' ? 'pg-table-identifier-col' : undefined}>Asset</Table.HeaderCell>
           <Table.HeaderCell>Status</Table.HeaderCell>
           <Table.HeaderCell>Risk</Table.HeaderCell>
           <Table.HeaderCell align="end" sort={sortOf('findings')}>Open findings</Table.HeaderCell>
@@ -169,7 +171,7 @@ function TableStage({ v }: { v: Values }) {
                   onCheckedChange={(on) => setPicked((p) => { const n = new Set(p); if (on) n.add(r.name); else n.delete(r.name); return n })}
                 />
               </Table.Cell>
-              <Table.HeaderCell scope="row">{r.name}</Table.HeaderCell>
+              <Table.HeaderCell scope="row" identifier>{r.name}</Table.HeaderCell>
               <Table.Cell><StatusIndicator status={r.status} label={r.statusLabel} /></Table.Cell>
               <Table.Cell><RiskPill risk={r.risk} size="small" /></Table.Cell>
               <Table.Cell numeric>{r.findings.toLocaleString('en-US')}</Table.Cell>
@@ -659,7 +661,7 @@ ${TAB_EXAMPLE.filter((t) => !t.disabled).map((t) => `  <Tabs.Panel value="${t.va
     hide: ['children'],
     extra: [{ prop: 'empty', kind: 'boolean', type: 'boolean', default: false, notes: 'Stage only: render Table.Empty instead of the rows.' }],
     render: (v) => <TableStage v={v} />,
-    highlight: () => (t) => /--vela-(bg-row-|bg-global|border-(default|subtle|active)|text-default|icon-default)/.test(t),
+    highlight: () => (t) => /--vela-(bg-row-|bg-global|border-(default|subtle|active)|text-default|icon-default|identifier-width-min)/.test(t),
     code: (v, spec) =>
       `${printJsx('Table', { caption: v.caption, captionHidden: v.captionHidden, density: v.density, layout: v.layout, stickyHeader: v.stickyHeader }, defaultsOf(spec)).replace(' />', '>')}
   <Table.Head>
@@ -673,7 +675,7 @@ ${TAB_EXAMPLE.filter((t) => !t.disabled).map((t) => `  <Tabs.Panel value="${t.va
     ${bool(v.empty) ? '<Table.Empty colSpan={6}>No assets match these filters</Table.Empty>' : `{rows.map((r) => (
       <Table.Row key={r.id} selected={picked.has(r.id)}>
         <Table.Cell><Checkbox label={\`Select \${r.name}\`} size="tiny" … /></Table.Cell>
-        <Table.HeaderCell scope="row">{r.name}</Table.HeaderCell>
+        <Table.HeaderCell scope="row" identifier>{r.name}</Table.HeaderCell>
         <Table.Cell><StatusIndicator status={r.status} label={r.statusLabel} /></Table.Cell>
         <Table.Cell numeric>{r.findings}</Table.Cell>
       </Table.Row>

@@ -1657,10 +1657,18 @@
         },
         {
           "part": "Table.HeaderCell",
+          "name": "identifier",
+          "type": "boolean",
+          "default": false,
+          "required": false,
+          "notes": "Row headers only (`scope=\"row\"`). The row's name is an identifier; see *Identifiers*."
+        },
+        {
+          "part": "Table.HeaderCell",
           "name": "children",
           "type": "ReactNode",
           "required": true,
-          "notes": "**Required.** The label. **A `string` when `sort` is set** — the button's name is built from it."
+          "notes": "**Required.** The label. **A `string` when `sort` or `identifier` is set**: the button's name is built from it, and an identifier is exactly its text."
         },
         {
           "part": "Table.Cell",
@@ -1669,6 +1677,14 @@
           "default": false,
           "required": false,
           "notes": "Tabular numerals, end-aligned, unwrapped. Takes no `align`."
+        },
+        {
+          "part": "Table.Cell",
+          "name": "identifier",
+          "type": "boolean",
+          "default": false,
+          "required": false,
+          "notes": "The cell's text is an identifier: it breaks only before `.` `-` `_` `/`, and its column keeps a floor. Never with `numeric`; its children are a `string`. See *Identifiers*."
         },
         {
           "part": "Table.Cell",
@@ -1709,6 +1725,7 @@
         "--vela-control-height-24",
         "--vela-icon-12",
         "--vela-icon-default",
+        "--vela-identifier-width-min",
         "--vela-space-10",
         "--vela-space-5",
         "--vela-stroke-2",

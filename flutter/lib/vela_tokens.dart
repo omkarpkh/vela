@@ -1245,6 +1245,8 @@ abstract final class VelaSizing {
   static const double popoverWidth = 280;
   /// Dropdown List: the narrowest the list gets, unless its trigger is wider. Never wider than the space beside its trigger (--available-width), which wins.
   static const double dropdownListWidthMin = 200;
+  /// The narrowest an identifier's column gets (Table, identifier). In auto layout the column never shrinks below it and the table scrolls in its region instead; in fixed layout the host binds it on that column's header. Copyable Value, next phase, takes the same minimum.
+  static const double identifierWidthMin = 160;
   /// Popover, size wide.
   static const double popoverWidthWide = 400;
   /// Dialog, size regular: the popup width. Never wider than the viewport less its gutters.
