@@ -1,0 +1,2343 @@
+{
+  "about": "Every built Vela component, generated from guidelines/components/*.md by scripts/build-components-json.mjs. Do not edit: change the spec and run npm run components. Each spec is the full contract; this is its index.",
+  "components": [
+    {
+      "name": "Brand Mark",
+      "spec": "guidelines/components/brand-mark.md",
+      "purpose": "Another company's own logo, drawn as its owner drew it, used only to link to that company's service: \"Vela on GitHub\", \"Vela in Figma\". It is a separate closed set, kept apart from Icon. It never moves, sits in the interface's own icon grey, and never stands for Vela itself.",
+      "status": {
+        "label": "Experimental",
+        "note": "specced, built and tested in the core entry; no Figma set yet (the builder, scripts/figma/components/brand-mark.figma.js, is ready and has not been run). Its consumer is [Icon Button](icon-button.md)'s brandMark glyph, and the playground's header links to GitHub and Figma through it."
+      },
+      "imports": [
+        {
+          "from": "@omkarux/vela",
+          "names": [
+            "BrandMark"
+          ],
+          "peers": [],
+          "status": "Experimental"
+        }
+      ],
+      "whenToUse": "- **A link to that company's own service, from a product built with Vela** → **Brand Mark**, inside an **Icon Button** link.\n- **Sign in with a provider** → not this. Out of scope.\n- **A list of integrations or connectors** → not this.\n- **npm, or any service whose logo needs permission** → the word, set by Icon Button, not a mark.\n- **Vela's own logo or wordmark** → never a Brand Mark.\n\nA glyph-only link to GitHub or Figma is an [Icon Button](icon-button.md) with `brandMark`. Don't wrap a bare Brand Mark in an `<a>` of your own.",
+      "props": [
+        {
+          "part": "BrandMark",
+          "name": "name",
+          "type": "\"github\" | \"figma\"",
+          "values": [
+            "github",
+            "figma"
+          ],
+          "required": true,
+          "notes": "**Required. These two only.**"
+        },
+        {
+          "part": "BrandMark",
+          "name": "size",
+          "type": "\"regular\" | \"large\"",
+          "values": [
+            "regular",
+            "large"
+          ],
+          "default": "large",
+          "required": false,
+          "notes": "**These two only.** 16px or 20px, Icon's size tokens. `figma` is `large` only."
+        },
+        {
+          "part": "BrandMark",
+          "name": "label",
+          "type": "string",
+          "required": false,
+          "notes": "**Standalone only.** The accessible name. Exclusive with `decorative`."
+        },
+        {
+          "part": "BrandMark",
+          "name": "decorative",
+          "type": "true",
+          "values": [
+            true
+          ],
+          "required": false,
+          "notes": "**Inside a named control only.** `aria-hidden`. Exclusive with `label`."
+        }
+      ],
+      "tokens": [
+        "--vela-bg-container",
+        "--vela-bg-global",
+        "--vela-black",
+        "--vela-black-pure",
+        "--vela-brand-mark",
+        "--vela-btn-standard-hover-bg",
+        "--vela-grey-300",
+        "--vela-grey-700",
+        "--vela-icon-size",
+        "--vela-icon-size-large",
+        "--vela-icon-strong",
+        "--vela-text-heading"
+      ]
+    },
+    {
+      "name": "Button",
+      "spec": "guidelines/components/button.md",
+      "purpose": "Triggers an action: save, submit, delete, apply, cancel. Carries a text label and an optional **left** icon. `variant` encodes the action's consequence; `appearance` encodes visual weight.",
+      "status": {
+        "label": "Approved",
+        "note": ""
+      },
+      "imports": [
+        {
+          "from": "@omkarux/vela",
+          "names": [
+            "Button"
+          ],
+          "peers": [],
+          "status": "Approved"
+        }
+      ],
+      "whenToUse": "- Action that stays in the page flow → **Button**.\n- Navigates to another page → a router `<Link>`, not a Button.\n- Flips a binary setting that takes effect immediately → **Toggle**.\n- Icon-only, no label → an [**Icon Button**](icon-button.md) (`@omkarux/vela/headless`).",
+      "props": [
+        {
+          "part": "Button",
+          "name": "variant",
+          "type": "\"primary\" | \"standard\" | \"destructive\"",
+          "values": [
+            "primary",
+            "standard",
+            "destructive"
+          ],
+          "default": "standard",
+          "required": false,
+          "notes": "Consequence. **These three only.**"
+        },
+        {
+          "part": "Button",
+          "name": "appearance",
+          "type": "\"filled\" | \"hollow\" | \"text-link\"",
+          "values": [
+            "filled",
+            "hollow",
+            "text-link"
+          ],
+          "default": "filled",
+          "required": false,
+          "notes": "Weight. **These three only.** `text-link` is primary-only."
+        },
+        {
+          "part": "Button",
+          "name": "size",
+          "type": "\"tiny\" | \"regular\" | \"large\" | \"huge\"",
+          "values": [
+            "tiny",
+            "regular",
+            "large",
+            "huge"
+          ],
+          "default": "regular",
+          "required": false,
+          "notes": "**These four only.**"
+        },
+        {
+          "part": "Button",
+          "name": "disabled",
+          "type": "boolean",
+          "default": false,
+          "required": false,
+          "notes": "A state, not a variant. Leaves the tab order."
+        },
+        {
+          "part": "Button",
+          "name": "loading",
+          "type": "boolean",
+          "default": false,
+          "required": false,
+          "notes": "Shows an indicator, sets `aria-busy`, ignores clicks."
+        },
+        {
+          "part": "Button",
+          "name": "icon",
+          "type": "ReactNode",
+          "required": false,
+          "notes": "Always **left** of the label. There is no trailing slot."
+        },
+        {
+          "part": "Button",
+          "name": "type",
+          "type": "\"button\" | \"submit\"",
+          "values": [
+            "button",
+            "submit"
+          ],
+          "default": "button",
+          "required": false,
+          "notes": "`\"submit\"` only for a form's commit button."
+        },
+        {
+          "part": "Button",
+          "name": "children",
+          "type": "ReactNode",
+          "required": false,
+          "notes": "Label. Verb-first, Title Case."
+        }
+      ],
+      "tokens": [
+        "--vela-border-inactive",
+        "--vela-btn-destructive-bg",
+        "--vela-btn-destructive-hollow-text",
+        "--vela-btn-destructive-text",
+        "--vela-btn-disabled-bg",
+        "--vela-btn-disabled-text",
+        "--vela-btn-hollow-primary-border",
+        "--vela-btn-hollow-primary-text",
+        "--vela-btn-primary-bg",
+        "--vela-btn-primary-text",
+        "--vela-btn-standard-bg",
+        "--vela-btn-standard-border",
+        "--vela-btn-standard-text",
+        "--vela-control-height-24",
+        "--vela-control-height-35",
+        "--vela-control-height-40",
+        "--vela-control-height-48",
+        "--vela-control-height-60",
+        "--vela-duration-base",
+        "--vela-duration-fast",
+        "--vela-duration-instant",
+        "--vela-ease-standard",
+        "--vela-icon-12",
+        "--vela-icon-16",
+        "--vela-radius-4",
+        "--vela-space-10",
+        "--vela-space-15",
+        "--vela-space-20",
+        "--vela-space-30",
+        "--vela-text-link"
+      ]
+    },
+    {
+      "name": "Checkbox",
+      "spec": "guidelines/components/checkbox.md",
+      "purpose": "A box that **records intent** — on its own (\"accept the terms\") or as one of several in a **Checkbox Group** (\"scan these three scopes\") — and does nothing until a Save, Apply or Submit commits the form.",
+      "status": {
+        "label": "Experimental",
+        "note": "the first component born in @omkarux/vela/headless (Base UI 1.9); there is no core implementation, and its Figma set is published in the library (built from scripts/figma/components/checkbox.figma.js). Approved once the API has settled; see GOVERNANCE.md."
+      },
+      "imports": [
+        {
+          "from": "@omkarux/vela/headless",
+          "names": [
+            "Checkbox"
+          ],
+          "peers": [
+            "@base-ui/react"
+          ],
+          "status": "Experimental"
+        }
+      ],
+      "whenToUse": "- Records a choice that a **Save / Apply / Submit** button commits later — accept terms, pick the\n  scopes of a scan, select rows for a bulk action → **Checkbox**.\n- Takes effect **the moment it is flipped** — notifications on/off, dark mode, \"enable this rule\"\n  → **Toggle** (`toggle.md`). The test is the Save button: if one is needed, it is a Checkbox; if\n  the change is live already, it is a Toggle. A Toggle behind a Save button is the single most\n  common mistake agents make with these two.\n- Several options where **exactly one** can be chosen → **Radio Group** (`radio-group.md`).\n- Several options where **any number** can be chosen → **Checkbox.Group**.\n- One box that stands for a set — \"select all\", with some rows selected → `indeterminate`, which\n  renders `aria-checked=\"mixed\"` and a dash.\n- A long list to pick from (more than ~7 options, or searchable) → a Multi-select, which is **not\n  in this kit**. Flag the gap; do not build it out of Checkboxes.",
+      "props": [
+        {
+          "part": "Checkbox",
+          "name": "label",
+          "type": "string",
+          "required": true,
+          "notes": "**Required.** The visible label, also the accessible name."
+        },
+        {
+          "part": "Checkbox",
+          "name": "checked",
+          "type": "boolean",
+          "required": false,
+          "notes": "Controlled. Exclusive with `defaultChecked`. Ignored inside a Group, which owns the state."
+        },
+        {
+          "part": "Checkbox",
+          "name": "defaultChecked",
+          "type": "boolean",
+          "default": false,
+          "required": false,
+          "notes": "Uncontrolled initial state. Exclusive with `checked`."
+        },
+        {
+          "part": "Checkbox",
+          "name": "onCheckedChange",
+          "type": "(checked: boolean) => void",
+          "required": false,
+          "notes": "Receives the **next** value."
+        },
+        {
+          "part": "Checkbox",
+          "name": "indeterminate",
+          "type": "boolean",
+          "default": false,
+          "required": false,
+          "notes": "The \"some of the set\" state: `aria-checked=\"mixed\"` and a dash. Visual only — the next click reports `true` or `false`."
+        },
+        {
+          "part": "Checkbox",
+          "name": "disabled",
+          "type": "boolean",
+          "default": false,
+          "required": false,
+          "notes": "Native `disabled`: leaves the tab order, swallows clicks."
+        },
+        {
+          "part": "Checkbox",
+          "name": "size",
+          "type": "\"regular\" | \"tiny\"",
+          "values": [
+            "regular",
+            "tiny"
+          ],
+          "default": "regular",
+          "required": false,
+          "notes": "**These two only.** The same two as Toggle."
+        },
+        {
+          "part": "Checkbox",
+          "name": "description",
+          "type": "string",
+          "required": false,
+          "notes": "A hint under the label, linked by `aria-describedby`."
+        },
+        {
+          "part": "Checkbox",
+          "name": "error",
+          "type": "string",
+          "required": false,
+          "notes": "**The message.** Presence puts the box in the error state; the string is announced."
+        },
+        {
+          "part": "Checkbox",
+          "name": "name",
+          "type": "string",
+          "required": false,
+          "notes": "Native, forwarded to the hidden `<input>` for form submission."
+        },
+        {
+          "part": "Checkbox",
+          "name": "value",
+          "type": "string",
+          "required": false,
+          "notes": "Native, forwarded. **Required inside a Group** — it is how the group knows the box."
+        },
+        {
+          "part": "Checkbox.Group",
+          "name": "label",
+          "type": "string",
+          "required": true,
+          "notes": "**Required.** Rendered as the group's visible label and wired as its accessible name."
+        },
+        {
+          "part": "Checkbox.Group",
+          "name": "value",
+          "type": "string[]",
+          "required": false,
+          "notes": "Controlled: the `value`s of the checked boxes. Exclusive with `defaultValue`."
+        },
+        {
+          "part": "Checkbox.Group",
+          "name": "defaultValue",
+          "type": "string[]",
+          "default": [],
+          "required": false,
+          "notes": "Uncontrolled initial state. Exclusive with `value`."
+        },
+        {
+          "part": "Checkbox.Group",
+          "name": "onValueChange",
+          "type": "(value: string[]) => void",
+          "required": false,
+          "notes": "Receives the **next** array."
+        },
+        {
+          "part": "Checkbox.Group",
+          "name": "disabled",
+          "type": "boolean",
+          "default": false,
+          "required": false,
+          "notes": "Disables every box in the group."
+        },
+        {
+          "part": "Checkbox.Group",
+          "name": "orientation",
+          "type": "\"vertical\" | \"horizontal\"",
+          "values": [
+            "vertical",
+            "horizontal"
+          ],
+          "default": "vertical",
+          "required": false,
+          "notes": "**These two only.** Layout; keyboard order is document order either way."
+        },
+        {
+          "part": "Checkbox.Group",
+          "name": "children",
+          "type": "ReactNode",
+          "required": false,
+          "notes": "`Checkbox` elements, each with a `value`."
+        }
+      ],
+      "tokens": [
+        "--vela-bg-container",
+        "--vela-bg-global",
+        "--vela-border-inactive",
+        "--vela-control-bg",
+        "--vela-control-bg-disabled",
+        "--vela-control-border",
+        "--vela-control-border-error",
+        "--vela-control-border-hover",
+        "--vela-control-check-bg-checked",
+        "--vela-control-check-mark",
+        "--vela-control-checkbox-size",
+        "--vela-control-checkbox-size-tiny",
+        "--vela-duration-base",
+        "--vela-duration-fast",
+        "--vela-duration-instant",
+        "--vela-ease-out",
+        "--vela-ease-standard",
+        "--vela-icon-disabled",
+        "--vela-radius-3",
+        "--vela-space-10",
+        "--vela-space-20",
+        "--vela-text-de-emphasized",
+        "--vela-text-default",
+        "--vela-text-error",
+        "--vela-text-inactive"
+      ]
+    },
+    {
+      "name": "Contextual Alert",
+      "spec": "guidelines/components/contextual-alert.md",
+      "purpose": "An inline banner carrying a severity. Lives in the page flow, next to the thing it is about — it is not a toast and not a modal.",
+      "status": {
+        "label": "Approved",
+        "note": ""
+      },
+      "imports": [
+        {
+          "from": "@omkarux/vela",
+          "names": [
+            "ContextualAlert"
+          ],
+          "peers": [],
+          "status": "Approved"
+        }
+      ],
+      "whenToUse": "- An event or condition the user must read, inline → **Contextual Alert**.\n- An object's ongoing health, usually in a table → **Status Indicator**.\n- Transient confirmation that something already happened, floating and leaving on its own →\n  **Toast** (`toast.md`, `@omkarux/vela/headless`): `success`, `info` or `warning` only. Anything\n  `minor`, `major` or `critical`, and any failure, stays here, in the page.\n- A blocking decision → a Modal, **not in this kit**. Flag the gap.",
+      "props": [
+        {
+          "part": "ContextualAlert",
+          "name": "severity",
+          "type": "\"success\" | \"info\" | \"warning\" | \"minor\" | \"major\" | \"critical\"",
+          "values": [
+            "success",
+            "info",
+            "warning",
+            "minor",
+            "major",
+            "critical"
+          ],
+          "required": true,
+          "notes": "**Required. These six only.**"
+        },
+        {
+          "part": "ContextualAlert",
+          "name": "title",
+          "type": "string",
+          "required": false,
+          "notes": "Optional bold lead-in."
+        },
+        {
+          "part": "ContextualAlert",
+          "name": "children",
+          "type": "ReactNode",
+          "required": true,
+          "notes": "**Required.** The body."
+        },
+        {
+          "part": "ContextualAlert",
+          "name": "onDismiss",
+          "type": "() => void",
+          "required": false,
+          "notes": "Omit for alerts the user must not clear."
+        },
+        {
+          "part": "ContextualAlert",
+          "name": "dismissLabel",
+          "type": "string",
+          "default": "Dismiss",
+          "required": false,
+          "notes": "Accessible name for the close control."
+        }
+      ],
+      "tokens": [
+        "--vela-bg-severity-critical",
+        "--vela-bg-severity-info",
+        "--vela-bg-severity-major",
+        "--vela-bg-severity-minor",
+        "--vela-bg-severity-success",
+        "--vela-bg-severity-warning",
+        "--vela-border-severity-critical",
+        "--vela-border-severity-critical-indicator",
+        "--vela-border-severity-info",
+        "--vela-border-severity-info-indicator",
+        "--vela-border-severity-major",
+        "--vela-border-severity-major-indicator",
+        "--vela-border-severity-minor",
+        "--vela-border-severity-minor-indicator",
+        "--vela-border-severity-success",
+        "--vela-border-severity-success-indicator",
+        "--vela-border-severity-warning",
+        "--vela-border-severity-warning-indicator",
+        "--vela-icon-severity-critical",
+        "--vela-icon-severity-info",
+        "--vela-icon-severity-major",
+        "--vela-icon-severity-minor",
+        "--vela-icon-severity-success",
+        "--vela-icon-severity-warning",
+        "--vela-text-severity-critical",
+        "--vela-text-severity-info",
+        "--vela-text-severity-major",
+        "--vela-text-severity-minor",
+        "--vela-text-severity-success",
+        "--vela-text-severity-warning"
+      ]
+    },
+    {
+      "name": "Dialog",
+      "spec": "guidelines/components/dialog.md",
+      "purpose": "A **modal** window for a decision that blocks the task — edit one thing and save, or cancel — with the page behind it dimmed, inert and scroll-locked until it closes. Its `alert` variant confirms a destructive or irreversible action, with an explicit way out.",
+      "status": {
+        "label": "Experimental",
+        "note": "born in @omkarux/vela/headless (Base UI 1.9) with Popover and Tooltip; there is no core implementation, and its Figma set is published in the library (built from scripts/figma/components/dialog.figma.js). Approved once the API has settled; see GOVERNANCE.md."
+      },
+      "imports": [
+        {
+          "from": "@omkarux/vela/headless",
+          "names": [
+            "Dialog"
+          ],
+          "peers": [
+            "@base-ui/react"
+          ],
+          "status": "Experimental"
+        }
+      ],
+      "whenToUse": "- The user must **answer before going on** — save or discard an edit, name a new policy, choose\n  between two outcomes → **Dialog**.\n- The answer **destroys or cannot be undone** — delete a policy, revoke every session, wipe a\n  device → **Dialog `variant=\"alert\"`**: a question, a safe cancel, and a destructive confirm.\n- A panel the user may consult **while the page stays usable** — filters, details, a quick edit\n  that does not block → **Popover** (`popover.md`).\n- A long form, a multi-step flow, or anything the user would want a URL for → a **page** (or a\n  side panel, which is **not in this kit**), not a Dialog. A dialog that scrolls for screens is a\n  page in the wrong container.\n- A message the user should read but need not answer → a **Contextual Alert** on the page\n  (`contextual-alert.md`). A dialog that only says \"OK\" interrupts for nothing.\n- A notification that comes and goes on its own, confirming something already done → **Toast**\n  (`toast.md`). A toast never asks; a question is a Dialog.",
+      "props": [
+        {
+          "part": "Dialog",
+          "name": "variant",
+          "type": "\"standard\" | \"alert\"",
+          "values": [
+            "standard",
+            "alert"
+          ],
+          "default": "standard",
+          "required": false,
+          "notes": "**These two only.** `alert` is for a destructive or irreversible confirmation."
+        },
+        {
+          "part": "Dialog",
+          "name": "title",
+          "type": "string",
+          "required": true,
+          "notes": "**Required.** Rendered as the dialog's heading and wired as its accessible name."
+        },
+        {
+          "part": "Dialog",
+          "name": "description",
+          "type": "string",
+          "required": false,
+          "notes": "A sentence under the title, wired by `aria-describedby`."
+        },
+        {
+          "part": "Dialog",
+          "name": "size",
+          "type": "\"regular\" | \"wide\"",
+          "values": [
+            "regular",
+            "wide"
+          ],
+          "default": "regular",
+          "required": false,
+          "notes": "**These two only.** The width: `--vela-dialog-width` (480) or `--vela-dialog-width-wide` (720)."
+        },
+        {
+          "part": "Dialog",
+          "name": "trigger",
+          "type": "ReactElement",
+          "required": false,
+          "notes": "The element that opens it — a `Button`. Omit it when `open` is driven from elsewhere."
+        },
+        {
+          "part": "Dialog",
+          "name": "open",
+          "type": "boolean",
+          "required": false,
+          "notes": "Controlled. Exclusive with `defaultOpen`."
+        },
+        {
+          "part": "Dialog",
+          "name": "defaultOpen",
+          "type": "boolean",
+          "default": false,
+          "required": false,
+          "notes": "Uncontrolled initial state. Exclusive with `open`."
+        },
+        {
+          "part": "Dialog",
+          "name": "onOpenChange",
+          "type": "(open: boolean) => void",
+          "required": false,
+          "notes": "Receives the **next** state."
+        },
+        {
+          "part": "Dialog",
+          "name": "children",
+          "type": "ReactNode",
+          "required": false,
+          "notes": "The body. It scrolls; the header and the footer stay."
+        },
+        {
+          "part": "Dialog",
+          "name": "footer",
+          "type": "ReactNode",
+          "required": false,
+          "notes": "**`standard` only.** The actions, right-aligned. Wrap one in `Dialog.Close` to close on click."
+        },
+        {
+          "part": "Dialog",
+          "name": "closeLabel",
+          "type": "string",
+          "default": "Close",
+          "required": false,
+          "notes": "**`standard` only.** The accessible name of the header's close button."
+        },
+        {
+          "part": "Dialog",
+          "name": "cancelLabel",
+          "type": "string",
+          "required": false,
+          "notes": "**Required with `alert`.** The safe action: focused on open, and what Escape does."
+        },
+        {
+          "part": "Dialog",
+          "name": "confirmLabel",
+          "type": "string",
+          "required": false,
+          "notes": "**Required with `alert`.** The destructive action, verb-first (\"Delete Policy\")."
+        },
+        {
+          "part": "Dialog",
+          "name": "onConfirm",
+          "type": "() => void",
+          "required": false,
+          "notes": "**Required with `alert`.** Called on confirm; the dialog then closes."
+        },
+        {
+          "part": "Dialog.Close",
+          "name": "children",
+          "type": "ReactElement",
+          "required": true,
+          "notes": "**Required.** The one element that closes the dialog when activated. Inside a `Dialog` only."
+        }
+      ],
+      "tokens": [
+        "--vela-bg-hover",
+        "--vela-bg-raised",
+        "--vela-bg-scrim",
+        "--vela-border-subtle",
+        "--vela-btn-standard-hover-bg",
+        "--vela-control-height-24",
+        "--vela-dialog-width",
+        "--vela-dialog-width-wide",
+        "--vela-duration-base",
+        "--vela-duration-fast",
+        "--vela-ease-out",
+        "--vela-icon-16",
+        "--vela-icon-strong",
+        "--vela-layer-overlay",
+        "--vela-opacity-scrim",
+        "--vela-radius-3",
+        "--vela-radius-8",
+        "--vela-space-10",
+        "--vela-space-15",
+        "--vela-space-20",
+        "--vela-space-5",
+        "--vela-text-de-emphasized",
+        "--vela-text-default",
+        "--vela-text-heading"
+      ]
+    },
+    {
+      "name": "Dropdown List",
+      "spec": "guidelines/components/dropdown-list.md",
+      "purpose": "A short list that opens from a button. One option is current, and choosing another acts at once: it opens that tab or that view, and the list closes. Its first use is the Tabs overflow control (\"6 more\"), which lists every tab in the row.",
+      "status": {
+        "label": "Experimental",
+        "note": "built, and its Figma set is published (31 Oct 2026). It is born in @omkarux/vela/headless (Base UI 1.9 Menu) with no core implementation. It is Approved once the API has settled and the manual screen-reader check in Accessibility is done; see GOVERNANCE.md."
+      },
+      "imports": [
+        {
+          "from": "@omkarux/vela/headless",
+          "names": [
+            "DropdownList"
+          ],
+          "peers": [
+            "@base-ui/react"
+          ],
+          "status": "Experimental"
+        }
+      ],
+      "whenToUse": "- Choose **one of a set where one is current**, and the choice **acts at once**: go to a hidden\n  tab, switch to another saved view. → **Dropdown List**.\n- A **form value** chosen now and submitted later, with a label, validation and an empty state →\n  a Select List, **not in this kit**. Flag the gap. A Dropdown List has no \"nothing chosen\" and is\n  never inside a form.\n- A list of **commands** (Edit / Duplicate / Delete) → an Actions Dropdown, **not in this kit**.\n  Nothing in a Dropdown List is \"current\", so it would be the wrong role.\n- **Several** choices at once, or filters → a **Popover** with a **Checkbox.Group**.\n- Two to five options that fit on screen → **Tabs** (sections) or **Radio Group** (a setting).\n  Don't hide what fits.\n- More than about 50 options, or options that need searching → a combobox, **not in this kit**.\n  Flag it.\n- A list of **different sections of the same page**, all visible → **Tabs**. A Dropdown List is\n  what Tabs uses for the tabs that don't fit, not a replacement for Tabs.\n- A list of **pages to go to** (site or app navigation) → links, with `aria-current=\"page\"` on the\n  one you are on. That is navigation, **not this component**: a Dropdown List's items are radio\n  items, not links.\n\nThe items are one radio group inside the menu. The group needs no name of its own: the menu's\n`label` names the only choice there is.",
+      "props": [
+        {
+          "part": "DropdownList",
+          "name": "label",
+          "type": "string",
+          "required": true,
+          "notes": "**Required.** Names the list for assistive technology (\"All tabs\"). Not shown."
+        },
+        {
+          "part": "DropdownList",
+          "name": "trigger",
+          "type": "ReactElement",
+          "required": true,
+          "notes": "**Required.** One element that renders a `<button>`. It gets `aria-haspopup=\"menu\"`, `aria-expanded` and `aria-controls`."
+        },
+        {
+          "part": "DropdownList",
+          "name": "items",
+          "type": "readonly [DropdownListItem, ...DropdownListItem[]]",
+          "required": true,
+          "notes": "**Required, at least one.** In display order."
+        },
+        {
+          "part": "DropdownList",
+          "name": "value",
+          "type": "string",
+          "required": false,
+          "notes": "The current option (controlled). Must be one of the items' `value`s. Pass `value` or `defaultValue`: there is always a current option."
+        },
+        {
+          "part": "DropdownList",
+          "name": "defaultValue",
+          "type": "string",
+          "required": false,
+          "notes": "The current option (uncontrolled). **Exclusive with `value`.**"
+        },
+        {
+          "part": "DropdownList",
+          "name": "onValueChange",
+          "type": "(value: string) => void",
+          "required": false,
+          "notes": "Called when an option is chosen. Not called for the current one."
+        },
+        {
+          "part": "DropdownList",
+          "name": "open",
+          "type": "boolean",
+          "required": false,
+          "notes": "Controlled, as Popover. **Exclusive with `defaultOpen`.**"
+        },
+        {
+          "part": "DropdownList",
+          "name": "defaultOpen",
+          "type": "boolean",
+          "default": false,
+          "required": false,
+          "notes": "Uncontrolled initial state. **Exclusive with `open`.**"
+        },
+        {
+          "part": "DropdownList",
+          "name": "onOpenChange",
+          "type": "(open: boolean) => void",
+          "required": false,
+          "notes": ""
+        },
+        {
+          "part": "DropdownList",
+          "name": "align",
+          "type": "\"start\" | \"end\"",
+          "values": [
+            "start",
+            "end"
+          ],
+          "default": "start",
+          "required": false,
+          "notes": "**These two only.** Which edge of the trigger the list lines up with. Tabs uses `end`."
+        }
+      ],
+      "tokens": [
+        "--vela-bg-hover",
+        "--vela-bg-raised",
+        "--vela-bg-raised-hover",
+        "--vela-border-default",
+        "--vela-dropdown-list-width-min",
+        "--vela-duration-base",
+        "--vela-ease-standard",
+        "--vela-font-weight-semibold",
+        "--vela-icon-size",
+        "--vela-icon-strong",
+        "--vela-popover-width",
+        "--vela-radius-4",
+        "--vela-space-10",
+        "--vela-space-15",
+        "--vela-space-5",
+        "--vela-text-body-line-height",
+        "--vela-text-default",
+        "--vela-text-inactive",
+        "--vela-text-link"
+      ]
+    },
+    {
+      "name": "Icon",
+      "spec": "guidelines/components/icon.md",
+      "purpose": "One glyph from a closed, curated set of fifty, drawn from Lucide and compiled into the package, at one of three token-bound sizes. It sits beside text, in a table cell or in another component's icon slot; it is never a control and never a severity, risk or status mark.",
+      "status": {
+        "label": "Experimental",
+        "note": "specced, built and tested, and the glyph list is new; the Figma set is published in the library (built from scripts/figma/components/icon.figma.js). Approved once the kit's own inline glyphs (src/lib/icons.tsx) have moved onto it; see GOVERNANCE.md."
+      },
+      "imports": [
+        {
+          "from": "@omkarux/vela",
+          "names": [
+            "Icon"
+          ],
+          "peers": [],
+          "status": "Experimental"
+        }
+      ],
+      "whenToUse": "- A glyph that reinforces adjacent text — \"Blocked\" beside `shield-x`, \"Export\" beside\n  `download` → **Icon**, `aria-hidden` (no `label`).\n- A glyph that stands alone in a cell or a header and carries meaning nothing beside it states →\n  **Icon** with a `label`.\n- The mark of an event the user must read → **Contextual Alert**, which owns the severity marks.\n  An Icon in a severity colour is not a substitute (there is no severity `tone`).\n- A risk score or an object's health → **Risk Pill** or **Status Indicator**. A shield is not a\n  risk level and a circle is not a status dot.\n- A clickable glyph (close, copy, more) → an [**Icon Button**](icon-button.md)\n  (`@omkarux/vela/headless`), which takes the glyph as `icon`. Do not put a click handler on an\n  Icon (it will not compile) or wrap it in a `<div>`.\n- Inside a Button → pass the Icon to Button's `icon` slot with `tone=\"inherit\"`, so the glyph takes\n  the label colour; Button keeps owning the slot's size.",
+      "props": [
+        {
+          "part": "Icon",
+          "name": "name",
+          "type": "IconName",
+          "required": true,
+          "notes": "**Required.** One of the fifty names in *Glyphs* below, exported as `ICON_NAMES`. Lucide's canonical names: `funnel` not `filter`, `trash` not `trash-2`, `rotate-ccw-clock` not `history`."
+        },
+        {
+          "part": "Icon",
+          "name": "size",
+          "type": "\"regular\" | \"small\" | \"large\"",
+          "values": [
+            "regular",
+            "small",
+            "large"
+          ],
+          "default": "regular",
+          "required": false,
+          "notes": "**These three only.** 16, 12, 20px."
+        },
+        {
+          "part": "Icon",
+          "name": "tone",
+          "type": "\"default\" | \"muted\" | \"inherit\"",
+          "values": [
+            "default",
+            "muted",
+            "inherit"
+          ],
+          "default": "default",
+          "required": false,
+          "notes": "**These three only.** No severity, risk or status tone."
+        },
+        {
+          "part": "Icon",
+          "name": "label",
+          "type": "string",
+          "required": false,
+          "notes": "The accessible name. Present → `role=\"img\"` and `aria-label`; absent → `aria-hidden`."
+        },
+        {
+          "part": "Icon",
+          "name": "className",
+          "type": "string",
+          "required": false,
+          "notes": "Layout only (a margin, an alignment). Never a size or a colour."
+        }
+      ],
+      "tokens": [
+        "--vela-bg-container",
+        "--vela-bg-global",
+        "--vela-icon-default",
+        "--vela-icon-size",
+        "--vela-icon-size-large",
+        "--vela-icon-size-small",
+        "--vela-icon-stroke",
+        "--vela-icon-strong",
+        "--vela-text-default"
+      ]
+    },
+    {
+      "name": "Icon Button",
+      "spec": "guidelines/components/icon-button.md",
+      "purpose": "A button or a link drawn as a single glyph, for an action or a destination people recognise without a word: close, copy, more, search, settings, open on GitHub. It always has a name, given as `label`. Its tooltip shows that same name to sighted pointer and keyboard users, and is never heard twice.",
+      "status": {
+        "label": "Experimental",
+        "note": "specced, built and tested in @omkarux/vela/headless; no Figma set yet (the builder, scripts/figma/components/icon-button.figma.js, is ready and has not been run). The playground's header links to GitHub, npm and Figma are its first use."
+      },
+      "imports": [
+        {
+          "from": "@omkarux/vela/headless",
+          "names": [
+            "IconButton"
+          ],
+          "peers": [
+            "@base-ui/react"
+          ],
+          "status": "Experimental"
+        }
+      ],
+      "whenToUse": "- A widely known glyph in a tight place (close, copy, more, search, settings, a service's mark) → **Icon Button**.\n- Less familiar, or touch-first → **Button** with a label.\n- Destructive (delete, revoke) → **Button** `variant=\"destructive\"` with words.\n- A setting that stays on or off (pin, mute) → a toggle icon button, **not in this kit**; flag the gap.\n- A glyph that only decorates text → **Icon**.\n- Several in a row → **Icon Button** side by side, each its own tab stop.\n- A link to GitHub or Figma → **Icon Button** with `brandMark`; to npm → **Icon Button** with `word=\"npm\"`. Never a bare **Brand Mark** in an `<a>` of your own.",
+      "props": [
+        {
+          "part": "IconButton",
+          "name": "label",
+          "type": "string",
+          "required": true,
+          "notes": "**Required.** The accessible name and the tooltip's words."
+        },
+        {
+          "part": "IconButton",
+          "name": "icon",
+          "type": "IconName",
+          "required": false,
+          "notes": "Exactly one of `icon`, `brandMark` or `word`. One of Icon's fifty."
+        },
+        {
+          "part": "IconButton",
+          "name": "brandMark",
+          "type": "BrandMarkName",
+          "required": false,
+          "notes": "`\"github\"` or `\"figma\"`. Figma at `tiny` doesn't compile."
+        },
+        {
+          "part": "IconButton",
+          "name": "word",
+          "type": "\"npm\"",
+          "values": [
+            "npm"
+          ],
+          "required": false,
+          "notes": "This one only. In `--vela-font-family-mono`."
+        },
+        {
+          "part": "IconButton",
+          "name": "size",
+          "type": "\"tiny\" | \"regular\"",
+          "values": [
+            "tiny",
+            "regular"
+          ],
+          "default": "regular",
+          "required": false,
+          "notes": "24px box with a 16px glyph, or 35px with a 20px glyph."
+        },
+        {
+          "part": "IconButton",
+          "name": "onClick",
+          "type": "(event) => void",
+          "required": false,
+          "notes": "Button form. Exclusive with `href`."
+        },
+        {
+          "part": "IconButton",
+          "name": "type",
+          "type": "\"button\" | \"submit\"",
+          "values": [
+            "button",
+            "submit"
+          ],
+          "default": "button",
+          "required": false,
+          "notes": "Button form only."
+        },
+        {
+          "part": "IconButton",
+          "name": "disabled",
+          "type": "boolean",
+          "default": false,
+          "required": false,
+          "notes": "Button form only. Native. Rare."
+        },
+        {
+          "part": "IconButton",
+          "name": "href",
+          "type": "string",
+          "required": false,
+          "notes": "Link form: `<a href>`. Exclusive with `onClick`, `type`, `disabled`."
+        },
+        {
+          "part": "IconButton",
+          "name": "opensInNewTab",
+          "type": "boolean",
+          "default": false,
+          "required": false,
+          "notes": "Link form only. `target=\"_blank\"`, `rel=\"noopener noreferrer\"`, and \", opens in a new tab\" added to the name; the tooltip shows it too."
+        },
+        {
+          "part": "IconButton",
+          "name": "tooltipPlacement",
+          "type": "\"top\" | \"bottom\" | \"start\" | \"end\"",
+          "values": [
+            "top",
+            "bottom",
+            "start",
+            "end"
+          ],
+          "default": "top",
+          "required": false,
+          "notes": "Tooltip's own set."
+        }
+      ],
+      "tokens": [
+        "--vela-bg-container",
+        "--vela-bg-global",
+        "--vela-bg-hover",
+        "--vela-bg-raised",
+        "--vela-brand-mark",
+        "--vela-btn-standard-hover-bg",
+        "--vela-control-height-24",
+        "--vela-control-height-35",
+        "--vela-delay-tooltip",
+        "--vela-duration-base",
+        "--vela-duration-fast",
+        "--vela-duration-instant",
+        "--vela-ease-out",
+        "--vela-ease-standard",
+        "--vela-font-family-mono",
+        "--vela-icon-disabled",
+        "--vela-icon-size",
+        "--vela-icon-size-large",
+        "--vela-icon-strong",
+        "--vela-radius-3",
+        "--vela-radius-4",
+        "--vela-target-min"
+      ]
+    },
+    {
+      "name": "Input",
+      "spec": "guidelines/components/input.md",
+      "purpose": "Single-line text entry with a label, optional hint, and an error state.",
+      "status": {
+        "label": "Approved",
+        "note": ""
+      },
+      "imports": [
+        {
+          "from": "@omkarux/vela",
+          "names": [
+            "Input"
+          ],
+          "peers": [],
+          "status": "Approved"
+        }
+      ],
+      "whenToUse": "- Single-line text or numeric-as-text → **Input**.\n- Multi-line → **Text Area** (`components/text-area.md`).\n- Numeric with a spinner → Number Stepper, **not in this kit**. Flag the gap.\n- Choosing from a set → Radio or Dropdown, **not in this kit**.",
+      "props": [
+        {
+          "part": "Input",
+          "name": "label",
+          "type": "string",
+          "required": true,
+          "notes": "**Required.**"
+        },
+        {
+          "part": "Input",
+          "name": "hint",
+          "type": "string",
+          "required": false,
+          "notes": "Helper text. Wired via `aria-describedby`."
+        },
+        {
+          "part": "Input",
+          "name": "error",
+          "type": "string",
+          "required": false,
+          "notes": "Presence sets the error state; the string is the message."
+        },
+        {
+          "part": "Input",
+          "name": "size",
+          "type": "\"tiny\" | \"regular\" | \"large\"",
+          "values": [
+            "tiny",
+            "regular",
+            "large"
+          ],
+          "default": "regular",
+          "required": false,
+          "notes": "**These three only.**"
+        },
+        {
+          "part": "Input",
+          "name": "required",
+          "type": "boolean",
+          "default": false,
+          "required": false,
+          "notes": "Renders a `*` and sets the native attribute."
+        }
+      ],
+      "tokens": [
+        "--vela-control-bg",
+        "--vela-control-border",
+        "--vela-control-border-active",
+        "--vela-control-border-error",
+        "--vela-control-border-hover",
+        "--vela-control-height-25",
+        "--vela-control-height-26",
+        "--vela-control-height-35",
+        "--vela-control-placeholder",
+        "--vela-radius-4",
+        "--vela-space-10",
+        "--vela-space-5"
+      ]
+    },
+    {
+      "name": "Popover",
+      "spec": "guidelines/components/popover.md",
+      "purpose": "A small **non-modal** panel anchored to the button that opened it — filters for a table, the detail behind a count, a short form that edits one thing — dismissed by Escape, by a press outside, or by the trigger again, with the rest of the page still usable.",
+      "status": {
+        "label": "Experimental",
+        "note": "born in @omkarux/vela/headless (Base UI 1.9) with Tooltip and Dialog; there is no core implementation, and its Figma set is published in the library (built from scripts/figma/components/popover.figma.js). Approved once the API has settled; see GOVERNANCE.md."
+      },
+      "imports": [
+        {
+          "from": "@omkarux/vela/headless",
+          "names": [
+            "Popover"
+          ],
+          "peers": [
+            "@base-ui/react"
+          ],
+          "status": "Experimental"
+        }
+      ],
+      "whenToUse": "- A panel the user **opens on purpose** and may **act in** — a filter set, a column picker, a\n  short edit — while the page behind stays usable → **Popover**.\n- A short **label or hint** on hover or focus, text only, nothing to act on → **Tooltip**\n  (`tooltip.md`). If the trigger's purpose is to open the panel, it is a Popover; if the trigger\n  does something else and the text only explains it, it is a Tooltip.\n- A **decision that blocks the task** — confirm, fill in, or cancel before anything else happens\n  → **Dialog** (`dialog.md`). A popover never traps focus and never locks the page.\n- A list of **commands** that open from a button (Edit / Duplicate / Delete) → an Actions\n  Dropdown, which is **not in this kit**. Flag the gap; do not build a menu out of a Popover.\n- A picker of **one value from many** → a Select List, **not in this kit**. Flag it.\n- Anything the user must see to do the task — an error, the only copy of a key — is never only\n  in a Popover: the page has to carry it.",
+      "props": [
+        {
+          "part": "Popover",
+          "name": "trigger",
+          "type": "ReactElement",
+          "required": true,
+          "notes": "**Required.** The one element that opens it — a `Button` or a native `<button>`. It keeps its own props; the popover adds `aria-expanded`, `aria-haspopup` and the toggle."
+        },
+        {
+          "part": "Popover",
+          "name": "title",
+          "type": "string",
+          "required": true,
+          "notes": "**Required.** Rendered as the popover's heading and wired as its accessible name."
+        },
+        {
+          "part": "Popover",
+          "name": "placement",
+          "type": "\"top\" | \"bottom\" | \"start\" | \"end\"",
+          "values": [
+            "top",
+            "bottom",
+            "start",
+            "end"
+          ],
+          "default": "bottom",
+          "required": false,
+          "notes": "**These four only.** The side of the trigger. `start` / `end` follow the writing direction. It flips to the opposite side when there is no room."
+        },
+        {
+          "part": "Popover",
+          "name": "align",
+          "type": "\"start\" | \"center\" | \"end\"",
+          "values": [
+            "start",
+            "center",
+            "end"
+          ],
+          "default": "center",
+          "required": false,
+          "notes": "**These three only.** Where it lines up along that side."
+        },
+        {
+          "part": "Popover",
+          "name": "size",
+          "type": "\"regular\" | \"wide\"",
+          "values": [
+            "regular",
+            "wide"
+          ],
+          "default": "regular",
+          "required": false,
+          "notes": "**These two only.** The width: `--vela-popover-width` (280) or `--vela-popover-width-wide` (400)."
+        },
+        {
+          "part": "Popover",
+          "name": "open",
+          "type": "boolean",
+          "required": false,
+          "notes": "Controlled. Exclusive with `defaultOpen`."
+        },
+        {
+          "part": "Popover",
+          "name": "defaultOpen",
+          "type": "boolean",
+          "default": false,
+          "required": false,
+          "notes": "Uncontrolled initial state. Exclusive with `open`."
+        },
+        {
+          "part": "Popover",
+          "name": "onOpenChange",
+          "type": "(open: boolean) => void",
+          "required": false,
+          "notes": "Receives the **next** state."
+        },
+        {
+          "part": "Popover",
+          "name": "children",
+          "type": "ReactNode",
+          "required": false,
+          "notes": "The body, under the title. It scrolls when the room runs out; the title stays."
+        }
+      ],
+      "tokens": [
+        "--vela-bg-raised",
+        "--vela-border-default",
+        "--vela-duration-base",
+        "--vela-ease-out",
+        "--vela-layer-overlay",
+        "--vela-popover-width",
+        "--vela-popover-width-wide",
+        "--vela-radius-4",
+        "--vela-space-10",
+        "--vela-space-15",
+        "--vela-space-5",
+        "--vela-text-de-emphasized",
+        "--vela-text-default",
+        "--vela-text-heading"
+      ]
+    },
+    {
+      "name": "Radio Group",
+      "spec": "guidelines/components/radio-group.md",
+      "purpose": "A short list of options where **exactly one** is chosen — an enforcement mode, a retention period, a severity to assign — all visible at once, committed by a Save.",
+      "status": {
+        "label": "Experimental",
+        "note": "born in @omkarux/vela/headless (Base UI 1.9) alongside Checkbox; there is no core implementation, and its Figma set is published in the library (built from scripts/figma/components/radio-group.figma.js). Approved once the API has settled; see GOVERNANCE.md."
+      },
+      "imports": [
+        {
+          "from": "@omkarux/vela/headless",
+          "names": [
+            "RadioGroup"
+          ],
+          "peers": [
+            "@base-ui/react"
+          ],
+          "status": "Experimental"
+        }
+      ],
+      "whenToUse": "- **Two to five options, one answer**, and the user should see them all before choosing →\n  **Radio Group**. Seeing every option is the point: the choice is a comparison.\n- **More than five options**, or options the user already knows by name (a country, a tenant,\n  a time zone) → a **Select List**, which is **not in this kit**. Flag the gap; do not stack\n  twelve radios.\n- Any number of answers → **Checkbox.Group** (`checkbox.md`).\n- Exactly two options that are really on/off and take effect immediately → **Toggle**\n  (`toggle.md`). Two options that are two named things (\"Monitor\" / \"Block\") → Radio Group.\n- A choice that switches *what is shown* rather than what is saved → Tabs or a View Switcher,\n  not a Radio Group.",
+      "props": [
+        {
+          "part": "RadioGroup",
+          "name": "label",
+          "type": "string",
+          "required": true,
+          "notes": "**Required.** Rendered as the group's visible label and wired as its accessible name."
+        },
+        {
+          "part": "RadioGroup",
+          "name": "value",
+          "type": "string",
+          "required": false,
+          "notes": "Controlled: the selected radio's `value`. Exclusive with `defaultValue`."
+        },
+        {
+          "part": "RadioGroup",
+          "name": "defaultValue",
+          "type": "string",
+          "required": false,
+          "notes": "Uncontrolled initial selection. Exclusive with `value`. Omit both for no selection."
+        },
+        {
+          "part": "RadioGroup",
+          "name": "onValueChange",
+          "type": "(value: string) => void",
+          "required": false,
+          "notes": "Receives the **next** value."
+        },
+        {
+          "part": "RadioGroup",
+          "name": "disabled",
+          "type": "boolean",
+          "default": false,
+          "required": false,
+          "notes": "Disables every radio in the group."
+        },
+        {
+          "part": "RadioGroup",
+          "name": "orientation",
+          "type": "\"vertical\" | \"horizontal\"",
+          "values": [
+            "vertical",
+            "horizontal"
+          ],
+          "default": "vertical",
+          "required": false,
+          "notes": "**These two only.** Layout; arrow keys move in both axes either way, as native radios do."
+        },
+        {
+          "part": "RadioGroup",
+          "name": "error",
+          "type": "string",
+          "required": false,
+          "notes": "**The message.** Presence puts the group in the error state; the string is announced."
+        },
+        {
+          "part": "RadioGroup",
+          "name": "name",
+          "type": "string",
+          "required": false,
+          "notes": "Native, forwarded to the hidden `<input type=\"radio\">`s for form submission."
+        },
+        {
+          "part": "RadioGroup",
+          "name": "children",
+          "type": "ReactNode",
+          "required": false,
+          "notes": "`RadioGroup.Radio` elements."
+        },
+        {
+          "part": "RadioGroup.Radio",
+          "name": "value",
+          "type": "string",
+          "required": true,
+          "notes": "**Required.** What the group reports when this radio is chosen."
+        },
+        {
+          "part": "RadioGroup.Radio",
+          "name": "label",
+          "type": "string",
+          "required": true,
+          "notes": "**Required.** The visible label, also the accessible name."
+        },
+        {
+          "part": "RadioGroup.Radio",
+          "name": "disabled",
+          "type": "boolean",
+          "default": false,
+          "required": false,
+          "notes": "Native `disabled`: skipped by the arrow keys, out of the tab order."
+        },
+        {
+          "part": "RadioGroup.Radio",
+          "name": "description",
+          "type": "string",
+          "required": false,
+          "notes": "A hint under the label, linked by `aria-describedby`."
+        }
+      ],
+      "tokens": [
+        "--vela-border-inactive",
+        "--vela-control-bg",
+        "--vela-control-bg-disabled",
+        "--vela-control-border",
+        "--vela-control-border-error",
+        "--vela-control-border-hover",
+        "--vela-control-check-bg-checked",
+        "--vela-control-check-mark",
+        "--vela-control-radio-dot",
+        "--vela-control-radio-size",
+        "--vela-duration-base",
+        "--vela-duration-fast",
+        "--vela-duration-instant",
+        "--vela-ease-out",
+        "--vela-ease-standard",
+        "--vela-icon-disabled",
+        "--vela-radius-full",
+        "--vela-space-10",
+        "--vela-space-20",
+        "--vela-space-5",
+        "--vela-text-de-emphasized",
+        "--vela-text-default",
+        "--vela-text-error",
+        "--vela-text-inactive"
+      ]
+    },
+    {
+      "name": "Risk Pill",
+      "spec": "guidelines/components/risk-pill.md",
+      "purpose": "A small read-only pill carrying one of exactly three risk levels, usually in a table cell or next to the thing that was scored — a user, an asset, a finding.",
+      "status": {
+        "label": "Approved",
+        "note": ""
+      },
+      "imports": [
+        {
+          "from": "@omkarux/vela",
+          "names": [
+            "RiskPill"
+          ],
+          "peers": [],
+          "status": "Approved"
+        }
+      ],
+      "whenToUse": "- A risk **score** on an object → **Risk Pill**.\n- An event the user must read → **Contextual Alert** (that is severity, six levels).\n- An object's ongoing health → **Status Indicator** (that is status, five states).\n- A removable filter chip or tag → a Token Pill, **not in this kit**. Flag the gap.",
+      "props": [
+        {
+          "part": "RiskPill",
+          "name": "risk",
+          "type": "\"low\" | \"medium\" | \"high\"",
+          "values": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "required": true,
+          "notes": "**Required. These three only.**"
+        },
+        {
+          "part": "RiskPill",
+          "name": "label",
+          "type": "string",
+          "required": false,
+          "notes": "Visible text. Omitted, the pill renders the level word (`\"Low\"` / `\"Medium\"` / `\"High\"`). A custom label must still name the level."
+        },
+        {
+          "part": "RiskPill",
+          "name": "size",
+          "type": "\"regular\" | \"small\"",
+          "values": [
+            "regular",
+            "small"
+          ],
+          "default": "regular",
+          "required": false,
+          "notes": "**These two only.**"
+        }
+      ],
+      "tokens": [
+        "--vela-bg-risk-high",
+        "--vela-bg-risk-low",
+        "--vela-bg-risk-medium",
+        "--vela-bg-severity-critical",
+        "--vela-bg-severity-info",
+        "--vela-bg-severity-major",
+        "--vela-bg-severity-minor",
+        "--vela-bg-severity-success",
+        "--vela-bg-severity-warning",
+        "--vela-border-risk-high",
+        "--vela-border-risk-high-indicator",
+        "--vela-border-risk-low",
+        "--vela-border-risk-low-indicator",
+        "--vela-border-risk-medium",
+        "--vela-border-risk-medium-indicator",
+        "--vela-control-height-24",
+        "--vela-radius-3",
+        "--vela-radius-full",
+        "--vela-signal-status-healthy",
+        "--vela-signal-status-medium",
+        "--vela-signal-status-unhealthy",
+        "--vela-signal-status-unknown",
+        "--vela-signal-status-warning",
+        "--vela-space-10",
+        "--vela-space-5",
+        "--vela-text-meta-line-height",
+        "--vela-text-risk-high",
+        "--vela-text-risk-low",
+        "--vela-text-risk-medium"
+      ]
+    },
+    {
+      "name": "Status Indicator",
+      "spec": "guidelines/components/status-indicator.md",
+      "purpose": "A coloured dot representing one of exactly five health states, usually in a table cell or next to an object name.",
+      "status": {
+        "label": "Approved",
+        "note": ""
+      },
+      "imports": [
+        {
+          "from": "@omkarux/vela",
+          "names": [
+            "StatusIndicator"
+          ],
+          "peers": [],
+          "status": "Approved"
+        }
+      ],
+      "whenToUse": "- An object's ongoing health → **Status Indicator**.\n- An event the user must read → **Contextual Alert**.\n- A risk score → **Risk Pill** (the Risk taxonomy, three levels).",
+      "props": [
+        {
+          "part": "StatusIndicator",
+          "name": "status",
+          "type": "\"unknown\" | \"healthy\" | \"warning\" | \"medium\" | \"unhealthy\"",
+          "values": [
+            "unknown",
+            "healthy",
+            "warning",
+            "medium",
+            "unhealthy"
+          ],
+          "required": true,
+          "notes": "**Required. These five only.**"
+        },
+        {
+          "part": "StatusIndicator",
+          "name": "label",
+          "type": "string",
+          "required": false,
+          "notes": "Visible text. **Strongly preferred.**"
+        },
+        {
+          "part": "StatusIndicator",
+          "name": "size",
+          "type": "\"small\" | \"regular\"",
+          "values": [
+            "small",
+            "regular"
+          ],
+          "default": "regular",
+          "required": false,
+          "notes": "**These two only.**"
+        }
+      ],
+      "tokens": [
+        "--vela-radius-full",
+        "--vela-signal-severity-critical",
+        "--vela-signal-severity-info",
+        "--vela-signal-severity-major",
+        "--vela-signal-severity-minor",
+        "--vela-signal-severity-success",
+        "--vela-signal-severity-warning",
+        "--vela-signal-status-healthy",
+        "--vela-signal-status-medium",
+        "--vela-signal-status-unhealthy",
+        "--vela-signal-status-unknown",
+        "--vela-signal-status-warning",
+        "--vela-status-dot",
+        "--vela-status-dot-small"
+      ]
+    },
+    {
+      "name": "Table",
+      "spec": "guidelines/components/table.md",
+      "purpose": "Rows of records under named columns — assets, findings, policies, approvals — on native table elements, with a caption that names it, an optional sort affordance per column, two densities, and a scroll region that keeps a wide table inside its host.",
+      "status": {
+        "label": "Experimental",
+        "note": "specced, built and tested in the core entry, but the API may still change while Phase 2 (Approval Queue, Autonomy Ladder policy grid) and Phase 2b (Filter Bar, Review Queue) build on it. Its three Figma sets are published in the library (built from scripts/figma/components/table.figma.js). See GOVERNANCE.md."
+      },
+      "imports": [
+        {
+          "from": "@omkarux/vela",
+          "names": [
+            "Table"
+          ],
+          "peers": [],
+          "status": "Experimental"
+        }
+      ],
+      "whenToUse": "- Records the user compares **across columns** — sort by last seen, scan a status column, read\n  a count → **Table**.\n- One record's fields, label and value → a description list (`<dl>`), not a two-column table.\n- Cells the user **edits or moves between with the arrow keys** like a spreadsheet → a Data Grid\n  (`role=\"grid\"`), which is **not in this kit**. Flag the gap; a Table is read, not navigated\n  cell by cell.\n- Thousands of rows, server paging, column resizing, virtualisation → still a Table for the\n  markup, but the data layer is the host's: this component fetches nothing, pages nothing and\n  virtualises nothing. Flag a virtualised grid as a gap rather than building one on top.\n- A narrow host that wants **cards instead of rows** → a card list, **not in this kit**. Do not\n  restyle a table into cards with CSS; see *Responsive behaviour*.\n- A layout grid of unrelated things → CSS grid, never a table.",
+      "props": [
+        {
+          "part": "Table",
+          "name": "caption",
+          "type": "string",
+          "required": true,
+          "notes": "**Required.** Rendered as the `<caption>` and the label of the scroll region."
+        },
+        {
+          "part": "Table",
+          "name": "captionHidden",
+          "type": "boolean",
+          "default": false,
+          "required": false,
+          "notes": "Visually hides the caption; it still names the table and the region."
+        },
+        {
+          "part": "Table",
+          "name": "density",
+          "type": "\"comfortable\" | \"compact\"",
+          "values": [
+            "comfortable",
+            "compact"
+          ],
+          "default": "comfortable",
+          "required": false,
+          "notes": "**These two only.** Compact tightens vertical padding; type and targets hold."
+        },
+        {
+          "part": "Table",
+          "name": "layout",
+          "type": "\"auto\" | \"fixed\"",
+          "values": [
+            "auto",
+            "fixed"
+          ],
+          "default": "auto",
+          "required": false,
+          "notes": "**These two only.** `fixed` takes column widths from the first row."
+        },
+        {
+          "part": "Table",
+          "name": "stickyHeader",
+          "type": "boolean",
+          "default": false,
+          "required": false,
+          "notes": "Pins the header row to the top of the scroll region. The host bounds the height."
+        },
+        {
+          "part": "Table",
+          "name": "children",
+          "type": "ReactNode",
+          "required": false,
+          "notes": "`Table.Head` and `Table.Body`."
+        },
+        {
+          "part": "Table.Head",
+          "name": "children",
+          "type": "ReactNode",
+          "required": false,
+          "notes": "`<thead>` / `<tbody>`. Rows only."
+        },
+        {
+          "part": "Table.Body",
+          "name": "children",
+          "type": "ReactNode",
+          "required": false,
+          "notes": "`<thead>` / `<tbody>`. Rows only."
+        },
+        {
+          "part": "Table.Row",
+          "name": "selected",
+          "type": "boolean",
+          "default": false,
+          "required": false,
+          "notes": "Part of the host's selection: `aria-selected=\"true\"`, the row tint and a start-edge marker."
+        },
+        {
+          "part": "Table.Row",
+          "name": "aria-current",
+          "type": "boolean | \"true\" | \"false\" | \"page\" | \"step\" | \"location\" | \"date\" | \"time\"",
+          "required": false,
+          "notes": "The row the page is about (open in a side panel). Passed through; draws the marker."
+        },
+        {
+          "part": "Table.HeaderCell",
+          "name": "scope",
+          "type": "\"col\" | \"row\"",
+          "values": [
+            "col",
+            "row"
+          ],
+          "default": "col",
+          "required": false,
+          "notes": "**These two only.** `row` for the cell that names a body row."
+        },
+        {
+          "part": "Table.HeaderCell",
+          "name": "sort",
+          "type": "{ direction: \"ascending\" | \"descending\" | \"none\"; onSort: (next) => void }",
+          "required": false,
+          "notes": "Column headers only. Renders a button in the `<th>`; `aria-sort` while sorted."
+        },
+        {
+          "part": "Table.HeaderCell",
+          "name": "align",
+          "type": "\"start\" | \"end\"",
+          "values": [
+            "start",
+            "end"
+          ],
+          "default": "start",
+          "required": false,
+          "notes": "**These two only.** `end` over a numeric column."
+        },
+        {
+          "part": "Table.HeaderCell",
+          "name": "children",
+          "type": "ReactNode",
+          "required": true,
+          "notes": "**Required.** The label. **A `string` when `sort` is set** — the button's name is built from it."
+        },
+        {
+          "part": "Table.Cell",
+          "name": "numeric",
+          "type": "boolean",
+          "default": false,
+          "required": false,
+          "notes": "Tabular numerals, end-aligned, unwrapped. Takes no `align`."
+        },
+        {
+          "part": "Table.Cell",
+          "name": "align",
+          "type": "\"start\" | \"end\"",
+          "values": [
+            "start",
+            "end"
+          ],
+          "default": "start",
+          "required": false,
+          "notes": "**These two only.**"
+        },
+        {
+          "part": "Table.Empty",
+          "name": "colSpan",
+          "type": "number",
+          "required": true,
+          "notes": "**Required.** The header's column count."
+        },
+        {
+          "part": "Table.Empty",
+          "name": "children",
+          "type": "string",
+          "required": true,
+          "notes": "**Required.** What the empty table means — \"No assets match these filters\"."
+        }
+      ],
+      "tokens": [
+        "--vela-bg-global",
+        "--vela-bg-hover",
+        "--vela-bg-row-hover",
+        "--vela-bg-row-selected",
+        "--vela-bg-selected",
+        "--vela-border-active",
+        "--vela-border-default",
+        "--vela-border-subtle",
+        "--vela-control-height-24",
+        "--vela-icon-12",
+        "--vela-icon-default",
+        "--vela-space-10",
+        "--vela-space-5",
+        "--vela-stroke-2",
+        "--vela-text-body-line-height",
+        "--vela-text-body-size",
+        "--vela-text-de-emphasized",
+        "--vela-text-default",
+        "--vela-text-h5-size",
+        "--vela-text-h6-line-height",
+        "--vela-text-h6-size",
+        "--vela-text-h6-weight",
+        "--vela-text-heading"
+      ]
+    },
+    {
+      "name": "Tabs",
+      "spec": "guidelines/components/tabs.md",
+      "purpose": "Navigate between **different** content panels.",
+      "status": {
+        "label": "Approved",
+        "note": ""
+      },
+      "imports": [
+        {
+          "from": "@omkarux/vela",
+          "names": [
+            "Tabs"
+          ],
+          "peers": [],
+          "status": "Approved"
+        },
+        {
+          "from": "@omkarux/vela/headless",
+          "names": [
+            "Tabs"
+          ],
+          "peers": [
+            "@base-ui/react"
+          ],
+          "status": "Experimental"
+        }
+      ],
+      "whenToUse": "- Different content sections (Alerts / Assets / Audit) → **Tabs**.\n- The **same** dataset rendered differently (Grid / Dashboard / Chart) → **View Switcher**,\n  which is **not in this kit**. Flag the gap; do not substitute Tabs. If only the\n  *presentation* of one dataset changes, it is not Tabs.\n- Sequential steps → a Wizard, not Tabs.\n- More than ~7 panels → reconsider the information architecture. When the row is narrower than its\n  tabs (a side panel, a phone), the headless Tabs puts the tabs that don't fit into \"N more\" (see\n  *Overflow*); that is for a narrow host, not for a long list of panels.",
+      "props": [
+        {
+          "part": "Tabs",
+          "name": "defaultValue",
+          "type": "string",
+          "required": false,
+          "notes": "Uncontrolled mode. **Required unless `value` is passed.**"
+        },
+        {
+          "part": "Tabs",
+          "name": "value",
+          "type": "string",
+          "required": false,
+          "notes": "Controlled mode. `value` and `defaultValue` are exclusive."
+        },
+        {
+          "part": "Tabs",
+          "name": "onValueChange",
+          "type": "(v) => void",
+          "required": false,
+          "notes": "Controlled mode. `value` and `defaultValue` are exclusive."
+        },
+        {
+          "part": "Tabs",
+          "name": "size",
+          "type": "\"regular\" | \"large\"",
+          "values": [
+            "regular",
+            "large"
+          ],
+          "required": false,
+          "notes": "**These two only.** Default `regular`."
+        },
+        {
+          "part": "Tabs.List",
+          "name": "aria-label",
+          "type": "string",
+          "required": true,
+          "notes": "**Required.**"
+        },
+        {
+          "part": "Tabs.Trigger",
+          "name": "value",
+          "type": "string",
+          "required": false,
+          "notes": "Must match a Panel."
+        },
+        {
+          "part": "Tabs.Trigger",
+          "name": "count",
+          "type": "number",
+          "required": false,
+          "notes": "Optional numeric badge."
+        },
+        {
+          "part": "Tabs.Trigger",
+          "name": "disabled",
+          "type": "boolean",
+          "required": false,
+          "notes": "Skipped by arrow-key navigation."
+        },
+        {
+          "part": "Tabs.Trigger",
+          "name": "unseen",
+          "type": "boolean",
+          "required": false,
+          "notes": "**Headless only.** The tab holds changes the person hasn't seen: set it when they arrive, clear it when the tab is opened. A hidden tab with `unseen` adds \"· 1 new\" to the \"N more\" control. The core trigger does not accept it."
+        },
+        {
+          "part": "Tabs.Panel",
+          "name": "value",
+          "type": "string",
+          "required": false,
+          "notes": "Must match a Trigger."
+        }
+      ],
+      "tokens": [
+        "--vela-bg-raised-hover",
+        "--vela-border-active",
+        "--vela-border-subtle",
+        "--vela-delay-preview",
+        "--vela-delay-tooltip",
+        "--vela-duration-base",
+        "--vela-duration-fast",
+        "--vela-duration-instant",
+        "--vela-duration-travel",
+        "--vela-ease-out",
+        "--vela-ease-spring",
+        "--vela-ease-standard",
+        "--vela-focus-ring-offset",
+        "--vela-focus-ring-width",
+        "--vela-font-weight-semibold",
+        "--vela-opacity-preview",
+        "--vela-space-10",
+        "--vela-space-20",
+        "--vela-space-5",
+        "--vela-stroke-2",
+        "--vela-tab-preview-width-min",
+        "--vela-text-de-emphasized",
+        "--vela-text-default",
+        "--vela-text-inactive",
+        "--vela-text-link"
+      ]
+    },
+    {
+      "name": "Text Area",
+      "spec": "guidelines/components/text-area.md",
+      "purpose": "Multi-line text entry with a label, optional hint, an error state and an optional live character count. Input's sibling: the same field anatomy, the same tokens, more lines.",
+      "status": {
+        "label": "Experimental",
+        "note": "specced, built and tested; its Figma set is published in the library (built from scripts/figma/components/text-area.figma.js). Approved once the API has been reviewed; see GOVERNANCE.md."
+      },
+      "imports": [
+        {
+          "from": "@omkarux/vela",
+          "names": [
+            "TextArea"
+          ],
+          "peers": [],
+          "status": "Experimental"
+        }
+      ],
+      "whenToUse": "- Free text that runs past one line — a justification, an incident note, a rule description,\n  a comment on an approval → **Text Area**.\n- Single-line text or numeric-as-text → **Input**.\n- Code, a query or a policy document that needs syntax highlighting → a code editor, **not in\n  this kit**. Flag the gap; a Text Area is not an editor.\n- Choosing from a set → Radio or Dropdown, **not in this kit**.",
+      "props": [
+        {
+          "part": "TextArea",
+          "name": "label",
+          "type": "string",
+          "required": true,
+          "notes": "**Required.**"
+        },
+        {
+          "part": "TextArea",
+          "name": "value",
+          "type": "string",
+          "required": false,
+          "notes": "Controlled. Exclusive with `defaultValue`."
+        },
+        {
+          "part": "TextArea",
+          "name": "defaultValue",
+          "type": "string",
+          "required": false,
+          "notes": "Uncontrolled initial text. Exclusive with `value`."
+        },
+        {
+          "part": "TextArea",
+          "name": "onChange",
+          "type": "(event: ChangeEvent<HTMLTextAreaElement>) => void",
+          "required": false,
+          "notes": "The native change event, as on Input. With `maxLength`, `event.target.value` is already within the limit."
+        },
+        {
+          "part": "TextArea",
+          "name": "hint",
+          "type": "string",
+          "required": false,
+          "notes": "Helper text. Wired via `aria-describedby`."
+        },
+        {
+          "part": "TextArea",
+          "name": "error",
+          "type": "string",
+          "required": false,
+          "notes": "Presence sets the error state; the string is the message."
+        },
+        {
+          "part": "TextArea",
+          "name": "size",
+          "type": "\"tiny\" | \"regular\" | \"large\"",
+          "values": [
+            "tiny",
+            "regular",
+            "large"
+          ],
+          "default": "regular",
+          "required": false,
+          "notes": "**These three only** — Input's set."
+        },
+        {
+          "part": "TextArea",
+          "name": "rows",
+          "type": "number",
+          "default": 3,
+          "required": false,
+          "notes": "The minimum height, in lines. The field starts at this height and is never dragged shorter."
+        },
+        {
+          "part": "TextArea",
+          "name": "maxLength",
+          "type": "number",
+          "required": false,
+          "notes": "The limit, in characters. Shows a live `n / max` count below the field."
+        },
+        {
+          "part": "TextArea",
+          "name": "resize",
+          "type": "\"vertical\" | \"none\"",
+          "values": [
+            "vertical",
+            "none"
+          ],
+          "default": "vertical",
+          "required": false,
+          "notes": "**These two only.** There is no horizontal and no both."
+        },
+        {
+          "part": "TextArea",
+          "name": "disabled",
+          "type": "boolean",
+          "default": false,
+          "required": false,
+          "notes": ""
+        },
+        {
+          "part": "TextArea",
+          "name": "readOnly",
+          "type": "boolean",
+          "default": false,
+          "required": false,
+          "notes": "Focusable and selectable, not editable."
+        },
+        {
+          "part": "TextArea",
+          "name": "required",
+          "type": "boolean",
+          "default": false,
+          "required": false,
+          "notes": "Renders a `*` and sets the native attribute."
+        }
+      ],
+      "tokens": [
+        "--vela-border-inactive",
+        "--vela-control-bg",
+        "--vela-control-bg-disabled",
+        "--vela-control-border",
+        "--vela-control-border-active",
+        "--vela-control-border-error",
+        "--vela-control-border-hover",
+        "--vela-control-placeholder",
+        "--vela-field-mark-gap",
+        "--vela-radius-4",
+        "--vela-space-10",
+        "--vela-space-5",
+        "--vela-text-body-line-height",
+        "--vela-text-de-emphasized",
+        "--vela-text-default",
+        "--vela-text-error",
+        "--vela-text-inactive",
+        "--vela-text-meta-line-height"
+      ]
+    },
+    {
+      "name": "Toast",
+      "spec": "guidelines/components/toast.md",
+      "purpose": "A short, floating **confirmation that something already happened** — \"Policy saved\", \"Export started\" — raised by the app, announced politely, and gone on its own or when dismissed. It is never the only record of what it says, never the only place an Undo lives, and never carries a decision.",
+      "status": {
+        "label": "Experimental",
+        "note": "born in @omkarux/vela/headless (Base UI 1.9); there is no core implementation, and its Figma set is published in the library (built from scripts/figma/components/toast.figma.js). Approved once the API has settled; see GOVERNANCE.md."
+      },
+      "imports": [
+        {
+          "from": "@omkarux/vela/headless",
+          "names": [
+            "ToastProvider",
+            "useToast"
+          ],
+          "peers": [
+            "@base-ui/react"
+          ],
+          "status": "Experimental"
+        }
+      ],
+      "whenToUse": "- An action the user just took **has completed**, and the page already shows the result — the row\n  updated, the policy listed, the export queued in Reports — and a moment's confirmation helps →\n  **Toast**.\n- An event or condition the user **must read**, next to the thing it is about, that stays until\n  it is resolved — a failed scan, a degraded connector, an error in a form → **Contextual Alert**\n  (`contextual-alert.md`), in the page. A toast floats away from its subject and leaves on a timer.\n- **Anything that failed** and needs the user to act — a save that did not save, a policy that did\n  not apply → the error goes **where the work is**: an Input `error`, a Contextual Alert `major`.\n  A toast never reports a failure (see *Hard constraints*, `toast-severity-closed`).\n- A **question** — confirm, cancel, choose → **Dialog** (`dialog.md`); a destructive one →\n  `variant=\"alert\"`. A toast never asks: it has at most one action, and that action is a shortcut.\n- An object's **ongoing** health → **Status Indicator**. A toast describes a moment, not a state.\n- **Agentic actions.** When an agent acts on the user's behalf, the record of what it did — and the\n  Undo — live in the place the agent's work is reviewed (an activity log, the object's history),\n  and a toast may point at it. The toast is the notice, never the ledger.",
+      "props": [
+        {
+          "part": "ToastProvider",
+          "name": "placement",
+          "type": "\"bottom-end\" | \"top-end\" | \"bottom-center\"",
+          "values": [
+            "bottom-end",
+            "top-end",
+            "bottom-center"
+          ],
+          "default": "bottom-end",
+          "required": false,
+          "notes": "**These three only.** Where the region sits. `end` follows the writing direction."
+        },
+        {
+          "part": "ToastProvider",
+          "name": "limit",
+          "type": "1 | 2 | 3",
+          "values": [
+            1,
+            2,
+            3
+          ],
+          "default": 3,
+          "required": false,
+          "notes": "**These three only.** How many toasts show at once; older ones wait, hidden, and return as newer ones leave."
+        },
+        {
+          "part": "ToastProvider",
+          "name": "label",
+          "type": "string",
+          "default": "Notifications",
+          "required": false,
+          "notes": "The region's accessible name — the landmark F6 lands on."
+        },
+        {
+          "part": "ToastProvider",
+          "name": "dismissLabel",
+          "type": "string",
+          "default": "Dismiss",
+          "required": false,
+          "notes": "The accessible name of every toast's close button."
+        },
+        {
+          "part": "ToastProvider",
+          "name": "children",
+          "type": "ReactNode",
+          "required": true,
+          "notes": "**Required.** The app."
+        },
+        {
+          "part": "useToast()",
+          "name": "add",
+          "type": "(options: ToastOptions) => string",
+          "required": false,
+          "notes": "Raises a toast with the options below and returns its id. **Inside a `ToastProvider` only**; outside one `useToast()` throws a named error."
+        },
+        {
+          "part": "useToast()",
+          "name": "dismiss",
+          "type": "(id: string) => void",
+          "required": false,
+          "notes": "Dismisses the toast `add` returned that id for."
+        },
+        {
+          "part": "Toast",
+          "name": "title",
+          "type": "string",
+          "required": true,
+          "notes": "**Required.** What happened, past tense: \"Policy saved\". The toast's accessible name."
+        },
+        {
+          "part": "Toast",
+          "name": "description",
+          "type": "string",
+          "required": false,
+          "notes": "One sentence of detail, wired as the toast's description."
+        },
+        {
+          "part": "Toast",
+          "name": "severity",
+          "type": "\"success\" | \"info\" | \"warning\"",
+          "values": [
+            "success",
+            "info",
+            "warning"
+          ],
+          "default": "info",
+          "required": false,
+          "notes": "**These three only** — a subset of the Severity taxonomy."
+        },
+        {
+          "part": "Toast",
+          "name": "action",
+          "type": "{ label: string; onClick: () => void }",
+          "required": false,
+          "notes": "**At most one.** A shortcut — \"View\", \"Undo\" — to something that also exists on the page. Activating it runs `onClick` and dismisses the toast."
+        }
+      ],
+      "tokens": [
+        "--vela-bg-raised",
+        "--vela-border-default",
+        "--vela-btn-standard-hover-bg",
+        "--vela-control-height-24",
+        "--vela-duration-base",
+        "--vela-duration-fast",
+        "--vela-duration-toast",
+        "--vela-duration-travel",
+        "--vela-ease-out",
+        "--vela-ease-spring",
+        "--vela-icon-16",
+        "--vela-icon-20",
+        "--vela-icon-severity-info",
+        "--vela-icon-severity-success",
+        "--vela-icon-severity-warning",
+        "--vela-icon-strong",
+        "--vela-layer-overlay",
+        "--vela-radius-3",
+        "--vela-radius-4",
+        "--vela-space-10",
+        "--vela-space-15",
+        "--vela-space-20",
+        "--vela-space-5",
+        "--vela-text-default",
+        "--vela-text-heading",
+        "--vela-toast-width"
+      ]
+    },
+    {
+      "name": "Toggle",
+      "spec": "guidelines/components/toggle.md",
+      "purpose": "A binary setting that takes effect **immediately**. No Save step.",
+      "status": {
+        "label": "Approved",
+        "note": ""
+      },
+      "imports": [
+        {
+          "from": "@omkarux/vela",
+          "names": [
+            "Toggle"
+          ],
+          "peers": [],
+          "status": "Approved"
+        }
+      ],
+      "whenToUse": "- Notifications on/off, dark mode, \"enable this rule\" → **Toggle**.\n- Records intent until a Save click (accept terms, pick scope in a form) → **Checkbox**\n  (`checkbox.md`, from `@omkarux/vela/headless`). Never substitute a Toggle.\n- More than two states → not a Toggle.",
+      "props": [
+        {
+          "part": "Toggle",
+          "name": "label",
+          "type": "string",
+          "required": true,
+          "notes": "**Required.** A switch with no name is unusable by screen reader."
+        },
+        {
+          "part": "Toggle",
+          "name": "checked",
+          "type": "boolean",
+          "required": false,
+          "notes": "Controlled. Omit for uncontrolled. Exclusive with `defaultChecked`."
+        },
+        {
+          "part": "Toggle",
+          "name": "defaultChecked",
+          "type": "boolean",
+          "default": false,
+          "required": false,
+          "notes": "Uncontrolled initial state. Exclusive with `checked`."
+        },
+        {
+          "part": "Toggle",
+          "name": "onChange",
+          "type": "(checked: boolean) => void",
+          "required": false,
+          "notes": "Receives the **next** value."
+        },
+        {
+          "part": "Toggle",
+          "name": "disabled",
+          "type": "boolean",
+          "default": false,
+          "required": false,
+          "notes": ""
+        },
+        {
+          "part": "Toggle",
+          "name": "labelPosition",
+          "type": "\"right\" | \"left\"",
+          "values": [
+            "right",
+            "left"
+          ],
+          "default": "right",
+          "required": false,
+          "notes": ""
+        },
+        {
+          "part": "Toggle",
+          "name": "size",
+          "type": "\"tiny\" | \"regular\"",
+          "values": [
+            "tiny",
+            "regular"
+          ],
+          "default": "regular",
+          "required": false,
+          "notes": "**These two only.**"
+        }
+      ],
+      "tokens": [
+        "--vela-border-inactive",
+        "--vela-duration-base",
+        "--vela-duration-instant",
+        "--vela-ease-standard",
+        "--vela-radius-full",
+        "--vela-toggle-knob",
+        "--vela-toggle-knob-inset",
+        "--vela-toggle-knob-size",
+        "--vela-toggle-off-bg",
+        "--vela-toggle-on-bg",
+        "--vela-toggle-track-width"
+      ]
+    },
+    {
+      "name": "Tooltip",
+      "spec": "guidelines/components/tooltip.md",
+      "purpose": "A short **supplementary label** for a control — what an abbreviated or iconic action does, the full text of a truncated value — shown on hover after a short rest and at once on keyboard focus, dismissed by Escape. **Text only.** A user who never sees it misses nothing they need.",
+      "status": {
+        "label": "Experimental",
+        "note": "born in @omkarux/vela/headless (Base UI 1.9) with Popover and Dialog; there is no core implementation, and its Figma set is published in the library (built from scripts/figma/components/tooltip.figma.js). Approved once the API has settled; see GOVERNANCE.md."
+      },
+      "imports": [
+        {
+          "from": "@omkarux/vela/headless",
+          "names": [
+            "Tooltip"
+          ],
+          "peers": [
+            "@base-ui/react"
+          ],
+          "status": "Experimental"
+        }
+      ],
+      "whenToUse": "- A **phrase that explains a control** the user can already operate — \"Download the last 24 hours\n  as CSV\" on an Export button → **Tooltip**.\n- Anything the user can **act in** — a link, a button, a checkbox, a form → **Popover**\n  (`popover.md`). A tooltip closes the moment the pointer leaves; nothing in it can be reached.\n- An **infotip** behind an ⓘ icon, whose only job is to show the text → a **Popover**: the\n  trigger's purpose is opening the panel, and a touch user can open a Popover but never sees a\n  tooltip.\n- Information the task **depends on** — a requirement, an error, why a control is disabled →\n  **inline text** beside the control (Input's `hint`, Checkbox's `description`). Tooltips are\n  hidden from touch users and are not reliably announced.\n- An **icon-only** control's name → its `aria-label`. A tooltip may show the same words to sighted\n  users, but it is never what names the control (see Hard constraints). A glyph-only control is an\n  [**Icon Button**](icon-button.md), which brings its own label tooltip; don't wrap one in another.\n- The **same words as the control's name**, for sighted users → **Tooltip** `kind=\"label\"`: shown,\n  and heard once. Any other words → the default `kind=\"description\"`.",
+      "props": [
+        {
+          "part": "Tooltip",
+          "name": "content",
+          "type": "string",
+          "required": true,
+          "notes": "**Required.** The text. A string: a tooltip never holds a link, a button, a list or bold."
+        },
+        {
+          "part": "Tooltip",
+          "name": "children",
+          "type": "ReactElement",
+          "required": true,
+          "notes": "**Required.** The **one** element it describes — a `Button`, a native `<button>`, a link. It keeps its own accessible name."
+        },
+        {
+          "part": "Tooltip",
+          "name": "placement",
+          "type": "\"top\" | \"bottom\" | \"start\" | \"end\"",
+          "values": [
+            "top",
+            "bottom",
+            "start",
+            "end"
+          ],
+          "default": "top",
+          "required": false,
+          "notes": "**These four only**, as Popover. It flips when there is no room."
+        },
+        {
+          "part": "Tooltip",
+          "name": "align",
+          "type": "\"start\" | \"center\" | \"end\"",
+          "values": [
+            "start",
+            "center",
+            "end"
+          ],
+          "default": "center",
+          "required": false,
+          "notes": "**These three only.**"
+        },
+        {
+          "part": "Tooltip",
+          "name": "kind",
+          "type": "\"description\" | \"label\"",
+          "values": [
+            "description",
+            "label"
+          ],
+          "default": "description",
+          "required": false,
+          "notes": "**These two only.** `description`: extra words, wired by `aria-describedby`. `label`: the trigger's own name, shown and not wired; `content` must equal that name."
+        }
+      ],
+      "tokens": [
+        "--vela-bg-tooltip",
+        "--vela-delay-tooltip",
+        "--vela-duration-fast",
+        "--vela-ease-out",
+        "--vela-layer-overlay",
+        "--vela-radius-4",
+        "--vela-space-10",
+        "--vela-space-5",
+        "--vela-text-tooltip",
+        "--vela-tooltip-width-max"
+      ]
+    }
+  ]
+}

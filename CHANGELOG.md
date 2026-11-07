@@ -6,6 +6,24 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Unreleased]
 
 ### Added
+- **`guidelines/components.json`, the components as one machine-readable list** (Omkar's decision
+  of 7 Nov 2026). For an agent that needs to find a component, its closed props and the closest
+  match when nothing fits: for each of the 19 built components, its name, spec path, purpose (the
+  spec's first paragraph), status (the `**Status:**` label and note), where to import it from
+  (`@omkarux/vela` or `@omkarux/vela/headless`, with any optional peer), its "When to use" text,
+  its props (part, type, closed values, default, required, notes) and its tokens. Proposals are
+  left out. The specs stay the source people edit: `scripts/build-components-json.mjs` generates
+  the file with the playground's own parser (`demo/playground/spec.ts`, `status.ts`), on
+  `npm run components` and on every build; it ships in the package (`./guidelines/*`). A new test,
+  `src/styles/components-json.test.ts`, fails when the committed file is stale ("run npm run
+  components"), when an import it names is not exported from that entry in `src`, and when a spec
+  is badly written: no title, no intro paragraph, an unknown Status label, no "When to use", no
+  Props or Composition table, a row with an empty name or type, an empty Default cell, a prop
+  listed twice in one part, a row that is not one prop name, or an Implementations entry the
+  package does not have. `scripts/verify-pack.mjs` checks the installed tarball carries it and it
+  parses with every component. 1877 checks (was 1838): 1423 unit and contract (was 1384), so the
+  Overview and How it is made baselines move with the check count. Packed: 352.4 kB, 269 files
+  (was 335.3 kB, 268).
 - **Tabs overflow, part of the Tabs component** (`guidelines/components/tabs.md`, *Overflow*; Omkar's
   decisions of 30 Oct to 1 Nov 2026, approved on 1 Nov as part of the refinement phase). When the
   row is narrower than its tabs, the **headless** Tabs puts the tabs that don't fit into an
@@ -917,6 +935,11 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   rules, 174 with proofs.
 
 ### Fixed
+- **The playground's spec parser read prop rows out of code blocks.** Brand Mark and Icon Button
+  write their types as a union, one member per line, and each line starts with a pipe, so the
+  parser counted them as Props rows: Brand Mark's Props count was 6, not 4, and Icon Button's 15,
+  not 11, and the bogus rows appeared under "only in code" on their Figma tabs. A fenced code block
+  is no longer read as a table (`demo/playground/spec.ts`, with a unit test).
 - **Status Indicator: a labelled indicator had no accessible name.** With a visible `label` it
   still carried `role="img"`, and an image takes its name only from `aria-label`, so axe reported
   it (`role-img-alt`) and a screen reader could skip it. With a label it now has no role and its

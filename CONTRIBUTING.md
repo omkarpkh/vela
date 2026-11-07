@@ -116,6 +116,8 @@ reviewed around.
   the same thing for a Claude Code session; keep it generic, no personal paths.
 - `npm run checks` counts every automated check into `demo/checks.json`, and `verify` diffs it.
   Add a test, and the count on the site moves with it.
+- `npm run components` writes `guidelines/components.json` from the specs. Change a spec, run it,
+  and commit the file: `npm test` fails while it is stale, or while a spec is badly written.
 - A Dart SDK is optional. When one is present, `verify` also parses the generated Flutter file.
 
 ## Conduct and security

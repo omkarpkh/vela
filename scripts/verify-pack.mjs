@@ -12,7 +12,7 @@
  *      against the built module graph, not promised in prose
  */
 import { execFileSync } from 'node:child_process'
-import { mkdtempSync, writeFileSync, readFileSync, rmSync, mkdirSync } from 'node:fs'
+import { mkdtempSync, writeFileSync, readFileSync, readdirSync, rmSync, mkdirSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, dirname, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -57,6 +57,7 @@ check(files.includes('tokens/vela.tokens.json'), 'tarball contains tokens/vela.t
 check(files.includes('flutter/lib/vela_tokens.dart'), 'tarball contains flutter/lib/vela_tokens.dart')
 check(files.includes('bridges/vela.mui-theme.json'), 'tarball contains bridges/vela.mui-theme.json')
 check(files.some((f) => f.startsWith('guidelines/')), 'tarball contains guidelines/')
+check(files.includes('guidelines/components.json'), 'tarball contains guidelines/components.json (the machine-readable component list)')
 check(files.includes('NOTICE'), 'tarball contains NOTICE (the Lucide ISC notice travels with every copy)')
 check(!files.some((f) => f.startsWith('src/')), 'no src/ leaked into the tarball')
 check(!files.some((f) => f.includes('.test.')), 'no test files leaked into the tarball')
@@ -116,6 +117,12 @@ try {
   run('npm', ['install', tarball, 'react@19', 'react-dom@19', '@types/react@19', baseUi,
     '--no-audit', '--no-fund', '--silent'], app, { stdio: 'ignore' })
   check(true, `npm install of the tarball succeeded (with ${baseUi} for the headless entry)`)
+
+  // The component list an agent reads, as installed: it parses, and it lists every built spec.
+  const specCount = readdirSync(join(root, 'guidelines/components')).filter((f) => f.endsWith('.md')).length
+  let listed = -1
+  try { listed = JSON.parse(readFileSync(join(app, 'node_modules/@omkarux/vela/guidelines/components.json'), 'utf8')).components.length } catch { /* reported below */ }
+  check(listed === specCount, `installed guidelines/components.json parses and lists ${listed} of ${specCount} components`)
 
   // -- valid usage must compile --
   mkdirSync(join(app, 'src'), { recursive: true })
