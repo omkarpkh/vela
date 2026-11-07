@@ -1199,6 +1199,11 @@ test('a Dropdown List name wraps in full inside the list, at desktop width and i
     await trigger.click()
     const menu = page.getByRole('menu', { name: 'Views' })
     await expect(menu).toBeVisible()
+    // The list grows from 0.96 as it opens (decision 008): measure it once that has settled, or a
+    // box read in its starting frame or mid-grow is 4% short. Base UI holds data-starting-style for
+    // a frame before the transition exists, so wait that out first, then for the transition.
+    await expect(menu).not.toHaveAttribute('data-starting-style')
+    await menu.evaluate((el) => Promise.all(el.getAnimations().map((a) => a.finished)))
     const boxes = []
     for (const name of names) {
       const label = page.getByRole('menuitemradio', { name: new RegExp(`^${name}`) }).locator('.vela-dropdown-list__label')
