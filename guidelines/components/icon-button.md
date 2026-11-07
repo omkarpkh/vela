@@ -21,7 +21,7 @@ Every glyph-only control in a console should be named, reachable, big enough to 
 - Destructive (delete, revoke) → **Button** `variant="destructive"` with words.
 - A setting that stays on or off (pin, mute) → a toggle icon button, **not in this kit**; flag the gap.
 - A glyph that only decorates text → **Icon**.
-- Several in a row → **Icon Button** side by side, each its own tab stop.
+- Several in a row → **Icon Button** side by side, each its own tab stop, the row wrapped in one `TooltipProvider` so the next name shows at once ([`tooltip.md`](tooltip.md), *Groups*).
 - A link to GitHub or Figma → **Icon Button** with `brandMark`; to npm → **Icon Button** with `word="npm"`. Never a bare **Brand Mark** in an `<a>` of your own.
 
 ## Props

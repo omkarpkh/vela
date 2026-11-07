@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
 import { cn } from '../src'
-import { IconButton } from '../src/headless'
+import { IconButton, TooltipProvider } from '../src/headless'
 import pkg from '../package.json'
 import './demo.css'
 import { useRoute, href, sameRoute, type Route } from './router'
@@ -83,14 +83,17 @@ function MenuIcon() {
 /**
  * GitHub, npm and Figma on a wide screen: each its own mark, or npm's word, in an Icon Button link
  * named in words, with a label tooltip. Figma's mark keeps its 20px clear space (.topbar__marks).
+ * The three are one TooltipProvider: once one label shows, the next opens at once (tooltip.md, Groups).
  */
 function SiteMarks() {
   return (
-    <div className="topbar__marks">
-      <IconButton label="Vela on GitHub" brandMark="github" href={LINKS.github} opensInNewTab tooltipPlacement="bottom" />
-      <IconButton label="Vela on npm" word="npm" href={LINKS.npm} opensInNewTab tooltipPlacement="bottom" />
-      <IconButton label="Vela in Figma" brandMark="figma" href={figmaUrl()} opensInNewTab tooltipPlacement="bottom" />
-    </div>
+    <TooltipProvider>
+      <div className="topbar__marks">
+        <IconButton label="Vela on GitHub" brandMark="github" href={LINKS.github} opensInNewTab tooltipPlacement="bottom" />
+        <IconButton label="Vela on npm" word="npm" href={LINKS.npm} opensInNewTab tooltipPlacement="bottom" />
+        <IconButton label="Vela in Figma" brandMark="figma" href={figmaUrl()} opensInNewTab tooltipPlacement="bottom" />
+      </div>
+    </TooltipProvider>
   )
 }
 

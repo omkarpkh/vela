@@ -54,8 +54,14 @@ describe('the report in llms.txt', () => {
       expect(q.get('template')).toBe('component-request.yml')
       for (const key of [...q.keys()].filter((k) => k !== 'template' && k !== 'title')) expect(ids, key).toContain(key)
     }
-    // The worked example's closest is a dropdown option of the form.
-    const example = links.find((q) => q.get('closest'))!
-    expect(form).toContain(`        - ${example.get('closest')}\n`)
+    // A link cannot fill the form's dropdown (tested signed in, 7 Nov 2026), so no link carries
+    // `closest`. The closest component is named in the title instead, and must be a menu option.
+    for (const q of links) {
+      expect(q.has('closest')).toBe(false)
+      if (!q.has('title')) continue // the pattern, written over several lines to read
+      const named = q.get('title')?.match(/\(closest: ([^)]+)\)/)?.[1]
+      expect(named, 'the title names the closest component').toBeTruthy()
+      expect(form).toContain(`        - ${named}\n`)
+    }
   })
 })
