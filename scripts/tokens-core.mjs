@@ -17,6 +17,8 @@
  *   $extensions["com.omkarux.vela"]  the vendor data: `figma` (variable name), `raw`, and `spring`
  *              (stiffness, damping, mass, duration) on a cubicBezier token — see springOf
  *   $deprecated  true | "reason" | false, inherited from the group unless the token says false
+ *   a group's $extensions["com.omkarux.vela"].groups  one description for a family of steps,
+ *              copied onto each step that has no $description of its own (applyGroupDescriptions)
  *
  * A token's SHORT name (the last path segment) is what the CSS custom property, the Dart field
  * and the Figma code syntax carry, so short names are required to be unique across groups.
@@ -132,6 +134,8 @@ export function createTokenSet({ base, overlays = {}, defaultContext = 'light', 
   }
   for (const t of Object.values(all)) t.$type = typeOf(t)
 
+  const groups = applyGroupDescriptions(base, all)
+
   // overlays: a token may only re-point a base token of the same type; it never adds one
   const contexts = [defaultContext]
   for (const [ctx, docs] of Object.entries(overlays)) {
@@ -167,7 +171,55 @@ export function createTokenSet({ base, overlays = {}, defaultContext = 'light', 
   const resolved = (name, ctx = defaultContext) => valueOf(terminal(name, ctx), ctx)
   const vendor = (t) => (typeof t === 'string' ? all[t] : t)?.$extensions?.[VENDOR] ?? {}
 
-  return { base, resolver, contexts, defaultContext, all, byPath, order, valueOf, terminal, resolved, vendor }
+  return { base, resolver, contexts, defaultContext, all, byPath, order, groups, valueOf, terminal, resolved, vendor }
+}
+
+/**
+ * Group descriptions: one description for a family of steps that share one job (the spacing scale,
+ * each text style's size, weight and line height), written once on the top-level group that holds
+ * them and copied onto every step, so every output carries it on every token:
+ *
+ *   "sizing": { "$extensions": { "com.omkarux.vela": { "groups": {
+ *     "spacing": { "description": "The spacing scale for …", "tokens": ["space-5", "space-10", …] } } } }, … }
+ *
+ * The file is flat (a group holds tokens, not sub-groups), so the family cannot be a DTCG group with
+ * a $description of its own without changing every token's path in the published tokens.json. A
+ * step's own $description, where it has one, wins: the group's text fills the steps that have none.
+ * A step belongs to one family at most, and every name listed must be a token in that group.
+ * Returns { "<group>.<family>": { group, name, description, tokens } }; each step it describes gets
+ * `descriptionFrom: "<group>.<family>"`.
+ */
+function applyGroupDescriptions(base, all) {
+  const out = {}
+  const claimed = {}
+  for (const [group, doc] of Object.entries(base)) {
+    if (group.startsWith('$') || !isObj(doc)) continue
+    const ext = doc.$extensions?.[VENDOR]
+    if (ext === undefined) continue
+    const where = `${group}.$extensions["${VENDOR}"]`
+    if (!isObj(ext)) throw new Error(`${where}: must be an object`)
+    for (const k of Object.keys(ext)) if (k !== 'groups') throw new Error(`${where}: unknown key "${k}" (a group carries only \`groups\`)`)
+    if (!isObj(ext.groups)) throw new Error(`${where}.groups: must be an object of { description, tokens }`)
+    for (const [name, g] of Object.entries(ext.groups)) {
+      const id = `${group}.${name}`
+      if (!isObj(g)) throw new Error(`${where}.groups.${name}: must be { description, tokens }`)
+      for (const k of Object.keys(g)) if (!['description', 'tokens'].includes(k)) throw new Error(`${where}.groups.${name}: unknown key "${k}"`)
+      if (typeof g.description !== 'string' || !g.description.trim()) throw new Error(`${where}.groups.${name}: description must be a non-empty string`)
+      if (!Array.isArray(g.tokens) || !g.tokens.length) throw new Error(`${where}.groups.${name}: tokens must list at least one token`)
+      for (const n of g.tokens) {
+        const t = all[n]
+        if (!t || t.path !== `${group}.${n}`) throw new Error(`${where}.groups.${name}: "${n}" is not a token in the ${group} group`)
+        if (claimed[n]) throw new Error(`${where}.groups.${name}: "${n}" is already in ${claimed[n]}; a step belongs to one family`)
+        claimed[n] = id
+        if (t.$description === undefined) {
+          t.$description = g.description
+          t.descriptionFrom = id
+        }
+      }
+      out[id] = { group, name, description: g.description, tokens: [...g.tokens] }
+    }
+  }
+  return out
 }
 
 /** Read the resolver and every file it names, relative to the repository root. */

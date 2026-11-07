@@ -18,7 +18,7 @@ const resolver = JSON.parse(readFileSync(resolve(root, 'tokens/vela.resolver.jso
 const groups = Object.entries(doc).filter(([k]) => !k.startsWith('$')) as [string, Record<string, any>][]
 const all: Record<string, any> = {}
 const byPath: Record<string, any> = {}
-for (const [g, tokens] of groups) for (const [n, t] of Object.entries(tokens)) { all[n] = { ...t, group: g, path: `${g}.${n}` }; byPath[`${g}.${n}`] = all[n] }
+for (const [g, tokens] of groups) for (const [n, t] of Object.entries(tokens)) if (!n.startsWith('$')) { all[n] = { ...t, group: g, path: `${g}.${n}` }; byPath[`${g}.${n}`] = all[n] }
 const dark: Record<string, any> = Object.fromEntries(Object.entries(overlay.color as Record<string, any>).filter(([k]) => !k.startsWith('$')))
 const isAlias = (v: unknown): v is string => typeof v === 'string' && /^\{.+\}$/.test(v)
 const hexOf = (c: { components: number[] }) => '#' + c.components.map((x) => Math.round(x * 255).toString(16).padStart(2, '0')).join('')
@@ -112,6 +112,7 @@ describe('token source', () => {
     const bad: string[] = []
     for (const [group, re] of Object.entries(RULE))
       for (const [n, t] of Object.entries(doc[group] as Record<string, any>)) {
+        if (n.startsWith('$')) continue
         if (!['color', 'dimension', 'number', 'duration', 'cubicBezier'].includes(t.$type)) continue
         const f = t.$extensions?.[VENDOR]?.figma
         if (!f || !re.test(f)) bad.push(`${group}/${n} → ${f}`)

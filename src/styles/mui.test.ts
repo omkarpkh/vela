@@ -15,7 +15,7 @@ const bridge = JSON.parse(readFileSync(bridgePath, 'utf8'))
 const all: Record<string, any> = {}
 for (const [g, toks] of Object.entries(doc)) {
   if (g.startsWith('$')) continue
-  for (const [n, t] of Object.entries(toks as Record<string, any>)) all[n] = t
+  for (const [n, t] of Object.entries(toks as Record<string, any>)) if (!n.startsWith('$')) all[n] = t
 }
 const dark: Record<string, any> = overlay.color
 type Mode = 'light' | 'dark'

@@ -2198,6 +2198,64 @@
     }
   },
   "sizing": {
+    "$extensions": {
+      "com.omkarux.vela": {
+        "groups": {
+          "spacing": {
+            "description": "The spacing scale for padding and gaps. 5 between an icon and its label; 10 for control padding and tight stacks; 15 for default button padding and form gaps; 20 for section padding and tab gaps; 25 for wide inner padding; 30 for large button padding; 40 between sections; 60 and 80 for page rhythm. These steps are the only ones: there is no 35, 50 or 70. Put the gap on the flex or grid parent, not margins on the children. The value already carries px, so never wrap it in calc(… * 1px).",
+            "tokens": [
+              "space-5",
+              "space-10",
+              "space-15",
+              "space-20",
+              "space-25",
+              "space-30",
+              "space-40",
+              "space-60",
+              "space-80"
+            ]
+          },
+          "radius": {
+            "description": "Corner radius. Each step has a scope, and using one outside it is drift: 4 is the default corner for every component, cards included; 3 for small inner elements such as dismiss buttons and inline chips; 8 for modal and dialog containers only; 12 for the outer edge of a top level side panel only; full for Status Indicator dots and the Toggle track only. Buttons are never pill shaped.",
+            "tokens": [
+              "radius-3",
+              "radius-4",
+              "radius-8",
+              "radius-12",
+              "radius-full"
+            ]
+          },
+          "icon-box": {
+            "description": "Icon boxes for the glyph slots inside components. 12 in Button tiny; 16 in Button regular, large and huge, and in alerts; 20 for dismiss controls; 24 is reserved. A Button icon never goes above 16, even at huge. The Icon component binds its own boxes (icon-size, icon-size-small, icon-size-large), so it can change without moving these.",
+            "tokens": [
+              "icon-12",
+              "icon-16",
+              "icon-20",
+              "icon-24"
+            ]
+          },
+          "focus-ring": {
+            "description": "The one focus ring for the whole kit: the width is the outline's thickness and the offset its gap from the control's edge, drawn in focus-ring-color. Bound once, on .vela-root :focus-visible in base.css. A component never draws its own outline and never sets outline: none.",
+            "tokens": [
+              "focus-ring-width",
+              "focus-ring-offset"
+            ]
+          },
+          "toggle": {
+            "description": "Toggle geometry for its two sizes, regular and tiny: the track's width and height, the knob's size, and the inset between the track edge and the knob. The knob's travel is worked out from these, so change them together. Fixed geometry: it never scales with the viewport, and only the label flexes.",
+            "tokens": [
+              "toggle-track-width",
+              "toggle-track-height",
+              "toggle-track-width-tiny",
+              "toggle-track-height-tiny",
+              "toggle-knob-size",
+              "toggle-knob-size-tiny",
+              "toggle-knob-inset"
+            ]
+          }
+        }
+      }
+    },
     "space-5": {
       "$type": "dimension",
       "$value": {
@@ -2921,6 +2979,127 @@
     }
   },
   "typography": {
+    "$extensions": {
+      "com.omkarux.vela": {
+        "groups": {
+          "font-weight": {
+            "description": "The three weights of Open Sans, the only ones the kit uses: light, regular and semibold. Take the weight from the text style rather than choosing one: H1 to H3 are light and get their prominence from size, H5 and H6 are semibold and get theirs from weight. Button and tab labels are regular at every size. There is no bold.",
+            "tokens": [
+              "font-weight-light",
+              "font-weight-regular",
+              "font-weight-semibold"
+            ]
+          },
+          "text-h1": {
+            "description": "Heading H1 (class .vela-h1, Figma text style Heading/H1). The largest heading. Light, like H2 and H3: it gets its prominence from size, so never make it bold. Size, weight and line height are one set: never take one without the others, and choose the style for its role, not for the size you want.",
+            "tokens": [
+              "text-h1-size",
+              "text-h1-weight",
+              "text-h1-line-height"
+            ]
+          },
+          "text-h2": {
+            "description": "Heading H2 (class .vela-h2, Figma text style Heading/H2). Light, like H1 and H3: it gets its prominence from size, so never make it bold. Size, weight and line height are one set: never take one without the others, and choose the style for its role, not for the size you want.",
+            "tokens": [
+              "text-h2-size",
+              "text-h2-weight",
+              "text-h2-line-height"
+            ]
+          },
+          "text-h3": {
+            "description": "Heading H3 (class .vela-h3, Figma text style Heading/H3). Light, like H1 and H2: it gets its prominence from size, so never make it bold. Size, weight and line height are one set: never take one without the others, and choose the style for its role, not for the size you want.",
+            "tokens": [
+              "text-h3-size",
+              "text-h3-weight",
+              "text-h3-line-height"
+            ]
+          },
+          "text-h4": {
+            "description": "Heading H4 (class .vela-h4, Figma text style Heading/H4). Regular weight. Size, weight and line height are one set: never take one without the others, and choose the style for its role, not for the size you want.",
+            "tokens": [
+              "text-h4-size",
+              "text-h4-weight",
+              "text-h4-line-height"
+            ]
+          },
+          "text-h5": {
+            "description": "Heading H5 (class .vela-h5, Figma text style Heading/H5). Semibold, like H6: it gets its prominence from weight, not size. Size, weight and line height are one set: never take one without the others, and choose the style for its role, not for the size you want.",
+            "tokens": [
+              "text-h5-size",
+              "text-h5-weight",
+              "text-h5-line-height"
+            ]
+          },
+          "text-h6": {
+            "description": "Heading H6 (class .vela-h6, Figma text style Heading/H6). Semibold, like H5: it gets its prominence from weight, not size. Size, weight and line height are one set: never take one without the others, and choose the style for its role, not for the size you want.",
+            "tokens": [
+              "text-h6-size",
+              "text-h6-weight",
+              "text-h6-line-height"
+            ]
+          },
+          "text-body": {
+            "description": "Body text (class .vela-body, Figma text style Body/Default). Regular weight. Body/Link and Body/Strong take the same size and line height at semibold. Size, weight and line height are one set: never take one without the others, and choose the style for its role, not for the size you want.",
+            "tokens": [
+              "text-body-size",
+              "text-body-weight",
+              "text-body-line-height"
+            ]
+          },
+          "text-meta": {
+            "description": "Meta text, for secondary information (class .vela-meta, Figma text style Body/Meta). Regular weight, with its own letter spacing (tracking). Size, weight, line height and tracking are one set: never take one without the others. Figma's Mono/Meta is the same set in the mono family.",
+            "tokens": [
+              "text-meta-size",
+              "text-meta-weight",
+              "text-meta-line-height",
+              "text-meta-tracking"
+            ]
+          },
+          "text-button-tiny": {
+            "description": "Button label at size tiny (Figma text style Button/Tiny). Size and line height are a pair: never take one without the other. The weight is font-weight-regular at every button size, never semibold or bold.",
+            "tokens": [
+              "text-button-tiny-size",
+              "text-button-tiny-line-height"
+            ]
+          },
+          "text-button-regular": {
+            "description": "Button label at size regular (Figma text style Button/Regular). Size and line height are a pair: never take one without the other. The weight is font-weight-regular at every button size, never semibold or bold.",
+            "tokens": [
+              "text-button-regular-size",
+              "text-button-regular-line-height"
+            ]
+          },
+          "text-button-large": {
+            "description": "Button label at size large (Figma text style Button/Large). Size and line height are a pair: never take one without the other. The weight is font-weight-regular at every button size, never semibold or bold. This size exists for Button large only; anywhere else it is off the scale.",
+            "tokens": [
+              "text-button-large-size",
+              "text-button-large-line-height"
+            ]
+          },
+          "text-button-huge": {
+            "description": "Button label at size huge (Figma text style Button/Huge). Size and line height are a pair: never take one without the other. The weight is font-weight-regular at every button size, never semibold or bold.",
+            "tokens": [
+              "text-button-huge-size",
+              "text-button-huge-line-height"
+            ]
+          },
+          "text-tab": {
+            "description": "Tab label at Tabs size regular (Figma text style Tab/Default). Size and line height are a pair: never take one without the other. The label is font-weight-regular; the count beside it is semibold (Figma Tab/Count).",
+            "tokens": [
+              "text-tab-size",
+              "text-tab-line-height"
+            ]
+          },
+          "text-tab-large": {
+            "description": "Tab label at Tabs size large (Figma text style Tab/Large). Size and line height are a pair: never take one without the other. The label is font-weight-regular; the count beside it is semibold (Figma Tab/Count Large).",
+            "tokens": [
+              "text-tab-large-size",
+              "text-tab-large-line-height"
+            ]
+          }
+        }
+      }
+    },
     "font-family-primary": {
       "$type": "fontFamily",
       "$value": "\"Open Sans\", -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif",
