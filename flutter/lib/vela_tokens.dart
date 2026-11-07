@@ -1284,6 +1284,7 @@ abstract final class VelaMotion {
 /// Type ramp. Sizes and line-heights in logical pixels; each composed [TextStyle] sets
 /// `height` to line-height ÷ size, which is how Flutter expresses a line-height.
 abstract final class VelaTypography {
+  /// All UI text.
   static const String fontFamilyPrimary = 'Open Sans';
   static const List<String> fontFamilyPrimaryFallback = <String>['Segoe UI', 'Roboto'];
   /// Headlines, brand moments and big headline numbers. Open Sans by default, so a big number and the words beside it are one family (decisions/007-display-face-open-sans). A brand theme may re-point it for headlines and brand moments, never for numbers people compare, which bind font-family-primary. Wherever it shows a number the figures are tabular (CSS font-variant-numeric: tabular-nums).

@@ -1,8 +1,10 @@
 # Vela — global design rules
 
-This is the one document an agent reads before touching any UI in this repository. It
+This is the one document an agent reads before touching any UI in this repository, or any UI
+built with Vela. It ships at the root of the npm package (`node_modules/@omkarux/vela/DESIGN.md`). It
 collects the rules that apply everywhere; the per-component specs in `guidelines/components/`
-add the rules for one component. Read this, then the spec, then act.
+add the rules for one component. Read this, then the spec, then act. Paths under `src/`,
+`scripts/`, `tests/` and `decisions/` are in the repository, not the package.
 
 ## Purpose and scope
 
@@ -48,7 +50,7 @@ are listed with their uses in `guidelines/tokens.md`.
 Three rules follow, and all three are checked by `scripts/check-css.mjs` in `npm test`:
 
 - **Numeric tokens already carry their unit.** `padding: var(--vela-space-10)`, never
-  `calc(var(--vela-space-10) * 1px)` — that produces `10px * 1px`. Applies to `--vela-space-*`,
+  `calc(var(--vela-space-10) * 1px)`, which multiplies a length by a length and is not valid CSS. Applies to `--vela-space-*`,
   `--vela-icon-*`, `--vela-control-height-*`, `--vela-radius-*` and every typography size and
   line-height.
 - **No primitives in component CSS.** `var(--vela-grey-700)` in `src/components/**` fails the
@@ -61,22 +63,61 @@ Three rules follow, and all three are checked by `scripts/check-css.mjs` in `npm
   literal that genuinely has no token yet is waived on its own line with
   `/* vela-allow: <reason> */`, and every waiver is printed in the report.
 
-The scales do not interpolate: `--vela-space-25` exists and `--vela-space-50` does not; there is
-no 35 and no 70. Radius has four tokens each with a scope, and `--vela-radius-full` belongs to the
-Status Indicator dot and the Toggle track only (`guidelines/foundations/spacing.md`, `radius.md`,
-`sizing.md`). Button and the input family do not share a height ramp — a `regular` Button is
-35px and a `regular` Input is 26px, deliberately.
+The scales do not interpolate: the steps in the table below are the only ones. `--vela-space-25`
+exists and `--vela-space-50` does not; there is no 35 and no 70. Each radius has a scope, and
+`--vela-radius-full` belongs to the Status Indicator dot and the Toggle track only
+(`guidelines/foundations/spacing.md`, `radius.md`, `sizing.md`). Button and the input family do
+not share a height ramp: a `regular` Button is 35px and a `regular` Input is 26px, deliberately.
+
+The table is generated from `tokens/vela.tokens.json` by `npm run tokens`; edit the token file,
+never the table.
+
+<!-- generated:scales (npm run tokens) -->
+| Scale | Token | Value | Description |
+|---|---|---|---|
+| Spacing | `--vela-space-5` | `5px` | (none yet) |
+|  | `--vela-space-10` | `10px` | (none yet) |
+|  | `--vela-space-15` | `15px` | (none yet) |
+|  | `--vela-space-20` | `20px` | (none yet) |
+|  | `--vela-space-25` | `25px` | 25 exists; 50 does not. Do not interpolate the scale. |
+|  | `--vela-space-30` | `30px` | (none yet) |
+|  | `--vela-space-40` | `40px` | (none yet) |
+|  | `--vela-space-60` | `60px` | (none yet) |
+|  | `--vela-space-80` | `80px` | (none yet) |
+| Radius | `--vela-radius-3` | `3px` | (none yet) |
+|  | `--vela-radius-4` | `4px` | The default corner for every component. |
+|  | `--vela-radius-8` | `8px` | (none yet) |
+|  | `--vela-radius-12` | `12px` | (none yet) |
+|  | `--vela-radius-full` | `9999px` | Status Indicator dots and the Toggle track only. |
+| Icon box | `--vela-icon-12` | `12px` | (none yet) |
+|  | `--vela-icon-16` | `16px` | Button icons never exceed 16. 12 at tiny, 16 everywhere else. |
+|  | `--vela-icon-20` | `20px` | (none yet) |
+|  | `--vela-icon-24` | `24px` | (none yet) |
+|  | `--vela-icon-size` | `16px` | Icon component, size regular: the glyph box beside 14px body text (Body/Default, Button regular). Same value as icon/16. |
+|  | `--vela-icon-size-small` | `12px` | Icon component, size small: beside 12px meta text and in Button tiny. Same value as icon/12. |
+|  | `--vela-icon-size-large` | `20px` | Icon component, size large: a standalone glyph (table cell, toolbar, card header) or beside 16px text. Same value as icon/20. |
+| Control height | `--vela-control-height-24` | `24px` | Button and the input family do not share a height ramp. |
+|  | `--vela-control-height-25` | `25px` | Button and the input family do not share a height ramp. |
+|  | `--vela-control-height-26` | `26px` | Button and the input family do not share a height ramp. |
+|  | `--vela-control-height-35` | `35px` | Button and the input family do not share a height ramp. |
+|  | `--vela-control-height-40` | `40px` | Button and the input family do not share a height ramp. |
+|  | `--vela-control-height-48` | `48px` | Button and the input family do not share a height ramp. |
+|  | `--vela-control-height-60` | `60px` | Button and the input family do not share a height ramp. |
+<!-- /generated -->
 
 ## Typography
 
 Three families, each a token, each with a fallback stack so the kit degrades rather than breaks
-(`guidelines/foundations/typography.md`):
+(`guidelines/foundations/typography.md`). The table is generated from the token file by
+`npm run tokens`; the display family is the one a brand may re-point.
 
+<!-- generated:font-families (npm run tokens) -->
 | Token | Stack | For |
 |---|---|---|
-| `--vela-font-family-primary` | `"Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif` | all UI text |
-| `--vela-font-family-display` | `"Open Sans", -apple-system, sans-serif` | headlines, brand moments and big headline numbers; the one family a brand may re-point |
-| `--vela-font-family-mono` | `ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", Menlo, Consolas, monospace` | identifiers, hashes, IPs, timestamps, counts that must align |
+| `--vela-font-family-primary` | `"Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif` | All UI text. |
+| `--vela-font-family-display` | `"Open Sans", -apple-system, sans-serif` | Headlines, brand moments and big headline numbers. Open Sans by default, so a big number and the words beside it are one family (decisions/007-display-face-open-sans). A brand theme may re-point it for headlines and brand moments, never for numbers people compare, which bind font-family-primary. Wherever it shows a number the figures are tabular (CSS font-variant-numeric: tabular-nums). |
+| `--vela-font-family-mono` | `ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", Menlo, Consolas, monospace` | System monospace stack, no web font: identifiers, hashes, IPs, timestamps and counts that must align. Figma text style Mono/Meta draws it in Roboto Mono. |
+<!-- /generated -->
 
 The mono stack is **system fonts only** — no web font is downloaded; each platform's own
 monospace answers first. It is used at Meta's size, line height, weight and tracking
@@ -195,25 +236,46 @@ one of three reasons — feedback, orientation, continuity — and a movement wh
 be named in one of those words does not ship. The frequency gate: something triggered hundreds
 of times a day gets instant feedback under 200ms; from the keyboard, nothing animates.
 
-Four durations and three curves, and no component defines its own duration or curve
-(`--vela-delay-tooltip`, 600ms, is a wait before a Tooltip opens on hover, and `--vela-delay-preview`,
-80ms, the rest before the Tabs hover preview appears; neither is an animation, see the overlays
-bullet below and `guidelines/components/tabs.md#motion`):
+Four durations and three curves animate, and no component defines its own duration or curve.
+Their values are in the table below; this list says when to use each.
 
-- `--vela-duration-instant` (70ms) — a press landing; press-in only.
-- `--vela-duration-fast` (120ms) — anything else that answers a pointer.
-- `--vela-duration-base` (180ms) — anything that settles or appears.
-- `--vela-duration-travel` (240ms) — a change that crosses a distance (the Tabs underline growing
-  under a pressed tab, the Tabs hover preview fading in). Still under 300ms.
-- `--vela-ease-standard` `cubic-bezier(0.2, 0, 0.2, 1)` — things that change or move while on
-  screen: hover colours, a press, a knob. Never a bare `ease`.
-- `--vela-ease-out` `cubic-bezier(0.25, 1, 0.5, 1)` — things that enter: fast at the start, at
-  rest at the end, no overshoot.
-- `--vela-ease-spring` — a spring (stiffness 1200, damping 56, mass 1), generated into a CSS
-  `linear()` easing over `--vela-duration-travel` at token build time; `--vela-ease-out` where
-  `linear()` is not supported. Only for the moments a spec names (today: the Tabs underline growing in
-  place after a pointer press, and the Toast stack moving back and spreading), always paired with
+- `--vela-duration-instant`: a press landing. Press-in only.
+- `--vela-duration-fast`: anything else that answers a pointer.
+- `--vela-duration-base`: anything that settles or appears.
+- `--vela-duration-travel`: a change that crosses a distance (the Tabs underline growing under a
+  pressed tab, the Tabs hover preview fading in). Still under 300ms.
+- `--vela-ease-standard`: things that change or move while on screen: hover colours, a press, a
+  knob. Never a bare `ease`.
+- `--vela-ease-out`: things that enter. Fast at the start, at rest at the end, no overshoot.
+- `--vela-ease-spring`: a spring, generated into a CSS `linear()` easing over
+  `--vela-duration-travel` at token build time, with `--vela-ease-out` where `linear()` is not
+  supported. Only for the moments a spec names (today: the Tabs underline growing in place after a
+  pointer press, and the Toast stack moving back and spreading), always paired with
   `--vela-duration-travel`.
+
+Two delays are waits, not animations: `--vela-delay-tooltip` before a Tooltip opens on hover, and
+`--vela-delay-preview`, the rest before the Tabs hover preview appears (see the overlays paragraph
+below and `guidelines/components/tabs.md#motion`). `--vela-duration-toast` is a dwell, and the two
+brand-pulse tokens belong to the site's hero logo alone, never to a component.
+
+The table is generated from `tokens/vela.tokens.json` by `npm run tokens`:
+
+<!-- generated:motion (npm run tokens) -->
+| Token | Value | Description |
+|---|---|---|
+| `--vela-duration-instant` | `70ms` | A press landing. Below the ~85ms where a delay starts to read as lag, so contact and acknowledgement arrive together. Press-in only — the release settles at duration-base. |
+| `--vela-duration-fast` | `120ms` | Anything that answers a pointer: hover in, exits. |
+| `--vela-duration-base` | `180ms` | Anything that settles or enters: hover out, appearing. |
+| `--vela-duration-travel` | `240ms` | The one step above duration-base, still under 300ms, for a change that crosses a distance: the Tabs underline growing in place under the tab that was pressed, and the Tabs hover preview fading in. The spring curve is drawn over this duration, so the two are used together. |
+| `--vela-delay-tooltip` | `600ms` | How long the pointer rests on a trigger before its Tooltip opens. A delay, not an animation: it stops tooltips flashing as the pointer crosses a toolbar. Equal to Base UI's default, which applies when the stylesheet is not loaded. |
+| `--vela-delay-preview` | `80ms` | How long the pointer rests on an unselected tab before its hover preview (the Tabs Seed) starts to appear. A delay on the way in only, not an animation: a pointer sweeping across a row of tabs shows nothing, and the reduced-motion collapse never shortens it. |
+| `--vela-duration-toast` | `6000ms` | How long a Toast that times out (success or info, with no action) stays before it leaves. A dwell, not an animation: the reduced-motion collapse never touches it, and the timer pauses while the region is hovered or holds focus. Warnings and any toast with an action never time out. |
+| `--vela-duration-brand-pulse` | `900ms` | The hero logo only: the pulse of the Pulse mark in the site's Overview hero, played once per visit. The one exception to the under-300ms rule. Never on in-app navigation, never under reduced motion, never at 32px or below, and never bound by a component or by anything a consumer builds with Vela. |
+| `--vela-delay-brand-pulse-outer` | `120ms` | The hero logo only: how long after the pulse starts the outer ring of the Pulse mark joins it. Part of the same one-off hero moment as duration-brand-pulse, with the same limits: hero only, once per visit, never under reduced motion, never in a component. |
+| `--vela-ease-standard` | `cubic-bezier(0.2, 0, 0.2, 1)` | For things that change or move while on screen: a hover colour, a press, a knob sliding. Never a bare ease. Things that enter take ease-out; the spring is only for the moments a spec names. |
+| `--vela-ease-out` | `cubic-bezier(0.25, 1, 0.5, 1)` | For things that enter. Starts at four times the average speed, so the first frame already shows movement, then slows to rest with no overshoot. |
+| `--vela-ease-spring` | a spring: stiffness 1200, damping 56, mass 1, drawn over `--vela-duration-travel`; where `linear()` is unsupported, `cubic-bezier(0.25, 1, 0.5, 1)` | A spring for the few moments a spec names, such as the Tabs underline growing under a pressed tab: it arrives quickly and settles with a slight overshoot. The stiffness, damping and mass in the extension are the source; CSS receives them as a linear() easing drawn over duration-travel. Where linear() is not supported, and in any tool that does not read the spring, the value is ease-out. |
+<!-- /generated -->
 
 The three new values (`duration-travel`, `ease-out`, `ease-spring`), and the values the specs choose
 with them (the overlays' 0.96, the small controls' 0.9, the toast stack's step and scale), were
@@ -230,8 +292,8 @@ it came from); the stack behind it steps back and spreads on the spring (`toast.
 Dropdown List, built after this pass was written, still appears on `--vela-ease-standard` with a
 `--vela-space-5` step of travel (`dropdown-list.md`, Motion); bringing it in line is still to do.
 A Tooltip waits `--vela-delay-tooltip` on hover and opens at once on focus.
-A Toast stays `--vela-duration-toast` (6000ms) — a dwell, not an animation, paused on hover and
-focus, untouched by the reduced-motion collapse — and only when it is a `success` or `info` with no
+A Toast stays for `--vela-duration-toast`, a dwell and not an animation: paused on hover and
+focus, untouched by the reduced-motion collapse, and only when it is a `success` or `info` with no
 action; a warning or a toast with an action stays until dismissed.
 
 Only `transform`, `opacity` and `filter` animate (a colour may settle, as a hover does; layout

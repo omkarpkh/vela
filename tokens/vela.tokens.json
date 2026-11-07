@@ -2924,6 +2924,7 @@
     "font-family-primary": {
       "$type": "fontFamily",
       "$value": "\"Open Sans\", -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif",
+      "$description": "All UI text.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "font-family-primary",
