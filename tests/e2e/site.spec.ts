@@ -3061,14 +3061,13 @@ test.describe('slice 7 fixes · the pages', () => {
   })
 
   // Item 8: no em or en dash reaches a reader anywhere on the site. Every route the site's navigation
-  // lists, each component's other tabs, and Not found. Code and preformatted text keep every character.
-  // All states (#/states) is left out: it is the visual baselines' page, outside the menu, and its notes
-  // are inside those screenshots.
+  // lists, each component's other tabs, Not found, and All states (#/states, the visual baselines'
+  // page, outside the menu). Code and preformatted text keep every character.
   test('item 8: no visible em or en dash outside code, on any page', async ({ page }) => {
     test.setTimeout(300_000)
     await page.goto('/#/')
     const nav = await page.getByRole('navigation', { name: 'Site' }).locator('a[href^="#/"]').evaluateAll((as) => [...new Set(as.map((a) => a.getAttribute('href')!))])
-    const routes = new Set(['#/', '#/no-such-page', '#/components/no-such-part', ...nav])
+    const routes = new Set(['#/', '#/states', '#/no-such-page', '#/components/no-such-part', ...nav])
     for (const h of nav) if (/^#\/components\/[^/]+$/.test(h)) for (const tab of ['rules', 'tokens', 'figma']) routes.add(`${h}/${tab}`)
     // The pages the brief names are all reached: components and their tabs, foundations, patterns,
     // proposals, the documents, the Overview, How, Adopt, Status, Motion and Not found.
