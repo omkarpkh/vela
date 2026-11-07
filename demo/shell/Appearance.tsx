@@ -2,9 +2,13 @@
  * Appearance: a shell part of the Vela site, not a kit component, never exported from the package.
  * Spec: the playground spec, section 3 (the header button) and section 9 (the panel). Slice 5.
  *
- * - The header button shows an icon and the word "Appearance"; on a phone, the icon alone. Its
+ * - The header button shows an icon and the word "Appearance"; below about 1000px (slice 7, item
+ *   2b; Omkar, 8 Nov 2026), and on a phone, the icon alone, named "Appearance", with that name in a
+ *   label tooltip (Vela's Tooltip, kind "label": shown, and heard once). With the word, its
  *   accessible name says the current state ("Appearance: theme Light, brand Default"), and it
  *   starts with the visible word, so it passes WCAG 2.5.3 (Label in Name).
+ * - It is not Vela's Icon Button when icon-only, as the header's other glyph-only controls are:
+ *   Icon has no glyph for it yet (Icon's set is closed; a new glyph is a spec change first).
  * - The panel is a side panel, not a dialog: nothing behind it goes inert and focus is not
  *   trapped. It follows the button in reading order, so the next Tab reaches it. Escape and the
  *   button close it; Escape puts focus back on the button.
@@ -17,6 +21,7 @@
  */
 import { useId, useRef, useState } from 'react'
 import { cn } from '../../src'
+import { Tooltip } from '../../src/headless'
 import { Segments } from './Segments'
 import './shell.css'
 
@@ -76,22 +81,25 @@ export function Appearance({ theme, onTheme, compact }: { theme: Theme; onTheme:
   const button = useRef<HTMLButtonElement>(null)
   const id = useId()
   const close = () => { setOpen(false); button.current?.focus() }
-  // The phone header names it "Appearance" (section 3); elsewhere the name carries the state too.
+  // Icon-only, it is named "Appearance" (section 3); with its word, the name carries the state too.
   const name = compact ? 'Appearance' : `Appearance: theme ${themeWord(theme)}, brand Default`
+  const trigger = (
+    <button
+      ref={button}
+      type="button"
+      className={cn('shell-appearance__button', compact && 'is-compact')}
+      aria-label={name}
+      aria-expanded={open}
+      aria-controls={id}
+      onClick={() => setOpen((o) => !o)}
+    >
+      <AppearanceIcon />
+      {!compact && <span aria-hidden="true">Appearance</span>}
+    </button>
+  )
   return (
     <div className="shell-appearance">
-      <button
-        ref={button}
-        type="button"
-        className={cn('shell-appearance__button', compact && 'is-compact')}
-        aria-label={name}
-        aria-expanded={open}
-        aria-controls={id}
-        onClick={() => setOpen((o) => !o)}
-      >
-        <AppearanceIcon />
-        {!compact && <span aria-hidden="true">Appearance</span>}
-      </button>
+      {compact ? <Tooltip kind="label" content={name} placement="bottom">{trigger}</Tooltip> : trigger}
       <section
         id={id}
         className="shell-appearance__panel"

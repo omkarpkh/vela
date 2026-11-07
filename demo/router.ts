@@ -79,10 +79,40 @@ export function replaceRoute(r: Route) {
   window.dispatchEvent(new HashChangeEvent('hashchange'))
 }
 
+/**
+ * Other spellings of an address, each to the one the site uses (slice 7, item 1; Omkar, 8 Nov 2026).
+ * The British `colour` opens the Colour page, whose address is `color`, as the code and the token
+ * names spell it. Another spelling joins by a line here. The path only: a `?` query is kept as it is.
+ */
+export const ALIASES: Readonly<Record<string, string>> = {
+  'foundations/colour': 'foundations/color',
+}
+
+/** The hash with its path spelt as the site spells it, or null when it already is. */
+export function canonicalHash(hash: string): string | null {
+  if (!hash.startsWith('#/')) return null
+  const [path, ...query] = hash.slice(2).split('?')
+  const to = ALIASES[path.replace(/\/+$/, '')]
+  return to ? `#/${to}${query.length ? `?${query.join('?')}` : ''}` : null
+}
+
+/**
+ * Reads the route from the address. An aliased spelling is put right first, by replacing the
+ * history entry rather than adding one, so Back goes to the page before it, never to the alias
+ * (which would only send it forward again).
+ */
+function readRoute(): Route {
+  const hash = window.location.hash
+  if (!isRouteHash(hash)) return { kind: 'overview' }
+  const fixed = canonicalHash(hash)
+  if (fixed) window.history.replaceState(window.history.state, '', fixed)
+  return parseHash(fixed ?? hash)
+}
+
 export function useRoute(): Route {
-  const [route, setRoute] = useState<Route>(() => (isRouteHash(window.location.hash) ? parseHash(window.location.hash) : { kind: 'overview' }))
+  const [route, setRoute] = useState<Route>(readRoute)
   useEffect(() => {
-    const onChange = () => { if (isRouteHash(window.location.hash)) setRoute(parseHash(window.location.hash)) }
+    const onChange = () => { if (isRouteHash(window.location.hash)) setRoute(readRoute()) }
     window.addEventListener('hashchange', onChange)
     return () => window.removeEventListener('hashchange', onChange)
   }, [])

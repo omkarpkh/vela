@@ -72,6 +72,11 @@ function NavGroup({ title, level = 3, holdsCurrent, children }: { title: string;
   )
 }
 
+/**
+ * The menu button's glyph. The header's other glyph-only controls are Vela's Icon Button (slice 7,
+ * item 7); this one is not yet, because Icon's closed set has no menu glyph, and a new glyph is a
+ * spec change first (icon.md, Glyphs). Flagged, not invented.
+ */
 function MenuIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
@@ -83,19 +88,22 @@ function MenuIcon() {
 /**
  * GitHub, npm and Figma on a wide screen: each its own mark, or npm's word, in an Icon Button link
  * named in words, with a label tooltip. Figma's mark keeps its 20px clear space (.topbar__marks).
- * The three are one TooltipProvider: once one label shows, the next opens at once (tooltip.md, Groups).
+ * The header's glyph-only controls are one TooltipProvider (App): once one label shows, the next
+ * opens at once (tooltip.md, Groups). The package's name and version left the header on 8 Nov 2026
+ * (slice 7, item 2b) and are said here, in npm's name, and in the footer.
  */
 function SiteMarks() {
   return (
-    <TooltipProvider>
-      <div className="topbar__marks">
-        <IconButton label="Vela on GitHub" brandMark="github" href={LINKS.github} opensInNewTab tooltipPlacement="bottom" />
-        <IconButton label="Vela on npm" word="npm" href={LINKS.npm} opensInNewTab tooltipPlacement="bottom" />
-        <IconButton label="Vela in Figma" brandMark="figma" href={figmaUrl()} opensInNewTab tooltipPlacement="bottom" />
-      </div>
-    </TooltipProvider>
+    <div className="topbar__marks">
+      <IconButton label="Vela on GitHub" brandMark="github" href={LINKS.github} opensInNewTab tooltipPlacement="bottom" />
+      <IconButton label={`${PACKAGE} on npm`} word="npm" href={LINKS.npm} opensInNewTab tooltipPlacement="bottom" />
+      <IconButton label="Vela in Figma" brandMark="figma" href={figmaUrl()} opensInNewTab tooltipPlacement="bottom" />
+    </div>
   )
 }
+
+/** The package and its version, read from package.json: "@omkarux/vela 0.15.0". */
+const PACKAGE = `${pkg.name} ${pkg.version}`
 
 /** GitHub, npm and Figma, written as words, in the phone's menu. Each says where it goes, so no mark or tooltip is needed. */
 function SiteLinks({ className }: { className: string }) {
@@ -138,8 +146,10 @@ export function App() {
   const route = useRoute()
   const [theme, setTheme] = useState<Theme>('system')
   const [navOpen, setNavOpen] = useState(() => window.matchMedia('(min-width: 901px)').matches)
-  // The phone header shows Search as an icon named "Search" (playground spec, section 3).
+  // The phone header has no marks: they are written links in the menu (playground spec, section 3).
   const phone = useMedia('(max-width: 600px)')
+  // Below about 1000px Appearance is its icon alone, named in its tooltip (slice 7, item 2b).
+  const narrow = useMedia('(max-width: 999px)')
   // The theme the page resolves to: System follows the screen. The Overview's mark and stills read it.
   const systemDark = useMedia('(prefers-color-scheme: dark)')
   const resolved = theme === 'system' ? (systemDark ? 'dark' : 'light') : theme
@@ -169,46 +179,47 @@ export function App() {
     <div className={cn('vela-root shell', !navOpen && 'shell--nav-closed')}>
       <a className="skip" href="#main">Skip to content</a>
 
-      <header className="topbar">
-        <button
-          type="button"
-          className="topbar__menu"
-          aria-expanded={navOpen}
-          aria-controls="site-nav"
-          aria-label={navOpen ? 'Hide navigation' : 'Show navigation'}
-          onClick={() => setNavOpen((o) => !o)}
-        >
-          <MenuIcon />
-        </button>
-        {/* The logo (the logo states Omkar approved on 1 Nov 2026): the 24px mark, the name and the
-            version, one link to the Overview. The link is named by the name alone, "Vela Design
-            System": the mark is aria-hidden, and so is the version, which is shown, not read. On the
-            Overview it is the current page, and a press there goes back to the top. It never pulses. */}
-        <a
-          href="#/"
-          className="brand"
-          aria-current={route.kind === 'overview' ? 'page' : undefined}
-          onClick={(e) => {
-            if (route.kind !== 'overview') return
-            e.preventDefault()
-            window.scrollTo({ top: 0 })
-          }}
-        >
-          <ProductMark size="regular" decorative />
-          <span className="brand__words">
+      {/* One tooltip group for the header row: Search and Appearance when they are icon-only, and the marks. */}
+      <TooltipProvider>
+        <header className="topbar">
+          <button
+            type="button"
+            className="topbar__menu"
+            aria-expanded={navOpen}
+            aria-controls="site-nav"
+            aria-label={navOpen ? 'Hide navigation' : 'Show navigation'}
+            onClick={() => setNavOpen((o) => !o)}
+          >
+            <MenuIcon />
+          </button>
+          {/* The logo (the logo states Omkar approved on 1 Nov 2026): the 24px mark and the name, one
+              link to the Overview. The link is named by the name alone, "Vela Design System": the mark
+              is aria-hidden. The version left the logo on 8 Nov 2026 (slice 7, item 2b): it ran under
+              Search between 620 and 1000px. It is in npm's name and in the footer. On the Overview the
+              logo is the current page, and a press there goes back to the top. It never pulses. */}
+          <a
+            href="#/"
+            className="brand"
+            aria-current={route.kind === 'overview' ? 'page' : undefined}
+            onClick={(e) => {
+              if (route.kind !== 'overview') return
+              e.preventDefault()
+              window.scrollTo({ top: 0 })
+            }}
+          >
+            <ProductMark size="regular" decorative />
             <span className="brand__name">Vela<span className="brand__rest"> Design System</span></span>
-            <span className="vela-meta brand__meta" aria-hidden="true">@omkarux/vela {pkg.version}</span>
-          </span>
-        </a>
-        <Search compact={phone} />
-        <div className="topbar__right">
-          {/* Only the Appearance panel sets the page's theme and brand (section 9). */}
-          <Appearance theme={theme} onTheme={setTheme} compact={phone} />
-          {/* The three marks, as Icon Button links (section 3); on a phone they are written links in
-              the menu, after the nav. */}
-          {!phone && <SiteMarks />}
-        </div>
-      </header>
+          </a>
+          <Search />
+          <div className="topbar__right">
+            {/* Only the Appearance panel sets the page's theme and brand (section 9). */}
+            <Appearance theme={theme} onTheme={setTheme} compact={narrow} />
+            {/* The three marks, as Icon Button links (section 3); on a phone they are written links in
+                the menu, after the nav. */}
+            {!phone && <SiteMarks />}
+          </div>
+        </header>
+      </TooltipProvider>
 
       <div className="shell__body">
         <nav id="site-nav" className="sitenav" aria-label="Site" onKeyDown={(e) => { if (e.key === 'Escape') setNavOpen(false) }}>
@@ -283,7 +294,7 @@ export function App() {
           {/* In a reader's words (Omkar, 1 Nov 2026): no "ESM", no "CI". The contrast claim holds because
               the CI workflow runs the contrast test on every pull request and every push to main. */}
           <footer className="demo-footer vela-meta">
-            No runtime dependencies · Light and dark · Contrast checked to WCAG 2.1 AA on every change
+            {PACKAGE} · No runtime dependencies · Light and dark · Contrast checked to WCAG 2.1 AA on every change
           </footer>
         </main>
       </div>
