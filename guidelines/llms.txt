@@ -73,7 +73,8 @@ fix it, and do not list it as Used. A need whose line says "not in this kit" is 
    - **Need:** the task, not the widget ("choosing which analyst an alert goes to", not "a select").
    - **Closest:** the nearest component, by its `name` in `components.json`.
    - **Why not:** the rule in its spec that rules it out, quoted, with the spec and section.
-   - **File it:** a link that opens the component-request form with those three filled in.
+   - **File it:** a link that opens the component-request form with the need, the closest and the
+     reason already written in.
 
 The link opens `.github/ISSUE_TEMPLATE/component-request.yml` by its field ids. Encode every value
 with `encodeURIComponent` (a space is `%20`, a newline `%0A`, `"` is `%22`, `&` is `%26`, `#` is
@@ -83,15 +84,15 @@ with `encodeURIComponent` (a space is `%20`, a newline `%0A`, `"` is `%22`, `&` 
 https://github.com/omkarpkh/vela/issues/new?template=component-request.yml
   &title=<%5BComponent%5D the need, short, (closest: name)>
   &need=<the need>
-  &closest=<the closest component's name>
   &gap=<Closest: name. Then the quoted rule>
 ```
 
-(one line, no spaces; broken here to read). GitHub's documentation promises to fill text fields
-from the link, which covers `title`, `need` and `gap`. It promises nothing for dropdowns, and
-`closest` is a dropdown, so it may open empty. That is why the closest component also goes in the
-title and at the start of `gap`: whoever files the issue picks it in the dropdown. A link longer
-than GitHub accepts fails (414), so quote the rule, not the whole section.
+(one line, no spaces; broken here to read). The link fills the form's text fields: `title`, `need`
+and `gap`. It cannot fill the "Closest existing component" menu, which is a dropdown (tested
+signed in, 7 November 2026: the menu opened on its default). So the link has no `closest`, the
+closest component goes in the title and at the start of `gap`, and whoever files the issue picks it
+in the menu. A link longer than GitHub accepts fails (414), so quote the rule, not the whole
+section.
 
 A short report, for an alerts triage page:
 
@@ -115,7 +116,7 @@ A short report, for an alerts triage page:
 - Need: choosing which analyst an alert is assigned to, in a form that is saved later.
   Closest: Dropdown List.
   Why not: "A Dropdown List has no "nothing chosen" and is never inside a form." (dropdown-list.md, When to use)
-  File it: https://github.com/omkarpkh/vela/issues/new?template=component-request.yml&title=%5BComponent%5D%20Pick%20an%20assignee%20in%20a%20form%20(closest%3A%20Dropdown%20List)&need=Choosing%20which%20analyst%20an%20alert%20is%20assigned%20to%2C%20in%20a%20form%20that%20is%20saved%20later.&closest=Dropdown%20List&gap=Closest%3A%20Dropdown%20List.%0A%0A%3E%20A%20Dropdown%20List%20has%20no%20%22nothing%20chosen%22%20and%20is%20never%20inside%20a%20form.%20(dropdown-list.md%2C%20When%20to%20use)
+  File it: https://github.com/omkarpkh/vela/issues/new?template=component-request.yml&title=%5BComponent%5D%20Pick%20an%20assignee%20in%20a%20form%20(closest%3A%20Dropdown%20List)&need=Choosing%20which%20analyst%20an%20alert%20is%20assigned%20to%2C%20in%20a%20form%20that%20is%20saved%20later.&gap=Closest%3A%20Dropdown%20List.%0A%0A%3E%20A%20Dropdown%20List%20has%20no%20%22nothing%20chosen%22%20and%20is%20never%20inside%20a%20form.%20(dropdown-list.md%2C%20When%20to%20use)
 ```
 
 ## Figma

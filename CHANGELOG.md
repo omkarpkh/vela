@@ -34,7 +34,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     group has no visual. The Tooltip stills are redrawn because their source changed.
   - 260 rules across 20 specs (was 258), 80 compiler-enforced (was 79). 1896 checks (was 1890):
     1441 unit and contract (was 1436), 338 e2e (was 337), so the Overview and How it is made
-    baselines move with the check count. Packed: 373.3 kB, 270 files (was 369.6 kB, 270).
+    baselines move with the check count. Packed: 373.4 kB, 270 files (was 369.6 kB, 270).
 - **The agent report** (Omkar's decision of 7 Nov 2026). Every agent run that builds with Vela
   ends with a report of what it used, what it made itself and the gaps it found, written once in
   `guidelines/llms.txt` ("When you finish: the report"); `AGENTS.md` and the skill point there.
@@ -50,7 +50,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   fields from the link (`title`, `need`, `gap`) and says nothing for dropdowns, so the closest
   component also goes in the title and at the start of `gap`.
 - **The Vela agent skill, `skills/vela/SKILL.md`**, for the open `skills` CLI
-  (`npx skills add omkarpkh/vela`, once this is on `main`). It routes and does not repeat rules:
+  (`npx skills add omkarpkh/vela`). It routes and does not repeat rules:
   find Vela in `node_modules/@omkarux/vela/` (or say it is not installed and fall back to GitHub,
   which may be ahead of a release), read `llms.txt` then `DESIGN.md`, look the component up in
   `components.json` and check its `whenToUse` lines, read its spec, never invent a component, and
