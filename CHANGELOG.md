@@ -6,6 +6,43 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Unreleased]
 
 ### Added
+- **The agent report** (Omkar's decision of 7 Nov 2026). Every agent run that builds with Vela
+  ends with a report of what it used, what it made itself and the gaps it found, written once in
+  `guidelines/llms.txt` ("When you finish: the report"); `AGENTS.md` and the skill point there.
+  Four groups, in order: **Used** (each export, the props set, the import path), **Built from
+  tokens** (layout and glue that binds only semantic tokens, so ordinary layout is not counted as
+  invented), **Invented** (another library's component, a hand-made control, any raw colour,
+  primitive or raw length, each with why nothing in Vela fit) and **Flagged gaps** (the need, the
+  closest component by its `components.json` name, the spec rule that rules it out, quoted, and a
+  link that opens the component-request form with those filled in). A component doing a job its
+  "When to use" lines send elsewhere is a misuse to fix, not a Used entry; a need whose line says
+  "not in this kit" is a gap. No percentage and no score. llms.txt shows the link pattern with
+  its percent-encoding and a short worked report. GitHub's documentation promises to fill text
+  fields from the link (`title`, `need`, `gap`) and says nothing for dropdowns, so the closest
+  component also goes in the title and at the start of `gap`.
+- **The Vela agent skill, `skills/vela/SKILL.md`**, for the open `skills` CLI
+  (`npx skills add omkarpkh/vela`, once this is on `main`). It routes and does not repeat rules:
+  find Vela in `node_modules/@omkarux/vela/` (or say it is not installed and fall back to GitHub,
+  which may be ahead of a release), read `llms.txt` then `DESIGN.md`, look the component up in
+  `components.json` and check its `whenToUse` lines, read its spec, never invent a component, and
+  end with the report. It stays in the repository, not the npm package: the CLI installs from
+  GitHub, and the skill reads the package the project already has. A new test,
+  `src/styles/agent-skill.test.ts`, checks its frontmatter, that it routes to real files in order,
+  and that the report's link uses the form's own template and field ids.
+- **`DESIGN.md` ships in the package, with generated token tables.** It is at the package root
+  (`files`), llms.txt no longer says it is only in the repository, and `scripts/verify-pack.mjs`
+  checks the tarball carries it and that llms.txt's `../DESIGN.md` link resolves once installed.
+  Its font-family table, a new table of the spacing, radius, icon and control-height scales, and a
+  new table of the motion durations, delays and easings are generated from
+  `tokens/vela.tokens.json` (`scripts/build-design-md.mjs`, run by `npm run tokens`), each row the
+  token, its value and its `$description`. `font-family-primary` gains the description "All UI
+  text." (from the old table); no colour token is touched. The rest of DESIGN.md stays
+  hand-written, and a hand-written line no longer states a token's value: the Motion list now says
+  when to use each token and the table says what it is. `npm run tokens:check` fails first on a
+  stale table or a line that names a token and states its value, and
+  `src/styles/design-md.test.ts` does the same in `npm test`. 1890 checks (was 1877): 1436 unit and contract (was 1423), so the
+  Overview and How it is made baselines move with the check count. Packed: 369.6 kB, 270 files
+  (was 352.4 kB, 269).
 - **`guidelines/components.json`, the components as one machine-readable list** (Omkar's decision
   of 7 Nov 2026). For an agent that needs to find a component, its closed props and the closest
   match when nothing fits: for each of the 19 built components, its name, spec path, purpose (the
@@ -325,6 +362,11 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   built.
 
 ### Changed
+- **ROADMAP.md.** Phase 3 notes that `components.json` and the agent skill are the first steps of
+  agent delivery. Phase 4 records the eval plan decided on 7 Nov 2026: a consumer check first (the
+  CSS lint and contrast pairs, packaged for products), then gap honesty, escapes, guidance lift and
+  later fix-up cost, with the gap briefs published before the first run, three runs per setup and
+  a range, and no score until those hold.
 - **The display face is Open Sans; Oswald retires from the default** (Omkar's decision of 6 Nov
   2026, `decisions/007-display-face-open-sans`). `--vela-font-family-display` is now
   `"Open Sans", -apple-system, sans-serif` (was `"Oswald", "Open Sans", -apple-system, sans-serif`):
@@ -935,6 +977,16 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   rules, 174 with proofs.
 
 ### Fixed
+- **The component-request form was stale.** Its "Closest existing component" listed 6 of the 19
+  components, and its "not yet specced" list named Checkbox, Radio, Dropdown List, Text Area,
+  Tooltip and Icon Button, which are built. The closest options are now generated from
+  `guidelines/components.json` by `npm run components` (between marker comments, with a stale
+  test), and the not-yet-specced field points at the one list the repository keeps, in
+  `DESIGN.md` and `overview.md`, instead of copying it.
+- **Tabs' `size` default was prose.** The Composition table now has a Default column, so
+  `components.json` carries `"regular"`; the Tabs playground reads the same default.
+- **DESIGN.md said radius has four tokens.** It has five; the count is gone and the generated
+  table lists them.
 - **The playground's spec parser read prop rows out of code blocks.** Brand Mark and Icon Button
   write their types as a union, one member per line, and each line starts with a pipe, so the
   parser counted them as Props rows: Brand Mark's Props count was 6, not 4, and Icon Button's 15,

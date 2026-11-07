@@ -20,12 +20,27 @@ body:
       label: Closest existing component
       description: The one you would reach for if you had to ship today.
       options:
+        # generated:closest (npm run components): every built component, in guidelines/components.json's order
+        - Brand Mark
         - Button
-        - Toggle
-        - Input
+        - Checkbox
         - Contextual Alert
+        - Dialog
+        - Dropdown List
+        - Icon
+        - Icon Button
+        - Input
+        - Popover
+        - Radio Group
+        - Risk Pill
         - Status Indicator
+        - Table
         - Tabs
+        - Text Area
+        - Toast
+        - Toggle
+        - Tooltip
+        # /generated
         - None comes close
     validations:
       required: true
@@ -40,7 +55,7 @@ body:
     id: listed
     attributes:
       label: Is it on the "not yet specced" list?
-      description: Checkbox, Radio, Dropdown List, Select List, Token Pill, Number Stepper, Text Area, Modal, Tooltip, Icon Button, Actions Dropdown, View Switcher.
+      description: The list is in `DESIGN.md` ("Not in the kit") and in `guidelines/overview.md` ("If no component fits").
       options:
         - "Yes"
         - "No"

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { readFileSync, readdirSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { buildComponents, problemsOf, OUT } from '../../scripts/build-components-json.mjs'
+import { buildComponents, problemsOf, renderForm, OUT, FORM } from '../../scripts/build-components-json.mjs'
 
 // guidelines/components.json is generated from the specs (scripts/build-components-json.mjs) and
 // shipped in the package for agents. These tests fail when a spec is badly written, when the
@@ -35,6 +35,15 @@ describe('guidelines/components.json', () => {
     expect(committed === built.text, `${OUT} is stale: run npm run components`).toBe(true)
   })
 
+  it('gives the component-request form its closest options (run npm run components)', () => {
+    const form = readFileSync(resolve(root, FORM), 'utf8')
+    expect(renderForm(form, built.components) === form, `${FORM}'s closest-component options are stale: run npm run components`).toBe(true)
+    // The dropdown's options, as GitHub reads them: every component in the file's order, then the way out.
+    const closest = form.split(/^ {2}- type: /m).find((b) => /^dropdown\n {4}id: closest\n/.test(b)) ?? ''
+    const options = [...closest.matchAll(/^ {8}- (.+)$/gm)].map((m) => m[1])
+    expect(options).toEqual([...built.components.map((c) => c.name), 'None comes close'])
+  })
+
   it('has one entry per built spec, and no proposal', () => {
     expect(built.components.map((c) => c.spec).sort()).toEqual(files.map((f) => `guidelines/components/${f}`))
     expect(built.components.some((c) => c.spec.includes('proposals'))).toBe(false)
@@ -66,6 +75,9 @@ describe('guidelines/components.json', () => {
     expect(prop('Toggle', 'disabled')).toMatchObject({ default: false })
     expect(prop('Toggle', 'label')).not.toHaveProperty('values')
     expect(prop('Tabs', 'onValueChange', 'Tabs')).toBeDefined()
+    // Tabs' Composition table carries a Default column, so its size default is data, not prose.
+    expect(prop('Tabs', 'size', 'Tabs')).toMatchObject({ values: ['regular', 'large'], default: 'regular' })
+    expect(prop('Tabs', 'defaultValue', 'Tabs')).not.toHaveProperty('default')
   })
 })
 

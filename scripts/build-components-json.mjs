@@ -7,7 +7,8 @@
  * their types), so the site and the JSON read a spec the same way. Proposals are left out: they are
  * not built.
  *
- *   npm run components     writes the file (`npm run build` runs it too)
+ *   npm run components     writes the file (`npm run build` runs it too), and the "Closest existing
+ *                          component" options of the component-request form from it
  *
  * src/styles/components-json.test.ts fails when a spec is badly written (`problemsOf`), when the
  * committed file is stale, or when an import the file names is not exported where it says.
@@ -26,6 +27,7 @@ import { LABELS, statusOf } from '../demo/playground/status.ts'
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const SPEC_DIR = 'guidelines/components'
 export const OUT = 'guidelines/components.json'
+export const FORM = '.github/ISSUE_TEMPLATE/component-request.yml'
 
 const unquote = (s) => s.replace(/`/g, '').trim()
 const compact = (s) => s.replace(/\s+/g, '')
@@ -175,6 +177,21 @@ export function buildComponents() {
   return { text: `${JSON.stringify(doc, null, 2)}\n`, problems, components }
 }
 
+/**
+ * The component-request form with its "Closest existing component" options rewritten: every
+ * component name, in components.json's order, between the two marker comments. The options after
+ * the block ("None comes close") are the form's own.
+ */
+export function renderForm(yml, components) {
+  const block = /^( *)# generated:closest .*\n(?:\1- .*\n)*?\1# \/generated\n/m
+  const m = yml.match(block)
+  if (!m) throw new Error(`${FORM}: no "# generated:closest" ... "# /generated" block under the closest options`)
+  const indent = m[1]
+  const open = m[0].split('\n')[0]
+  const rows = components.map((c) => `${indent}- ${c.name}`)
+  return yml.replace(block, [open, ...rows, `${indent}# /generated`, ''].join('\n'))
+}
+
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   const { text, problems, components } = buildComponents()
   if (problems.length > 0) {
@@ -182,5 +199,7 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
     process.exit(1)
   }
   writeFileSync(join(root, OUT), text)
-  console.log(`  wrote ${OUT}: ${components.length} components`)
+  const form = readFileSync(join(root, FORM), 'utf8')
+  writeFileSync(join(root, FORM), renderForm(form, components))
+  console.log(`  wrote ${OUT}: ${components.length} components, and the closest-component options in ${FORM}`)
 }

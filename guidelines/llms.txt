@@ -18,9 +18,10 @@
 > `tokens.dart` (`VelaColors`, `VelaSizing`, `VelaTypography`, `velaThemeData`) — bind `VelaColors`
 > semantics, never `VelaPrimitives`.
 
-Read **`DESIGN.md`** (repository root) first: it is the single global-rules document — the token
-grammar, the three taxonomies, closed prop sets, states, motion, theming, responsive and density
-rules, what CI asserts for accessibility, every anti-pattern, and what is not in the kit. Then
+Read **`DESIGN.md`** first. It ships at the package root (`node_modules/@omkarux/vela/DESIGN.md`,
+`../DESIGN.md` from this file) and sits at the repository root. It is the single global-rules
+document: the token grammar, the three taxonomies, closed prop sets, states, motion, theming,
+responsive and density rules, what CI asserts for accessibility, every anti-pattern, and what is not in the kit. Then
 `overview.md`, which maps a user need to a component and lists the choices agents most often get
 wrong. Then the per-component file before generating any markup.
 
@@ -37,6 +38,10 @@ its purpose, status, where to import it from, its "When to use" text, its props 
 values, defaults and which are required, and its tokens. It is generated from the specs on every
 build; each spec stays the full contract.
 
+Working in a coding agent? The Vela skill (`skills/vela/SKILL.md` in the repository) sends an agent
+through these files in order and ends the run with the report below. Install it in a project with
+`npx skills add omkarpkh/vela`.
+
 ## Hard rules (apply everywhere)
 - Bind SEMANTIC tokens (`var(--vela-text-default)`). Never a primitive (`--vela-grey-700`), never raw hex.
 - Numeric tokens already carry their unit. Use `var(--vela-space-10)`, never `calc(var(--vela-space-10) * 1px)`.
@@ -44,6 +49,74 @@ build; each spec stays the full contract.
 - Never invent a component. If nothing fits, say so and name the closest match.
 - Severity, Risk and Status are three different taxonomies. Never cross them.
 - Icons come from `ICON_NAMES` only (`<Icon name="…" />`). Never import `lucide-react` or another icon set beside Vela.
+
+## When you finish: the report
+
+Every run that builds with Vela (a page, a pattern, a demo) ends with a report of what it used,
+what it made itself and the gaps it found. It is a list for a reviewer. There is no percentage and
+no score. Four groups, always in this order, as headings. Write "None." under a group that is empty.
+
+Before a component goes under Used, check the job you gave it against its "When to use" lines
+(that section of its spec, or `whenToUse` in `components.json`). Each line routes a need to a
+component, and many say where a need goes instead: a Risk Pill's lines send "an event the user
+must read" to a Contextual Alert. A component doing a job its lines send elsewhere is a misuse:
+fix it, and do not list it as Used. A need whose line says "not in this kit" is a Flagged gap.
+
+1. **Used.** Each Vela export you rendered, with the props you set, and its import path:
+   `Button variant="primary"` from `@omkarux/vela`.
+2. **Built from tokens.** Your own layout and glue that binds only semantic tokens: a page grid, a
+   summary row, the gap between two sections. Name the tokens. This is ordinary work, not invention.
+3. **Invented.** Anything else: a component from another library, a component you wrote that looks
+   or acts like a control, any raw colour, any primitive token, any raw length. One line each on
+   why nothing in Vela fit.
+4. **Flagged gaps.** A need Vela does not cover, one entry each:
+   - **Need:** the task, not the widget ("choosing which analyst an alert goes to", not "a select").
+   - **Closest:** the nearest component, by its `name` in `components.json`.
+   - **Why not:** the rule in its spec that rules it out, quoted, with the spec and section.
+   - **File it:** a link that opens the component-request form with those three filled in.
+
+The link opens `.github/ISSUE_TEMPLATE/component-request.yml` by its field ids. Encode every value
+with `encodeURIComponent` (a space is `%20`, a newline `%0A`, `"` is `%22`, `&` is `%26`, `#` is
+`%23`, `[` and `]` are `%5B` and `%5D`):
+
+```
+https://github.com/omkarpkh/vela/issues/new?template=component-request.yml
+  &title=<%5BComponent%5D the need, short, (closest: name)>
+  &need=<the need>
+  &closest=<the closest component's name>
+  &gap=<Closest: name. Then the quoted rule>
+```
+
+(one line, no spaces; broken here to read). GitHub's documentation promises to fill text fields
+from the link, which covers `title`, `need` and `gap`. It promises nothing for dropdowns, and
+`closest` is a dropdown, so it may open empty. That is why the closest component also goes in the
+title and at the start of `gap`: whoever files the issue picks it in the dropdown. A link longer
+than GitHub accepts fails (414), so quote the rule, not the whole section.
+
+A short report, for an alerts triage page:
+
+```
+## Vela report
+
+### Used
+- `Table caption="Open alerts" density="compact"`, with `Table.Head`, `Table.Body`, `Table.Row`, `Table.HeaderCell`, `Table.Cell`, from `@omkarux/vela`
+- `RiskPill risk="high"` from `@omkarux/vela`
+- `StatusIndicator status="unhealthy" label="Agent offline"` from `@omkarux/vela`
+- `Button variant="primary"` ("Assign") from `@omkarux/vela`
+
+### Built from tokens
+- The page grid: two columns, `gap: var(--vela-space-20)`, on `var(--vela-bg-global)`.
+- The summary row: counts in `var(--vela-text-heading)`, labels in `var(--vela-text-de-emphasized)`, `gap: var(--vela-space-10)`.
+
+### Invented
+- A native `<select>` for the assignee. Nothing in Vela is a form select; see the gap below.
+
+### Flagged gaps
+- Need: choosing which analyst an alert is assigned to, in a form that is saved later.
+  Closest: Dropdown List.
+  Why not: "A Dropdown List has no "nothing chosen" and is never inside a form." (dropdown-list.md, When to use)
+  File it: https://github.com/omkarpkh/vela/issues/new?template=component-request.yml&title=%5BComponent%5D%20Pick%20an%20assignee%20in%20a%20form%20(closest%3A%20Dropdown%20List)&need=Choosing%20which%20analyst%20an%20alert%20is%20assigned%20to%2C%20in%20a%20form%20that%20is%20saved%20later.&closest=Dropdown%20List&gap=Closest%3A%20Dropdown%20List.%0A%0A%3E%20A%20Dropdown%20List%20has%20no%20%22nothing%20chosen%22%20and%20is%20never%20inside%20a%20form.%20(dropdown-list.md%2C%20When%20to%20use)
+```
 
 ## Figma
 

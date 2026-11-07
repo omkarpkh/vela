@@ -1782,8 +1782,9 @@
             "regular",
             "large"
           ],
+          "default": "regular",
           "required": false,
-          "notes": "**These two only.** Default `regular`."
+          "notes": "**These two only.**"
         },
         {
           "part": "Tabs.List",

@@ -77,7 +77,7 @@ export function parseSpec(md: string, known: readonly string[] = []): Spec {
   if (propsSection) {
     const { header, rows } = tableRows(propsSection.body)
     const hasPart = header[0]?.toLowerCase() === 'part'
-    // A Composition table may carry a Default column (Checkbox, Radio Group do; Tabs does not).
+    // A Composition table may carry a Default column (Checkbox, Radio Group and Tabs do).
     const defaultCol = hasPart ? header.findIndex((h) => h.toLowerCase() === 'default') : -1
     let part = ''
     for (const r of rows) {
