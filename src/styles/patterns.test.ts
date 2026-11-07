@@ -27,7 +27,7 @@ describe('pattern-cites-real-rules', () => {
   }, 30_000)   // the whole rule checker runs in a child process; under a loaded runner it passes 5 s
 
   it('passes a pattern that cites a built rule at its own level, with true totals', () => {
-    const r = run(`- Dropdown List: 19 rules, 17 with proofs;\n\n**19 rules, 17 with proofs**\n\n` +
+    const r = run(`- Dropdown List: 22 rules, 20 with proofs;\n\n**22 rules, 20 with proofs**\n\n` +
       table('| Locked is not chosen | `dropdown-list-locked-not-chosen` | runtime |'))
     expect(r.ok, r.out).toBe(true)
   }, 30_000)
@@ -48,7 +48,7 @@ describe('pattern-cites-real-rules', () => {
     const r = run(`- Dropdown List: 18 rules, 17 with proofs;\n\n**20 rules, 17 with proofs**\n\n` +
       table('| Locked is not chosen | `dropdown-list-locked-not-chosen` | runtime |'))
     expect(r.ok).toBe(false)
-    expect(r.out).toContain('says Dropdown List has 18 rules, 17 with proofs; dropdown-list.md has 19, 17 with proofs')
+    expect(r.out).toContain('says Dropdown List has 18 rules, 17 with proofs; dropdown-list.md has 22, 20 with proofs')
     expect(r.out).toContain('the total says 20 rules, 17 with proofs; its components add up to 18, 17')
   }, 30_000)
 })

@@ -81,9 +81,12 @@ and leaves the same way, fading; the older toasts behind it step back and spread
 swiped one carries on out from where the pointer left it. One opened or closed from the keyboard does
 not animate at all.
 
-The Dropdown List, built after this pass was written, still appears on `--vela-ease-standard` at
-`--vela-duration-base`, with a `--vela-space-5` step of travel from its trigger, and leaves on
-opacity alone (`dropdown-list.md`, Motion). Bringing it in line with Popover is still to do.
+The Dropdown List, built after this pass was written, moves on Popover's rule, written once for
+both: it grows from 0.96 from its trigger as it fades in, on `--vela-ease-out` at
+`--vela-duration-base`, and leaves on opacity alone (`dropdown-list.md`, Motion). Before, it
+travelled a `--vela-space-5` step on `--vela-ease-standard`. The change is proposed in decision 008,
+which extends decision 006's values to the list; it is not decided until the owner has judged its
+recordings.
 
 The small controls follow the same rules. A Checkbox mark and a Radio dot scale in from half size on
 a change of state, at `fast` on `ease-out`, moved by the component that owns the state (an Icon never

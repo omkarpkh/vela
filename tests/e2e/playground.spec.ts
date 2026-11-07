@@ -2069,20 +2069,24 @@ test.describe('the motion pass, part 2', () => {
     })
   })
 
-  // ---------------------------------------------------------------------------- Popover, Tooltip
-  for (const overlay of ['popover', 'tooltip'] as const) {
+  // ------------------------------------------------------------- Popover, Tooltip, Dropdown List
+  // The Dropdown List moves on Popover's rule (decision 008), so it is held to the same four
+  // contracts, on the same page, beside it.
+  for (const overlay of ['popover', 'tooltip', 'dropdown-list'] as const) {
     test.describe(overlay, () => {
       const frame = (page: Page) => frameIn(page, 'motion-overlays')
-      const trigger = (page: Page) => frame(page).getByRole('button', { name: overlay === 'popover' ? 'Filters' : 'Export' })
-      const popup = (page: Page) => overlay === 'popover' ? page.getByRole('dialog', { name: 'Filter alerts' }) : page.getByRole('tooltip')
-      // Pointer open: a press for the popover, a resting pointer for the tooltip.
+      const pressed = overlay !== 'tooltip'
+      const trigger = (page: Page) => frame(page).getByRole('button', { name: { popover: 'Filters', tooltip: 'Export', 'dropdown-list': 'Switch View' }[overlay] })
+      const popup = (page: Page) => overlay === 'popover' ? page.getByRole('dialog', { name: 'Filter alerts' })
+        : overlay === 'tooltip' ? page.getByRole('tooltip') : page.getByRole('menu', { name: 'Views' })
+      // Pointer open: a press for the popover and the list, a resting pointer for the tooltip.
       const open = async (page: Page) => {
-        if (overlay === 'popover') await trigger(page).click()
+        if (pressed) await trigger(page).click()
         else await trigger(page).hover()
         await expect(popup(page)).toBeVisible()
       }
       const close = async (page: Page) => {
-        if (overlay === 'popover') await trigger(page).click()
+        if (pressed) await trigger(page).click()
         else await page.mouse.move(0, 0)
       }
       const atRest = async (page: Page) => {
@@ -2096,34 +2100,63 @@ test.describe('the motion pass, part 2', () => {
 
         // [[rule: popover-grows-from-its-trigger]]
         // [[rule: tooltip-grows-from-its-trigger]]
+        // [[rule: dropdown-list-grows-from-its-trigger]]
         test(`the ${overlay} grows from its trigger: scale from 0.96 and opacity, pivoting on Base UI's transform origin`, async ({ page }) => {
           await openMotion(page)
           await slowMotion(page)
-          await open(page)
-          const a = await started(popup(page))
-          expect(a.map((x) => x.property).sort()).toEqual(['opacity', 'transform'])
-          expect(onlyMoves(a)).toBe(true)
-          const s = await scaleOf(popup(page))
-          expect(s).toBeGreaterThanOrEqual(0.96)
-          expect(s).toBeLessThan(1)
           // The pivot is the point Base UI computed nearest the trigger (its --transform-origin), not
-          // the popup's centre: the popover opens below its trigger, so it pivots on its top edge;
-          // the tooltip opens above, so on its bottom edge — under the trigger's centre either way.
-          const origin = await popup(page).evaluate((el) => {
-            const [x, y] = getComputedStyle(el).transformOrigin.split(' ').map(parseFloat)
-            const r = el.getBoundingClientRect()
-            return { variable: getComputedStyle(el).getPropertyValue('--transform-origin').trim(), x: r.left + x * (r.width / el.offsetWidth), y, height: el.offsetHeight }
-          })
-          expect(origin.variable).not.toBe('')
-          if (overlay === 'popover') expect(origin.y).toBeLessThanOrEqual(1)
-          else expect(origin.y).toBeGreaterThanOrEqual(origin.height - 1)
-          const t = (await trigger(page).boundingBox())!
-          expect(Math.abs(origin.x - (t.x + t.width / 2))).toBeLessThan(2)
-          await atRest(page)
+          // the popup's centre: the popover and the list open below their trigger, so they pivot on
+          // their top edge; the tooltip opens above, so on its bottom edge, under the trigger's
+          // centre either way. The list is also opened flipped above, where it pivots on its bottom
+          // edge: the step of travel it had before decision 008 was keyed on the side, the scale is not.
+          const grows = async (below: boolean) => {
+            await open(page)
+            const a = await started(popup(page))
+            expect(a.map((x) => x.property).sort()).toEqual(['opacity', 'transform'])
+            expect(onlyMoves(a)).toBe(true)
+            const m = await popup(page).evaluate((el) => {
+              const t = getComputedStyle(el).transform
+              const d = t === 'none' ? new DOMMatrix() : new DOMMatrix(t)
+              return { a: d.a, d: d.d, e: d.e, f: d.f }
+            })
+            // A uniform scale, and no translation: it grows, it does not travel.
+            expect(m.a).toBeGreaterThanOrEqual(0.96)
+            expect(m.a).toBeLessThan(1)
+            expect(m.d).toBeCloseTo(m.a, 5)
+            expect(m.e).toBe(0)
+            expect(m.f).toBe(0)
+            const origin = await popup(page).evaluate((el) => {
+              const [x, y] = getComputedStyle(el).transformOrigin.split(' ').map(parseFloat)
+              const r = el.getBoundingClientRect()
+              return { variable: getComputedStyle(el).getPropertyValue('--transform-origin').trim(), x: r.left + x * (r.width / el.offsetWidth), y, height: el.offsetHeight }
+            })
+            expect(origin.variable).not.toBe('')
+            if (below) expect(origin.y).toBeLessThanOrEqual(1)
+            else expect(origin.y).toBeGreaterThanOrEqual(origin.height - 1)
+            // Across, Base UI pivots a centred popup under the trigger's centre, and one aligned to
+            // an edge on that edge: the list lines up with its trigger's start edge (align start), so
+            // it grows from that corner, out of the button.
+            const t = (await trigger(page).boundingBox())!
+            expect(Math.abs(origin.x - (overlay === 'dropdown-list' ? t.x : t.x + t.width / 2))).toBeLessThan(2)
+            await atRest(page)
+          }
+          await grows(overlay !== 'tooltip')
+          if (overlay === 'dropdown-list') {
+            await close(page)
+            await expect(popup(page)).toHaveCount(0)
+            // The trigger near the foot of the window: no room below, so the list flips above.
+            await trigger(page).evaluate((el) => {
+              const b = el.getBoundingClientRect()
+              scrollBy({ top: b.bottom - (innerHeight - 24), behavior: 'instant' })
+            })
+            await grows(false)
+            await expect(popup(page)).toHaveAttribute('data-side', 'top')
+          }
         })
 
         // [[rule: popover-reopen-mid-flight]]
         // [[rule: tooltip-reopen-mid-flight]]
+        // [[rule: dropdown-list-reopen-mid-flight]]
         test(`a ${overlay} closed and reopened mid-flight turns round and ends open, at rest`, async ({ page }) => {
           // The tooltip waits --vela-delay-tooltip before it opens; with the wait at zero the second
           // hover lands while the first close is still fading. Read at mount, so set before it.
@@ -2151,9 +2184,11 @@ test.describe('the motion pass, part 2', () => {
 
         // [[rule: popover-keyboard-is-instant]]
         // [[rule: tooltip-keyboard-is-instant]]
+        // The list's own rule (dropdown-list-trigger-instant-from-keyboard) is proved in the unit
+        // tests, by the attribute; this is what the attribute does in a real browser.
         test(`a ${overlay} opened and closed from the keyboard does not animate`, async ({ page }) => {
           await openMotion(page)
-          if (overlay === 'popover') {
+          if (pressed) {
             await trigger(page).focus()
             await page.keyboard.press('Enter')
           } else {
@@ -2171,6 +2206,7 @@ test.describe('the motion pass, part 2', () => {
 
       // [[rule: popover-motion-reduced-end-state]]
       // [[rule: tooltip-motion-reduced-end-state]]
+      // [[rule: dropdown-list-motion-reduced-end-state]]
       test(`under reduced motion the ${overlay} is at its end state: full size, opaque, and gone when closed`, async ({ page }) => {
         await openMotion(page)
         await open(page)

@@ -289,8 +289,9 @@ Tooltip at `fast` because it has already waited for the pointer to rest. Dialog 
 opacity plus a `--vela-space-5` step of rise. A Toast travels its own height in from the edge it sits
 on at `base` and leaves the same way, fading (the one overlay whose exit travels: it goes back where
 it came from); the stack behind it steps back and spreads on the spring (`toast.md`, Motion). The
-Dropdown List, built after this pass was written, still appears on `--vela-ease-standard` with a
-`--vela-space-5` step of travel (`dropdown-list.md`, Motion); bringing it in line is still to do.
+Dropdown List, built after this pass was written, now moves on Popover's rule: it grows from 0.96
+from its trigger and leaves on a fade, at `base` (`dropdown-list.md`, Motion). That is proposed in
+decision 008, not decided: the owner judges its recordings before it ships.
 A Tooltip waits `--vela-delay-tooltip` on hover and opens at once on focus.
 A Toast stays for `--vela-duration-toast`, a dwell and not an animation: paused on hover and
 focus, untouched by the reduced-motion collapse, and only when it is a `success` or `info` with no
