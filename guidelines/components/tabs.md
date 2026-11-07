@@ -29,17 +29,17 @@ Navigate between **different** content panels.
 </Tabs>
 ```
 
-| Part | Prop | Type | Notes |
-|---|---|---|---|
-| `Tabs` | `defaultValue` | `string` | Uncontrolled mode. **Required unless `value` is passed.** |
-| | `value` / `onValueChange` | `string` / `(v) => void` | Controlled mode. `value` and `defaultValue` are exclusive. |
-| | `size` | `"regular" \| "large"` | **These two only.** Default `regular`. |
-| `Tabs.List` | `aria-label` | `string` | **Required.** |
-| `Tabs.Trigger` | `value` | `string` | Must match a Panel. |
-| | `count` | `number` | Optional numeric badge. |
-| | `disabled` | `boolean` | Skipped by arrow-key navigation. |
-| | `unseen` | `boolean` | **Headless only.** The tab holds changes the person hasn't seen: set it when they arrive, clear it when the tab is opened. A hidden tab with `unseen` adds "· 1 new" to the "N more" control. The core trigger does not accept it. |
-| `Tabs.Panel` | `value` | `string` | Must match a Trigger. |
+| Part | Prop | Type | Default | Notes |
+|---|---|---|---|---|
+| `Tabs` | `defaultValue` | `string` | — | Uncontrolled mode. **Required unless `value` is passed.** |
+| | `value` / `onValueChange` | `string` / `(v) => void` | — | Controlled mode. `value` and `defaultValue` are exclusive. |
+| | `size` | `"regular" \| "large"` | `"regular"` | **These two only.** |
+| `Tabs.List` | `aria-label` | `string` | — | **Required.** |
+| `Tabs.Trigger` | `value` | `string` | — | Must match a Panel. |
+| | `count` | `number` | — | Optional numeric badge. |
+| | `disabled` | `boolean` | — | Skipped by arrow-key navigation. |
+| | `unseen` | `boolean` | — | **Headless only.** The tab holds changes the person hasn't seen: set it when they arrive, clear it when the tab is opened. A hidden tab with `unseen` adds "· 1 new" to the "N more" control. The core trigger does not accept it. |
+| `Tabs.Panel` | `value` | `string` | — | Must match a Trigger. |
 
 ## Hard constraints
 
