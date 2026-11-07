@@ -13,7 +13,7 @@
 A design system for data-heavy products, built first for security consoles. The tokens and the component specs are framework-agnostic;
 this repository is a **React implementation** of them. Nineteen components, two themes, zero runtime
 dependencies in the core entry — and every design rule in the documentation is tagged with how it is
-enforced: 79 of the 258 by the TypeScript compiler, the rest at runtime, in a real browser, or by review
+enforced: 80 of the 260 by the TypeScript compiler, the rest at runtime, in a real browser, or by review
 (counted by `npm run rules:check`).
 
 **Status:** every component carries a lifecycle label — Approved, Known bugs, Experimental or
@@ -60,14 +60,14 @@ link to each, and the number of automated checks, written by the test runners ra
 
 | | |
 |---|---|
-| **Components** | Button · Toggle · Input · TextArea · ContextualAlert · StatusIndicator · RiskPill · Tabs · Icon · BrandMark · Table, from `@omkarux/vela` (Tabs also from `/headless`) · Checkbox (with Checkbox.Group) · RadioGroup · Popover · Tooltip · IconButton · Dialog (with `variant="alert"`) · ToastProvider + useToast · DropdownList, from `@omkarux/vela/headless` only |
+| **Components** | Button · Toggle · Input · TextArea · ContextualAlert · StatusIndicator · RiskPill · Tabs · Icon · BrandMark · Table, from `@omkarux/vela` (Tabs also from `/headless`) · Checkbox (with Checkbox.Group) · RadioGroup · Popover · Tooltip (with TooltipProvider) · IconButton · Dialog (with `variant="alert"`) · ToastProvider + useToast · DropdownList, from `@omkarux/vela/headless` only |
 | **Tokens** | 293 CSS custom properties, two layers (primitives → semantics) |
 | **Themes** | Light + dark. OS preference by default, `data-theme` to override |
 | **Dependencies** | None in the core entry. `react` / `react-dom` are peers (18.3 or 19). The `/headless` entry needs one optional peer, `@base-ui/react` 1.9.x (MIT) |
 | **Icons** | 50 curated [Lucide](https://lucide.dev) 1.63.0 glyphs (ISC; a subset from Feather, MIT), compiled into the core entry at build time — no icon dependency, `lucide` is a devDependency only. The ISC notice ships in [`NOTICE`](NOTICE) |
 | **Format** | ESM, `preserveModules` for tree-shaking, full `.d.ts` |
-| **Tests** | 1890 automated checks — 1436 unit and contract (116 contrast pairs, each asserted in both themes), 451 browser (112 screenshots: 68 at four widths, 24 of the component tabs, 2 of the Tabs overflow stage, 6 of the proposal and pattern pages, 6 of the doc pages and 6 of the Overview and two foundations at 1440, 337 playground, 2 docs), 3 Flutter — counted by `npm run checks` |
-| **Packed size** | 369.6 kB, 270 files (the Filter Grammar's modules and their .d.ts are most of the growth since 0.15.0; Tabs overflow, its module and its longer spec, added 16.3 kB; `guidelines/components.json` about 17 kB; `DESIGN.md`, now shipped, and the agent report in `llms.txt` about 17 kB), as `npm run verify` measures it (README and CHANGELOG ship in the tarball, so this moves when they do) |
+| **Tests** | 1896 automated checks — 1441 unit and contract (116 contrast pairs, each asserted in both themes), 452 browser (112 screenshots: 68 at four widths, 24 of the component tabs, 2 of the Tabs overflow stage, 6 of the proposal and pattern pages, 6 of the doc pages and 6 of the Overview and two foundations at 1440, 338 playground, 2 docs), 3 Flutter — counted by `npm run checks` |
+| **Packed size** | 373.3 kB, 270 files (the Filter Grammar's modules and their .d.ts are most of the growth since 0.15.0; Tabs overflow, its module and its longer spec, added 16.3 kB; `guidelines/components.json` about 17 kB; `DESIGN.md`, now shipped, and the agent report in `llms.txt` about 17 kB; `TooltipProvider`, its Groups section and changelog entry about 4 kB), as `npm run verify` measures it (README and CHANGELOG ship in the tarball, so this moves when they do) |
 
 ## The three ideas worth stealing
 
@@ -179,7 +179,7 @@ document.documentElement.removeAttribute('data-theme')        // follow the OS
 
 ```bash
 npm run dev        # demo showcase at localhost:5174
-npm test           # 1436 unit and contract tests, of 1890 checks in all — the numbers are generated into demo/checks.json
+npm test           # 1441 unit and contract tests, of 1896 checks in all — the numbers are generated into demo/checks.json
 npm run checks     # counts every automated check into demo/checks.json (diffed in verify)
 npm run contrast   # WCAG report for both themes
 npm run verify     # tokens:check + icons:check + rules:check + typecheck + tests + checks:check + build + pack-and-consume gate

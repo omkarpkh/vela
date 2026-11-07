@@ -4,7 +4,7 @@
 > deliberately separate status taxonomies, full light and dark theming, zero runtime dependencies
 > in the core entry (the `/headless` entry needs one optional peer, Base UI, and is where Checkbox,
 > Radio Group, Popover, Tooltip, Icon Button, Dialog, Toast and Dropdown List ship from).
-> 79 of the 258 design rules are enforced by the TypeScript types; the rest are checked at runtime, in a
+> 80 of the 260 design rules are enforced by the TypeScript types; the rest are checked at runtime, in a
 > real browser, or by review. Each rule in the component and contract guidelines is tagged with its level.
 >
 > THESE SPECS ARE FRAMEWORK-AGNOSTIC. The published package is a React implementation of them, and
@@ -154,7 +154,7 @@ behaviour has no Figma expression at all.
 - [Radio Group](components/radio-group.md) — `@omkarux/vela/headless` only, Experimental
 - [Table](components/table.md) — `@omkarux/vela`, Experimental
 - [Popover](components/popover.md) — `@omkarux/vela/headless` only, Experimental
-- [Tooltip](components/tooltip.md) — `@omkarux/vela/headless` only, Experimental (`kind="label"` repeats a control's name and is heard once)
+- [Tooltip](components/tooltip.md) — `@omkarux/vela/headless` only, Experimental (`kind="label"` repeats a control's name and is heard once; `TooltipProvider` groups a row, so the next opens at once)
 - [Icon Button](components/icon-button.md) — `@omkarux/vela/headless` only, Experimental: one glyph (`icon`, `brandMark` or `word="npm"`), always named by `label`, a button (`onClick`) or a link (`href`), 24 or 35px; no Figma set yet
 - [Dialog](components/dialog.md) — `@omkarux/vela/headless` only, Experimental (with `variant="alert"`)
 - [Toast](components/toast.md) — `@omkarux/vela/headless` only, Experimental (`ToastProvider` + `useToast()`)

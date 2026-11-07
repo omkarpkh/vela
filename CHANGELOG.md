@@ -6,6 +6,35 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Unreleased]
 
 ### Added
+- **`TooltipProvider`: tooltips in a row open at once once one is showing** (Omkar's decision of
+  7 Nov 2026; `guidelines/components/tooltip.md`, *Groups*). Base UI's `Tooltip.Provider`, exported
+  from `@omkarux/vela/headless` as `TooltipProvider`, named after `ToastProvider`, with no prop but
+  `children`. Inside one, the first tooltip still waits `--vela-delay-tooltip`; once one is open,
+  resting on a neighbouring trigger opens its tooltip with no dwell and no grow, and the open one
+  closes. Outside a provider nothing changes. Both kinds group, so a row of Icon Buttons does too.
+  - **The dwell is still the token.** No `delay` on the provider: each Tooltip passes the token's
+    value on its trigger, and Base UI reads a provider's delay only for a trigger with none. The
+    trigger's delay doesn't defeat the group, because Base UI gives a grouped trigger an open delay
+    of 0 before it reads its own. `timeout` is left at Base UI's default, 400ms: the moment after a
+    tooltip closes during which a neighbour still opens at once. No token measures that grace, and
+    it is shorter than the dwell, so a pointer that leaves the row and returns later waits again.
+  - **The keyboard is unchanged.** Focus opens a tooltip at once, grouped or not; Base UI may mark a
+    grouped one `data-instant="delay"` rather than `"focus"`, and both skip the animation.
+  - **The site header's GitHub, npm and Figma marks are one group**, so the change can be felt live.
+  - **Two new rules, both with proofs.** `tooltip-provider-groups` (browser): a new test in
+    `tests/e2e/site.spec.ts` rests on the header's GitHub mark, then moves to npm and Figma, and each
+    opens in under a third of the dwell, read from the stylesheet at runtime; the same links on the
+    Icon Button page, with no provider, each wait the whole dwell; and focus moves through the
+    group as it does outside one. `tooltip-provider-closed` (compiler): four fixtures in
+    `scripts/verify-pack.mjs` (a `delay`, a `timeout`, a `closeDelay`, no children), beside a
+    grouped pair that must compile. Five unit tests: the export, that it renders only its children,
+    its props, and grouping in jsdom for both kinds, with the ungrouped pair as the control.
+  - `guidelines/components.json` lists `TooltipProvider` among Tooltip's imports. Icon Button's
+    "When to use" points a row at the provider. No token, no contrast pair and no Figma change: a
+    group has no visual. The Tooltip stills are redrawn because their source changed.
+  - 260 rules across 20 specs (was 258), 80 compiler-enforced (was 79). 1896 checks (was 1890):
+    1441 unit and contract (was 1436), 338 e2e (was 337), so the Overview and How it is made
+    baselines move with the check count. Packed: 373.3 kB, 270 files (was 369.6 kB, 270).
 - **The agent report** (Omkar's decision of 7 Nov 2026). Every agent run that builds with Vela
   ends with a report of what it used, what it made itself and the gaps it found, written once in
   `guidelines/llms.txt` ("When you finish: the report"); `AGENTS.md` and the skill point there.

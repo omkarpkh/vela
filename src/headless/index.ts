@@ -26,8 +26,8 @@ export type { RadioGroupProps, RadioProps } from './RadioGroup'
 // Overlays, headless-born (guidelines/components/popover.md, tooltip.md, dialog.md).
 export { Popover } from './Popover'
 export type { PopoverProps, PopoverPlacement, PopoverAlign, PopoverSize } from './Popover'
-export { Tooltip } from './Tooltip'
-export type { TooltipProps, TooltipPlacement, TooltipAlign, TooltipKind } from './Tooltip'
+export { Tooltip, TooltipProvider } from './Tooltip'
+export type { TooltipProps, TooltipProviderProps, TooltipPlacement, TooltipAlign, TooltipKind } from './Tooltip'
 // Icon Button, headless-born (guidelines/components/icon-button.md): one glyph, named by its label,
 // with a label tooltip. Headless because the tooltip is Base UI's.
 export { IconButton } from './IconButton'

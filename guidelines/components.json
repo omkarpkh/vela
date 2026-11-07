@@ -891,7 +891,7 @@
           "status": "Experimental"
         }
       ],
-      "whenToUse": "- A widely known glyph in a tight place (close, copy, more, search, settings, a service's mark) → **Icon Button**.\n- Less familiar, or touch-first → **Button** with a label.\n- Destructive (delete, revoke) → **Button** `variant=\"destructive\"` with words.\n- A setting that stays on or off (pin, mute) → a toggle icon button, **not in this kit**; flag the gap.\n- A glyph that only decorates text → **Icon**.\n- Several in a row → **Icon Button** side by side, each its own tab stop.\n- A link to GitHub or Figma → **Icon Button** with `brandMark`; to npm → **Icon Button** with `word=\"npm\"`. Never a bare **Brand Mark** in an `<a>` of your own.",
+      "whenToUse": "- A widely known glyph in a tight place (close, copy, more, search, settings, a service's mark) → **Icon Button**.\n- Less familiar, or touch-first → **Button** with a label.\n- Destructive (delete, revoke) → **Button** `variant=\"destructive\"` with words.\n- A setting that stays on or off (pin, mute) → a toggle icon button, **not in this kit**; flag the gap.\n- A glyph that only decorates text → **Icon**.\n- Several in a row → **Icon Button** side by side, each its own tab stop, the row wrapped in one `TooltipProvider` so the next name shows at once ([`tooltip.md`](tooltip.md), *Groups*).\n- A link to GitHub or Figma → **Icon Button** with `brandMark`; to npm → **Icon Button** with `word=\"npm\"`. Never a bare **Brand Mark** in an `<a>` of your own.",
       "props": [
         {
           "part": "IconButton",
@@ -2263,7 +2263,8 @@
         {
           "from": "@omkarux/vela/headless",
           "names": [
-            "Tooltip"
+            "Tooltip",
+            "TooltipProvider"
           ],
           "peers": [
             "@base-ui/react"
@@ -2271,7 +2272,7 @@
           "status": "Experimental"
         }
       ],
-      "whenToUse": "- A **phrase that explains a control** the user can already operate — \"Download the last 24 hours\n  as CSV\" on an Export button → **Tooltip**.\n- Anything the user can **act in** — a link, a button, a checkbox, a form → **Popover**\n  (`popover.md`). A tooltip closes the moment the pointer leaves; nothing in it can be reached.\n- An **infotip** behind an ⓘ icon, whose only job is to show the text → a **Popover**: the\n  trigger's purpose is opening the panel, and a touch user can open a Popover but never sees a\n  tooltip.\n- Information the task **depends on** — a requirement, an error, why a control is disabled →\n  **inline text** beside the control (Input's `hint`, Checkbox's `description`). Tooltips are\n  hidden from touch users and are not reliably announced.\n- An **icon-only** control's name → its `aria-label`. A tooltip may show the same words to sighted\n  users, but it is never what names the control (see Hard constraints). A glyph-only control is an\n  [**Icon Button**](icon-button.md), which brings its own label tooltip; don't wrap one in another.\n- The **same words as the control's name**, for sighted users → **Tooltip** `kind=\"label\"`: shown,\n  and heard once. Any other words → the default `kind=\"description\"`.",
+      "whenToUse": "- A **phrase that explains a control** the user can already operate — \"Download the last 24 hours\n  as CSV\" on an Export button → **Tooltip**.\n- Anything the user can **act in** — a link, a button, a checkbox, a form → **Popover**\n  (`popover.md`). A tooltip closes the moment the pointer leaves; nothing in it can be reached.\n- An **infotip** behind an ⓘ icon, whose only job is to show the text → a **Popover**: the\n  trigger's purpose is opening the panel, and a touch user can open a Popover but never sees a\n  tooltip.\n- Information the task **depends on** — a requirement, an error, why a control is disabled →\n  **inline text** beside the control (Input's `hint`, Checkbox's `description`). Tooltips are\n  hidden from touch users and are not reliably announced.\n- An **icon-only** control's name → its `aria-label`. A tooltip may show the same words to sighted\n  users, but it is never what names the control (see Hard constraints). A glyph-only control is an\n  [**Icon Button**](icon-button.md), which brings its own label tooltip; don't wrap one in another.\n- The **same words as the control's name**, for sighted users → **Tooltip** `kind=\"label\"`: shown,\n  and heard once. Any other words → the default `kind=\"description\"`.\n- A **row of neighbouring controls** that each have a tooltip (a toolbar, a row of Icon Buttons, a\n  header) → wrap the row in one **`TooltipProvider`**, so once one tooltip shows, the next opens at\n  once (see *Groups*).",
       "props": [
         {
           "part": "Tooltip",
@@ -2325,6 +2326,13 @@
           "default": "description",
           "required": false,
           "notes": "**These two only.** `description`: extra words, wired by `aria-describedby`. `label`: the trigger's own name, shown and not wired; `content` must equal that name."
+        },
+        {
+          "part": "TooltipProvider",
+          "name": "children",
+          "type": "ReactNode",
+          "required": true,
+          "notes": "**Required.** The row whose tooltips form one group. **No other prop:** no delay, timeout or close delay."
         }
       ],
       "tokens": [

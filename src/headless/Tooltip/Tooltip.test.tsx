@@ -1,7 +1,8 @@
 import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, it, expect, vi } from 'vitest'
-import { Tooltip } from './Tooltip'
+import { Tooltip, TooltipProvider } from './Tooltip'
+import * as headless from '../index'
 import { sideOf } from '../overlay'
 import { Button } from '../../components/Button'
 
@@ -199,5 +200,90 @@ describe('Tooltip (headless)', () => {
 
   it('names the four placements in logical terms', () => {
     expect(['top', 'bottom', 'start', 'end'].map((p) => sideOf(p as 'top'))).toEqual(['top', 'bottom', 'inline-start', 'inline-end'])
+  })
+
+  describe('TooltipProvider', () => {
+    // Two neighbours, as a toolbar holds them: each its own Tooltip, the pair grouped or not.
+    const Pair = ({ grouped }: { grouped: boolean }) => {
+      const pair = (
+        <>
+          <Tooltip content="Download as CSV"><Button>Export</Button></Tooltip>
+          <Tooltip content="Print this view"><Button>Print</Button></Tooltip>
+        </>
+      )
+      return grouped ? <TooltipProvider>{pair}</TooltipProvider> : pair
+    }
+    // The label kind, as a row of Icon Buttons uses it.
+    const Labels = () => (
+      <TooltipProvider>
+        <Tooltip kind="label" content="Search"><button type="button" aria-label="Search">S</button></Tooltip>
+        <Tooltip kind="label" content="Settings"><button type="button" aria-label="Settings">G</button></Tooltip>
+      </TooltipProvider>
+    )
+
+    it('is exported from the headless entry, beside Tooltip, and renders only its children', () => {
+      expect(headless.TooltipProvider).toBe(TooltipProvider)
+      const { container } = render(<TooltipProvider><span data-testid="row">Row</span></TooltipProvider>)
+      // No element of its own: the children are all it renders.
+      expect(container.innerHTML).toBe('<span data-testid="row">Row</span>')
+    })
+
+    it('takes children and nothing else', () => {
+      // A delay, a timeout or a close delay in JS would bypass --vela-delay-tooltip; none compiles.
+      // @ts-expect-error delay is not a prop
+      const a = <TooltipProvider delay={0}><span /></TooltipProvider>
+      // @ts-expect-error timeout is not a prop
+      const b = <TooltipProvider timeout={400}><span /></TooltipProvider>
+      // @ts-expect-error closeDelay is not a prop
+      const c = <TooltipProvider closeDelay={0}><span /></TooltipProvider>
+      // @ts-expect-error children are required
+      const d = <TooltipProvider />
+      expect([a, b, c, d]).toHaveLength(4)
+    })
+
+    it('opens a neighbour at once once one tooltip in the group is open, and does not animate it', async () => {
+      withDelayToken('300ms')
+      render(<Pair grouped />)
+      await userEvent.hover(screen.getByRole('button', { name: 'Export' }))
+      await wait(400)
+      expect(screen.getByRole('tooltip')).toHaveTextContent('Download as CSV')
+      await userEvent.unhover(screen.getByRole('button', { name: 'Export' }))
+      await userEvent.hover(screen.getByRole('button', { name: 'Print' }))
+      await wait(20)
+      // Export's may still be fading out, so Print's is found by its words.
+      const tip = screen.getByText('Print this view')
+      expect(tip).toHaveAttribute('role', 'tooltip')
+      // Base UI marks a tooltip opened in the group's instant phase; Tooltip.css skips the grow.
+      expect(tip).toHaveAttribute('data-instant', 'delay')
+      expect(screen.getByRole('button', { name: 'Print' })).toHaveAccessibleDescription('Print this view')
+    })
+
+    it('groups label tooltips too', async () => {
+      withDelayToken('300ms')
+      render(<Labels />)
+      await userEvent.hover(screen.getByRole('button', { name: 'Search' }))
+      await wait(400)
+      expect(screen.getByText('Search')).toHaveAttribute('aria-hidden', 'true')
+      await userEvent.unhover(screen.getByRole('button', { name: 'Search' }))
+      await userEvent.hover(screen.getByRole('button', { name: 'Settings' }))
+      await wait(20)
+      expect(screen.getByText('Settings')).toHaveAttribute('data-instant', 'delay')
+      // Still heard once: nothing points at the label.
+      expect(screen.getByRole('button', { name: 'Settings' })).not.toHaveAttribute('aria-describedby')
+    })
+
+    it('outside a provider, the neighbour still waits the dwell', async () => {
+      withDelayToken('300ms')
+      render(<Pair grouped={false} />)
+      await userEvent.hover(screen.getByRole('button', { name: 'Export' }))
+      await wait(400)
+      expect(screen.getByRole('tooltip')).toHaveTextContent('Download as CSV')
+      await userEvent.unhover(screen.getByRole('button', { name: 'Export' }))
+      await userEvent.hover(screen.getByRole('button', { name: 'Print' }))
+      await wait(20)
+      expect(screen.queryByText('Print this view')).toBeNull()
+      await wait(400)
+      expect(screen.getByText('Print this view')).toBeInTheDocument()
+    })
   })
 })
