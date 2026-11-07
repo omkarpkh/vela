@@ -5,6 +5,8 @@ Vela is a design system and its rules are load-bearing. Read, in this order, the
 2. **`guidelines/components/<name>.md`** — the spec for the component you are touching. The guideline is the specification; the source is one implementation of it. Do not infer an API from `src/`.
 3. New component? `DESIGN.md` → *How to add a component*, then `CONTRIBUTING.md`.
 
+Building *with* Vela rather than on it (a demo page, a pattern)? End the run with the report in `guidelines/llms.txt`, "When you finish: the report".
+
 ## Non-negotiables
 1. Bind **semantic** tokens (`var(--vela-text-default)`). Never a primitive, never raw hex.
 2. Numeric tokens carry their unit — never `calc(var(--vela-space-10) * 1px)`.

@@ -58,6 +58,8 @@ check(files.includes('flutter/lib/vela_tokens.dart'), 'tarball contains flutter/
 check(files.includes('bridges/vela.mui-theme.json'), 'tarball contains bridges/vela.mui-theme.json')
 check(files.some((f) => f.startsWith('guidelines/')), 'tarball contains guidelines/')
 check(files.includes('guidelines/components.json'), 'tarball contains guidelines/components.json (the machine-readable component list)')
+check(files.includes('DESIGN.md'), 'tarball contains DESIGN.md at the package root (llms.txt sends an agent there first)')
+check(!files.some((f) => f.startsWith('skills/')), 'no skills/ in the tarball (the agent skill installs from the repository, and reads the package)')
 check(files.includes('NOTICE'), 'tarball contains NOTICE (the Lucide ISC notice travels with every copy)')
 check(!files.some((f) => f.startsWith('src/')), 'no src/ leaked into the tarball')
 check(!files.some((f) => f.includes('.test.')), 'no test files leaked into the tarball')
@@ -123,6 +125,12 @@ try {
   let listed = -1
   try { listed = JSON.parse(readFileSync(join(app, 'node_modules/@omkarux/vela/guidelines/components.json'), 'utf8')).components.length } catch { /* reported below */ }
   check(listed === specCount, `installed guidelines/components.json parses and lists ${listed} of ${specCount} components`)
+
+  // llms.txt links the global rules as ../DESIGN.md: that link resolves in the installed package.
+  const installed = join(app, 'node_modules/@omkarux/vela')
+  let design = ''
+  try { design = readFileSync(join(installed, 'guidelines', '..', 'DESIGN.md'), 'utf8') } catch { /* reported below */ }
+  check(readFileSync(join(installed, 'guidelines/llms.txt'), 'utf8').includes('(../DESIGN.md)') && design.startsWith('# Vela'), 'installed guidelines/llms.txt links ../DESIGN.md, and it is there')
 
   // -- valid usage must compile --
   mkdirSync(join(app, 'src'), { recursive: true })
