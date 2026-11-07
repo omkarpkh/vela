@@ -86,12 +86,31 @@ server reading the registry, then a small Vela MCP; Code Connect mappings; the F
 Figma Community under CC BY 4.0 with an MIT notice; the token sync packaged as a Figma plugin;
 `spec.json` per component and a components manifest as the language-neutral contract.
 
+The first steps are in: `guidelines/components.json`, the components manifest generated from the
+specs, and an agent skill (`skills/vela/`) that routes an agent through the guidelines and ends
+each run with a report of what it used, built, invented and flagged.
+
 ## Phase 4 — Evals and drift harness
 
 Measure whether agents build on-system from Vela, publish the number, and keep measuring.
 Fixed briefs run through coding agents against the package, the package plus `DESIGN.md`, and
 the registry plus MCP; token adherence, closed-prop compliance, taxonomy crossing, accessibility
 and responsiveness scored; a drift report per release. Runs beside Phase 1.
+
+The plan, decided on 7 November 2026:
+
+- **First, a check products run in their own project**, ahead of any score. Vela's CSS lint (raw
+  colours, primitives, raw lengths, the motion rules) and the contrast pairs, packaged for
+  consumers. Escapes happen in products today, and this is where they are caught.
+- **What an eval measures.** Not a percentage of used, invented and flagged. Gap honesty: briefs
+  that each need one component Vela lacks, and whether the agent flagged it, invented one
+  silently, or forced a wrong component. Escapes: what the consumer check finds, per screen.
+  Guidance lift: the package alone against the package plus the skill and `llms.txt`. Later,
+  fix-up cost: the review edits still needed after the checks pass.
+- **The gap-honesty briefs are fixed and published before the first run**, so they cannot be
+  picked to flatter Vela.
+- **Repeatable.** Three runs per setup, and the range is reported, not one number.
+- **No score is published until those hold.** The agent report ships as a list, with no number.
 
 ## Phase 5 — Framework-agnostic delivery
 
