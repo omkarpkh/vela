@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { readFileSync, readdirSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { parseSpec, printJsx } from '../../demo/playground/spec'
+import { implementationsOf, literalsOf, parseSpec, printJsx, splitRow } from '../../demo/playground/spec'
 
 // The playground's controls, token pane and rules are parsed out of the specs. These tests
 // hold the specs to a shape the parser can read, and catch a spec naming a token that does
@@ -46,6 +46,38 @@ describe('playground spec parser', () => {
     const spec = parseSpec(readFileSync(resolve(dir, 'tabs.md'), 'utf8'))
     expect(spec.props.some((p) => p.part === 'Tabs.Trigger' && p.prop === 'count')).toBe(true)
     expect(spec.controls.map((c) => c.prop)).toEqual(['defaultValue', 'size'])
+  })
+
+  it('reads no prop rows out of a code block in the Props section', () => {
+    // brand-mark.md writes its types as a union, one member per line, each starting with a pipe.
+    const spec = parseSpec(readFileSync(resolve(dir, 'brand-mark.md'), 'utf8'))
+    expect(spec.props.map((p) => p.prop)).toEqual(['name', 'size', 'label', 'decorative'])
+    const iconButton = parseSpec(readFileSync(resolve(dir, 'icon-button.md'), 'utf8'))
+    expect(iconButton.props.every((p) => /^[a-zA-Z]+$/.test(p.prop))).toBe(true)
+  })
+
+  it('lists the values of a literal type, and none for a free one', () => {
+    expect(literalsOf('`"top" | "bottom"`')).toEqual(['top', 'bottom'])
+    expect(literalsOf('`1 | 2 | 3`')).toEqual([1, 2, 3])
+    expect(literalsOf('`"npm"`')).toEqual(['npm'])
+    expect(literalsOf('`true`')).toEqual([true])
+    for (const free of ['`string`', '`boolean`', '`ReactNode`', '`(v) => void`', '`boolean | "page"`', '`{ label: string }`'])
+      expect(literalsOf(free), free).toBeUndefined()
+  })
+
+  it('splits a row that names two props or two parts', () => {
+    const [value, onValueChange] = splitRow({ part: 'Tabs', prop: 'value / onValueChange', type: '`string` / `(v) => void`', notes: 'n' })
+    expect(value).toMatchObject({ part: 'Tabs', prop: 'value', type: '`string`' })
+    expect(onValueChange).toMatchObject({ part: 'Tabs', prop: 'onValueChange', type: '`(v) => void`' })
+    expect(splitRow({ part: 'Table.Head / Table.Body', prop: 'children', type: '`ReactNode`', notes: '' }).map((r) => [r.part, r.type]))
+      .toEqual([['Table.Head', '`ReactNode`'], ['Table.Body', '`ReactNode`']])
+    expect(splitRow({ prop: 'size', type: '`"a" | "b"`', notes: '' })).toEqual([{ prop: 'size', type: '`"a" | "b"`', notes: '' }])
+  })
+
+  it('reads the Implementations table by its column names', () => {
+    const spec = parseSpec(readFileSync(resolve(dir, 'tabs.md'), 'utf8'))
+    expect(implementationsOf(spec).map((r) => [r.entry, r.status])).toEqual([['@omkarux/vela', 'Approved'], ['@omkarux/vela/headless', 'Experimental']])
+    expect(implementationsOf(parseSpec(readFileSync(resolve(dir, 'button.md'), 'utf8')))).toEqual([])
   })
 
   it('prints JSX without defaults or empties', () => {

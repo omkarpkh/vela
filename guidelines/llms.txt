@@ -32,6 +32,11 @@ Working from the Figma library? `figma-map.json` (this folder) maps each compone
 export and props to write for it. When a design node is an instance of a Vela set, write that
 export; never reproduce the markup Figma's design context generates for it.
 
+Looking for a component by machine? `components.json` (this folder) lists every built component:
+its purpose, status, where to import it from, its "When to use" text, its props with their closed
+values, defaults and which are required, and its tokens. It is generated from the specs on every
+build; each spec stays the full contract.
+
 ## Hard rules (apply everywhere)
 - Bind SEMANTIC tokens (`var(--vela-text-default)`). Never a primitive (`--vela-grey-700`), never raw hex.
 - Numeric tokens already carry their unit. Use `var(--vela-space-10)`, never `calc(var(--vela-space-10) * 1px)`.

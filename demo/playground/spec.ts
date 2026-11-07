@@ -31,8 +31,12 @@ const unquote = (s: string) => s.replace(/`/g, '').trim()
 export const cells = (line: string) =>
   line.trim().replace(/^\|/, '').replace(/\|$/, '').split(/(?<!\\)\|/).map((c) => c.replace(/\\\|/g, '|').trim())
 
+// A fenced code block is not a table, even when a line in it starts with a pipe: a TypeScript
+// union written one member per line (`  | { name: "github" }`) would otherwise read as prop rows.
+export const withoutCode = (body: string) => body.replace(/^\s*```[^\n]*\n[\s\S]*?^\s*```[^\n]*$/gm, '')
+
 const tableRows = (body: string) => {
-  const lines = body.split('\n').filter((l) => l.trim().startsWith('|'))
+  const lines = withoutCode(body).split('\n').filter((l) => l.trim().startsWith('|'))
   if (lines.length < 2) return { header: [] as string[], rows: [] as string[][] }
   const header = cells(lines[0])
   const rows = lines.slice(2).map(cells) // slice(2) skips the |---| separator
@@ -109,6 +113,58 @@ export function parseSpec(md: string, known: readonly string[] = []): Spec {
     }
   }
   return { title, intro, sections, props, controls, tokens, bindings }
+}
+
+/**
+ * The values a Props type cell allows, when the cell is nothing but literals: `"top" | "bottom"`,
+ * `1 | 2 | 3`, `true`. Undefined for a free type (`string`, `ReactNode`, a callback, an object, or a
+ * mix such as `boolean | "page"`): those are described by the type, not listed. A string-only union
+ * of two or more is what `controlFor` makes a select; this reads the same cell for the numbers and
+ * single literals the controls leave out (components.json lists them all).
+ */
+export function literalsOf(typeCell: string): (string | number | boolean)[] | undefined {
+  const members = unquote(typeCell).split('|').map((m) => m.trim())
+  const values: (string | number | boolean)[] = []
+  for (const m of members) {
+    if (/^"[^"]*"$/.test(m)) values.push(m.slice(1, -1))
+    else if (/^-?\d+(\.\d+)?$/.test(m)) values.push(Number(m))
+    else if (m === 'true' || m === 'false') values.push(m === 'true')
+    else return undefined
+  }
+  return values.length > 0 ? values : undefined
+}
+
+/**
+ * One prop row as one prop per name. A spec may write two names in one row (`value` / `onValueChange`,
+ * typed `string` / `(v) => void`) or two parts (`Table.Head` / `Table.Body`). The playground shows the
+ * row as written; components.json lists each name on its own, each with its own type when the type
+ * cell is split the same way, or the shared type when it is not.
+ */
+export function splitRow(row: PropRow): PropRow[] {
+  const parts = (row.part ?? '').split(/\s+\/\s+/).map((p) => p.trim())
+  const names = row.prop.split(/\s+\/\s+/).map((p) => p.trim())
+  const types = row.type.split(/(?<=`)\s+\/\s+(?=`)/).map((t) => t.trim())
+  const out: PropRow[] = []
+  for (const part of parts)
+    names.forEach((prop, i) => out.push({ ...row, ...(row.part === undefined ? {} : { part }), prop, type: types.length === names.length ? types[i] : row.type }))
+  return out
+}
+
+export interface Implementation { entry: string; implementation: string; dependencies: string; status: string }
+
+/** The rows of the spec's `## Implementations` table, by its column names; empty when it has none. */
+export function implementationsOf(spec: Spec): Implementation[] {
+  const s = spec.sections.find((x) => x.heading === 'Implementations')
+  if (!s) return []
+  const { header, rows } = tableRows(s.body)
+  const col = (name: string) => header.findIndex((h) => h.toLowerCase() === name)
+  const [e, i, d, st] = [col('entry point'), col('implementation'), col('dependencies'), col('status')]
+  return rows.map((r) => ({
+    entry: unquote(r[e] ?? ''),
+    implementation: r[i] ?? '',
+    dependencies: r[d] ?? '',
+    status: unquote(r[st] ?? '').replace(/\*/g, ''),
+  }))
 }
 
 /** Prints a JSX call for the current control values, omitting defaults and empties. */
