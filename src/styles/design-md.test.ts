@@ -25,6 +25,22 @@ describe('DESIGN.md token tables', () => {
       expect(md).toContain(`| \`--vela-${n}\` |`)
   })
 
+  it('prints a family\'s description once, on its first step, and leaves its later steps\' cells empty', () => {
+    const set: any = loadTokenSet(root) // the reader is plain JS; `any` keeps TS from inferring `{}`
+    const cellOf = (n: string) => md.split('\n').find((l) => l.startsWith('|') && l.includes(`| \`--vela-${n}\` |`))?.split(' | ').at(-1)?.replace(/ \|$/, '')
+    const inTable = Object.values<any>(set.groups).filter((f) => f.tokens.some((n: string) => set.all[n].descriptionFrom && cellOf(n) !== undefined))
+    expect(inTable.map((f) => f.name)).toEqual(expect.arrayContaining(['spacing', 'radius', 'icon-box']))
+    for (const f of inTable) {
+      expect(md.split(f.description).length - 1, f.name).toBe(1)
+      const steps = f.tokens.filter((n: string) => set.all[n].descriptionFrom && cellOf(n) !== undefined)
+      expect(cellOf(steps[0]), steps[0]).toBe(f.description)
+      for (const n of steps.slice(1)) expect(cellOf(n), n).toBe('')
+    }
+    // a step's own description stays on its own row
+    expect(cellOf('space-25')).toBe(set.all['space-25'].$description)
+    expect(cellOf('radius-full')).toBe(set.all['radius-full'].$description)
+  })
+
   it('has no hand-written line that names a token and states its value', () => {
     const hits = statedValues(md, set).map((h: { n: number; token: string; value: string }) => `${FILE}:${h.n} ${h.token} states ${h.value}`)
     expect(hits, hits.join('\n')).toEqual([])

@@ -10,8 +10,8 @@
  *
  * The blocks: `font-families` (Typography), `scales` (spacing, radius, icon and control sizes,
  * under Token layers and naming) and `motion` (durations, delays and easings). Each row is the
- * token, its value as the CSS receives it, and the token's own `$description` ("(none yet)" where
- * the token has none).
+ * token, its value as the CSS receives it, and the token's `$description` ("(none yet)" where
+ * the token has none). A family's description is printed once per table, on its first step.
  *
  *   npm run tokens     writes the blocks (after the CSS, Dart and MUI outputs)
  *   --check            fails instead of writing (the first step of npm run tokens:check, so a
@@ -46,7 +46,21 @@ function rendered(set, name, mode) {
 }
 
 const cell = (s) => s.replace(/\|/g, '\\|').replace(/\s+/g, ' ').trim()
-const description = (set, name) => cell(set.all[name].$description ?? '') || '(none yet)'
+/**
+ * The Description cell. A family's text (a step with `descriptionFrom`, tokens-core's group
+ * descriptions) is printed once per table, on the family's first described step; its later steps
+ * leave the cell empty, so a paragraph is not repeated down the table. A step's own description is
+ * always printed on its own row. Dart and the Figma payload keep the text on every step: those are
+ * read one token at a time, this table top to bottom.
+ */
+const description = (set, name, shown) => {
+  const t = set.all[name]
+  if (t.descriptionFrom) {
+    if (shown.has(t.descriptionFrom)) return ''
+    shown.add(t.descriptionFrom)
+  }
+  return cell(t.$description ?? '') || '(none yet)'
+}
 
 /** The Value cell: one value, or the light and dark values where a theme re-points it. */
 function valueCell(set, name) {
@@ -60,7 +74,7 @@ function valueCell(set, name) {
 }
 
 const table = (head, rows) => [`| ${head.join(' | ')} |`, `|${head.map(() => '---').join('|')}|`, ...rows.map((r) => `| ${r.join(' | ')} |`)].join('\n')
-const rowsFor = (set, names) => names.map((n) => [`\`--vela-${n}\``, valueCell(set, n), description(set, n)])
+const rowsFor = (set, names, shown = new Set()) => names.map((n) => [`\`--vela-${n}\``, valueCell(set, n), description(set, n, shown)])
 const pick = (set, test) => set.order.filter(test)
 
 /** The scales, in the order DESIGN.md names them: spacing, radius, icon box, control height. */
@@ -73,8 +87,11 @@ const SCALES = [
 
 export const BLOCKS = {
   'font-families': (set) => table(['Token', 'Stack', 'For'], rowsFor(set, pick(set, (n) => set.all[n].$type === 'fontFamily'))),
-  scales: (set) => table(['Scale', 'Token', 'Value', 'Description'], SCALES.flatMap(([scale, test]) =>
-    rowsFor(set, pick(set, test)).map((r, i) => [i === 0 ? scale : '', ...r]))),
+  scales: (set) => {
+    const shown = new Set() // one table: a family's text once across all four scales
+    return table(['Scale', 'Token', 'Value', 'Description'], SCALES.flatMap(([scale, test]) =>
+      rowsFor(set, pick(set, test), shown).map((r, i) => [i === 0 ? scale : '', ...r])))
+  },
   motion: (set) => table(['Token', 'Value', 'Description'], rowsFor(set, pick(set, (n) => set.all[n].group === 'motion' && ['duration', 'cubicBezier'].includes(set.all[n].$type)))),
 }
 

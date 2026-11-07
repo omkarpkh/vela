@@ -24,15 +24,18 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     and are not families here. Colour tokens are untouched.
   - **Where it reaches:** the Dart doc comment on each `VelaSizing` and `VelaTypography` field, the
     Figma variable description in the `tokens:figma` payload, and DESIGN.md's generated scales
-    table. The CSS and the Material UI bridge carry no token descriptions, for any token, so they
+    table. DESIGN.md prints a family's text once, on its first step, and leaves the cell empty on
+    its later steps, since it is read top to bottom; the Dart file and Figma are read one token at
+    a time, so every step carries it there. The CSS and the Material UI bridge carry no token descriptions, for any token, so they
     do not change.
   - The reader refuses a family that lists an unknown token, a token of another group, a step that
     is already in another family, or an empty description; `tokens:validate` checks the group's
     vendor key. The test readers skip a group's own `$` properties, as DTCG allows them.
-  - 1906 checks (was 1900): 1447 unit and contract (was 1441). Six new tests: every sizing and
+  - 1907 checks (was 1900): 1448 unit and contract (was 1441). Seven new tests: every sizing and
     typography token has a description, own or family; the family's text lands on each step it
-    describes, in the reader, the Dart file and the Figma payload; the reader's refusals.
-    Packed: 379.9 kB, 270 files (was 374.8 kB, 270).
+    describes, in the reader, the Dart file and the Figma payload; DESIGN.md shows it once; the
+    reader's refusals.
+    Packed: 379.7 kB, 270 files (was 374.8 kB, 270).
 - **`TooltipProvider`: tooltips in a row open at once once one is showing** (Omkar's decision of
   7 Nov 2026; `guidelines/components/tooltip.md`, *Groups*). Base UI's `Tooltip.Provider`, exported
   from `@omkarux/vela/headless` as `TooltipProvider`, named after `ToastProvider`, with no prop but
