@@ -44,9 +44,9 @@ every slot above (`components/icon.md`):
 
 | Token | Value | Icon `size` |
 |---|---|---|
-| `--vela-icon-size-small` | 12px | `small` — beside 12px meta text, Button `tiny` |
-| `--vela-icon-size` | 16px | `regular` — beside 14px body text |
-| `--vela-icon-size-large` | 20px | `large` — a standalone glyph, or beside 16px text |
+| `--vela-icon-size-small` | 12px | `small`: beside 12px meta text, Button `tiny` |
+| `--vela-icon-size` | 16px | `regular`: beside 14px body text |
+| `--vela-icon-size-large` | 20px | `large`: a standalone glyph, or beside 16px text |
 | `--vela-icon-stroke` | 2 (24-grid units) | the glyph stroke; renders 1px / 1.33px / 1.67px at the three sizes |
 
 ## Anti-patterns

@@ -135,11 +135,13 @@ export function openingFacts(body: string) {
   const parts = carried.items.map((i) => visible(i).replace(/[;.]$/, ''))
   const cant = limits.items.map((i) => visible(i).replace(/^can't\s+/, '').replace(/\s*\([^)]*\)/g, '').replace(/[;.]$/, ''))
   const listed = cant.length > 1 ? `${cant.slice(0, -1).join(', ')}, or ${cant[cant.length - 1]}` : cant[0] ?? ''
-  const lowest = status?.items.some((i) => /lowest status/.test(i))
+  // "Not built", as the Status line says it (Omkar, 8 Nov 2026: the cell reads "Experimental. Not built
+  // yet."). The rest of the line, the approval, stays in the spec and never reaches the page.
+  const unbuilt = status?.lead.match(/\bNot built\b/)?.[0]
   return {
     need: `${parts.join('. ')}.${/both specified/i.test(carried.lead) ? ' Both specified, neither built.' : ''}`,
     cant: `${listed.charAt(0).toUpperCase()}${listed.slice(1)}.`,
-    status: `${word}${lowest ? ': the lowest status of its parts' : ''}.`,
+    status: `${word}.${unbuilt ? ` ${unbuilt} yet.` : ''}`,
     blocks: new Set([carried.lead, carried.list, limits.lead, limits.list, status!.lead, status!.list].filter(Boolean)),
   }
 }
@@ -194,9 +196,9 @@ function WhenToOffer({ announce }: { announce: (m: string) => void }) {
     },
     {
       title: 'No value, no control', doCopy: 'The field reads "Not set".', dont: 'A disabled copy button on a placeholder.',
-      alt: 'Don\'t: a dash as a placeholder with a disabled copy button beside it.',
+      alt: 'Don\'t: "Not set" as a placeholder with a disabled copy button beside it.',
       live: <span className="copy-pair__field"><span className="copy-pair__key">Owner</span> Not set</span>,
-      drawing: <span className="copy-drawing__row"><span>—</span><span className="copy-drawing__box copy-drawing__box--off">Copy</span></span>,
+      drawing: <span className="copy-drawing__row"><span>Not set</span><span className="copy-drawing__box copy-drawing__box--off">Copy</span></span>,
     },
     {
       title: 'Copy the full value', doCopy: 'Shows 1.2k, copies 1,200.', dont: 'Copies what the screen happens to show: "2 min ago".',

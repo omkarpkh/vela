@@ -1,8 +1,12 @@
 import { describe, it, expect } from 'vitest'
-import { readFileSync } from 'node:fs'
+import { readFileSync, readdirSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { parseSpec } from '../../demo/playground/spec'
-import { propsOf, statesOf, keyboardOf } from '../../demo/playground/SpecSections'
+import { createElement } from 'react'
+import { render, screen, within } from '@testing-library/react'
+import { propsOf, statesOf, keyboardOf, SpecSections, NO_CONTROL_REASON } from '../../demo/playground/SpecSections'
+import { RULE_SECTIONS, rulesFromSpec } from '../../demo/playground/rules-read'
+import { REGISTRY } from '../../demo/playground/registry'
 import { INDEX_MIN } from '../../demo/shell/SectionIndex'
 
 // Slice 7 (s5-tabs, Playground tab): Props, States and Keyboard, read from the spec, never written.
@@ -39,5 +43,54 @@ describe("the Playground tab's spec sections", () => {
     expect(sections('tabs')).toBeGreaterThanOrEqual(INDEX_MIN)
     expect(sections('button')).toBeGreaterThanOrEqual(INDEX_MIN)
     expect(sections('status-indicator')).toBeLessThan(INDEX_MIN)
+  })
+})
+
+// Slice 7 fixes, item 9 (Omkar, 8 Nov 2026): each thing shown once. "Also in the API" is gone from the
+// controls: the Props table tags a prop with no control and carries the registry's words for it; and
+// States is on the Playground tab only.
+describe('each thing shown once', () => {
+  const files = readdirSync(resolve(process.cwd(), 'guidelines/components')).filter((f) => f.endsWith('.md'))
+  const md = (f: string) => readFileSync(resolve(process.cwd(), `guidelines/components/${f}`), 'utf8')
+
+  it('the Rules tab shows Motion and Anti-patterns after the ledger, never States', () => {
+    expect([...RULE_SECTIONS]).toEqual(['Motion', 'Anti-patterns'])
+  })
+
+  it('no spec tags a rule inside States, so the Rules count is the same with States on the Playground tab', () => {
+    expect(files.length).toBeGreaterThan(15)
+    for (const f of files) {
+      const states = statesOf(parseSpec(md(f)))
+      // A tag here would count on neither tab: move the rule to Hard constraints, where the ledger reads it.
+      expect(states?.body ?? '', f).not.toMatch(/\[\[rule:/)
+    }
+    // The ledger reads Hard constraints only: a tag in States is not a rule it lists.
+    const sample = '## States\n\n- Hover. [[rule: x-hover | browser]]\n\n## Hard constraints\n\n- One. [[rule: x-one | compiler]]\n'
+    expect(rulesFromSpec(sample).map((r) => r.id)).toEqual(['x-one'])
+  })
+
+  it("a prop with no control is tagged in Props, its reason a description, and the registry's words follow its Notes", () => {
+    const entry = REGISTRY.find((e) => e.id === 'button')!
+    const s = spec('button')
+    render(createElement(SpecSections, { name: 'Button', spec: s, specHref: '#', noControl: [{ prop: 'type' }], explain: entry.explain }))
+    const table = screen.getByRole('table')
+    const rows = within(table).getAllByRole('row').slice(1)
+    expect(rows).toHaveLength(s.props.length)
+    const tagged = rows.filter((r) => within(r).queryByRole('button', { name: 'no control' }))
+    expect(tagged).toHaveLength(1)
+    expect(tagged[0].querySelector('td')!.textContent).toMatch(/^type/)
+    // The words "Also in the API" showed, now in the row's Notes, after the spec's own.
+    expect(tagged[0].lastElementChild!.textContent).toContain('With "submit", clicking it sends the form.')
+    expect(NO_CONTROL_REASON).not.toMatch(/[—–]/)
+  })
+
+  it('a Composition table tags a part\'s prop by part and name', () => {
+    const s = spec('tabs')
+    const triggerValue = s.props.find((p) => p.part === 'Tabs.Trigger' && p.prop === 'value')!
+    render(createElement(SpecSections, { name: 'Tabs', spec: s, specHref: '#', noControl: [triggerValue] }))
+    const tagged = screen.getAllByRole('button', { name: 'no control' })
+    expect(tagged).toHaveLength(1)
+    // On the row that names value under Tabs.Trigger, not the root's own value.
+    expect(tagged[0].closest('tr')!.textContent).toMatch(/^Tabs\.Triggervalue no control/)
   })
 })

@@ -99,9 +99,14 @@ const SECTIONS: SectionLink[] = [
 ]
 
 /**
- * Each idea lands as the reader reaches it, once. Before paint, every step that is still to come is
- * set to wait; a step plays when its top passes four fifths of the window. Off under reduced motion,
- * without IntersectionObserver, and when the address asks for a section.
+ * Each idea lands as the reader reaches it, once, and the ideas take turns (Omkar, 8 Nov 2026: two
+ * ideas playing together read as noise). Before paint, every step that is still to come is set to
+ * wait; a step is reached when its top passes four fifths of the window, and joins the queue. One
+ * step plays at a time: the next in the queue starts when the one playing has finished, which is
+ * read from its own animations (their `finished`), never a guessed delay. The ideas on screen at load
+ * reach the queue together and play in page order; one reached by scrolling waits its turn. Off under
+ * reduced motion, without IntersectionObserver, and when the address asks for a section: then every
+ * step is simply there.
  */
 function useLanding() {
   const ref = useRef<HTMLDivElement>(null)
@@ -112,11 +117,31 @@ function useLanding() {
     if (/[?&]section=/.test(window.location.hash)) return
     const steps = Array.from(root.querySelectorAll<HTMLElement>('[data-how-step]'))
     for (const s of steps) s.setAttribute('data-how', 'wait')
+    const queue: HTMLElement[] = []
+    let playing: HTMLElement | null = null
+    let gone = false
+    const next = () => {
+      if (gone || playing) return
+      const step = queue.shift()
+      if (!step) return
+      playing = step
+      step.setAttribute('data-how', 'play')
+      // Reading the animations applies the new style, so the step's own parts are all in the list.
+      const parts = typeof step.getAnimations === 'function' ? step.getAnimations({ subtree: true }) : []
+      // A part cancelled on the way (the page hidden, the motion setting changed) still ends the turn.
+      Promise.all(parts.map((a) => a.finished.catch(() => undefined))).then(() => {
+        if (playing === step) playing = null
+        next()
+      })
+    }
     const io = new IntersectionObserver((seen) => {
-      for (const e of seen) if (e.isIntersecting) { e.target.setAttribute('data-how', 'play'); io.unobserve(e.target) }
+      // Reached together (on load, or a long scroll in one go): in page order.
+      const reached = seen.filter((e) => e.isIntersecting).map((e) => e.target as HTMLElement).sort((a, b) => steps.indexOf(a) - steps.indexOf(b))
+      for (const step of reached) { io.unobserve(step); queue.push(step) }
+      next()
     }, { rootMargin: '0px 0px -20% 0px' })
     for (const s of steps) io.observe(s)
-    return () => { io.disconnect(); for (const s of steps) s.removeAttribute('data-how') }
+    return () => { gone = true; io.disconnect(); for (const s of steps) s.removeAttribute('data-how') }
   }, [])
   return ref
 }

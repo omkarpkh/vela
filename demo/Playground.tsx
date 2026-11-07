@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useId, useRef, useState } from 'react'
 import { Button, Toggle, Tabs, Icon, cn } from '../src'
 import { REGISTRY, type Values, type Lock } from './playground/registry'
 import { parseSpec, sectionOf as specSection } from './playground/spec'
-import { ControlField, LockPanel, AlsoInTheApi, CodeBar, type OpenLock } from './playground/Workbench'
+import { ControlField, LockPanel, CodeBar, type OpenLock } from './playground/Workbench'
 import { readLink, writeLink, queryOf, type Stage, type Compare } from './playground/link'
 import { installFor } from './playground/install'
 import { statusOf } from './playground/status'
@@ -23,7 +23,7 @@ import { useArrival } from './shell/arrival'
 import { KNOWN, type Mode } from './playground/tokens'
 import { TokensTab, tokensLine, variantsOf, boundInCode } from './playground/TokensTab'
 import { FigmaTab, figmaEntryFor, figmaLine, settingWords } from './playground/FigmaTab'
-import { rulesFromSpec, oneLine } from './playground/rules-read'
+import { rulesFromSpec, oneLine, RULE_SECTIONS } from './playground/rules-read'
 import { liveProps, heldProps, rangeAt } from './playground/live'
 import { RangeStage } from './playground/RangeStage'
 import { Stage as StagePart } from './shell/Stage'
@@ -220,8 +220,9 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
     return (t: string) => set.has(t)
   }, [entry, spec])
   const specRules = useMemo(() => rulesFromSpec(entry.spec), [entry])
-  // The Rules tab's own sections after the ledger: the spec's States, Motion and Anti-patterns.
-  const ruleSections = useMemo(() => ['States', 'Motion', 'Anti-patterns'].map((h) => specSection(spec, h)).filter((s): s is NonNullable<typeof s> => !!s), [spec])
+  // The Rules tab's own sections after the ledger: the spec's Motion and Anti-patterns. States is on the
+  // Playground tab only (slice 7 fixes, item 9: each thing shown once).
+  const ruleSections = useMemo(() => RULE_SECTIONS.map((h) => specSection(spec, h)).filter((s): s is NonNullable<typeof s> => !!s), [spec])
   const figma = specSection(spec, 'Figma mapping')
   const figmaEntry = figmaEntryFor(entry.file)
   const figmaUrl = figmaEntry && figmaEntry.state !== 'none' ? figmaEntry.url : null
@@ -560,7 +561,6 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
                     </div>
                   )}
                 </div>
-                <AlsoInTheApi rows={uncontrolled} explain={entry.explain} />
               </aside>
               {stage === 'full' && (
                 <CodeBar id={codeId} snippet={snippet} changedProps={changedProps} settle={settle}>
@@ -568,7 +568,7 @@ function PlaygroundFor({ entry, tab }: { entry: (typeof REGISTRY)[number]; tab?:
                 </CodeBar>
               )}
             </div>
-            <SpecSections name={entry.name} spec={spec} specHref={`https://github.com/omkarpkh/vela/blob/main/guidelines/components/${entry.file}`} />
+            <SpecSections name={entry.name} spec={spec} specHref={`https://github.com/omkarpkh/vela/blob/main/guidelines/components/${entry.file}`} noControl={uncontrolled} explain={entry.explain} />
             {next('playground')}
           </Tabs.Panel>
 

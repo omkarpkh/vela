@@ -3594,7 +3594,7 @@
           "figma": "duration/instant"
         }
       },
-      "$description": "A press landing. Below the ~85ms where a delay starts to read as lag, so contact and acknowledgement arrive together. Press-in only — the release settles at duration-base."
+      "$description": "A press landing. Below the ~85ms where a delay starts to read as lag, so contact and acknowledgement arrive together. Press-in only: the release settles at duration-base."
     },
     "duration-fast": {
       "$type": "duration",

@@ -60,8 +60,8 @@ export interface Entry extends CatalogEntry {
   hide?: string[]
   /**
    * Props the playground documents but does not demonstrate: they change nothing you can see
-   * here, so a control would be a switch with no consequence. Unlike `hide` they keep their
-   * row under "Also in the API" — the prop is real, the demonstration is not.
+   * here, so a control would be a switch with no consequence. Unlike `hide` they are tagged "no
+   * control" in the Playground tab's Props table: the prop is real, the demonstration is not.
    */
   noControl?: string[]
   /**
@@ -85,7 +85,7 @@ export interface Entry extends CatalogEntry {
    * A locked value stays in view and reachable, says its rule, and offers the legal moves.
    */
   locks?: (v: Values) => Record<string, Record<string, Lock>>
-  /** Plain words for a prop under "Also in the API", where the spec's Notes are too terse to stand alone. */
+  /** Plain words for a prop with no control, after the spec's Notes in the Props table, where those are too terse to stand alone. */
   explain?: Record<string, string>
   render: (v: Values) => ReactNode
   code: (v: Values, spec: Spec) => string
