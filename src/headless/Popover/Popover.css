@@ -29,21 +29,30 @@
   /* No shadow: no elevation token exists. The edge is the border, asserted against page and container. */
   border: 1px solid var(--vela-border-default);
   border-radius: var(--vela-radius-4);
-  /* Base UI's positioner writes --transform-origin: the point on the popup nearest the trigger, so
-     the popup grows out of the button whichever side it opens on. */
+}
+.vela-popover--wide { width: var(--vela-popover-width-wide); }
+
+/* The overlay motion, one rule for Popover and Dropdown List (decision 008 extends decision 006's
+   values to the list), so the two cannot drift. Base UI's positioner writes --transform-origin:
+   the point on the popup nearest the trigger, so the popup grows out of the button whichever side
+   it opens on. Appearing: it grows from its trigger, scale 0.96 to 1 as it fades in, on ease-out
+   because it enters. Leaving: the fade only, at full size, softer than it arrived (popover.md and
+   dropdown-list.md, Motion). DropdownList.css comes later in the bundle and sets none of this. */
+.vela-popover,
+.vela-dropdown-list {
   transform-origin: var(--transform-origin);
   transition: opacity var(--vela-duration-base) var(--vela-ease-out),
               transform var(--vela-duration-base) var(--vela-ease-out);
 }
-.vela-popover--wide { width: var(--vela-popover-width-wide); }
-
-/* Appearing: it grows from its trigger, scale 0.96 to 1 as it fades in, on ease-out because it
-   enters. Leaving: the fade only, at full size — softer than it arrived (popover.md, Motion). */
-.vela-popover[data-starting-style] { opacity: 0; transform: scale(0.96); }
-.vela-popover[data-ending-style] { opacity: 0; }
+.vela-popover[data-starting-style],
+.vela-dropdown-list[data-starting-style] { opacity: 0; transform: scale(0.96); }
+.vela-popover[data-ending-style],
+.vela-dropdown-list[data-ending-style] { opacity: 0; }
 /* From the keyboard, nothing animates (foundations/motion.md). */
 .vela-popover[data-instant],
-.vela-popover[data-vela-instant] { transition: none; }
+.vela-popover[data-vela-instant],
+.vela-dropdown-list[data-instant],
+.vela-dropdown-list[data-vela-instant] { transition: none; }
 
 .vela-popover__title {
   margin: 0;

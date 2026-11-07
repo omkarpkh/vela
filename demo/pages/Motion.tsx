@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { Button, Toggle, Tabs } from '../../src'
-import { Tabs as HeadlessTabs, Checkbox, RadioGroup, Popover, Tooltip, ToastProvider, useToast } from '../../src/headless'
-import type { ToastPlacement, ToastSeverity } from '../../src/headless'
+import { Tabs as HeadlessTabs, Checkbox, RadioGroup, Popover, Tooltip, DropdownList, ToastProvider, useToast } from '../../src/headless'
+import type { DropdownListItem, ToastPlacement, ToastSeverity } from '../../src/headless'
 import tokensJson from '../../tokens/vela.tokens.json'
 import { springAt, springLinear } from '../../scripts/spring.mjs'
 import '../playground.css'
@@ -141,7 +141,14 @@ function ToastButtons({ theme }: { theme: string }) {
 }
 const PLACEMENT: Record<'light' | 'dark', ToastPlacement> = { light: 'bottom-end', dark: 'top-end' }
 
-// The overlays and the small controls, one set per frame.
+// The overlays and the small controls, one set per frame. The Dropdown List moves on Popover's rule
+// (decision 008), so it sits beside it.
+const VIEWS: [DropdownListItem, ...DropdownListItem[]] = [
+  { value: 'alerts', label: 'All alerts' },
+  { value: 'firewall', label: 'Firewall', meta: '1 new' },
+  { value: 'identities', label: 'Identities' },
+  { value: 'reports', label: 'Reports', meta: '3 open' },
+]
 function Overlays() {
   return (
     <div className="motion-row">
@@ -151,6 +158,7 @@ function Overlays() {
       <Tooltip content="Download the last 24 hours as CSV">
         <Button size="tiny">Export</Button>
       </Tooltip>
+      <DropdownList label="Views" trigger={<Button size="tiny">Switch View</Button>} items={VIEWS} defaultValue="alerts" />
     </div>
   )
 }
@@ -294,11 +302,12 @@ export function Motion() {
       </section>
 
       <section className="motion-section" aria-labelledby="motion-overlays">
-        <h2 id="motion-overlays" className="vela-h3">Popover and Tooltip: they grow from their trigger</h2>
+        <h2 id="motion-overlays" className="vela-h3">Popover, Tooltip and Dropdown List: they grow from their trigger</h2>
         <p className="vela-body motion-copy">
           Press Filters: the popover grows out of the button, from 96% of its size, as it fades in, on <code>--vela-ease-out</code> over
           <code> --vela-duration-base</code>. Rest the pointer on Export: after <code>--vela-delay-tooltip</code> the tooltip grows the same
-          way over <code>--vela-duration-fast</code>. Both leave on a fade alone. Opened or closed from the keyboard, neither animates.
+          way over <code>--vela-duration-fast</code>. Press Switch View: the list grows exactly as the popover does, by the same rule, and
+          from its top edge when it opens below or its bottom edge when it flips above. That is decision 008. All three leave on a fade alone. Opened or closed from the keyboard, none of them animates.
         </p>
         <Frames>{() => <Overlays />}</Frames>
       </section>
