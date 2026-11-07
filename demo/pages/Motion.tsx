@@ -307,8 +307,7 @@ export function Motion() {
           Press Filters: the popover grows out of the button, from 96% of its size, as it fades in, on <code>--vela-ease-out</code> over
           <code> --vela-duration-base</code>. Rest the pointer on Export: after <code>--vela-delay-tooltip</code> the tooltip grows the same
           way over <code>--vela-duration-fast</code>. Press Switch View: the list grows exactly as the popover does, by the same rule, and
-          from its top edge when it opens below or its bottom edge when it flips above. This one is proposed in decision 008 and not
-          yet decided. All three leave on a fade alone. Opened or closed from the keyboard, none of them animates.
+          from its top edge when it opens below or its bottom edge when it flips above. That is decision 008. All three leave on a fade alone. Opened or closed from the keyboard, none of them animates.
         </p>
         <Frames>{() => <Overlays />}</Frames>
       </section>

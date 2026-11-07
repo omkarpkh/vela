@@ -391,9 +391,9 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   built.
 
 ### Changed
-- **Dropdown List moves on the overlay motion, like Popover** (proposed by decision 008,
-  `decisions/008-dropdown-list-overlay-motion`, which extends decision 006; not decided until Omkar
-  has judged its clip). The list no longer travels a 5px step from its trigger on
+- **Dropdown List moves on the overlay motion, like Popover** (decision 008,
+  `decisions/008-dropdown-list-overlay-motion`, which extends decision 006; decided by Omkar on
+  7 November 2026 after judging its clip). The list no longer travels a 5px step from its trigger on
   `--vela-ease-standard`: it grows from 0.96 out of the button as it fades in, on `--vela-ease-out`
   over `--vela-duration-base`, pivoting on Base UI's `--transform-origin`, and leaves on a fade at
   full size. One rule in `Popover.css` now holds the transition, the origin, the starting scale, the
@@ -411,8 +411,8 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     opening below and flipped above, at real speed and ×5; `record.mjs` makes it again.
   - The Popover and Dropdown List component stills are redrawn: the pixels are unchanged, only the
     source key they carry.
-  - 261 rules across 20 specs (was 258), 79 compiler-enforced. 1894 checks (was 1890): 1436 unit
-    and contract, 341 e2e (was 337), 112 screenshots.
+  - 263 rules across 20 specs (was 260), 80 compiler-enforced. 1900 checks (was 1896): 1441 unit
+    and contract, 342 e2e (was 338), 112 screenshots.
 - **ROADMAP.md.** Phase 3 notes that `components.json` and the agent skill are the first steps of
   agent delivery. Phase 4 records the eval plan decided on 7 Nov 2026: a consumer check first (the
   CSS lint and contrast pairs, packaged for products), then gap honesty, escapes, guidance lift and

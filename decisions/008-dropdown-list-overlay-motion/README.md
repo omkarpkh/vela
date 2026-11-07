@@ -1,11 +1,10 @@
 # Dropdown List moves on the overlay motion, like Popover
 
-**Proposed 7 November 2026; not decided. Omkar approved the direction: the Dropdown List stops
+**Decided 7 November 2026, by Omkar, after judging the clip ("keep the grow and ship it"). The Dropdown List stops
 travelling a `--vela-space-5` step from its trigger and moves on Popover's overlay motion instead.
 It grows from 96% out of the button as it fades in, on `--vela-ease-out` over
 `--vela-duration-base`, and leaves on a fade. This extends the values decision 006 approved for
-Popover and Tooltip to one more overlay; it changes none of them. It is built on the branch
-`motion/dropdown-list-overlay` and does not ship until he has judged the clip below. Unreleased.**
+Popover and Tooltip to one more overlay; it changes none of them. Unreleased.**
 
 The clip he judges is `media/dropdown-list.mp4` (20 s). `record.mjs`, beside this file, makes it
 again; its header says how. It is made the way decision 006's `overlays.mp4` was.
@@ -35,6 +34,13 @@ resembles arrives, and should not be a second motion to maintain.
 | Leave it as it is | opacity, and 5px of travel from the trigger | ease-standard | no |
 | Keep the travel, change the curve to ease-out | opacity, and 5px of travel | ease-out | the curve only |
 | **Popover's grow, by Popover's rule** | opacity, and scale from 0.96 on Base UI's `--transform-origin` | ease-out | **yes: one selector** |
+| Grow and travel together (95% plus an 8px slide toward the trigger) | opacity, scale and travel | ease-out | no |
+| Unroll: the panel opens from the trigger's edge like a blind, the words never scale | opacity, and a clip from the trigger's edge | ease-out | no (Popover would have to change too) |
+| Instant open, fade on close | opacity on close only | none | no |
+
+The last three were raised when Omkar asked why the two were being compared at all (7 November):
+grow and travel together is a common open-source pattern, the unroll follows an older menu that
+stretched down from half its height, and instant opening follows desktop operating-system menus.
 
 ## The measurements
 
@@ -90,9 +96,19 @@ would keep entering on the curve the kit reserves for things already on screen. 
 on `data-side`, so it was two rules to keep right where the scale is one, and it is not what
 decision 006 approved for the overlays.
 
+**Grow and travel together.** Two movements at once is busier than either alone, against the kit's
+calm rule, for no extra meaning.
+
+**Unroll.** Its one advantage is that text never scales, so it never draws a touch soft during the
+180ms. That softness only shows at slow motion. Taking it would mean changing Popover as well, so
+the two stay one motion, which reopens a value decision 006 approved.
+
+**Instant open.** A list that shows no origin loses the one thing motion tells you here. People who
+want speed already get it: from the keyboard nothing animates.
+
 ## What was decided
 
-Proposed, and built so it can be judged; not decided until Omkar has seen the clip.
+Decided by Omkar on 7 November 2026, after judging the clip.
 
 - **The Dropdown List grows from its trigger, as Popover does.** Scale from 0.96 and opacity, on
   `--vela-ease-out` over `--vela-duration-base`, pivoting on Base UI's `--transform-origin`; it
@@ -114,9 +130,6 @@ Proposed, and built so it can be judged; not decided until Omkar has seen the cl
 
 ## Still open
 
-1. **Omkar's judgement of the clip.** Until then this record is Proposed and the change does not
-   ship. If the clip is turned down, the shared selector is reverted and the three rules go back to
-   travel.
-2. **Safari and Firefox.** As with decision 006, the clip and the browser rules ran in Chromium only.
-3. **Decision 009** turns movement amounts into tokens and changes reduced motion; the 0.96 here
+1. **Safari and Firefox.** As with decision 006, the clip and the browser rules ran in Chromium only.
+2. **Decision 009** turns movement amounts into tokens and changes reduced motion; the 0.96 here
    moves with it.

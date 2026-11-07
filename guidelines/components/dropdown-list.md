@@ -250,8 +250,8 @@ work. Until it lands, the chevron is still and the list appearing is the feedbac
 It is Popover's overlay motion, by the same rule: one selector in `Popover.css` holds the
 transition, the starting scale and the fade for both, so the two cannot drift. Before this, the
 list travelled a 5px step from its trigger on the standard curve, keyed on `data-side`.
-Decision 008 brings it in line with Popover, extending the values decision 006 approved. It is
-**proposed, not decided**: the owner judges decision 008's recordings before it ships.
+Decision 008 (decided 7 November 2026) brought it in line with Popover, extending the values
+decision 006 approved.
 
 Under `prefers-reduced-motion` the global collapse applies; the list reads correctly frozen at
 either end.
