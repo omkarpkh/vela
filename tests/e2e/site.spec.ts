@@ -786,6 +786,92 @@ test.describe('slice 5 · phone and Appearance', () => {
     }
   })
 
+  // [[rule: tooltip-provider-groups]]
+  // The header's three marks are one TooltipProvider (tooltip.md, Groups); the Icon Button page's
+  // set row holds the same three links with no provider, so it is the control. The dwell is read
+  // from the stylesheet at runtime, never written here.
+  test('in the header\'s tooltip group the next mark\'s name shows at once; outside a group it waits the dwell', async ({ page }) => {
+    const dwellOf = () => page.evaluate(() => {
+      const raw = getComputedStyle(document.documentElement).getPropertyValue('--vela-delay-tooltip').trim()
+      const m = /^(\d*\.?\d+)(ms|s)$/.exec(raw)
+      return m ? Number(m[1]) * (m[2] === 's' ? 1000 : 1) : NaN
+    })
+    const shown = (name: string) => page.locator('.vela-tooltip:not([data-ending-style])', { hasText: name })
+    /** Moves the pointer onto `to` and returns how long, in the page's own clock, until its tooltip shows. */
+    const msToOpen = async (to: Locator, name: string) => {
+      const b = (await to.boundingBox())!
+      await page.evaluate((name) => {
+        const w = window as unknown as { tipFrom: number; tipAt?: number }
+        w.tipAt = undefined
+        const open = () => [...document.querySelectorAll('.vela-tooltip')].some((t) => t.textContent === name && !t.hasAttribute('data-ending-style'))
+        const watch = new MutationObserver(() => { if (open()) { w.tipAt = performance.now(); watch.disconnect() } })
+        watch.observe(document.body, { subtree: true, childList: true, attributes: true })
+        w.tipFrom = performance.now()
+      }, name)
+      await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2)
+      await expect(shown(name)).toBeVisible()
+      return page.evaluate(() => { const w = window as unknown as { tipFrom: number; tipAt: number }; return w.tipAt - w.tipFrom })
+    }
+    const [github, npm, figma] = MARKS.map((m) => m.name)
+
+    await page.goto('/#/components/button')
+    const dwell = await dwellOf()
+    expect(dwell).toBeGreaterThan(0)
+    const banner = page.getByRole('banner')
+    const mark = (name: string) => banner.getByRole('link', { name, exact: true })
+    // The first in the group still waits the dwell: a pointer crossing the header flashes nothing.
+    await page.mouse.move(700, 600)
+    expect(await msToOpen(mark(github), github)).toBeGreaterThanOrEqual(dwell * 0.95)
+    // Then each neighbour shows at once, and the one before it goes.
+    for (const name of [npm, figma]) {
+      expect(await msToOpen(mark(name), name), name).toBeLessThan(dwell / 3)
+      await expect(page.locator('.vela-tooltip')).toHaveCount(1)
+      // Base UI marks a tooltip opened in the group's instant phase, so it does not grow in.
+      await expect(shown(name)).toHaveAttribute('data-instant', 'delay')
+      await expect(shown(name)).toHaveAttribute('aria-hidden', 'true')
+      await expect(mark(name)).not.toHaveAttribute('aria-describedby')
+    }
+
+    // From the keyboard, in the group: focus opens each at once, as it does anywhere, and the one
+    // before closes. Base UI marks the next one "delay" (the group's instant phase) where a lone
+    // tooltip says "focus"; either way it does not animate. (The first is "delay" too here: the
+    // group is still warm from the pointer a moment ago.)
+    await page.mouse.move(700, 600)
+    await expect(page.locator('.vela-tooltip')).toHaveCount(0)
+    await mark(github).focus()
+    await expect(shown(github)).toBeVisible()
+    await page.keyboard.press('Tab')
+    await expect(mark(npm)).toBeFocused()
+    await expect(shown(npm)).toBeVisible()
+    await expect(shown(npm)).toHaveAttribute('data-instant', 'delay')
+    await expect(page.locator('.vela-tooltip')).toHaveCount(1)
+    await page.keyboard.press('Escape')
+    await expect(page.locator('.vela-tooltip')).toHaveCount(0)
+    await expect(mark(npm)).toBeFocused()
+
+    // The control: the same three links on the Icon Button page, with no provider. The neighbour
+    // waits the whole dwell even though the first tooltip is open.
+    await page.goto('/#/components/icon-button')
+    const set = page.locator('.pg-frame[data-theme="light"] .pg-icon-button__set')
+    const link = (name: string) => set.getByRole('link', { name, exact: true })
+    await expect(link(figma)).toBeVisible()
+    await page.mouse.move(0, 0)
+    expect(await msToOpen(link(github), github)).toBeGreaterThanOrEqual(dwell * 0.95)
+    expect(await msToOpen(link(npm), npm)).toBeGreaterThanOrEqual(dwell * 0.95)
+    // A rested-on tooltip outside a group grows in as usual: nothing marks it instant.
+    await expect(shown(npm)).not.toHaveAttribute('data-instant')
+    // And from the keyboard: at once, as in the group. (Base UI's marker on it can read "delay" here
+    // too, because tooltips outside any provider share one default group record; the marker is not
+    // part of the contract, and the open delay outside a provider is never touched by it.)
+    await page.mouse.move(0, 0)
+    await link(github).focus()
+    await expect(shown(github)).toBeVisible()
+    await page.keyboard.press('Tab')
+    await expect(link(npm)).toBeFocused()
+    await expect(shown(npm)).toBeVisible()
+    await expect(page.locator('.vela-tooltip:not([data-ending-style])')).toHaveCount(1)
+  })
+
   test('the header marks are the interface\'s icon grey in both themes; in forced colours they follow the link colour', async ({ page }) => {
     await page.goto('/#/components/button')
     const banner = page.getByRole('banner')

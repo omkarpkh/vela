@@ -291,7 +291,8 @@ on at `base` and leaves the same way, fading (the one overlay whose exit travels
 it came from); the stack behind it steps back and spreads on the spring (`toast.md`, Motion). The
 Dropdown List, built after this pass was written, still appears on `--vela-ease-standard` with a
 `--vela-space-5` step of travel (`dropdown-list.md`, Motion); bringing it in line is still to do.
-A Tooltip waits `--vela-delay-tooltip` on hover and opens at once on focus.
+A Tooltip waits `--vela-delay-tooltip` on hover and opens at once on focus; inside one
+`TooltipProvider` (a toolbar, a row of Icon Buttons), once one is open its neighbours open at once.
 A Toast stays for `--vela-duration-toast`, a dwell and not an animation: paused on hover and
 focus, untouched by the reduced-motion collapse, and only when it is a `success` or `info` with no
 action; a warning or a toast with an action stays until dismissed.

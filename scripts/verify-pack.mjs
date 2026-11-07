@@ -287,8 +287,8 @@ export const props: [CheckboxProps, CheckboxGroupProps, RadioGroupProps, RadioPr
   // entry included, since that is the trigger the specs show.
   writeFileSync(join(app, 'valid-overlays.tsx'), `
 import { Button } from '@omkarux/vela'
-import { Popover, Tooltip, Dialog } from '@omkarux/vela/headless'
-import type { PopoverProps, TooltipProps, DialogProps, DialogCloseProps } from '@omkarux/vela/headless'
+import { Popover, Tooltip, TooltipProvider, Dialog } from '@omkarux/vela/headless'
+import type { PopoverProps, TooltipProps, TooltipProviderProps, DialogProps, DialogCloseProps } from '@omkarux/vela/headless'
 
 export const A = () => (
   <Popover trigger={<Button>Filters</Button>} title="Filter alerts" placement="bottom" align="start" size="wide" onOpenChange={(o: boolean) => o}>
@@ -299,6 +299,13 @@ export const B = () => <Popover trigger={<button type="button">Filters</button>}
 export const C = () => <Popover trigger={<Button>Filters</Button>} title="Filter alerts" defaultOpen placement="start" align="center" />
 export const D = () => <Tooltip content="Download the last 24 hours as CSV" placement="top" align="end"><Button>Export</Button></Tooltip>
 export const E = () => <Tooltip content="Delete the rule"><button type="button" aria-label="Delete">×</button></Tooltip>
+export const E2 = () => (
+  <TooltipProvider>
+    <Tooltip content="Download as CSV"><Button>Export</Button></Tooltip>
+    <Tooltip kind="label" content="Print"><Button>Print</Button></Tooltip>
+  </TooltipProvider>
+)
+export const providerProps: TooltipProviderProps = { children: <Button>T</Button> }
 export const F = () => (
   <Dialog trigger={<Button>Edit Policy</Button>} title="Edit policy" description="Changes apply on save." size="wide" closeLabel="Close"
     footer={<><Dialog.Close><Button>Cancel</Button></Dialog.Close><Button variant="primary">Save Changes</Button></>}>
@@ -323,7 +330,7 @@ export const props: [PopoverProps, TooltipProps, DialogProps, DialogProps, Dialo
     overlaysOk = false
     console.log((e.stdout || '').toString().split('\n').slice(0, 8).join('\n'))
   }
-  check(overlaysOk, 'headless Popover, Tooltip and Dialog (standard and alert) typecheck in every documented shape')
+  check(overlaysOk, 'headless Popover, Tooltip, TooltipProvider and Dialog (standard and alert) typecheck in every documented shape')
   rmSync(join(app, 'valid-overlays.tsx'))
 
   // -- the headless Toast: every documented shape compiles --
@@ -579,6 +586,10 @@ export const shapes: [Fields, FieldSpec, FieldTrust, Group<F>, Node<F>, Conditio
     ['tooltip-wraps-one-element', 'tooltip around a bare string', `<Tooltip content="Download as CSV">Export</Tooltip>`],
     ['tooltip-wraps-one-element', 'tooltip around two elements', `<Tooltip content="Download as CSV"><Button>Export</Button><Button>Print</Button></Tooltip>`],
     ['tooltip-placement-closed', 'invented tooltip placement', `<Tooltip content="Download as CSV" placement="auto"><Button>Export</Button></Tooltip>`],
+    ['tooltip-provider-closed', 'tooltip provider with a delay', `<TooltipProvider delay={0}><Button>Export</Button></TooltipProvider>`],
+    ['tooltip-provider-closed', 'tooltip provider with a timeout', `<TooltipProvider timeout={400}><Button>Export</Button></TooltipProvider>`],
+    ['tooltip-provider-closed', 'tooltip provider with a close delay', `<TooltipProvider closeDelay={0}><Button>Export</Button></TooltipProvider>`],
+    ['tooltip-provider-closed', 'tooltip provider with no children', `<TooltipProvider />`],
     // Icon Button ships from `@omkarux/vela/headless` only. Each fixture is valid apart from the one
     // thing it names (the valid shapes above compile).
     ['icon-button-label-required', 'icon button with no label', `<IconButton icon="x" onClick={() => {}} />`],
@@ -671,7 +682,7 @@ export const shapes: [Fields, FieldSpec, FieldTrust, Group<F>, Node<F>, Conditio
     writeFileSync(join(app, 'invalid.tsx'),
       `import { BrandMark, Button, ContextualAlert, Icon, Input, RiskPill, StatusIndicator, Table, Tabs, TextArea, Toggle } from '@omkarux/vela'\n` +
       `import { defineFields, parseQuery, validateQuery, normalise, queryToText, readback, evaluate, leftOutQuery } from '@omkarux/vela'\n` +
-      `import { Checkbox, RadioGroup, Popover, Tooltip, Dialog, ToastProvider, useToast, DropdownList, IconButton } from '@omkarux/vela/headless'\nexport const X = () => (${snippet})\n`)
+      `import { Checkbox, RadioGroup, Popover, Tooltip, TooltipProvider, Dialog, ToastProvider, useToast, DropdownList, IconButton } from '@omkarux/vela/headless'\nexport const X = () => (${snippet})\n`)
     let rejected = false
     try { run(tsc, ['--noEmit', '-p', 'tsconfig.json'], app) } catch { rejected = true }
     check(rejected, `compiler rejects: ${name}  [${id}]`)

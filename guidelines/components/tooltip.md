@@ -26,6 +26,9 @@ there is no core implementation, and its Figma set is published in the library (
   [**Icon Button**](icon-button.md), which brings its own label tooltip; don't wrap one in another.
 - The **same words as the control's name**, for sighted users → **Tooltip** `kind="label"`: shown,
   and heard once. Any other words → the default `kind="description"`.
+- A **row of neighbouring controls** that each have a tooltip (a toolbar, a row of Icon Buttons, a
+  header) → wrap the row in one **`TooltipProvider`**, so once one tooltip shows, the next opens at
+  once (see *Groups*).
 
 ## Composition
 
@@ -42,6 +45,39 @@ there is no core implementation, and its Figma set is published in the library (
 | | `placement` | `"top" \| "bottom" \| "start" \| "end"` | `"top"` | **These four only**, as Popover. It flips when there is no room. |
 | | `align` | `"start" \| "center" \| "end"` | `"center"` | **These three only.** |
 | | `kind` | `"description" \| "label"` | `"description"` | **These two only.** `description`: extra words, wired by `aria-describedby`. `label`: the trigger's own name, shown and not wired; `content` must equal that name. |
+| `TooltipProvider` | `children` | `ReactNode` | — | **Required.** The row whose tooltips form one group. **No other prop:** no delay, timeout or close delay. |
+
+A row of neighbours is one group:
+
+```tsx
+<TooltipProvider>
+  <IconButton label="Search" icon="search" onClick={openSearch} />
+  <IconButton label="Copy" icon="copy" onClick={copy} />
+  <Tooltip content="Download the last 24 hours as CSV"><Button>Export</Button></Tooltip>
+</TooltipProvider>
+```
+
+## Groups
+
+Without a group, every tooltip waits `--vela-delay-tooltip` before it opens, so a pointer crossing a
+toolbar shows nothing. That is right for the first one, and slow for the next: someone who has
+rested on one icon to read its name and moves to the one beside it already wants to read again.
+
+- **When to wrap.** A toolbar, a row of Icon Buttons, a header: controls side by side, each with a
+  tooltip. Wrap the row, not the whole app; tooltips far apart are not neighbours.
+- **What happens.** The first tooltip in the group waits the dwell as usual. Once one is open,
+  resting on another trigger in the group opens that tooltip at once, and the open one closes.
+  The group stays ready for a moment after a tooltip closes (Base UI's 400ms), so a short gap
+  between two buttons does not lose it; after that, the dwell applies again. A tooltip that opens
+  at once in a group does not grow in: the label moves along the row.
+- **Both kinds group.** `kind="description"` and `kind="label"` (an Icon Button's) behave the same in a
+  group, and each keeps its own wiring.
+- **The keyboard is unchanged.** Focus opens a tooltip at once with or without a group, and moving
+  focus to the next trigger closes the last one and opens the next.
+- **One provider is enough.** It groups every tooltip inside it, however deep. Nesting providers isn't
+  needed; a provider inside another starts a separate group, so its tooltips don't group with the
+  outer ones.
+- **Outside a provider, nothing changes.** Each tooltip keeps its own dwell exactly as before.
 
 ## Hard constraints
 
@@ -66,7 +102,14 @@ there is no core implementation, and its Figma set is published in the library (
   and the name a screen reader speaks can't drift apart (WCAG 2.5.3). Icon Button is built on it. [[rule: tooltip-label-kind-matches-name | runtime]]
 - **Hover waits, focus does not.** On hover it opens after `--vela-delay-tooltip` (600ms), read from
   the stylesheet, so a pointer crossing a toolbar does not flash every label; on keyboard focus it
-  opens at once. [[rule: tooltip-opens-on-hover-and-focus | runtime]]
+  opens at once. In a group, a neighbour of an open tooltip doesn't wait (next rule). [[rule: tooltip-opens-on-hover-and-focus | runtime]]
+- **In a group, a neighbour opens at once.** Inside one `TooltipProvider`, once a tooltip is open,
+  resting on another trigger in it opens that tooltip with no dwell and no grow, and the open one
+  closes. The first in the group still waits `--vela-delay-tooltip`, and outside a provider every
+  tooltip waits its own. Both kinds group. Proved in a real browser against the token's value read
+  at runtime, with the same links outside a provider as the control. [[rule: tooltip-provider-groups | browser]]
+- **`TooltipProvider` takes `children` and nothing else.** No `delay`, `timeout` or `closeDelay`:
+  the dwell is the token, read by each Tooltip, never a number in JavaScript. [[rule: tooltip-provider-closed | compiler]]
 - **Escape dismisses it** without moving focus or closing anything else. [[rule: tooltip-escape-dismisses | runtime]]
 - **Never on a disabled control.** A disabled button takes no focus and, in most browsers, no
   pointer events, so its tooltip is unreachable — and why a control is disabled belongs in
@@ -107,8 +150,9 @@ never grows a second size for a second paragraph — a second paragraph is a Pop
 
 - **Closed / open** — nothing on the trigger changes except `aria-describedby` while open (a
   label tooltip changes nothing on the trigger).
-- **Hover** — opens after `--vela-delay-tooltip`; moving the pointer onto the tooltip keeps it
-  open (WCAG 1.4.13, hoverable), moving off both closes it.
+- **Hover** — opens after `--vela-delay-tooltip`, or at once beside an open tooltip in the same
+  group (*Groups*); moving the pointer onto the tooltip keeps it open (WCAG 1.4.13, hoverable),
+  moving off both closes it.
 - **Focus** — keyboard focus opens it at once; blur closes it.
 - **Motion** — see below.
 
@@ -119,6 +163,7 @@ never grows a second size for a second paragraph — a second paragraph is a Pop
 | Appears on hover | opacity, and scale from 0.96, pivoting on the edge nearest the trigger | `--vela-duration-fast` (120ms), `--vela-ease-out`, after `--vela-delay-tooltip` | feedback that the rest registered, coming from the control it labels |
 | Leaves | opacity only | `--vela-duration-fast` (120ms) | continuity |
 | From the keyboard | nothing | instant | focus opens it and Escape closes it with no transition |
+| Opens in a group, beside one that was open | nothing; the one before closes at once | instant | the label moves along the row; growing each one in again would read as lag |
 
 `--vela-duration-fast`, not `base`, and faster than Popover: a tooltip has already waited
 `--vela-delay-tooltip` (600ms) for the pointer to rest, it is a few words rather than content, and it
@@ -167,8 +212,24 @@ difference is recorded here:
   which focus never does.
 - **Content.** Base UI's popup takes any node; this spec's `content` is a `string`.
 - **Trigger.** Base UI's compound `Tooltip.Trigger` is not exposed: `children` is one element,
-  rendered through the Trigger's `render` prop. `Tooltip.Provider` (shared delay groups),
-  `Tooltip.Arrow`, `trackCursorAxis`, handles and controlled `open` are not exposed.
+  rendered through the Trigger's `render` prop. `Tooltip.Arrow`, `trackCursorAxis`, handles and
+  controlled `open` are not exposed.
+- **Groups.** Base UI's `Tooltip.Provider` is `TooltipProvider`, named after `ToastProvider`, with
+  no prop but `children`. Base UI's three props are left at their defaults on purpose:
+  - `delay`: Base UI uses a provider's delay only for a trigger that has none. Each Vela trigger
+    passes the token's value, so the dwell is still the token's.
+  - The trigger's `delay` doesn't defeat the group: while a tooltip in the group is open, or closed
+    less than `timeout` ago, Base UI gives every trigger in it an open delay of 0 before it reads
+    the trigger's own.
+  - `timeout`: Base UI's default, 400ms, the time after a tooltip closes during which a neighbour
+    still opens at once. No Vela token measures that grace, and a new one would need a value
+    approved for every platform; it is shorter than the dwell, so a pointer that leaves the row
+    and comes back later waits again.
+  - `closeDelay`: none, as outside a group.
+- **Extra attributes in a group.** A tooltip that opens at once in a group, and the one it
+  replaces, are marked `data-instant="delay"`, so neither animates. From the keyboard Base UI may
+  mark a tooltip `delay` rather than `focus`, inside a group or out; both mean "do not animate" and
+  neither is part of the contract.
 - **Placement, offset, portal, theme.** As Popover: logical `start` / `end`, the gap as positioner
   padding, and the portal carries `vela-root` and the trigger's `data-theme`.
 - **Extra attributes.** Base UI adds `data-instant` (honoured: a focus-opened tooltip does not
@@ -191,8 +252,9 @@ the library.
 | `Content` (text layer, override on the instance) | `content` |
 | `Lines` | none — the length of `content` decides where it wraps |
 
-**The delay, the hover and focus triggers, Escape and the aria-describedby wiring exist only in
-code. The popup fills `surface/tooltip`, rounds at `radius/4`, pads `space/5` by `space/10`, and its
+**The delay, the hover and focus triggers, Escape, the aria-describedby wiring and
+`TooltipProvider` groups exist only in code; a group has no visual, so the set has nothing for it.
+The popup fills `surface/tooltip`, rounds at `radius/4`, pads `space/5` by `space/10`, and its
 text binds `text/tooltip` in Body/Meta.** Nothing in this component is literal.
 
 ## Anti-patterns
@@ -205,3 +267,6 @@ text binds `text/tooltip` in Body/Meta.** Nothing in this component is literal.
 - ❌ A requirement or an error in a tooltip → inline text; touch users never see a tooltip.
 - ❌ `<Tooltip content="…">Export</Tooltip>` around a bare string → will not compile; wrap one element.
 - ❌ A paragraph in a tooltip → a Popover; a tooltip is a phrase.
+- ❌ A row of Icon Buttons with no `TooltipProvider` → wrap the row, so the next name shows at once.
+- ❌ A `TooltipProvider` around each tooltip, or one inside another → one around the row is enough.
+- ❌ `<TooltipProvider delay={0}>` → will not compile; the dwell is `--vela-delay-tooltip`.

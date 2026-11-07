@@ -22,6 +22,8 @@ import { fromKeyboard, sideOf, useOverlayPortal, type OverlayAlign, type Overlay
  *   own name for sighted users and is heard once: the popup is `aria-hidden`, nothing on the trigger
  *   points at it, and the component throws when the trigger's name is not the tooltip's words.
  *   Icon Button is built on it (`guidelines/components/icon-button.md`).
+ * - **Groups.** Base UI's `Tooltip.Provider` is exposed as `TooltipProvider`, with no props but
+ *   `children`. Inside one, once a tooltip is open, a neighbour's opens at once. See `TooltipProvider`.
  */
 
 export type TooltipPlacement = OverlayPlacement
@@ -138,4 +140,34 @@ export function Tooltip({ content, children, placement = 'top', align = 'center'
       </BaseTooltip.Portal>
     </BaseTooltip.Root>
   )
+}
+
+export interface TooltipProviderProps {
+  /** Required. The triggers that form one group: a toolbar, a row of Icon Buttons, a header. */
+  children: React.ReactNode
+}
+
+/**
+ * A group of tooltips: once one is open, moving to a neighbouring trigger opens its tooltip at
+ * once, with no dwell. Outside a provider every tooltip waits its own `--vela-delay-tooltip`.
+ *
+ * Base UI's `Tooltip.Provider`, with no props but `children`, so how it behaves is decided here:
+ *
+ * - **No `delay`.** The dwell is still each trigger's, read from the token by `Tooltip`. Base UI uses
+ *   a provider's `delay` only for a trigger that has none; a Vela trigger passes the token's value,
+ *   and with no stylesheet loaded both fall back to Base UI's own default, which is the token's.
+ * - **The trigger's `delay` does not defeat the group.** While a tooltip in the group is open, or
+ *   closed less than the group's `timeout` ago, Base UI gives every trigger in it an open delay of 0
+ *   before it looks at the trigger's own `delay`.
+ * - **No `timeout`.** Base UI's default applies (400ms): a tooltip that opens within that time of the
+ *   last one closing opens at once. No token measures this grace, and a new one would need a value
+ *   approved for every platform, so the library's default stands, as Base UI's own default delay
+ *   stands when no stylesheet is loaded.
+ * - **No `closeDelay`.** A tooltip closes as it does outside a group.
+ *
+ * A tooltip that opens at once in a group is marked `data-instant="delay"` by Base UI, so it does
+ * not animate (Tooltip.css): the label moves along the row rather than growing again.
+ */
+export function TooltipProvider({ children }: TooltipProviderProps) {
+  return <BaseTooltip.Provider>{children}</BaseTooltip.Provider>
 }
