@@ -6,6 +6,36 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Unreleased]
 
 ### Added
+- **One description per family of sizing and typography steps** (Omkar's decision of 7 Nov 2026).
+  The 21 sizing and 39 typography tokens that had no `$description` now carry their family's, so
+  DESIGN.md's scales table no longer reads "(none yet)" and every Figma variable in the Sizing and
+  Typography collections has a description once `npm run tokens:figma` runs.
+  - **Written once, on the group.** `tokens/vela.tokens.json` is flat (a group holds tokens, not
+    sub-groups), so a family is not a DTCG group of its own: making it one would change every
+    token's path in the published `tokens.json`. Instead the `sizing` and `typography` groups carry
+    `$extensions["com.omkarux.vela"].groups`, each family a `description` and the `tokens` it covers.
+    Valid DTCG (Terrazzo: 0 errors, 0 warnings). `scripts/tokens-core.mjs` copies the text onto each
+    listed step that has no description of its own; a step's own description wins, so the ones
+    already written (`space-25`, `radius-4`, `radius-full`, `icon-16`, `toggle-track-width`,
+    `toggle-knob-inset`, `font-weight-regular`) are unchanged.
+  - **20 families.** Sizing: spacing, radius, icon box, focus ring, Toggle geometry. Typography:
+    font weights, and one per text style (H1 to H6, Body, Meta with its tracking, the four Button
+    label sizes, Tab and Tab large). Control heights and font families already had descriptions
+    and are not families here. Colour tokens are untouched.
+  - **Where it reaches:** the Dart doc comment on each `VelaSizing` and `VelaTypography` field, the
+    Figma variable description in the `tokens:figma` payload, and DESIGN.md's generated scales
+    table. DESIGN.md prints a family's text once, on its first step, and leaves the cell empty on
+    its later steps, since it is read top to bottom; the Dart file and Figma are read one token at
+    a time, so every step carries it there. The CSS and the Material UI bridge carry no token descriptions, for any token, so they
+    do not change.
+  - The reader refuses a family that lists an unknown token, a token of another group, a step that
+    is already in another family, or an empty description; `tokens:validate` checks the group's
+    vendor key. The test readers skip a group's own `$` properties, as DTCG allows them.
+  - 1907 checks (was 1900): 1448 unit and contract (was 1441). Seven new tests: every sizing and
+    typography token has a description, own or family; the family's text lands on each step it
+    describes, in the reader, the Dart file and the Figma payload; DESIGN.md shows it once; the
+    reader's refusals.
+    Packed: 379.7 kB, 270 files (was 374.8 kB, 270).
 - **`TooltipProvider`: tooltips in a row open at once once one is showing** (Omkar's decision of
   7 Nov 2026; `guidelines/components/tooltip.md`, *Groups*). Base UI's `Tooltip.Provider`, exported
   from `@omkarux/vela/headless` as `TooltipProvider`, named after `ToastProvider`, with no prop but

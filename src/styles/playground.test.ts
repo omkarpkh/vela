@@ -11,7 +11,7 @@ const dir = resolve(root, 'guidelines/components')
 const files = readdirSync(dir).filter((f) => f.endsWith('.md'))
 const tokens = JSON.parse(readFileSync(resolve(root, 'tokens/vela.tokens.json'), 'utf8'))
 const known = new Set<string>()
-for (const [g, toks] of Object.entries(tokens)) if (!g.startsWith('$')) for (const n of Object.keys(toks as object)) known.add(`--vela-${n}`)
+for (const [g, toks] of Object.entries(tokens)) if (!g.startsWith('$')) for (const n of Object.keys(toks as object)) if (!n.startsWith('$')) known.add(`--vela-${n}`)
 
 describe('playground spec parser', () => {
   it.each(files)('%s parses into controls and names only tokens that exist', (file) => {

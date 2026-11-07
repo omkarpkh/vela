@@ -16,7 +16,7 @@ const ident = (n: string) => n.replace(/-([a-z0-9])/g, (_, c: string) => c.toUpp
 const all: Record<string, any> = {}
 for (const [g, toks] of Object.entries(doc)) {
   if (g.startsWith('$')) continue
-  for (const [n, t] of Object.entries(toks as Record<string, any>)) all[n] = { ...t, group: g }
+  for (const [n, t] of Object.entries(toks as Record<string, any>)) if (!n.startsWith('$')) all[n] = { ...t, group: g }
 }
 const dark: Record<string, any> = overlay.color
 // Follow aliases to the primitive, per mode — the same walk the CSS custom properties make. The
@@ -54,6 +54,7 @@ describe('Dart target', () => {
 
   it('carries every sizing and typography value, as logical pixels, FontWeight, Duration or Cubic', () => {
     for (const [name, t] of Object.entries({ ...doc.sizing, ...doc.typography, ...doc.motion } as Record<string, any>)) {
+      if (name.startsWith('$')) continue // a group's own $extensions (the group descriptions) is not a token
       // A dimension alias (target-min names control-height-24) holds the value it resolves to.
       if (t.$type === 'dimension') expect(dart, name).toContain(`static const double ${ident(name)} = ${all[terminal(name, 'light')].$value.value};`)
       // A typography number is a weight; a sizing number (the scrim opacity, the overlay layer) a double.

@@ -75,24 +75,24 @@ never the table.
 <!-- generated:scales (npm run tokens) -->
 | Scale | Token | Value | Description |
 |---|---|---|---|
-| Spacing | `--vela-space-5` | `5px` | (none yet) |
-|  | `--vela-space-10` | `10px` | (none yet) |
-|  | `--vela-space-15` | `15px` | (none yet) |
-|  | `--vela-space-20` | `20px` | (none yet) |
+| Spacing | `--vela-space-5` | `5px` | The spacing scale for padding and gaps. 5 between an icon and its label; 10 for control padding and tight stacks; 15 for default button padding and form gaps; 20 for section padding and tab gaps; 25 for wide inner padding; 30 for large button padding; 40 between sections; 60 and 80 for page rhythm. These steps are the only ones: there is no 35, 50 or 70. Put the gap on the flex or grid parent, not margins on the children. The value already carries px, so never wrap it in calc(… * 1px). |
+|  | `--vela-space-10` | `10px` |  |
+|  | `--vela-space-15` | `15px` |  |
+|  | `--vela-space-20` | `20px` |  |
 |  | `--vela-space-25` | `25px` | 25 exists; 50 does not. Do not interpolate the scale. |
-|  | `--vela-space-30` | `30px` | (none yet) |
-|  | `--vela-space-40` | `40px` | (none yet) |
-|  | `--vela-space-60` | `60px` | (none yet) |
-|  | `--vela-space-80` | `80px` | (none yet) |
-| Radius | `--vela-radius-3` | `3px` | (none yet) |
+|  | `--vela-space-30` | `30px` |  |
+|  | `--vela-space-40` | `40px` |  |
+|  | `--vela-space-60` | `60px` |  |
+|  | `--vela-space-80` | `80px` |  |
+| Radius | `--vela-radius-3` | `3px` | Corner radius. Each step has a scope, and using one outside it is drift: 4 is the default corner for every component, cards included; 3 for small inner elements such as dismiss buttons and inline chips; 8 for modal and dialog containers only; 12 for the outer edge of a top level side panel only; full for Status Indicator dots and the Toggle track only. Buttons are never pill shaped. |
 |  | `--vela-radius-4` | `4px` | The default corner for every component. |
-|  | `--vela-radius-8` | `8px` | (none yet) |
-|  | `--vela-radius-12` | `12px` | (none yet) |
+|  | `--vela-radius-8` | `8px` |  |
+|  | `--vela-radius-12` | `12px` |  |
 |  | `--vela-radius-full` | `9999px` | Status Indicator dots and the Toggle track only. |
-| Icon box | `--vela-icon-12` | `12px` | (none yet) |
+| Icon box | `--vela-icon-12` | `12px` | Icon boxes for the glyph slots inside components. 12 in Button tiny; 16 in Button regular, large and huge, and in alerts; 20 for dismiss controls; 24 is reserved. A Button icon never goes above 16, even at huge. The Icon component binds its own boxes (icon-size, icon-size-small, icon-size-large), so it can change without moving these. |
 |  | `--vela-icon-16` | `16px` | Button icons never exceed 16. 12 at tiny, 16 everywhere else. |
-|  | `--vela-icon-20` | `20px` | (none yet) |
-|  | `--vela-icon-24` | `24px` | (none yet) |
+|  | `--vela-icon-20` | `20px` |  |
+|  | `--vela-icon-24` | `24px` |  |
 |  | `--vela-icon-size` | `16px` | Icon component, size regular: the glyph box beside 14px body text (Body/Default, Button regular). Same value as icon/16. |
 |  | `--vela-icon-size-small` | `12px` | Icon component, size small: beside 12px meta text and in Button tiny. Same value as icon/12. |
 |  | `--vela-icon-size-large` | `20px` | Icon component, size large: a standalone glyph (table cell, toolbar, card header) or beside 16px text. Same value as icon/20. |

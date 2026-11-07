@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { execFileSync } from 'node:child_process'
+import { loadTokenSet } from '../../scripts/tokens-core.mjs'
 
 // scripts/sync-figma.mjs compiles tokens/vela.tokens.json into the Plugin API script that writes the
 // Figma library — the target that cannot be diffed in git, so its compiler is held here instead.
@@ -165,5 +166,15 @@ describe('Figma sync: an opacity is a percent in Figma, a fraction in CSS', () =
     }
     expect(doc.sizing['opacity-scrim'].$value).toBe(0.5)
     expect(readFileSync(resolve(root, 'src/styles/tokens.light.css'), 'utf8')).toMatch(/--vela-opacity-scrim:\s*0\.5;/)
+  })
+})
+
+describe('Figma sync: group descriptions', () => {
+  it('every sizing and typography variable carries a description, and a family\'s text lands on each step it describes', () => {
+    const set: any = loadTokenSet(root)
+    for (const e of entries.filter((e) => e.collection === 'Sizing' || e.collection === 'Typography')) expect(e.description, e.css).not.toBe('')
+    const described = set.order.filter((n: string) => set.all[n].descriptionFrom)
+    expect(described.length).toBeGreaterThan(0)
+    for (const n of described) expect(byCss[n].description, n).toBe(set.groups[set.all[n].descriptionFrom].description)
   })
 })

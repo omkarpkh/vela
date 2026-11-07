@@ -102,3 +102,53 @@ describe('$deprecated travels to every target', () => {
     expect(a).toEqual(b)
   })
 })
+
+describe('group descriptions: one description per family of steps, written once, on every step', () => {
+  const VENDOR = 'com.omkarux.vela'
+  const read = () => JSON.parse(readFileSync(resolve(root, 'tokens/vela.tokens.json'), 'utf8'))
+  const set: any = loadTokenSet(root)
+  const families = Object.values<any>(set.groups)
+
+  it('lives on the sizing and typography groups of the token file, and nowhere else', () => {
+    const doc = read()
+    const carrying = Object.keys(doc).filter((g) => !g.startsWith('$') && doc[g].$extensions)
+    expect(carrying).toEqual(['sizing', 'typography'])
+    expect(families.length).toBeGreaterThan(0)
+    for (const f of families) expect(Object.keys(doc[f.group].$extensions[VENDOR].groups)).toContain(f.name)
+  })
+
+  it('every sizing and typography token has a description, its own or its family\'s, so none ships as "(none yet)"', () => {
+    const missing = set.order.filter((n: string) => ['sizing', 'typography'].includes(set.all[n].group) && !set.all[n].$description)
+    expect(missing).toEqual([])
+  })
+
+  it('a step with no description of its own takes the family\'s text; a step\'s own description wins', () => {
+    const doc = read()
+    for (const f of families)
+      for (const n of f.tokens) {
+        const own = doc[f.group][n].$description
+        expect(set.all[n].$description, n).toBe(own ?? f.description)
+        expect(set.all[n].descriptionFrom, n).toBe(own === undefined ? `${f.group}.${f.name}` : undefined)
+      }
+    expect(set.all['space-25'].$description).toBe(read().sizing['space-25'].$description)
+    expect(set.all['space-10'].$description).toBe(set.groups['sizing.spacing'].description)
+  })
+
+  it('reaches the Dart doc comment on every step it describes', () => {
+    const dart = readFileSync(resolve(root, 'flutter/lib/vela_tokens.dart'), 'utf8')
+    const ident = (n: string) => n.replace(/-([a-z0-9])/g, (_, c: string) => c.toUpperCase())
+    for (const n of set.order.filter((x: string) => set.all[x].descriptionFrom))
+      expect(dart, n).toMatch(new RegExp(`/// ${set.all[n].$description.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\n  static const \\w+ ${ident(n)} =`))
+  })
+
+  it('the reader refuses a family that names an unknown token, a token of another group, a step twice, or no text', () => {
+    const load = (edit: (doc: any) => void) => () => { const doc = read(); edit(doc); createTokenSet({ base: doc }) }
+    const groups = (doc: any) => doc.sizing.$extensions[VENDOR].groups
+    expect(load((d) => groups(d).spacing.tokens.push('space-50'))).toThrow(/"space-50" is not a token in the sizing group/)
+    expect(load((d) => groups(d).spacing.tokens.push('text-h1-size'))).toThrow(/"text-h1-size" is not a token in the sizing group/)
+    expect(load((d) => groups(d).radius.tokens.push('space-5'))).toThrow(/"space-5" is already in sizing.spacing/)
+    expect(load((d) => { groups(d).spacing.description = ' ' })).toThrow(/description must be a non-empty string/)
+    expect(load((d) => { groups(d).spacing.note = 'x' })).toThrow(/unknown key "note"/)
+    expect(load((d) => { d.sizing.$extensions[VENDOR].other = {} })).toThrow(/unknown key "other"/)
+  })
+})

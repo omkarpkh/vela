@@ -1147,20 +1147,31 @@ class VelaColors extends ThemeExtension<VelaColors> {
 
 /// Spacing, icon, control-height, radius and focus scales in logical pixels.
 abstract final class VelaSizing {
+  /// The spacing scale for padding and gaps. 5 between an icon and its label; 10 for control padding and tight stacks; 15 for default button padding and form gaps; 20 for section padding and tab gaps; 25 for wide inner padding; 30 for large button padding; 40 between sections; 60 and 80 for page rhythm. These steps are the only ones: there is no 35, 50 or 70. Put the gap on the flex or grid parent, not margins on the children. The value already carries px, so never wrap it in calc(… * 1px).
   static const double space5 = 5;
+  /// The spacing scale for padding and gaps. 5 between an icon and its label; 10 for control padding and tight stacks; 15 for default button padding and form gaps; 20 for section padding and tab gaps; 25 for wide inner padding; 30 for large button padding; 40 between sections; 60 and 80 for page rhythm. These steps are the only ones: there is no 35, 50 or 70. Put the gap on the flex or grid parent, not margins on the children. The value already carries px, so never wrap it in calc(… * 1px).
   static const double space10 = 10;
+  /// The spacing scale for padding and gaps. 5 between an icon and its label; 10 for control padding and tight stacks; 15 for default button padding and form gaps; 20 for section padding and tab gaps; 25 for wide inner padding; 30 for large button padding; 40 between sections; 60 and 80 for page rhythm. These steps are the only ones: there is no 35, 50 or 70. Put the gap on the flex or grid parent, not margins on the children. The value already carries px, so never wrap it in calc(… * 1px).
   static const double space15 = 15;
+  /// The spacing scale for padding and gaps. 5 between an icon and its label; 10 for control padding and tight stacks; 15 for default button padding and form gaps; 20 for section padding and tab gaps; 25 for wide inner padding; 30 for large button padding; 40 between sections; 60 and 80 for page rhythm. These steps are the only ones: there is no 35, 50 or 70. Put the gap on the flex or grid parent, not margins on the children. The value already carries px, so never wrap it in calc(… * 1px).
   static const double space20 = 20;
   /// 25 exists; 50 does not. Do not interpolate the scale.
   static const double space25 = 25;
+  /// The spacing scale for padding and gaps. 5 between an icon and its label; 10 for control padding and tight stacks; 15 for default button padding and form gaps; 20 for section padding and tab gaps; 25 for wide inner padding; 30 for large button padding; 40 between sections; 60 and 80 for page rhythm. These steps are the only ones: there is no 35, 50 or 70. Put the gap on the flex or grid parent, not margins on the children. The value already carries px, so never wrap it in calc(… * 1px).
   static const double space30 = 30;
+  /// The spacing scale for padding and gaps. 5 between an icon and its label; 10 for control padding and tight stacks; 15 for default button padding and form gaps; 20 for section padding and tab gaps; 25 for wide inner padding; 30 for large button padding; 40 between sections; 60 and 80 for page rhythm. These steps are the only ones: there is no 35, 50 or 70. Put the gap on the flex or grid parent, not margins on the children. The value already carries px, so never wrap it in calc(… * 1px).
   static const double space40 = 40;
+  /// The spacing scale for padding and gaps. 5 between an icon and its label; 10 for control padding and tight stacks; 15 for default button padding and form gaps; 20 for section padding and tab gaps; 25 for wide inner padding; 30 for large button padding; 40 between sections; 60 and 80 for page rhythm. These steps are the only ones: there is no 35, 50 or 70. Put the gap on the flex or grid parent, not margins on the children. The value already carries px, so never wrap it in calc(… * 1px).
   static const double space60 = 60;
+  /// The spacing scale for padding and gaps. 5 between an icon and its label; 10 for control padding and tight stacks; 15 for default button padding and form gaps; 20 for section padding and tab gaps; 25 for wide inner padding; 30 for large button padding; 40 between sections; 60 and 80 for page rhythm. These steps are the only ones: there is no 35, 50 or 70. Put the gap on the flex or grid parent, not margins on the children. The value already carries px, so never wrap it in calc(… * 1px).
   static const double space80 = 80;
+  /// Icon boxes for the glyph slots inside components. 12 in Button tiny; 16 in Button regular, large and huge, and in alerts; 20 for dismiss controls; 24 is reserved. A Button icon never goes above 16, even at huge. The Icon component binds its own boxes (icon-size, icon-size-small, icon-size-large), so it can change without moving these.
   static const double icon12 = 12;
   /// Button icons never exceed 16. 12 at tiny, 16 everywhere else.
   static const double icon16 = 16;
+  /// Icon boxes for the glyph slots inside components. 12 in Button tiny; 16 in Button regular, large and huge, and in alerts; 20 for dismiss controls; 24 is reserved. A Button icon never goes above 16, even at huge. The Icon component binds its own boxes (icon-size, icon-size-small, icon-size-large), so it can change without moving these.
   static const double icon20 = 20;
+  /// Icon boxes for the glyph slots inside components. 12 in Button tiny; 16 in Button regular, large and huge, and in alerts; 20 for dismiss controls; 24 is reserved. A Button icon never goes above 16, even at huge. The Icon component binds its own boxes (icon-size, icon-size-small, icon-size-large), so it can change without moving these.
   static const double icon24 = 24;
   /// Icon component, size regular: the glyph box beside 14px body text (Body/Default, Button regular). Same value as icon/16.
   static const double iconSize = 16;
@@ -1186,14 +1197,19 @@ abstract final class VelaSizing {
   static const double controlHeight60 = 60;
   /// The smallest pointer target a control may have: WCAG 2.2, 2.5.8 (Target Size, Minimum), 24 by 24px, stated once. Icon Button's tiny box is exactly this; nothing a person presses is smaller.
   static const double targetMin = 24;
+  /// Corner radius. Each step has a scope, and using one outside it is drift: 4 is the default corner for every component, cards included; 3 for small inner elements such as dismiss buttons and inline chips; 8 for modal and dialog containers only; 12 for the outer edge of a top level side panel only; full for Status Indicator dots and the Toggle track only. Buttons are never pill shaped.
   static const double radius3 = 3;
   /// The default corner for every component.
   static const double radius4 = 4;
+  /// Corner radius. Each step has a scope, and using one outside it is drift: 4 is the default corner for every component, cards included; 3 for small inner elements such as dismiss buttons and inline chips; 8 for modal and dialog containers only; 12 for the outer edge of a top level side panel only; full for Status Indicator dots and the Toggle track only. Buttons are never pill shaped.
   static const double radius8 = 8;
+  /// Corner radius. Each step has a scope, and using one outside it is drift: 4 is the default corner for every component, cards included; 3 for small inner elements such as dismiss buttons and inline chips; 8 for modal and dialog containers only; 12 for the outer edge of a top level side panel only; full for Status Indicator dots and the Toggle track only. Buttons are never pill shaped.
   static const double radius12 = 12;
   /// Status Indicator dots and the Toggle track only.
   static const double radiusFull = 9999;
+  /// The one focus ring for the whole kit: the width is the outline's thickness and the offset its gap from the control's edge, drawn in focus-ring-color. Bound once, on .vela-root :focus-visible in base.css. A component never draws its own outline and never sets outline: none.
   static const double focusRingWidth = 2;
+  /// The one focus ring for the whole kit: the width is the outline's thickness and the offset its gap from the control's edge, drawn in focus-ring-color. Bound once, on .vela-root :focus-visible in base.css. A component never draws its own outline and never sets outline: none.
   static const double focusRingOffset = 2;
   /// Strokes that are not borders: the Button spinner arc and the selected-tab underline. Hairline borders stay 1px and need no token.
   static const double stroke2 = 2;
@@ -1201,10 +1217,15 @@ abstract final class VelaSizing {
   static const double fieldMarkGap = 2;
   /// Regular track. The knob travel is track width minus knob size minus twice the inset, so these four tokens move together.
   static const double toggleTrackWidth = 34;
+  /// Toggle geometry for its two sizes, regular and tiny: the track's width and height, the knob's size, and the inset between the track edge and the knob. The knob's travel is worked out from these, so change them together. Fixed geometry: it never scales with the viewport, and only the label flexes.
   static const double toggleTrackHeight = 20;
+  /// Toggle geometry for its two sizes, regular and tiny: the track's width and height, the knob's size, and the inset between the track edge and the knob. The knob's travel is worked out from these, so change them together. Fixed geometry: it never scales with the viewport, and only the label flexes.
   static const double toggleTrackWidthTiny = 26;
+  /// Toggle geometry for its two sizes, regular and tiny: the track's width and height, the knob's size, and the inset between the track edge and the knob. The knob's travel is worked out from these, so change them together. Fixed geometry: it never scales with the viewport, and only the label flexes.
   static const double toggleTrackHeightTiny = 15;
+  /// Toggle geometry for its two sizes, regular and tiny: the track's width and height, the knob's size, and the inset between the track edge and the knob. The knob's travel is worked out from these, so change them together. Fixed geometry: it never scales with the viewport, and only the label flexes.
   static const double toggleKnobSize = 16;
+  /// Toggle geometry for its two sizes, regular and tiny: the track's width and height, the knob's size, and the inset between the track edge and the knob. The knob's travel is worked out from these, so change them together. Fixed geometry: it never scales with the viewport, and only the label flexes.
   static const double toggleKnobSizeTiny = 11;
   /// Distance from the track edge to the knob, both sizes.
   static const double toggleKnobInset = 2;
@@ -1293,46 +1314,85 @@ abstract final class VelaTypography {
   /// System monospace stack, no web font: identifiers, hashes, IPs, timestamps and counts that must align. Figma text style Mono/Meta draws it in Roboto Mono.
   static const String fontFamilyMono = 'SF Mono';
   static const List<String> fontFamilyMonoFallback = <String>['Cascadia Mono', 'Roboto Mono', 'Menlo', 'Consolas'];
+  /// The three weights of Open Sans, the only ones the kit uses: light, regular and semibold. Take the weight from the text style rather than choosing one: H1 to H3 are light and get their prominence from size, H5 and H6 are semibold and get theirs from weight. Button and tab labels are regular at every size. There is no bold.
   static const FontWeight fontWeightLight = FontWeight.w300;
   /// Button labels are Regular 400 at every size.
   static const FontWeight fontWeightRegular = FontWeight.w400;
+  /// The three weights of Open Sans, the only ones the kit uses: light, regular and semibold. Take the weight from the text style rather than choosing one: H1 to H3 are light and get their prominence from size, H5 and H6 are semibold and get theirs from weight. Button and tab labels are regular at every size. There is no bold.
   static const FontWeight fontWeightSemibold = FontWeight.w600;
+  /// Heading H1 (class .vela-h1, Figma text style Heading/H1). The largest heading. Light, like H2 and H3: it gets its prominence from size, so never make it bold. Size, weight and line height are one set: never take one without the others, and choose the style for its role, not for the size you want.
   static const double textH1Size = 32;
+  /// Heading H1 (class .vela-h1, Figma text style Heading/H1). The largest heading. Light, like H2 and H3: it gets its prominence from size, so never make it bold. Size, weight and line height are one set: never take one without the others, and choose the style for its role, not for the size you want.
   static const FontWeight textH1Weight = FontWeight.w300;
+  /// Heading H1 (class .vela-h1, Figma text style Heading/H1). The largest heading. Light, like H2 and H3: it gets its prominence from size, so never make it bold. Size, weight and line height are one set: never take one without the others, and choose the style for its role, not for the size you want.
   static const double textH1LineHeight = 42;
+  /// Heading H2 (class .vela-h2, Figma text style Heading/H2). Light, like H1 and H3: it gets its prominence from size, so never make it bold. Size, weight and line height are one set: never take one without the others, and choose the style for its role, not for the size you want.
   static const double textH2Size = 24;
+  /// Heading H2 (class .vela-h2, Figma text style Heading/H2). Light, like H1 and H3: it gets its prominence from size, so never make it bold. Size, weight and line height are one set: never take one without the others, and choose the style for its role, not for the size you want.
   static const FontWeight textH2Weight = FontWeight.w300;
+  /// Heading H2 (class .vela-h2, Figma text style Heading/H2). Light, like H1 and H3: it gets its prominence from size, so never make it bold. Size, weight and line height are one set: never take one without the others, and choose the style for its role, not for the size you want.
   static const double textH2LineHeight = 33;
+  /// Heading H3 (class .vela-h3, Figma text style Heading/H3). Light, like H1 and H2: it gets its prominence from size, so never make it bold. Size, weight and line height are one set: never take one without the others, and choose the style for its role, not for the size you want.
   static const double textH3Size = 20;
+  /// Heading H3 (class .vela-h3, Figma text style Heading/H3). Light, like H1 and H2: it gets its prominence from size, so never make it bold. Size, weight and line height are one set: never take one without the others, and choose the style for its role, not for the size you want.
   static const FontWeight textH3Weight = FontWeight.w300;
+  /// Heading H3 (class .vela-h3, Figma text style Heading/H3). Light, like H1 and H2: it gets its prominence from size, so never make it bold. Size, weight and line height are one set: never take one without the others, and choose the style for its role, not for the size you want.
   static const double textH3LineHeight = 27;
+  /// Heading H4 (class .vela-h4, Figma text style Heading/H4). Regular weight. Size, weight and line height are one set: never take one without the others, and choose the style for its role, not for the size you want.
   static const double textH4Size = 16;
+  /// Heading H4 (class .vela-h4, Figma text style Heading/H4). Regular weight. Size, weight and line height are one set: never take one without the others, and choose the style for its role, not for the size you want.
   static const FontWeight textH4Weight = FontWeight.w400;
+  /// Heading H4 (class .vela-h4, Figma text style Heading/H4). Regular weight. Size, weight and line height are one set: never take one without the others, and choose the style for its role, not for the size you want.
   static const double textH4LineHeight = 24;
+  /// Heading H5 (class .vela-h5, Figma text style Heading/H5). Semibold, like H6: it gets its prominence from weight, not size. Size, weight and line height are one set: never take one without the others, and choose the style for its role, not for the size you want.
   static const double textH5Size = 14;
+  /// Heading H5 (class .vela-h5, Figma text style Heading/H5). Semibold, like H6: it gets its prominence from weight, not size. Size, weight and line height are one set: never take one without the others, and choose the style for its role, not for the size you want.
   static const FontWeight textH5Weight = FontWeight.w600;
+  /// Heading H5 (class .vela-h5, Figma text style Heading/H5). Semibold, like H6: it gets its prominence from weight, not size. Size, weight and line height are one set: never take one without the others, and choose the style for its role, not for the size you want.
   static const double textH5LineHeight = 21;
+  /// Heading H6 (class .vela-h6, Figma text style Heading/H6). Semibold, like H5: it gets its prominence from weight, not size. Size, weight and line height are one set: never take one without the others, and choose the style for its role, not for the size you want.
   static const double textH6Size = 12;
+  /// Heading H6 (class .vela-h6, Figma text style Heading/H6). Semibold, like H5: it gets its prominence from weight, not size. Size, weight and line height are one set: never take one without the others, and choose the style for its role, not for the size you want.
   static const FontWeight textH6Weight = FontWeight.w600;
+  /// Heading H6 (class .vela-h6, Figma text style Heading/H6). Semibold, like H5: it gets its prominence from weight, not size. Size, weight and line height are one set: never take one without the others, and choose the style for its role, not for the size you want.
   static const double textH6LineHeight = 18;
+  /// Body text (class .vela-body, Figma text style Body/Default). Regular weight. Body/Link and Body/Strong take the same size and line height at semibold. Size, weight and line height are one set: never take one without the others, and choose the style for its role, not for the size you want.
   static const double textBodySize = 14;
+  /// Body text (class .vela-body, Figma text style Body/Default). Regular weight. Body/Link and Body/Strong take the same size and line height at semibold. Size, weight and line height are one set: never take one without the others, and choose the style for its role, not for the size you want.
   static const FontWeight textBodyWeight = FontWeight.w400;
+  /// Body text (class .vela-body, Figma text style Body/Default). Regular weight. Body/Link and Body/Strong take the same size and line height at semibold. Size, weight and line height are one set: never take one without the others, and choose the style for its role, not for the size you want.
   static const double textBodyLineHeight = 21;
+  /// Meta text, for secondary information (class .vela-meta, Figma text style Body/Meta). Regular weight, with its own letter spacing (tracking). Size, weight, line height and tracking are one set: never take one without the others. Figma's Mono/Meta is the same set in the mono family.
   static const double textMetaSize = 12;
+  /// Meta text, for secondary information (class .vela-meta, Figma text style Body/Meta). Regular weight, with its own letter spacing (tracking). Size, weight, line height and tracking are one set: never take one without the others. Figma's Mono/Meta is the same set in the mono family.
   static const FontWeight textMetaWeight = FontWeight.w400;
+  /// Meta text, for secondary information (class .vela-meta, Figma text style Body/Meta). Regular weight, with its own letter spacing (tracking). Size, weight, line height and tracking are one set: never take one without the others. Figma's Mono/Meta is the same set in the mono family.
   static const double textMetaLineHeight = 18;
+  /// Meta text, for secondary information (class .vela-meta, Figma text style Body/Meta). Regular weight, with its own letter spacing (tracking). Size, weight, line height and tracking are one set: never take one without the others. Figma's Mono/Meta is the same set in the mono family.
   static const double textMetaTracking = 0.3;
+  /// Button label at size tiny (Figma text style Button/Tiny). Size and line height are a pair: never take one without the other. The weight is font-weight-regular at every button size, never semibold or bold.
   static const double textButtonTinySize = 12;
+  /// Button label at size tiny (Figma text style Button/Tiny). Size and line height are a pair: never take one without the other. The weight is font-weight-regular at every button size, never semibold or bold.
   static const double textButtonTinyLineHeight = 18;
+  /// Button label at size regular (Figma text style Button/Regular). Size and line height are a pair: never take one without the other. The weight is font-weight-regular at every button size, never semibold or bold.
   static const double textButtonRegularSize = 14;
+  /// Button label at size regular (Figma text style Button/Regular). Size and line height are a pair: never take one without the other. The weight is font-weight-regular at every button size, never semibold or bold.
   static const double textButtonRegularLineHeight = 21;
+  /// Button label at size large (Figma text style Button/Large). Size and line height are a pair: never take one without the other. The weight is font-weight-regular at every button size, never semibold or bold. This size exists for Button large only; anywhere else it is off the scale.
   static const double textButtonLargeSize = 15;
+  /// Button label at size large (Figma text style Button/Large). Size and line height are a pair: never take one without the other. The weight is font-weight-regular at every button size, never semibold or bold. This size exists for Button large only; anywhere else it is off the scale.
   static const double textButtonLargeLineHeight = 22;
+  /// Button label at size huge (Figma text style Button/Huge). Size and line height are a pair: never take one without the other. The weight is font-weight-regular at every button size, never semibold or bold.
   static const double textButtonHugeSize = 16;
+  /// Button label at size huge (Figma text style Button/Huge). Size and line height are a pair: never take one without the other. The weight is font-weight-regular at every button size, never semibold or bold.
   static const double textButtonHugeLineHeight = 24;
+  /// Tab label at Tabs size regular (Figma text style Tab/Default). Size and line height are a pair: never take one without the other. The label is font-weight-regular; the count beside it is semibold (Figma Tab/Count).
   static const double textTabSize = 14;
+  /// Tab label at Tabs size regular (Figma text style Tab/Default). Size and line height are a pair: never take one without the other. The label is font-weight-regular; the count beside it is semibold (Figma Tab/Count).
   static const double textTabLineHeight = 19;
+  /// Tab label at Tabs size large (Figma text style Tab/Large). Size and line height are a pair: never take one without the other. The label is font-weight-regular; the count beside it is semibold (Figma Tab/Count Large).
   static const double textTabLargeSize = 18;
+  /// Tab label at Tabs size large (Figma text style Tab/Large). Size and line height are a pair: never take one without the other. The label is font-weight-regular; the count beside it is semibold (Figma Tab/Count Large).
   static const double textTabLargeLineHeight = 25;
 
   // Composed styles — one per size in the ramp. All use fontFamilyPrimary; fontFamilyDisplay

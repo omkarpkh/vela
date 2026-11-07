@@ -88,10 +88,14 @@ for (const file of ['tokens/vela.tokens.json', 'tokens/vela.dark.tokens.json']) 
   if (doc.$schema !== 'https://www.designtokens.org/schemas/2025.10/format.json') fail(`[${file}] $schema should be the published format schema, got ${doc.$schema}`)
 }
 const rawPaths = new Set()
-for (const [group, tokens] of Object.entries(baseDoc)) if (!group.startsWith('$')) for (const name of Object.keys(tokens)) rawPaths.add(`${group}.${name}`)
+for (const [group, tokens] of Object.entries(baseDoc)) if (!group.startsWith('$')) for (const name of Object.keys(tokens)) if (!name.startsWith('$')) rawPaths.add(`${group}.${name}`)
 for (const [group, tokens] of Object.entries(baseDoc)) {
   if (group.startsWith('$')) continue
+  // A group's $extensions holds only the vendor key, whose `groups` (one description for a family of
+  // steps) tokens-core reads and checks: a fault there stops it loading, reported as [core].
+  for (const k of Object.keys(tokens.$extensions ?? {})) if (k !== VENDOR) fail(`[${group}] $extensions key "${k}" — vendor data belongs under "${VENDOR}"`)
   for (const [name, t] of Object.entries(tokens)) {
+    if (name.startsWith('$')) continue
     const where = `[${group}.${name}]`
     const v = t.$value
     const type = t.$type ?? tokens.$type

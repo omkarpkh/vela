@@ -101,6 +101,11 @@ The shapes, strictly:
 // vendor data sits under one reverse-domain key: `figma` is the variable name the sync writes
 "$extensions": { "com.omkarux.vela": { "figma": "text/default" } }
 
+// one description for a family of steps (the spacing scale, a text style's size, weight and line
+// height), written once on the group that holds them and copied onto each step that has no
+// $description of its own: the Dart doc comment, the Figma variable, DESIGN.md's tables
+"sizing": { "$extensions": { "com.omkarux.vela": { "groups": { "spacing": { "description": "The spacing scale for …", "tokens": ["space-5", "space-10", …] } } } }, … }
+
 // a retired token keeps emitting — `/* deprecated */` after the CSS declaration, a doc comment in
 // Dart — so a consumer is warned, not broken. A group's $deprecated is inherited; `false` opts out
 "$deprecated": "use text-de-emphasized"
