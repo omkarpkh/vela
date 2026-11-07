@@ -13,7 +13,7 @@
 A design system for data-heavy products, built first for security consoles. The tokens and the component specs are framework-agnostic;
 this repository is a **React implementation** of them. Nineteen components, two themes, zero runtime
 dependencies in the core entry — and every design rule in the documentation is tagged with how it is
-enforced: 80 of the 260 by the TypeScript compiler, the rest at runtime, in a real browser, or by review
+enforced: 80 of the 263 by the TypeScript compiler, the rest at runtime, in a real browser, or by review
 (counted by `npm run rules:check`).
 
 **Status:** every component carries a lifecycle label — Approved, Known bugs, Experimental or

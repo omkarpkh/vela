@@ -776,7 +776,7 @@
         "--vela-border-default",
         "--vela-dropdown-list-width-min",
         "--vela-duration-base",
-        "--vela-ease-standard",
+        "--vela-ease-out",
         "--vela-font-weight-semibold",
         "--vela-icon-size",
         "--vela-icon-strong",

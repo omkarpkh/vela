@@ -110,6 +110,16 @@ shape. `{ disabled: true, meta: 'Why' }` becomes `{ locked: { reason: 'Why' } }`
 - **A keyboard open is instant.** When the list opens or closes from the keyboard, the trigger
   carries `data-vela-instant` for that change, and loses it on the next pointer interaction.
   [[rule: dropdown-list-trigger-instant-from-keyboard | runtime]]
+- **It grows from its trigger, by transform and opacity alone, as Popover does.** Opened with a
+  pointer it scales from 0.96 to full size as it fades in, pivoting on Base UI's
+  `--transform-origin`, the point on the list nearest the trigger: on its top edge when it opens
+  below, its bottom edge when it flips above, at the end lined up with the trigger (the start
+  edge for `align="start"`). It never travels. [[rule: dropdown-list-grows-from-its-trigger | browser]]
+- **Closed and reopened mid-flight, it turns round.** A press that reopens it while it is still
+  fading out brings the same list back from where it is, and it ends open and at rest.
+  [[rule: dropdown-list-reopen-mid-flight | browser]]
+- **Under reduced motion it is at its end state.** Open is full size and opaque; closed is gone.
+  [[rule: dropdown-list-motion-reduced-end-state | browser]]
 - **A locked item can be reached but not chosen** (DESIGN.md, *States*, Locked). It stays in the
   arrow-key order, so it can be read, and its reason shows where `meta` would and is heard with its
   name ("Archive, Needs retention on"). It has `aria-disabled="true"`, and choosing it does nothing.
@@ -228,8 +238,8 @@ portal carries `vela-root`, as on Popover.
 
 | Moment | What moves | Timing | Why |
 |---|---|---|---|
-| Appears | opacity, and `--vela-space-5` of travel from the trigger, on either side (keyed on `data-side`: down when it opens below, up when it flips above) | `--vela-duration-base`, `--vela-ease-standard` | orientation: it came from the button |
-| Leaves | opacity only | `--vela-duration-base` | softer than it arrived |
+| Appears | opacity, and scale from 0.96, pivoting on the point nearest the trigger (Base UI's `--transform-origin`: on the top edge when it opens below, the bottom edge when it flips above, at the corner lined up with the trigger's aligned edge) | `--vela-duration-base` (180ms), `--vela-ease-out` | orientation: it came from the button, and grows out of it whichever side it opens on |
+| Leaves | opacity only, at full size | `--vela-duration-base` (180ms) | softer than it arrived; it is going nowhere |
 | Highlight moves | nothing; the background changes at once | instant | it follows the pointer and the keys; a fade would lag behind them |
 | From the keyboard | nothing; the popup and the trigger carry `data-vela-instant` until the next pointer interaction | instant | from the keyboard nothing animates |
 
@@ -237,7 +247,14 @@ portal carries `vela-root`, as on Popover.
 something else. The planned "bird" chevron (two wings beating once, `icons/01`) belongs to the Icon
 work. Until it lands, the chevron is still and the list appearing is the feedback.
 
-Under `prefers-reduced-motion` the global collapse applies.
+It is Popover's overlay motion, by the same rule: one selector in `Popover.css` holds the
+transition, the starting scale and the fade for both, so the two cannot drift. Before this, the
+list travelled a 5px step from its trigger on the standard curve, keyed on `data-side`.
+Decision 008 brings it in line with Popover, extending the values decision 006 approved. It is
+**proposed, not decided**: the owner judges decision 008's recordings before it ships.
+
+Under `prefers-reduced-motion` the global collapse applies; the list reads correctly frozen at
+either end.
 
 ## Responsive behaviour
 

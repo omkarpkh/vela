@@ -391,6 +391,28 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   built.
 
 ### Changed
+- **Dropdown List moves on the overlay motion, like Popover** (proposed by decision 008,
+  `decisions/008-dropdown-list-overlay-motion`, which extends decision 006; not decided until Omkar
+  has judged its clip). The list no longer travels a 5px step from its trigger on
+  `--vela-ease-standard`: it grows from 0.96 out of the button as it fades in, on `--vela-ease-out`
+  over `--vela-duration-base`, pivoting on Base UI's `--transform-origin`, and leaves on a fade at
+  full size. One rule in `Popover.css` now holds the transition, the origin, the starting scale, the
+  fade and the keyboard's `transition: none` for both `.vela-popover` and `.vela-dropdown-list`;
+  `DropdownList.css` sets none of it. No token for 0.96 yet (decision 009). Unchanged: from the
+  keyboard nothing animates, the highlight moves at once, the chevron stays still.
+  - **Spec:** `dropdown-list.md`'s Motion rows match Popover's, and three browser rules are new,
+    the twins of Popover's: `dropdown-list-grows-from-its-trigger` (a uniform scale, no
+    translation, pivoting on its top edge below and its bottom edge when flipped above),
+    `dropdown-list-reopen-mid-flight` and `dropdown-list-motion-reduced-end-state`. `DESIGN.md` and
+    `foundations/motion.md` no longer list it as still to do.
+  - **Motion review page:** the list sits beside Popover and Tooltip in both themes, and the
+    overlay tests there run for it too.
+  - **The clip:** `media/dropdown-list.mp4` (20 s), today against the proposed grow in both themes,
+    opening below and flipped above, at real speed and ×5; `record.mjs` makes it again.
+  - The Popover and Dropdown List component stills are redrawn: the pixels are unchanged, only the
+    source key they carry.
+  - 261 rules across 20 specs (was 258), 79 compiler-enforced. 1894 checks (was 1890): 1436 unit
+    and contract, 341 e2e (was 337), 112 screenshots.
 - **ROADMAP.md.** Phase 3 notes that `components.json` and the agent skill are the first steps of
   agent delivery. Phase 4 records the eval plan decided on 7 Nov 2026: a consumer check first (the
   CSS lint and contrast pairs, packaged for products), then gap honesty, escapes, guidance lift and
