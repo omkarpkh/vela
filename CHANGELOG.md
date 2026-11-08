@@ -464,7 +464,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     phone Overview's height, disclosure and crops, and the wide one unchanged; a site-wide test that
     fails on any visible em or en dash outside code, naming the page and the words; the no-control
     tag and the Rules sections; no spec tags a rule in States; the Copy status from its spec line.
-    Packed: 381.2 kB, 270 files (was 379.7 kB, 270): this entry and the shipped README.
+    Packed: 382.9 kB, 274 files (was 381.4 kB, 274 after the header fixes): this entry and the shipped README.
 
 - **Dropdown List moves on the overlay motion, like Popover** (decision 008,
   `decisions/008-dropdown-list-overlay-motion`, which extends decision 006; decided by Omkar on
