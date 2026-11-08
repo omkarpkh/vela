@@ -3,6 +3,7 @@ import { Icon } from '../../src'
 import { buildIndex, nearest, MISSING, type Item } from '../playground/search'
 import { CATALOG as REGISTRY } from '../playground/catalog'
 import { PROPOSALS } from '../playground/proposals'
+import { PATTERNS } from '../nav'
 import { href } from '../router'
 import { LINKS } from '../links'
 import { searchFor } from '../shell/Search'
@@ -28,6 +29,18 @@ const CLOSEST: Record<string, { id: string; name: string }> = Object.fromEntries
 }))
 const titleCase = (words: string) => words.replace(/\b\w/g, (c) => c.toUpperCase())
 
+// The "Not in Vela" box speaks the kind that was asked for (slice 7, item 2; Omkar, 8 Nov 2026).
+// A request link only where a request is what helps: a component or a pattern, through the
+// component request form. A missing foundation, proposal or page has none: nobody asks for those.
+const NONE_LINE: Record<Area, string> = {
+  component: 'No component is called that, by its own name or by another. Vela never invents a part to fill a gap: name the need, and the closest part is chosen with you.',
+  pattern: 'No pattern is called that, by its own name or by another. Vela never invents a pattern to fill a gap: name the need, and the closest one is chosen with you.',
+  proposal: 'No proposal is called that, by its own name or by another. Every proposal is listed on the Overview.',
+  foundation: 'No foundation is called that, by its own name or by another. Vela’s foundations are listed below.',
+  page: 'No page on this site is called that. The menu lists every page.',
+}
+const REQUEST: Partial<Record<Area, string>> = { component: 'Component request', pattern: 'Pattern request' }
+
 function Part({ item, alias }: { item: Item; alias?: string }) {
   return (
     <a className="nf-card" href={item.href}>
@@ -51,7 +64,9 @@ export function NotFound({ asked, name, area }: { asked: string; name: string; a
     return i.aliases.find((a) => a.toLowerCase() === q || q.split(' ').includes(a.toLowerCase()))
   }
   const words = near.words || asked
-  const ask = `${LINKS.github}/issues/new?${new URLSearchParams({ template: 'component-request.yml', title: `Component request: ${titleCase(words)}` })}`
+  const request = REQUEST[area]
+  const ask = request && `${LINKS.github}/issues/new?${new URLSearchParams({ template: 'component-request.yml', title: `${request}: ${titleCase(words)}` })}`
+  const foundations = index.filter((i) => i.kind === 'foundation')
   return (
     <article className="doc nf">
       <header className="page-head">
@@ -94,17 +109,35 @@ export function NotFound({ asked, name, area }: { asked: string; name: string; a
           <h2 id="nf-gap" className="vela-h4">Not in Vela</h2>
           <div className="nf-gap nf-gap--wide">
             <p className="nf-card__title">Vela has no {titleCase(words)}</p>
-            <p className="nf-card__line">No component is called that, by its own name or by another. Vela never invents a part to fill a gap: name the need, and the closest part is chosen with you.</p>
-            <a href={ask} target="_blank" rel="noreferrer">Ask for it on GitHub<Icon name="external-link" size="small" /></a>
+            <p className="nf-card__line">{NONE_LINE[area]}</p>
+            {ask && <a href={ask} target="_blank" rel="noreferrer">Ask for it on GitHub<Icon name="external-link" size="small" /></a>}
           </div>
         </section>
       )}
 
-      <section className="nf__section nf__ways" aria-label="Ways on">
-        <NextCard eyebrow="Every component" href={href({ kind: 'status' })} title="Component status" line={`All ${REGISTRY.length}, each with its picture and its label`} />
-        {/* Every proposal, as a card with its picture, on the Overview (slice 6): the one page that lists them all. */}
-        <NextCard eyebrow="Specified, not built yet" href={PROPOSALS_ON_OVERVIEW} title={`${PROPOSALS.length} proposals`} line={`From ${PROPOSALS[0].name} to ${PROPOSALS[PROPOSALS.length - 1].name}`} />
-      </section>
+      {/* Ways on lead to the list of the kind that was asked for: a foundation to every foundation, a
+          pattern to the patterns and the proposals, a proposal to the proposals, a component to
+          Component status and the proposals, a page to the Overview and Component status. */}
+      {area === 'foundation' ? (
+        <section className="nf__section" aria-labelledby="nf-ways">
+          <h2 id="nf-ways" className="vela-h4">Vela’s foundations</h2>
+          <ul className="nf-cards">
+            {foundations.map((i) => <li key={i.id}><Part item={i} /></li>)}
+          </ul>
+        </section>
+      ) : (
+        <section className="nf__section nf__ways" aria-label="Ways on">
+          {area === 'page' && <NextCard eyebrow="Where to start" href={href({ kind: 'overview' })} title="Overview" line="What Vela is, and every way in" />}
+          {area === 'pattern' && PATTERNS.map((p) => <NextCard key={p.id} eyebrow="Pattern" href={href({ kind: 'pattern', id: p.id })} title={p.title} line={p.line} />)}
+          {area !== 'pattern' && area !== 'proposal' && <StatusCard />}
+          {area !== 'page' && <ProposalsCard />}
+          {area === 'proposal' && <StatusCard />}
+        </section>
+      )}
     </article>
   )
 }
+
+const StatusCard = () => <NextCard eyebrow="Every component" href={href({ kind: 'status' })} title="Component status" line={`All ${REGISTRY.length}, each with its picture and its label`} />
+// Every proposal, as a card with its picture, on the Overview (slice 6): the one page that lists them all.
+const ProposalsCard = () => <NextCard eyebrow="Specified, not built yet" href={PROPOSALS_ON_OVERVIEW} title={`${PROPOSALS.length} proposals`} line={`From ${PROPOSALS[0].name} to ${PROPOSALS[PROPOSALS.length - 1].name}`} />

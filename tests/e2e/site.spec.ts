@@ -23,6 +23,9 @@ async function compareThemes(page: import('@playwright/test').Page) {
 
 const COMPONENTS = ['button', 'toggle', 'input', 'text-area', 'contextual-alert', 'status-indicator', 'risk-pill', 'tabs', 'icon', 'checkbox', 'radio-group', 'table', 'popover', 'tooltip', 'dialog', 'toast']
 
+/** The package and its version, as the site reads them from package.json: "@omkarux/vela 0.15.0". */
+const PACKAGE = (() => { const pkg = JSON.parse(readFileSync(resolve(process.cwd(), 'package.json'), 'utf8')); return `${pkg.name} ${pkg.version}` })()
+
 const noSidewaysScroll = (page: Page) =>
   page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)
 
@@ -321,7 +324,7 @@ test.describe('the page header', () => {
     const length = await page.evaluate(() => history.length)
     await tabs.getByRole('tab', { name: /^Rules/ }).click()
     await expect(page).toHaveURL(/#\/components\/button\/rules$/)
-    await expect(page.getByRole('heading', { level: 2, name: 'States' })).toBeVisible()
+    await expect(page.getByRole('heading', { level: 2, name: 'Motion' })).toBeVisible()
     expect(await page.evaluate(() => history.length)).toBe(length)
     // The nav link stays current on every tab of the page.
     await expect(page.getByRole('navigation', { name: 'Site' }).getByRole('link', { name: 'Button', exact: true })).toHaveAttribute('aria-current', 'page')
@@ -610,11 +613,27 @@ test.describe('the workbench', () => {
     await expect(controls.getByRole('group', { name: 'size' })).toBeVisible()
   })
 
-  test('"Also in the API" explains a prop with no control in plain words', async ({ page }) => {
+  test('a prop with no control is tagged in Props, its reason on hover and focus, its plain words in its Notes', async ({ page }) => {
     await page.goto('/#/components/button')
-    const api = page.getByRole('complementary', { name: 'Controls' }).locator('.pg-uncontrolled')
-    await expect(api).toContainText('type')
-    await expect(api).toContainText('With "submit", clicking it sends the form.')
+    // "Also in the API" is gone from the controls (slice 7 fixes, item 9): Props lists every prop once.
+    await expect(page.getByRole('complementary', { name: 'Controls' })).not.toContainText('Also in the API')
+    await expect(page.getByRole('heading', { name: 'Also in the API' })).toHaveCount(0)
+    const props = page.locator('section[aria-labelledby="section-props"]')
+    const tag = props.getByRole('button', { name: 'no control' })
+    await expect(tag).toHaveCount(1)
+    const row = props.getByRole('row').filter({ has: page.getByRole('button', { name: 'no control' }) })
+    await expect(row.getByRole('cell').first()).toHaveText(/^type/)
+    await expect(row).toContainText('With "submit", clicking it sends the form.')
+    // The reason is the tag's description, shown on keyboard focus and on hover.
+    await tag.focus()
+    await expect(page.getByRole('tooltip')).toHaveText('No control on the stage: it looks the same whichever you pick.')
+    await expect(tag).toHaveAccessibleDescription('No control on the stage: it looks the same whichever you pick.')
+    await page.keyboard.press('Escape')
+    await expect(page.getByRole('tooltip')).toHaveCount(0)
+    await tag.hover()
+    await expect(page.getByRole('tooltip')).toBeVisible()
+    // States is on this tab, and only here.
+    await expect(page.getByRole('heading', { level: 2, name: 'States' })).toBeVisible()
   })
 
   test('in forced colours a locked value keeps a dashed GrayText edge', async ({ page }) => {
@@ -730,7 +749,8 @@ test.describe('slice 5 · phone and Appearance', () => {
   // links in the menu on a phone.
   const MARKS = [
     { name: 'Vela on GitHub, opens in a new tab', href: 'https://github.com/omkarpkh/vela', glyph: '.vela-brand-mark' },
-    { name: 'Vela on npm, opens in a new tab', href: 'https://www.npmjs.com/package/@omkarux/vela', glyph: '.vela-icon-button__word' },
+    // The package's name and version live here since they left the logo (slice 7, item 2b).
+    { name: `${PACKAGE} on npm, opens in a new tab`, href: 'https://www.npmjs.com/package/@omkarux/vela', glyph: '.vela-icon-button__word' },
     { name: 'Vela in Figma, opens in a new tab', href: /^https:\/\/www\.figma\.com\/design\/XO2rmeCcgOjyKe4oipgF4j\/Vela-Design-System\?node-id=0-1$/, glyph: '.vela-brand-mark' },
   ]
   test('the header links are GitHub\'s and Figma\'s marks and npm\'s word, named in words, opening a new tab; on a phone they are written links in the menu', async ({ page }) => {
@@ -854,12 +874,14 @@ test.describe('slice 5 · phone and Appearance', () => {
     await page.goto('/#/components/icon-button')
     const set = page.locator('.pg-frame[data-theme="light"] .pg-icon-button__set')
     const link = (name: string) => set.getByRole('link', { name, exact: true })
+    // The page's own npm link keeps the plain name; only the header's names the version (slice 7).
+    const pageNpm = 'Vela on npm, opens in a new tab'
     await expect(link(figma)).toBeVisible()
     await page.mouse.move(0, 0)
     expect(await msToOpen(link(github), github)).toBeGreaterThanOrEqual(dwell * 0.95)
-    expect(await msToOpen(link(npm), npm)).toBeGreaterThanOrEqual(dwell * 0.95)
+    expect(await msToOpen(link(pageNpm), pageNpm)).toBeGreaterThanOrEqual(dwell * 0.95)
     // A rested-on tooltip outside a group grows in as usual: nothing marks it instant.
-    await expect(shown(npm)).not.toHaveAttribute('data-instant')
+    await expect(shown(pageNpm)).not.toHaveAttribute('data-instant')
     // And from the keyboard: at once, as in the group. (Base UI's marker on it can read "delay" here
     // too, because tooltips outside any provider share one default group record; the marker is not
     // part of the contract, and the open delay outside a provider is never touched by it.)
@@ -867,8 +889,8 @@ test.describe('slice 5 · phone and Appearance', () => {
     await link(github).focus()
     await expect(shown(github)).toBeVisible()
     await page.keyboard.press('Tab')
-    await expect(link(npm)).toBeFocused()
-    await expect(shown(npm)).toBeVisible()
+    await expect(link(pageNpm)).toBeFocused()
+    await expect(shown(pageNpm)).toBeVisible()
     await expect(page.locator('.vela-tooltip:not([data-ending-style])')).toHaveCount(1)
   })
 
@@ -1042,11 +1064,13 @@ test.describe('slice 4 · proof', () => {
     await expect(page.locator('.pg-summary__count')).toHaveText('10 rules')
     await expect(page.locator('.pg-summary__words')).toHaveText('Filled: a machine checks it on every build, 5. Outlined: a reviewer checks it, 5.')
     await expect(page.locator('.pg-summary__pass')).toHaveText(/^All 5 machine checks pass in \d+\.\d+\.\d+$/)
-    for (const h of ['The compiler refuses these', 'A real browser proves these', 'A reviewer checks these', 'States', 'Motion', "Don't, and what to do instead"])
+    for (const h of ['The compiler refuses these', 'A real browser proves these', 'A reviewer checks these', 'Motion', "Don't, and what to do instead"])
       await expect(page.getByRole('heading', { name: new RegExp(`^${h}`), level: 2 })).toBeVisible()
+    // States is on the Playground tab only (slice 7 fixes, item 9).
+    await expect(page.getByRole('heading', { name: 'States', level: 2 })).toHaveCount(0)
     // A checker with no rules has no group and no index item (Button has no unit-test rule).
     await expect(page.getByRole('heading', { name: /^A unit test/ })).toHaveCount(0)
-    await expect(page.getByRole('navigation', { name: 'On this tab' }).getByRole('link')).toHaveText(['Compiler 3', 'Browser 2', 'Review 5', 'States', 'Motion', "Don'ts 12"])
+    await expect(page.getByRole('navigation', { name: 'On this tab' }).getByRole('link')).toHaveText(['Compiler 3', 'Browser 2', 'Review 5', 'Motion', "Don'ts 12"])
     // No filter row: the index and Find replace it.
     await expect(page.getByRole('group', { name: 'Show' })).toHaveCount(0)
   })
@@ -1467,9 +1491,10 @@ test.describe('the Overview', () => {
     expect(await page.locator('.ov-fact').last().evaluate((el) => getComputedStyle(el).gridColumnStart)).toBe('1')
     expect(await columns('.ov-ways')).toBe(2)
     expect(await columns('.ov-proposals')).toBe(2)
-    // 500px: under 520.
+    // 500px: under 520. Ways in stays two across, in smaller frames (slice 7 fixes, item 6); the proposals one.
     await page.setViewportSize({ width: 500, height: 900 })
-    expect(await columns('.ov-ways')).toBe(1)
+    expect(await columns('.ov-ways')).toBe(2)
+    expect(await columns('.ov-proposals')).toBe(1)
     expect(await heroAreas()).toBe('"mark" "panel" "console"')
     for (const width of [320, 390]) {
       await page.setViewportSize({ width, height: 900 })
@@ -1667,7 +1692,7 @@ test.describe('Product Mark: the Overview hero and its pulse', () => {
 test.describe('the header logo', () => {
   const logo = (page: Page) => page.getByRole('banner').getByRole('link', { name: 'Vela Design System', exact: true })
 
-  test('one link named "Vela Design System", the mark and the version hidden from it, current on the Overview only', async ({ page }) => {
+  test('one link named "Vela Design System", the mark hidden from it and no version in it, current on the Overview only', async ({ page }) => {
     await page.goto('/#/components/button')
     const link = logo(page)
     await expect(link).toBeVisible()
@@ -1675,8 +1700,10 @@ test.describe('the header logo', () => {
     await expect(link).not.toHaveAttribute('aria-current')
     await expect(link.locator('svg.pm')).toHaveAttribute('aria-hidden', 'true')
     await expect(link.locator('svg.pm')).toHaveClass(/pm--regular/)
-    await expect(link.locator('.brand__meta')).toHaveAttribute('aria-hidden', 'true')
-    await expect(link.locator('.brand__meta')).toBeVisible()
+    // The version left the logo, and the header, on 8 Nov 2026 (slice 7, item 2b): it is in npm's
+    // name and in the footer.
+    await expect(page.getByRole('banner')).not.toContainText(PACKAGE.split(' ')[1])
+    await expect(page.locator('.demo-footer')).toContainText(PACKAGE)
     await expect(link.getByRole('img')).toHaveCount(0)
     // A press goes home.
     await link.click()
@@ -1708,25 +1735,24 @@ test.describe('the header logo', () => {
     expect(Math.round(n!.x - (m!.x + m!.width))).toBe(5)
   })
 
-  test('hover underlines the name only; the mark and the version do not change', async ({ page }) => {
+  test('hover underlines the name only; the mark does not change', async ({ page }) => {
     await page.goto('/#/components/button')
     const link = logo(page)
     const look = () => link.evaluate((a) => {
       const cs = (s: string) => getComputedStyle(a.querySelector(s)!)
       return {
-        link: getComputedStyle(a).textDecorationLine, name: cs('.brand__name').textDecorationLine, meta: cs('.brand__meta').textDecorationLine,
-        mark: [cs('.pm').color, cs('.pm').transform, cs('.pm').opacity], metaColour: cs('.brand__meta').color,
+        link: getComputedStyle(a).textDecorationLine, name: cs('.brand__name').textDecorationLine,
+        mark: [cs('.pm').color, cs('.pm').transform, cs('.pm').opacity],
       }
     })
     await page.mouse.move(700, 600)
     const rest = await look()
-    expect([rest.link, rest.name, rest.meta]).toEqual(['none', 'none', 'none'])
+    expect([rest.link, rest.name]).toEqual(['none', 'none'])
     await link.locator('.pm').hover()
     await expect.poll(async () => (await look()).name).toBe('underline')
     const hover = await look()
-    expect([hover.link, hover.meta]).toEqual(['none', 'none'])
+    expect(hover.link).toBe('none')
     expect(hover.mark).toEqual(rest.mark)
-    expect(hover.metaColour).toBe(rest.metaColour)
   })
 
   test('the focus ring wraps the whole lockup: 2px, offset 2px, the focus ring colour', async ({ page }) => {
@@ -1746,7 +1772,7 @@ test.describe('the header logo', () => {
       const token = getComputedStyle(probe).color
       probe.remove()
       const r = a.getBoundingClientRect()
-      const inside = [...a.querySelectorAll('.pm, .brand__name, .brand__meta')].every((el) => {
+      const inside = [...a.querySelectorAll('.pm, .brand__name')].every((el) => {
         const b = el.getBoundingClientRect()
         return b.left >= r.left && b.right <= r.right && b.top >= r.top && b.bottom <= r.bottom
       })
@@ -1814,7 +1840,6 @@ test.describe('the header logo', () => {
     const mark = (await logo(page).locator('svg.pm').boundingBox())!
     expect(mark.x - (boxes[0].x + boxes[0].width)).toBeGreaterThanOrEqual(6)
     await expect(logo(page).locator('.brand__name')).toHaveText('Vela Design System')
-    await expect(logo(page).locator('.brand__meta')).toBeHidden()
     expect(Math.round((await logo(page).locator('.brand__name').boundingBox())!.width)).toBeLessThan(40)
     expect(await noSidewaysScroll(page)).toBe(true)
   })
@@ -1943,17 +1968,17 @@ test.describe('slice 1 · the shell', () => {
     // The heading lands below what sticks, not under it.
     expect((await heading.boundingBox())!.y).toBeGreaterThanOrEqual(await stuckBottom(page))
 
-    await index.getByRole('link', { name: 'States' }).click()
-    await expect(page).toHaveURL(/\?section=states$/)
-    await expect(page.getByRole('heading', { level: 2, name: 'States' })).toBeFocused()
+    await index.getByRole('link', { name: 'Motion' }).click()
+    await expect(page).toHaveURL(/\?section=motion$/)
+    await expect(page.getByRole('heading', { level: 2, name: 'Motion' })).toBeFocused()
     // Replaced, never pushed: no history entry per section.
     expect(await page.evaluate(() => history.length)).toBe(entries)
 
     await page.reload()
-    const states = page.getByRole('heading', { level: 2, name: 'States' })
-    await expect(states).toBeFocused()
-    await expect(states).toBeInViewport()
-    await expect(page.getByRole('navigation', { name: 'On this tab' }).getByRole('link', { name: 'States' })).toHaveAttribute('aria-current', 'location')
+    const motion = page.getByRole('heading', { level: 2, name: 'Motion' })
+    await expect(motion).toBeFocused()
+    await expect(motion).toBeInViewport()
+    await expect(page.getByRole('navigation', { name: 'On this tab' }).getByRole('link', { name: 'Motion' })).toHaveAttribute('aria-current', 'location')
     // A section in the address is not a setting: the shared-link notice stays away.
     await expect(page.locator('.pg-notice')).toHaveCount(0)
 
@@ -2452,6 +2477,43 @@ test.describe('uplift slice 5 · doc pages', () => {
     expect(await words(page)).not.toMatch(/[—–]|\bCI\b|ESM/)
   })
 
+  /** Each idea that has played: when its first part started and its last part landed, from its own animations. */
+  const turns = (page: Page) => page.locator('.how-step').evaluateAll((steps) => steps.map((el, i) => {
+    if (el.getAttribute('data-how') !== 'play') return { i, played: false, start: 0, end: 0 }
+    const parts = el.getAnimations({ subtree: true })
+    const start = Math.min(...parts.map((a) => Number(a.startTime)))
+    const end = Math.max(...parts.map((a) => Number(a.startTime) + Number(a.effect!.getComputedTiming().endTime)))
+    return { i, played: true, start, end }
+  }))
+  /**
+   * The next idea starts in the frame the last one lands, so their times can differ by float rounding
+   * (a few hundredths of a millisecond, seen in CI). Anything under a millisecond is the same moment.
+   */
+  const EPS = 1
+  /** Every idea that has played has finished. */
+  const allLanded = (page: Page) => page.locator('.how-step[data-how="play"]').evaluateAll((steps) =>
+    Promise.all(steps.flatMap((el) => el.getAnimations({ subtree: true }).map((a) => a.finished))).then(() => true))
+  /**
+   * The queue has run dry: every idea that will play on its own has played and landed. An idea takes its
+   * turn a frame after the one before it lands, so waiting once for the ideas playing now can return
+   * while the next one is still pending (its animations not started). Wait, then look again, until the
+   * number playing holds and nothing is pending or running.
+   */
+  const settled = async (page: Page) => {
+    let before = -1
+    for (let k = 0; k < 20; k++) {
+      await allLanded(page)
+      await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))))
+      const now = await page.locator('.how-step[data-how="play"]').evaluateAll((steps) => ({
+        playing: steps.length,
+        busy: steps.some((el) => el.getAnimations({ subtree: true }).some((a) => a.startTime === null || a.playState !== 'finished')),
+      }))
+      if (now.playing === before && !now.busy) return
+      before = now.playing
+    }
+    throw new Error('the How it is made queue never settled')
+  }
+
   test('How it is made: each idea lands as you reach it, part by part, on the motion tokens, once', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'no-preference' })
     await page.goto('/#/how')
@@ -2479,6 +2541,56 @@ test.describe('uplift slice 5 · doc pages', () => {
     // Played once: a step that has played never waits again.
     await page.mouse.wheel(0, -3000)
     await expect(steps.nth(1)).toHaveAttribute('data-how', 'play')
+  })
+
+  // Slice 7 fixes, item 3 (Omkar, 8 Nov 2026): the ideas take turns, never two at once.
+  test('How it is made: at 1440 by 900 the second idea, on screen at load, starts only once the first has landed', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'no-preference' })
+    await page.goto('/#/how')
+    const steps = page.locator('.how-step')
+    await expect(steps.first()).toHaveAttribute('data-how', 'play')
+    // The case that played two at once: the second idea's top is already above the four-fifths line.
+    expect((await steps.nth(1).boundingBox())!.y).toBeLessThan(900 * 0.8)
+    // While the first plays, the second waits its turn.
+    await expect(steps.nth(1)).toHaveAttribute('data-how', 'wait')
+    await expect(steps.nth(1)).toHaveAttribute('data-how', 'play')
+    await settled(page)
+    const [one, two] = await turns(page)
+    expect(two.played).toBe(true)
+    expect(two.start).toBeGreaterThanOrEqual(one.end - EPS)
+    // Reached by scrolling while another plays: each waits its turn, in the order reached.
+    await page.mouse.wheel(0, 5000)
+    await expect(steps.last()).toHaveAttribute('data-how', 'play')
+    await settled(page)
+    const all = (await turns(page)).filter((t) => t.played).sort((a, b) => a.start - b.start)
+    expect(all.map((t) => t.i)).toEqual([0, 1, 2, 3])
+    for (let k = 1; k < all.length; k++) expect(all[k].start, `idea ${all[k].i + 1}`).toBeGreaterThanOrEqual(all[k - 1].end - EPS)
+  })
+
+  test('How it is made: in a tall window the ideas on screen still play one after another, in page order', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 2400 })
+    await page.emulateMedia({ reducedMotion: 'no-preference' })
+    await page.goto('/#/how')
+    const steps = page.locator('.how-step')
+    await expect(steps.nth(2)).toHaveAttribute('data-how', 'play', { timeout: 10_000 })
+    await settled(page)
+    const played = (await turns(page)).filter((t) => t.played)
+    expect(played.length).toBeGreaterThanOrEqual(3)
+    for (let k = 1; k < played.length; k++) {
+      expect(played[k].i).toBe(played[k - 1].i + 1)
+      expect(played[k].start, `idea ${played[k].i + 1}`).toBeGreaterThanOrEqual(played[k - 1].end - EPS)
+    }
+  })
+
+  test('How it is made: with reduced motion, or a section in the address, every idea is simply there', async ({ page }) => {
+    await page.goto('/#/how')
+    await expect(page.locator('.how-step').first()).toBeVisible()
+    await expect(page.locator('[data-how]')).toHaveCount(0)
+    await page.emulateMedia({ reducedMotion: 'no-preference' })
+    await page.goto('/#/how?section=shipped')
+    await page.reload()
+    await expect(page.locator('.how-gate__card').first()).toHaveCSS('opacity', '1')
+    await expect(page.locator('[data-how]')).toHaveCount(0)
   })
 
   test('Component status: one table of every component, with pictures, and each promise written once', async ({ page }) => {
@@ -2531,6 +2643,76 @@ test.describe('uplift slice 5 · doc pages', () => {
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('How it is made')
   })
 
+  // Slice 7, item 2 (Omkar, 8 Nov 2026): the "Not in Vela" box speaks the kind that was asked for, a
+  // request link only for a component or a pattern, and the cards lead to that kind's list.
+  const ways = (page: Page) => page.getByRole('main').locator('.nf__section:last-of-type a')
+  const gapBox = (page: Page) => page.getByRole('main').locator('.nf-gap--wide')
+
+  test('Not found, a foundation: says foundation, asks for nothing, and leads to every foundation', async ({ page }) => {
+    await page.goto('/#/foundations/elevation')
+    const main = page.getByRole('main')
+    await expect(main.getByRole('heading', { level: 1 })).toHaveText('There is no foundation called “elevation”')
+    await expect(gapBox(page)).toContainText('No foundation is called that')
+    await expect(gapBox(page)).not.toContainText(/component/i)
+    await expect(main.getByRole('link', { name: 'Ask for it on GitHub' })).toHaveCount(0)
+    await expect(main.getByRole('heading', { level: 2, name: 'Vela’s foundations' })).toBeVisible()
+    // One card for each foundation the menu lists, each to its page.
+    const listed = await page.getByRole('navigation', { name: 'Site' }).locator('a[href^="#/foundations/"]').evaluateAll((as) => as.map((a) => a.getAttribute('href')))
+    expect(await ways(page).evaluateAll((as) => as.map((a) => a.getAttribute('href')))).toEqual(listed)
+    await expect(main.getByRole('link', { name: /Component status/ })).toHaveCount(0)
+  })
+
+  test('Not found, a component: says component, asks for it, and leads to Component status and the proposals', async ({ page }) => {
+    await page.goto('/#/components/firewall-rule')
+    await expect(gapBox(page)).toContainText('No component is called that')
+    await expect(page.getByRole('main').getByRole('link', { name: 'Ask for it on GitHub' })).toHaveAttribute('href', /template=component-request\.yml&title=Component\+request%3A\+Firewall\+Rule$/)
+    expect(await ways(page).evaluateAll((as) => as.map((a) => a.getAttribute('href')))).toEqual(['#/status', '#/?section=proposals'])
+  })
+
+  test('Not found, a page: says page, asks for nothing, and leads to the Overview and Component status', async ({ page }) => {
+    await page.goto('/#/settings/billing')
+    await expect(gapBox(page)).toContainText('No page on this site is called that')
+    await expect(gapBox(page)).not.toContainText(/component/i)
+    await expect(page.getByRole('main').getByRole('link', { name: 'Ask for it on GitHub' })).toHaveCount(0)
+    expect(await ways(page).evaluateAll((as) => as.map((a) => a.getAttribute('href')))).toEqual(['#/', '#/status'])
+  })
+
+  test('Not found, a pattern and a proposal: a pattern is asked for and leads to the patterns; a proposal is not, and leads to the proposals', async ({ page }) => {
+    await page.goto('/#/patterns/bulk-edit')
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('There is no pattern called “bulk-edit”')
+    await expect(gapBox(page)).toContainText('No pattern is called that')
+    await expect(page.getByRole('main').getByRole('link', { name: 'Ask for it on GitHub' })).toHaveAttribute('href', /title=Pattern\+request%3A\+Bulk\+Edit$/)
+    expect(await ways(page).evaluateAll((as) => as.map((a) => a.getAttribute('href')))).toEqual(['#/patterns/copy', '#/?section=proposals'])
+    await page.goto('/#/proposals/zero-trust-map')
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('There is no proposal called “zero-trust-map”')
+    await expect(gapBox(page)).toContainText('No proposal is called that')
+    await expect(page.getByRole('main').getByRole('link', { name: 'Ask for it on GitHub' })).toHaveCount(0)
+    expect(await ways(page).evaluateAll((as) => as.map((a) => a.getAttribute('href')))).toEqual(['#/?section=proposals', '#/status'])
+  })
+
+  // Slice 7, item 1 (Omkar, 8 Nov 2026): the British spelling is an alias in the router.
+  test('#/foundations/colour opens the Colour page at the color address, and Back skips the alias', async ({ page }) => {
+    const h1 = page.getByRole('main').getByRole('heading', { level: 1 })
+    await page.goto('/#/how')
+    await expect(h1).toHaveText('How it is made')
+    // A link written the British way, followed from another page.
+    await page.evaluate(() => { window.location.hash = '#/foundations/colour' })
+    await expect(h1).toHaveText('Colour')
+    await expect(page).toHaveURL(/#\/foundations\/color$/)
+    await expect(page).toHaveTitle('Colour · Vela Design System')
+    // The alias was replaced, not added: one step back is the page before, one forward the Colour page.
+    await page.goBack()
+    await expect(page).toHaveURL(/#\/how$/)
+    await expect(h1).toHaveText('How it is made')
+    await page.goForward()
+    await expect(page).toHaveURL(/#\/foundations\/color$/)
+    await expect(h1).toHaveText('Colour')
+    // Opened directly, with a query: the query is kept.
+    await page.goto('/#/foundations/colour?section=x')
+    await expect(h1).toHaveText('Colour')
+    expect(new URL(page.url()).hash).toBe('#/foundations/color?section=x')
+  })
+
   test('project documents: no markdown mark reaches the page, long ones have a rail, the Roadmap leads with its phases', async ({ page }) => {
     for (const path of ['/#/changelog', '/#/roadmap', '/#/contributing', '/#/accessibility', '/#/foundations/filter-grammar']) {
       await page.goto(path)
@@ -2552,7 +2734,7 @@ test.describe('uplift slice 5 · doc pages', () => {
 
   test('the footer is in a reader\'s words', async ({ page }) => {
     await page.goto('/#/status')
-    await expect(page.locator('.demo-footer')).toHaveText('No runtime dependencies · Light and dark · Contrast checked to WCAG 2.1 AA on every change')
+    await expect(page.locator('.demo-footer')).toHaveText(`${PACKAGE} · No runtime dependencies · Light and dark · Contrast checked to WCAG 2.1 AA on every change`)
   })
 
   test('at 390 the doc pages fit, and How it is made reads top to bottom', async ({ page }) => {
@@ -2857,7 +3039,9 @@ test.describe('uplift slice 7 · the deferrals', () => {
     ])
     const strip = page.locator('.copy-facts')
     await expect(strip.locator('dt')).toHaveText(['You need', "The page can't", 'Status'])
-    await expect(strip.locator('dd').last()).toHaveText('Experimental: the lowest status of its parts.')
+    // The status word and "Not built", both read from the spec's Status line; its approval stays in the spec.
+    await expect(strip.locator('dd').last()).toHaveText('Experimental. Not built yet.')
+    await expect(page.getByRole('main')).not.toContainText('Approved by Omkar')
     // In that order: the demo, the cards, the strip, all in the first screen.
     const y = async (l: Locator) => (await l.boundingBox())!.y
     const demo = page.getByRole('region', { name: 'Live demo' }).first()
@@ -2877,5 +3061,144 @@ test.describe('uplift slice 7 · the deferrals', () => {
     await page.goto('/#/')
     await expect(page.locator('svg.pm--hero')).toBeVisible()
     expect(scripts.some((s) => s.includes(hero))).toBe(true)
+  })
+})
+
+// Slice 7 fixes, PR C: the pages (Omkar's answers of 8 Nov 2026, items 4, 6 and 8). Items 3 (How it is
+// made, the ideas take turns), 9 (each thing shown once) and 10 (the Copy page's status) are with the
+// tests they changed, above.
+test.describe('slice 7 fixes · the pages', () => {
+  /** A drawn thing's left edge: the text's first glyph box, or a path's box. */
+  const textLeft = (l: Locator) => l.evaluate((el) => { const r = document.createRange(); r.selectNodeContents(el); return r.getClientRects()[0].left })
+
+  test('item 4: at 390 the hero mark lines up with the panel\'s text', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.goto('/#/')
+    await expect(page.locator('.ov-hero svg.pm--hero')).toBeVisible()
+    // The drawn outer ring, not the mark's box, which has room round the ring.
+    const ring = await page.locator('.ov-hero__mark svg path').evaluateAll((ps) => Math.min(...ps.map((p) => p.getBoundingClientRect().left)))
+    expect(Math.abs(ring - await textLeft(page.locator('.ov-hero__panel h1')))).toBeLessThanOrEqual(0.5)
+    expect(Math.abs(ring - await textLeft(page.locator('.ov-hero__claim')))).toBeLessThanOrEqual(0.5)
+  })
+
+  test('item 4: on a phone every stage plate puts its word above its code, from one edge; wider, beside it', async ({ page }) => {
+    const plates = () => page.locator('.shell-stage').evaluateAll((ss) => ss.map((s) => {
+      const word = s.querySelector('.shell-stage__live')!.getBoundingClientRect()
+      const code = s.querySelector('.shell-stage__props')!.getBoundingClientRect()
+      return { word: s.querySelector('.shell-stage__live')!.textContent, above: code.top >= word.bottom, left: Math.round(code.left - word.left) }
+    }))
+    for (const id of ['button', 'input', 'status-indicator', 'tabs']) {
+      await page.setViewportSize({ width: 390, height: 844 })
+      await page.goto(`/#/components/${id}`)
+      await expect(page.getByRole('region', { name: 'Live demo' })).toBeVisible()
+      const phone = await plates()
+      expect(phone.length, id).toBeGreaterThan(0)
+      for (const p of phone) expect(p, `${id} at 390`).toEqual({ word: p.word, above: true, left: 0 })
+      await page.setViewportSize({ width: 1440, height: 900 })
+      await expect.poll(async () => (await plates()).every((p) => !p.above), `${id} at 1440`).toBe(true)
+    }
+  })
+
+  test('item 6: on a phone the Overview is under five screens, three proposals lead, and "Show all" opens the rest in place', async ({ page }) => {
+    // How many proposals there are, from the site's navigation (wide, where it is in the page).
+    await page.goto('/#/')
+    const listed = await page.getByRole('navigation', { name: 'Site' }).locator('a[href^="#/proposals/"]').count()
+    expect(listed).toBeGreaterThan(3)
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.reload()
+    const section = page.locator('section[aria-labelledby="section-proposals"]')
+    await expect(section).toBeVisible()
+    // 7,229px (8.6 screens) on main; about 4.7 now, with the proposals closed.
+    expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBeLessThan(5 * 844)
+    const cards = section.locator('.ov-proposals > li')
+    await expect(cards.filter({ visible: true })).toHaveCount(3)
+    // A disclosure with the count from the data: a real button, collapsed, the rows hidden.
+    const more = section.getByRole('button', { name: `Show all ${listed}` })
+    await expect(more).toHaveAttribute('aria-expanded', 'false')
+    const rows = section.locator(`#${await more.getAttribute('aria-controls')}`)
+    await expect(rows).toBeHidden()
+    await more.focus()
+    await page.keyboard.press('Enter')
+    const open = section.getByRole('button', { name: 'Show fewer' })
+    await expect(open).toHaveAttribute('aria-expanded', 'true')
+    await expect(open).toBeFocused()
+    // The rest, in place, as compact rows: a link each, named by its heading, after the button in reading order.
+    await expect(rows.getByRole('link')).toHaveCount(listed - 3)
+    await expect(rows.getByRole('heading', { level: 3 })).toHaveCount(listed - 3)
+    expect(await open.evaluate((b, id) => !!(b.compareDocumentPosition(document.getElementById(id)!) & Node.DOCUMENT_POSITION_FOLLOWING), await open.getAttribute('aria-controls'))).toBe(true)
+    await page.keyboard.press('Tab')
+    await expect(rows.getByRole('link').first()).toBeFocused()
+    await open.click()
+    await expect(rows).toBeHidden()
+    // Ways in: two to a row; a picture in a smaller frame is cropped, never scaled.
+    const ways = page.locator('.ov-ways > li')
+    const [a, b] = [(await ways.nth(0).boundingBox())!, (await ways.nth(1).boundingBox())!]
+    expect(Math.round(a.y)).toBe(Math.round(b.y))
+    expect(b.x).toBeGreaterThan(a.x + a.width - 1)
+    const pictures = await page.locator('.ov-ways .shell-card__thumb').evaluateAll((ts) => ts.map((t) => {
+      const shown = t.checkVisibility()
+      // A part may move its own pieces (the Toggle's knob); nothing in the picture is drawn at another size.
+      const scaled = [t, ...t.querySelectorAll('*')].some((el) => {
+        const cs = getComputedStyle(el)
+        const m = new DOMMatrix(cs.transform === 'none' ? undefined : cs.transform)
+        return Math.abs(Math.hypot(m.a, m.b) - 1) > 0.001 || Math.abs(Math.hypot(m.c, m.d) - 1) > 0.001 || cs.scale !== 'none' || cs.zoom !== '1'
+      })
+      const small = [...t.querySelectorAll('*')].filter((el) => el.childNodes[0]?.nodeType === Node.TEXT_NODE && el.textContent!.trim()).some((el) => parseFloat(getComputedStyle(el).fontSize) < 12)
+      return { name: t.closest('a')!.querySelector('h3')!.textContent, shown, scaled, small }
+    }))
+    for (const p of pictures) expect({ ...p, scaled: p.shown && p.scaled, small: p.shown && p.small }, p.name!).toEqual({ ...p, scaled: false, small: false })
+    // Two crops would not say what the picture says, so on a phone those cards have none.
+    expect(pictures.filter((p) => !p.shown).map((p) => p.name)).toEqual(['Patterns', 'How it is made'])
+    expect(await noSidewaysScroll(page)).toBe(true)
+  })
+
+  test('item 6: wide, the Overview is as it was: every proposal a card, no "Show all", every Ways in picture', async ({ page }) => {
+    await page.goto('/#/')
+    const section = page.locator('section[aria-labelledby="section-proposals"]')
+    const listed = await page.getByRole('navigation', { name: 'Site' }).locator('a[href^="#/proposals/"]').count()
+    await expect(section.locator('.ov-proposals > li').filter({ visible: true })).toHaveCount(listed)
+    await expect(section.getByRole('button')).toHaveCount(0)
+    await expect(page.locator('.ov-ways .shell-card__thumb').filter({ visible: true })).toHaveCount(6)
+  })
+
+  // Item 8: no em or en dash reaches a reader anywhere on the site. Every route the site's navigation
+  // lists, each component's other tabs, Not found, and All states (#/states, the visual baselines'
+  // page, outside the menu). Code and preformatted text keep every character.
+  test('item 8: no visible em or en dash outside code, on any page', async ({ page }) => {
+    test.setTimeout(300_000)
+    await page.goto('/#/')
+    const nav = await page.getByRole('navigation', { name: 'Site' }).locator('a[href^="#/"]').evaluateAll((as) => [...new Set(as.map((a) => a.getAttribute('href')!))])
+    const routes = new Set(['#/', '#/states', '#/no-such-page', '#/components/no-such-part', ...nav])
+    for (const h of nav) if (/^#\/components\/[^/]+$/.test(h)) for (const tab of ['rules', 'tokens', 'figma']) routes.add(`${h}/${tab}`)
+    // The pages the brief names are all reached: components and their tabs, foundations, patterns,
+    // proposals, the documents, the Overview, How, Adopt, Status, Motion and Not found.
+    for (const must of ['#/how', '#/adopt', '#/status', '#/motion', '#/patterns/copy', '#/roadmap', '#/changelog', '#/components/dialog/rules', '#/foundations/sizing', '#/proposals/evidence-locker'])
+      expect([...routes], must).toContain(must)
+    const found: string[] = []
+    for (const route of routes) {
+      // A fresh load each time, so the words read are this route's, never the last one's still on screen.
+      await page.goto('about:blank')
+      await page.goto(`/${route}`)
+      await expect(page.getByRole('heading', { level: 1 }), route).toBeVisible()
+      const hits = await page.evaluate(() => {
+        // Folded text is one press from view: open it, so it is read too.
+        document.querySelectorAll('[hidden="until-found"]').forEach((e) => e.removeAttribute('hidden'))
+        const out: string[] = []
+        const walk = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT)
+        for (let n = walk.nextNode(); n; n = walk.nextNode()) {
+          const text = n.textContent ?? ''
+          const el = n.parentElement
+          if (!/[—–]/.test(text) || !el || el.closest('code, pre, script, style')) continue
+          if (!el.checkVisibility({ visibilityProperty: true })) continue
+          const r = el.getBoundingClientRect()
+          if (r.width <= 1 || r.height <= 1) continue
+          out.push(text.trim())
+        }
+        for (const e of document.querySelectorAll('[placeholder]')) if (/[—–]/.test(e.getAttribute('placeholder')!)) out.push(e.getAttribute('placeholder')!)
+        return out
+      })
+      for (const h of hits) found.push(`${route}: ${h}`)
+    }
+    expect(found).toEqual([])
   })
 })

@@ -12,14 +12,12 @@
  */
 import { Fragment, useEffect, useId, useRef, type ReactNode } from 'react'
 import { Button, Input, Toggle, cn } from '../../src'
-import type { Control, PropRow } from './spec'
+import type { Control } from './spec'
 import type { Lock, Values } from './registry'
 import { Segments } from '../shell/Segments'
 import { ScrollRegion } from '../shell/ScrollRegion'
 import { CopyButton, CopyStatus, useCopy } from '../shell/Copy'
-import { Markdown } from './Markdown'
 import { LEVELS } from './facts'
-import { undash } from './rules-read'
 
 export const SEGMENT_MAX = 6
 
@@ -134,26 +132,6 @@ export function LockPanel({ open, component, levelOf, onMove, onClose, onOpenPro
         <Button size="tiny" appearance="hollow" onClick={onClose}>{open.lock.keep}</Button>
       </div>
     </section>
-  )
-}
-
-/** Plain words for a prop with no control, from the spec's own Notes (or the registry's, when given). */
-export function AlsoInTheApi({ rows, explain }: { rows: PropRow[]; explain?: Record<string, string> }) {
-  if (rows.length === 0) return null
-  return (
-    <div className="pg-uncontrolled">
-      <h3>Also in the API</h3>
-      <p className="pg-uncontrolled__lead">Props with no control here, because they look the same whichever you pick.</p>
-      <dl>
-        {rows.map((p) => (
-          <div key={`${p.part ?? ''}${p.prop}`} className="pg-uncontrolled__row">
-            <dt><code>{p.part ? `${p.part}.` : ''}{p.prop}</code> <code className="pg-uncontrolled__type">{p.type.replace(/`/g, '')}</code></dt>
-            {/* The spec's words, with a spaced dash turned to a colon or a full stop in this layer only (slice 2's rule). */}
-            <dd>{explain?.[p.prop] ? <Markdown source={undash(explain[p.prop])} /> : p.notes ? <Markdown source={undash(p.notes)} /> : null}</dd>
-          </div>
-        ))}
-      </dl>
-    </div>
   )
 }
 

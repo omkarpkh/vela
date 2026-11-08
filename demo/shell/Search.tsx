@@ -6,6 +6,10 @@
  *
  * - Opened by the header button, ⌘K or Ctrl K anywhere, or `/` when focus is not in a text field.
  * - The button's name is its visible words; the shortcut is announced through aria-keyshortcuts.
+ * - Slice 7 (item 2b; Omkar, 8 Nov 2026): the button sizes itself by its own slot in the header, a
+ *   container query, never by the window. The full hint when it fits; "Search" and the shortcut when
+ *   it doesn't; Vela's Icon Button alone, named "Search", when the slot is tight and on a phone. The
+ *   words never wrap. "Or type a name you know" is said again in the dialog's own field.
  * - A modal dialog (the native <dialog>: Escape closes it, the page behind is inert) holding a
  *   combobox input and a listbox of results. Up and Down move, Enter opens, Escape closes and puts
  *   focus back on the button that opened it.
@@ -18,7 +22,8 @@
  *   not shown twice.
  */
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
-import { cn, Icon, type IconName } from '../../src'
+import { Icon, type IconName } from '../../src'
+import { IconButton } from '../../src/headless'
 import { buildIndex, search, MISSING, KIND_WORDS, type Hit, type Item, type Kind } from '../playground/search'
 import { CATALOG as REGISTRY } from '../playground/catalog'
 import './shell.css'
@@ -32,6 +37,7 @@ export const kindWord = (i: Item) => (i.kind === 'foundation' && i.tag === 'Cont
 
 const isApple = () => /mac|iphone|ipad|ipod/i.test((navigator as Navigator & { userAgentData?: { platform?: string } }).userAgentData?.platform ?? navigator.platform ?? '')
 
+/** The search glyph in the header's field-like button and in the dialog's field. */
 function SearchIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
@@ -48,10 +54,14 @@ export const searchFor = (words: string) => window.dispatchEvent(new CustomEvent
 const inTextField = (el: EventTarget | null) =>
   el instanceof HTMLElement && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName))
 
-export function Search({ compact }: { compact: boolean }) {
+/** The keys that open Search, announced on each of its header buttons. */
+const SHORTCUTS = 'Control+K Meta+K /'
+
+export function Search() {
   const index = useMemo(buildIndex, [])
   const dialog = useRef<HTMLDialogElement>(null)
   const button = useRef<HTMLButtonElement>(null)
+  const iconButton = useRef<HTMLButtonElement>(null)
   const input = useRef<HTMLInputElement>(null)
   const [query, setQuery] = useState('')
   const [active, setActive] = useState(0)
@@ -98,29 +108,34 @@ export function Search({ compact }: { compact: boolean }) {
 
   const q = query.trim()
 
+  // The header button on screen: the worded one or the Icon Button, whichever the slot shows.
+  const shown = () => [button.current, iconButton.current].find((b) => b && b.offsetParent !== null) ?? button.current
+
   return (
-    <>
+    <div className="shell-search-slot">
       {/* WCAG 2.5.3, Label in Name: the name is the visible words, so a voice-control user can say
           what they see (playground spec v1.2, section 3). The shortcut is aria-keyshortcuts, never
-          part of the name. On a phone the icon stands alone and is named "Search". */}
+          part of the name. The second half of the hint is not drawn when the slot is narrower, and
+          is not read then either, so the name is always the words on screen. */}
       <button
         ref={button}
         type="button"
-        className={cn('shell-search-button', compact && 'is-compact')}
-        aria-label={compact ? 'Search' : undefined}
-        aria-keyshortcuts="Control+K Meta+K /"
+        className="shell-search-button"
+        aria-keyshortcuts={SHORTCUTS}
         onClick={() => open()}
       >
         <SearchIcon />
-        {!compact && <span className="shell-search-button__text">Search, or type a name you know</span>}
-        {!compact && <kbd className="shell-kbd" aria-hidden="true">{key}</kbd>}
+        <span className="shell-search-button__text">Search<span className="shell-search-button__more">, or type a name you know</span></span>
+        <kbd className="shell-kbd" aria-hidden="true">{key}</kbd>
       </button>
+      {/* Tight, and on a phone: Vela's Icon Button, as the GitHub, npm and Figma marks are (item 7). */}
+      <IconButton ref={iconButton} className="shell-search-icon" label="Search" icon="search" aria-keyshortcuts={SHORTCUTS} tooltipPlacement="bottom" onClick={() => open()} />
       <dialog
         ref={dialog}
         className="shell-search"
         aria-label="Search"
         // Escape and a click on the backdrop close it; focus goes back to the button either way.
-        onClose={() => button.current?.focus()}
+        onClose={() => shown()?.focus()}
         onClick={(e) => { if (e.target === dialog.current) close() }}
       >
         <div className="shell-search__field">
@@ -137,7 +152,7 @@ export function Search({ compact }: { compact: boolean }) {
             aria-activedescendant={hits.length ? `${id}-opt-${active}` : undefined}
             autoComplete="off"
             spellCheck={false}
-            placeholder="A name, an alias such as “modal”, or a rule id"
+            placeholder="Type a name you know, an alias such as “modal”, or a rule id"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={onInputKey}
@@ -186,6 +201,6 @@ export function Search({ compact }: { compact: boolean }) {
           <span><kbd className="shell-kbd">Esc</kbd> to close</span>
         </div>
       </dialog>
-    </>
+    </div>
   )
 }

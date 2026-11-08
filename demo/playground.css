@@ -148,15 +148,12 @@
 .pg-select:disabled { color: var(--vela-text-inactive); background: var(--vela-control-bg-disabled); cursor: not-allowed; }
 .pg-select:focus-visible { outline: var(--vela-focus-ring-width) solid var(--vela-focus-ring-color); outline-offset: var(--vela-focus-ring-offset); }
 .pg-booleans { display: flex; flex-direction: column; gap: var(--vela-space-10); padding-top: var(--vela-space-5); }
-.pg-uncontrolled { border-top: 1px solid var(--vela-border-subtle); padding-top: var(--vela-space-15); }
-/* The props panel is --vela-bg-container: de-emphasized text there is 4.35:1 in light (a negative
-   case in PAIRS), so the panel's secondary text is text-default and is told apart by size and case. */
-.pg-uncontrolled h3 { margin: 0 0 var(--vela-space-10); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); font-weight: var(--vela-font-weight-semibold); color: var(--vela-text-default); text-transform: uppercase; letter-spacing: var(--vela-text-meta-tracking); }
-.pg-uncontrolled dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: var(--vela-space-5) var(--vela-space-10); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); }
-.pg-uncontrolled dt { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--vela-text-default); }
-.pg-uncontrolled dd { margin: 0; color: var(--vela-text-default); }
-.pg-uncontrolled code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 .pg-hint { margin: 0; color: var(--vela-text-default); }
+/* "no control" in the Props table (SpecSections.tsx): the site's tag, a button so the keyboard reaches
+   its reason (the kit's Tooltip, description kind). It does nothing when pressed, so it keeps the
+   default cursor; its focus ring is the kit's. */
+.pg-nocontrol { margin-inline-start: var(--vela-space-5); font-family: var(--vela-font-family-primary); vertical-align: baseline; cursor: default; }
+.pg-nocontrol:focus-visible { outline: var(--vela-focus-ring-width) solid var(--vela-focus-ring-color); outline-offset: var(--vela-focus-ring-offset); }
 
 /* The code bar (section 5): its label, then Copy above the code, never on top of it. On the page
    surface. It copies the import line and the JSX; install is only in the Use panel. */
@@ -252,10 +249,6 @@
 .pg-code__line.is-changed::before { content: ''; position: absolute; inset: 0; z-index: -1; background: var(--vela-bg-selected); opacity: 0; pointer-events: none; animation: pg-settle var(--vela-duration-slow) var(--vela-ease-standard); }
 @keyframes pg-settle { from { opacity: 1; } to { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .pg-code__line.is-changed::before { animation: none; } }
-.pg-uncontrolled__lead { margin: 0 0 var(--vela-space-10); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
-.pg-uncontrolled dl { display: flex; flex-direction: column; gap: var(--vela-space-10); }
-.pg-uncontrolled__row dd .pg-p { margin: var(--vela-space-5) 0 0; }
-.pg-uncontrolled__type { color: var(--vela-text-default); }
 @media (forced-colors: active) {
   /* Forced colours drop shadows: here, and only on a changed control, the mark is a real border,
      taken out of the padding so nothing moves. */

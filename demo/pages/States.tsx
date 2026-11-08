@@ -66,7 +66,7 @@ export function States() {
         </div>
       </Section>
 
-      <Section title="Toggle" note="a binary setting that takes effect immediately — if it needs a Save click, it is a Checkbox">
+      <Section title="Toggle" note="a binary setting that takes effect immediately; if it needs a Save click, it is a Checkbox">
         <div className="demo-row">
           <Toggle label="Email alerts" checked={notify} onChange={setNotify} />
           <Toggle label="Weekly digest" defaultChecked={false} />
@@ -80,7 +80,7 @@ export function States() {
           <Input label="Tenant name" hint="Lowercase letters only" value={tenant}
                  onChange={(e) => setTenant(e.target.value)} error={tenantError} placeholder="acme-prod" />
           <Input label="Region" size="large" defaultValue="ap-south-1" required />
-          <Input label="Legacy ID" size="tiny" disabled defaultValue="—" />
+          <Input label="Legacy ID" size="tiny" disabled defaultValue="LEG-2041" />
         </div>
       </Section>
 
@@ -90,7 +90,7 @@ export function States() {
             <ContextualAlert key={s} severity={s} title={s[0].toUpperCase() + s.slice(1)}
                              onDismiss={s === 'critical' ? undefined : () => setAlerts((a) => a.filter((x) => x !== s))}>
               {s === 'critical'
-                ? 'Cannot be dismissed — there is no resolution path that does not involve acting.'
+                ? 'Cannot be dismissed: there is no resolution path that does not involve acting.'
                 : `This is a ${s} alert bound entirely to --vela-*-severity-${s} tokens.`}
             </ContextualAlert>
           ))}
@@ -100,7 +100,7 @@ export function States() {
         </div>
       </Section>
 
-      <Section title="Status Indicator" note="five health states — not severity's six, not risk's three">
+      <Section title="Status Indicator" note="five health states: not severity's six, not risk's three">
         <div className="demo-row">
           {STATUSES.map((s) => (
             <StatusIndicator key={s} status={s} label={STATUS_WORDS[s]} />
@@ -112,12 +112,12 @@ export function States() {
         </div>
       </Section>
 
-      <Section title="Risk Pill" note="three risk levels — a score, not an event and not health · a label, never a control">
+      <Section title="Risk Pill" note="three risk levels: a score, not an event and not health · a label, never a control">
         <div className="demo-row">
           {RISKS.map((r) => <RiskPill key={r} risk={r} />)}
           <RiskPill risk="high" label="High · 87" />
         </div>
-        <p className="vela-meta">Small, for dense tables — the regular size shares Button tiny's height:</p>
+        <p className="vela-meta">Small, for dense tables. The regular size shares Button tiny's height:</p>
         <div className="demo-row">
           {RISKS.map((r) => <RiskPill key={r} risk={r} size="small" />)}
           <Button size="tiny" appearance="hollow">Review</Button>
@@ -141,7 +141,7 @@ export function States() {
         </Tabs>
       </Section>
 
-      <Section title="Tokens" note="every swatch below is a semantic token — switch the theme above and watch them re-point">
+      <Section title="Tokens" note="every swatch below is a semantic token: switch the theme above and watch them re-point">
         <div className="demo-swatches">
           {[
             ['--vela-bg-global', 'bg-global'], ['--vela-bg-container', 'bg-container'],

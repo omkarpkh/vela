@@ -90,15 +90,35 @@
 
 /* ---------------------------------------------------------------- search -- */
 /* Search (playground spec, sections 3 and 10): stands in for a command palette until Combobox. The
-   header button reads like a field; on a phone it is the icon alone, named "Search". */
+   header button reads like a field.
+   Slice 7, item 2b (Omkar, 8 Nov 2026): it sizes itself by its own slot, never by the window. The
+   slot takes the room the logo and the right-hand controls leave, and a container query on it picks
+   one of three forms: the full hint; "Search" with the shortcut; Vela's Icon Button alone (tight,
+   and always on a phone). The words never wrap. The two widths are the full form's and the short
+   form's own width (317px and 145px in Open Sans, 323px and 148px in a fallback face, measured 8 Nov
+   2026) with about a tenth to spare; they are literals
+   because a container query cannot read a custom property. tests/e2e/header.spec.ts sweeps every
+   width from 320 to 1440px for overlap, wrap and clipping. */
+.shell-search-slot { flex: 1 1 0; min-width: var(--vela-control-height-35); display: flex; align-items: center; container: shell-search / inline-size; }
 .shell-search-button {
-  display: inline-flex; align-items: center; gap: var(--vela-space-10);
-  height: var(--vela-control-height-35); min-width: var(--vela-control-height-35); padding: 0 var(--vela-space-10);
+  flex: none; display: inline-flex; align-items: center; gap: var(--vela-space-10);
+  height: var(--vela-control-height-35); padding: 0 var(--vela-space-10);
   border: 1px solid var(--vela-control-border); border-radius: var(--vela-radius-4);
   background: var(--vela-control-bg); color: var(--vela-control-placeholder);
-  font: inherit; font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height); cursor: pointer;
+  font: inherit; font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height); white-space: nowrap; cursor: pointer;
 }
-.shell-search-button.is-compact { justify-content: center; padding: 0; color: var(--vela-text-default); }
+.shell-search-slot .shell-search-icon { display: none; }
+@container shell-search (max-width: 359px) {   /* vela-allow: the full hint's own width and spare; a container query cannot read a token */
+  .shell-search-button__more { display: none; }
+}
+@container shell-search (max-width: 159px) {   /* vela-allow: "Search" and the shortcut's own width and spare; a container query cannot read a token */
+  .shell-search-slot .shell-search-button { display: none; }
+  .shell-search-slot .shell-search-icon { display: inline-flex; }
+}
+@media (max-width: 600px) {
+  .shell-search-slot .shell-search-button { display: none; }
+  .shell-search-slot .shell-search-icon { display: inline-flex; }
+}
 .shell-search-button svg { flex: none; color: var(--vela-icon-default); }
 @media (hover: hover) { .shell-search-button:hover { border-color: var(--vela-control-border-hover); } }
 .shell-search-button:active { border-color: var(--vela-control-border-active); }
@@ -169,7 +189,6 @@
   font: inherit; font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height); cursor: pointer;
   transition: background-color var(--vela-duration-base) var(--vela-ease-standard);
 }
-.shell-appearance__button.is-compact { justify-content: center; padding: 0; }
 .shell-appearance__button svg { flex: none; color: var(--vela-icon-default); }
 .shell-appearance__button[aria-expanded="true"] { background: var(--vela-bg-selected); border-color: var(--vela-border-active); }
 @media (hover: hover) { .shell-appearance__button:hover { background: var(--vela-bg-hover); transition-duration: var(--vela-duration-fast); } }
@@ -492,6 +511,12 @@
 .shell-stage__props { min-width: 0; overflow-wrap: anywhere; font-family: var(--vela-font-family-mono); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
 .shell-stage__tools { display: flex; flex-wrap: wrap; align-items: center; gap: var(--vela-space-10) var(--vela-space-15); margin-inline-start: auto; }
 .shell-stage__slab { min-width: 0; padding: var(--vela-space-20); border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4); background: var(--vela-bg-global); color: var(--vela-text-default); }
+/* On a phone every plate puts its word above its code (slice 7 fixes, item 4), as "The range" did
+   when its code was long: the code takes its own line, so the word and the code start at one edge
+   whichever props are on show. Wider, both sit side by side, which every plate already does. */
+@media (max-width: 600px) {
+  .shell-stage > .shell-stage__caption > .shell-stage__props { flex-basis: 100%; }
+}
 
 /* ----------------------------------------------------------------- cards -- */
 /* Card with thumbnail, and the Next card (demo/shell/Card.tsx). One link each. Rest: a subtle edge;

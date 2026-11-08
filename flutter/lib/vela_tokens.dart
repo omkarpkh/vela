@@ -1272,7 +1272,7 @@ abstract final class VelaSizing {
 /// [durationBase]; travel across a distance uses [durationTravel]. Things that move on
 /// screen take [easeStandard], things that enter take [easeOut]. Same values as tokens.css.
 abstract final class VelaMotion {
-  /// A press landing. Below the ~85ms where a delay starts to read as lag, so contact and acknowledgement arrive together. Press-in only — the release settles at duration-base.
+  /// A press landing. Below the ~85ms where a delay starts to read as lag, so contact and acknowledgement arrive together. Press-in only: the release settles at duration-base.
   static const Duration durationInstant = Duration(milliseconds: 70);
   /// Anything that answers a pointer: hover in, exits.
   static const Duration durationFast = Duration(milliseconds: 120);

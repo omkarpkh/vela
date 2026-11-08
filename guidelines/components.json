@@ -794,7 +794,7 @@
     {
       "name": "Icon",
       "spec": "guidelines/components/icon.md",
-      "purpose": "One glyph from a closed, curated set of fifty, drawn from Lucide and compiled into the package, at one of three token-bound sizes. It sits beside text, in a table cell or in another component's icon slot; it is never a control and never a severity, risk or status mark.",
+      "purpose": "One glyph from a closed, curated set of fifty-two, drawn from Lucide and compiled into the package, at one of three token-bound sizes. It sits beside text, in a table cell or in another component's icon slot; it is never a control and never a severity, risk or status mark.",
       "status": {
         "label": "Experimental",
         "note": "specced, built and tested, and the glyph list is new; the Figma set is published in the library (built from scripts/figma/components/icon.figma.js). Approved once the kit's own inline glyphs (src/lib/icons.tsx) have moved onto it; see GOVERNANCE.md."
@@ -816,7 +816,7 @@
           "name": "name",
           "type": "IconName",
           "required": true,
-          "notes": "**Required.** One of the fifty names in *Glyphs* below, exported as `ICON_NAMES`. Lucide's canonical names: `funnel` not `filter`, `trash` not `trash-2`, `rotate-ccw-clock` not `history`."
+          "notes": "**Required.** One of the fifty-two names in *Glyphs* below, exported as `ICON_NAMES`. Lucide's canonical names: `funnel` not `filter`, `trash` not `trash-2`, `rotate-ccw-clock` not `history`."
         },
         {
           "part": "Icon",
@@ -905,7 +905,7 @@
           "name": "icon",
           "type": "IconName",
           "required": false,
-          "notes": "Exactly one of `icon`, `brandMark` or `word`. One of Icon's fifty."
+          "notes": "Exactly one of `icon`, `brandMark` or `word`. One of Icon's fifty-two."
         },
         {
           "part": "IconButton",

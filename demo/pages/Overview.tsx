@@ -1,5 +1,5 @@
-import { useEffect, useId, type CSSProperties, type ReactNode } from 'react'
-import { Button, Toggle, StatusIndicator, RiskPill, Tabs, Table, BrandMark } from '../../src'
+import { useEffect, useId, useState, type CSSProperties, type ReactNode } from 'react'
+import { Button, Toggle, StatusIndicator, RiskPill, Tabs, Table, BrandMark, Icon } from '../../src'
 import type { Status, Risk } from '../../src'
 import { PROPOSALS } from '../playground/proposals'
 import { figmaUrl } from '../links'
@@ -202,6 +202,61 @@ function ProposalThumb({ id }: { id: string }) {
   )
 }
 
+/** A proposal's rules as one bar, for a compact row: proved filled, the rest outlined, on the dashed plate. */
+function ProposalMini({ id }: { id: string }) {
+  const r = PROPOSAL_RULES[id]
+  return (
+    <span className="ov-thumb ov-thumb--spec ov-thumb--mini">
+      {r && (
+        <span className="ov-thumb__split">
+          <span className="ov-thumb__part ov-thumb__part--auto" style={{ flexGrow: r.proved }} />
+          <span className="ov-thumb__part ov-thumb__part--review" style={{ flexGrow: r.rules - r.proved }} />
+        </span>
+      )}
+    </span>
+  )
+}
+
+/** On a phone, the first proposals as cards; the rest behind "Show all", as compact rows (slice 7 fixes, item 6). */
+const FIRST_PROPOSALS = 3
+
+/**
+ * Specified, not built yet. Wide, every proposal is a card. On a phone (the Overview at 520px and
+ * below) the first three are cards, then a disclosure, "Show all" with the count from the data,
+ * opens the rest in place as compact rows: the name, its line and a small picture. The button keeps
+ * focus; the rows follow it in reading order. Both forms are in the page, and the stylesheet shows
+ * the one that fits, so nothing is measured and nothing moves when it lays out.
+ */
+function Proposals() {
+  const [open, setOpen] = useState(false)
+  const rows = useId()
+  const rest = PROPOSALS.slice(FIRST_PROPOSALS)
+  return (
+    <section className="ov-section" aria-labelledby="section-proposals">
+      <h2 id="section-proposals" className="vela-h3" tabIndex={-1}>Specified, not built yet</h2>
+      <p className="vela-body ov-lede">Agentic components, written as specs before any code.</p>
+      <ul className="ov-proposals">
+        {PROPOSALS.map((p, i) => (
+          <li key={p.id} className={i >= FIRST_PROPOSALS ? 'ov-proposals__wide' : undefined}><Card level={3} href={href({ kind: 'proposal', id: p.id })} title={<span data-generated="">{p.name}</span>} line={<span data-generated="">{p.what}</span>} thumbnail={<ProposalThumb id={p.id} />} className="ov-proposal" /></li>
+        ))}
+      </ul>
+      {rest.length > 0 && (
+        <div className="ov-more">
+          <button type="button" className="shell-more ov-more__button" aria-expanded={open} aria-controls={rows} onClick={() => setOpen((o) => !o)}>
+            <Icon name={open ? 'chevron-down' : 'chevron-right'} size="small" />
+            {open ? 'Show fewer' : <>Show all <G>{PROPOSALS.length}</G></>}
+          </button>
+          <ul id={rows} className="ov-rows" hidden={!open}>
+            {rest.map((p) => (
+              <li key={p.id}><Card level={3} href={href({ kind: 'proposal', id: p.id })} title={<span data-generated="">{p.name}</span>} line={<span data-generated="">{p.what}</span>} thumbnail={<ProposalMini id={p.id} />} className="ov-row" /></li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </section>
+  )
+}
+
 /** `theme` is the site's resolved theme (Appearance: System resolves to light or dark). */
 export function Overview({ theme }: { theme: 'light' | 'dark' }) {
   useArrival()
@@ -258,22 +313,14 @@ export function Overview({ theme }: { theme: 'light' | 'dark' }) {
         <ul className="ov-ways">
           <li><Card level={3} href={TARGETS.components} title="Components" line={<><G>{FACTS.built}</G> built, with a workbench for each</>} thumbnail={<ComponentsThumb />} /></li>
           <li><Card level={3} href={TARGETS.foundations} title="Foundations" line={<G>{FOUNDATIONS_LINE}</G>} thumbnail={<FoundationsThumb />} /></li>
-          <li><Card level={3} href={TARGETS.patterns} title="Patterns" line="Decisions across components, starting with Copy" thumbnail={<PatternsThumb />} /></li>
+          <li><Card level={3} href={TARGETS.patterns} title="Patterns" line="Decisions across components, starting with Copy" thumbnail={<PatternsThumb />} className="ov-way--uncropped" /></li>
           <li><Card level={3} href={TARGETS.rules} title="Rules" line="Every rule, by component, with its proof" thumbnail={<RulesThumb />} /></li>
-          <li><Card level={3} href={TARGETS.how} title="How it is made" line="One token file, made into everything else" thumbnail={<HowThumb />} /></li>
+          <li><Card level={3} href={TARGETS.how} title="How it is made" line="One token file, made into everything else" thumbnail={<HowThumb />} className="ov-way--uncropped" /></li>
           <li><Card level={3} href={figmaUrl()} title="Figma library" line="The same tokens and components, for design" thumbnail={<FigmaThumb />} /></li>
         </ul>
       </section>
 
-      <section className="ov-section" aria-labelledby="section-proposals">
-        <h2 id="section-proposals" className="vela-h3" tabIndex={-1}>Specified, not built yet</h2>
-        <p className="vela-body ov-lede">Agentic components, written as specs before any code.</p>
-        <ul className="ov-proposals">
-          {PROPOSALS.map((p) => (
-            <li key={p.id}><Card level={3} href={href({ kind: 'proposal', id: p.id })} title={<span data-generated="">{p.name}</span>} line={<span data-generated="">{p.what}</span>} thumbnail={<ProposalThumb id={p.id} />} className="ov-proposal" /></li>
-          ))}
-        </ul>
-      </section>
+      <Proposals />
 
       <section className="ov-section" aria-labelledby="ov-new">
         <h2 id="ov-new" className="vela-h3">New in <G>{RELEASED.version}</G></h2>

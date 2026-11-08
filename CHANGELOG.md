@@ -460,6 +460,51 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   built.
 
 ### Changed
+- **Slice 7 fixes, the pages** (Omkar's answers of 8 Nov 2026, items 3, 4, 6, 8, 9 and 10). The site
+  only; nothing in the package's components changes.
+  - **How it is made: the ideas take turns** (item 3). At 1440 by 900 the second idea's top is above
+    the four-fifths line on load, so the first two ideas played together. Now one idea plays at a
+    time: those on screen at load play in page order, each when the one before has landed (read from
+    its own animations' `finished`, never a guessed delay); one reached by scrolling waits its turn.
+    Reduced motion, no IntersectionObserver and `?section=` are as before: everything simply there.
+  - **One alignment on phones** (item 4). At 390 the Overview's hero mark sat 7.5px left of the
+    panel's text (its drawn ring 13.5px in from its box); stacked, the mark now moves in so the ring
+    meets the heading's left edge (0px apart, was 7.5px). On a phone every stage plate puts its word
+    above its code, from one edge, as "The range" did when its code was long; "Live" sat beside a
+    three-line code block (code 59px right of the word). Wider, every plate already had its word
+    beside its code at 1440, so nothing changes there.
+  - **The Overview on a phone** (item 6). 7,229px at 390 by 844 (8.6 screens), now 4,001px (4.7),
+    with the proposals closed; desktop unchanged (3,250px). Specified, not built yet: 2,909px to
+    952px: the first three proposals as cards, then "Show all" with the count from the data, a
+    disclosure that opens the rest in place as compact rows (the name, its line and a small picture:
+    the proposal's rules as one bar, proved filled). Ways in: 1,725px to 694px, two cards to a row
+    with the pictures in smaller frames that crop, never scale; Patterns and How it is made have no
+    picture on a phone, since neither crop says what its picture says. Built for security products:
+    518px to 398px, the three scales side by side while each column's longest word fits; the card's
+    title, which sat at the right edge below 760px, is at the start. Sections are 40 apart on a
+    phone, not 60.
+  - **No dash reaches a reader** (item 8). The seven found: Adopt's two captions and two in its
+    limits paragraph, the Motion review's intro and `--vela-duration-instant`'s description (the
+    timing table reads it, so the token file, DESIGN.md and the Dart comment change with it; the
+    Figma variable's description follows at the next `tokens:figma`), and the Copy pattern's lone
+    dash for an empty value, now "Not set". The new browser test also found Sizing's icon table
+    (three rows), fixed in `guidelines/foundations/sizing.md`. All states (`#/states`) still has six,
+    in notes inside the visual baselines' sections; the test leaves that page out, for a decision.
+  - **Each thing shown once** (item 9). "Also in the API" is gone from the controls. In the Props
+    section a prop with no control carries a "no control" tag, its reason on hover and focus (the
+    kit's Tooltip, description kind), and the registry's plain words for it follow the spec's Notes.
+    States is on the Playground tab only; the Rules tab keeps Motion and Anti-patterns. The Rules
+    count is unchanged: it counts the tags under Hard constraints, and no spec tags a rule in States.
+  - **The Copy page's status** (item 10) reads "Experimental. Not built yet.", the word and "Not
+    built" read from the spec's Status line; the approval stays in the spec.
+  - 1919 checks (was 1907): 1452 unit and contract (was 1448), 350 playground (was 342). New: the
+    ideas take turns at 1440 by 900 and in a tall window, and stay still under reduced motion or a
+    section link; the hero mark's edge and every plate's word against its code, at 390 and 1440; the
+    phone Overview's height, disclosure and crops, and the wide one unchanged; a site-wide test that
+    fails on any visible em or en dash outside code, naming the page and the words; the no-control
+    tag and the Rules sections; no spec tags a rule in States; the Copy status from its spec line.
+    Packed: 382.9 kB, 274 files (was 381.4 kB, 274 after the header fixes): this entry and the shipped README.
+
 - **Dropdown List moves on the overlay motion, like Popover** (decision 008,
   `decisions/008-dropdown-list-overlay-motion`, which extends decision 006; decided by Omkar on
   7 November 2026 after judging its clip). The list no longer travels a 5px step from its trigger on
@@ -1097,6 +1142,46 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   rules, 174 with proofs.
 
 ### Fixed
+- **The site header, at every width** (slice 7, item 2b; Omkar's decision of 8 Nov 2026). From 620
+  to 1040px the Search hint wrapped onto two to five lines and spilled out of its box, and from 620
+  to 1000px the version tag ran under Search. A new browser test sweeps every width from 320 to
+  1440px in 20px steps and fails on anything in the header that overlaps, wraps, is clipped or
+  leaves the window, naming the width and the parts: on main it failed at 22 of the 57 widths (620
+  to 1040px, 158 problems); it now passes at all 57, in Open Sans and in a fallback face.
+  - **The version leaves the header.** "@omkarux/vela 0.15.0" is in the footer and in npm's name,
+    "@omkarux/vela 0.15.0 on npm" (its tooltip adds ", opens in a new tab"), both read from
+    `package.json`. The logo is the mark and "Vela Design System".
+  - **Search sizes itself by its own slot, not the window**: a container query on the header's
+    Search slot shows the full hint when it fits, "Search" with ⌘K or Ctrl K when it doesn't, and
+    the icon alone when the slot is tight and on a phone. The words never wrap, and the button's
+    name is always the words on screen. "Type a name you know" now opens the dialog field's hint.
+  - **Appearance is its icon alone below 1000px**, named "Appearance" for a screen reader and in a
+    label tooltip (Tooltip `kind="label"`, heard once).
+  - The header's glyph-only controls and the marks are one `TooltipProvider`.
+- **Every glyph-only control in the header is Vela's Icon Button** (slice 7, item 7; Omkar's
+  decision of 8 Nov 2026): the menu button at every width, Search when it is its icon alone, and
+  Appearance below 1000px. No frame (the menu and Appearance had a `border-subtle` one, under 3:1,
+  and Search a field's), the hover fill, the same 35px box, and the name in a label tooltip, as
+  the GitHub, npm and Figma marks beside them. Each keeps `aria-expanded` and `aria-controls`, and
+  focus returns to it. A browser test checks the one look at 390, 620 and 800px.
+- **Icon: two new glyphs, `menu` and `contrast`** (52, was 50), for the header's menu and
+  Appearance (`icon.md`, Glyphs; Omkar's decision of 8 Nov 2026). Lucide 1.63.0, ISC; neither is
+  derived from Feather, so `NOTICE` is unchanged. The Figma builder has both; the published Icon
+  set in the library does not yet (the Figma thread adds the two variants). The worded
+  Appearance button uses `contrast` too, in place of its own drawing.
+- **Not found speaks the kind that was asked for** (slice 7, item 2). The "Not in Vela" box says
+  component, pattern, proposal, foundation or page, as the heading already did. The request link
+  appears only for a component or a pattern (as "Component request" or "Pattern request"); a
+  missing foundation, proposal or page has none. The cards at the bottom lead to that kind's list:
+  a foundation to a card for every foundation; a pattern to the patterns and the proposals; a
+  proposal to the proposals and Component status; a component to Component status and the
+  proposals, as before; a page to the Overview and Component status.
+- **`#/foundations/colour` opens the Colour page** (slice 7, item 1). The router keeps a small table
+  of other spellings (`ALIASES` in `demo/router.ts`); the British one is its first. The address
+  quietly becomes `#/foundations/color`, the spelling of the code and the token names, by
+  replacing the history entry, so Back goes to the page before and never bounces. A query is kept.
+  - 1924 checks (was 1907): 1451 unit and contract (was 1448), 356 browser behaviour (was 342).
+    Packed: 381.4 kB, 274 files (was 379.7 kB, 270): the two glyphs add four files to dist.
 - **The component-request form was stale.** Its "Closest existing component" listed 6 of the 19
   components, and its "not yet specced" list named Checkbox, Radio, Dropdown List, Text Area,
   Tooltip and Icon Button, which are built. The closest options are now generated from

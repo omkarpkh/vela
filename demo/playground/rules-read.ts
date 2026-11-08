@@ -12,6 +12,13 @@ import type { ProofLevel } from './Proofs'
 
 export interface SpecRule { id: string; level: ProofLevel; sentence: string }
 
+/**
+ * The spec's own sections the Rules tab shows after the ledger. States is on the Playground tab only
+ * (slice 7 fixes, item 9: each thing shown once). The ledger counts the tags under Hard constraints,
+ * so a section moving between tabs never changes the Rules count (a unit test keeps States untagged).
+ */
+export const RULE_SECTIONS = ['Motion', 'Anti-patterns'] as const
+
 /** Every tagged bullet under `## Hard constraints`, in order, as scripts/check-rules.mjs reads them. */
 export function rulesFromSpec(md: string): SpecRule[] {
   const section = md.match(/^## Hard constraints[^\n]*\n([\s\S]*?)(?=^## |(?![\s\S]))/m)

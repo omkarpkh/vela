@@ -60,8 +60,8 @@ export interface Entry extends CatalogEntry {
   hide?: string[]
   /**
    * Props the playground documents but does not demonstrate: they change nothing you can see
-   * here, so a control would be a switch with no consequence. Unlike `hide` they keep their
-   * row under "Also in the API" — the prop is real, the demonstration is not.
+   * here, so a control would be a switch with no consequence. Unlike `hide` they are tagged "no
+   * control" in the Playground tab's Props table: the prop is real, the demonstration is not.
    */
   noControl?: string[]
   /**
@@ -85,7 +85,7 @@ export interface Entry extends CatalogEntry {
    * A locked value stays in view and reachable, says its rule, and offers the legal moves.
    */
   locks?: (v: Values) => Record<string, Record<string, Lock>>
-  /** Plain words for a prop under "Also in the API", where the spec's Notes are too terse to stand alone. */
+  /** Plain words for a prop with no control, after the spec's Notes in the Props table, where those are too terse to stand alone. */
   explain?: Record<string, string>
   render: (v: Values) => ReactNode
   code: (v: Values, spec: Spec) => string
@@ -553,9 +553,9 @@ ${TAB_EXAMPLE.filter((t) => !t.disabled).map((t) => `  <Tabs.Panel value="${t.va
   {
     ...catalogEntry('icon'),
     seed: { name: 'shield-x', label: '' },
-    // `name` is the IconName union — fifty literals the Props table names by type rather than
+    // `name` is the IconName union — fifty-two literals the Props table names by type rather than
     // spelling out — so its control is built here from ICON_NAMES, the same list the type is.
-    extra: [{ prop: 'name', kind: 'select', type: 'IconName', options: [...ICON_NAMES], default: 'shield-x', notes: 'One of the fifty curated glyphs.' }],
+    extra: [{ prop: 'name', kind: 'select', type: 'IconName', options: [...ICON_NAMES], default: 'shield-x', notes: 'One of the fifty-two curated glyphs.' }],
     // className is layout for the host page; it changes nothing on this stage.
     noControl: ['className'],
     highlight: (v) => (t) =>
@@ -874,7 +874,7 @@ toast.add({ ${opts} })`
     implementations: [{ id: 'headless', entry: '@omkarux/vela/headless' }],
     extra: [
       { prop: 'glyph', kind: 'select', type: '"icon" | "brandMark" | "word"', options: ['icon', 'brandMark', 'word'], default: 'icon', notes: 'Not a prop: which one of `icon`, `brandMark` or `word` is set. Exactly one is.' },
-      { prop: 'icon', kind: 'select', type: 'IconName', options: [...ICON_NAMES], default: 'x', notes: "With glyph icon: one of Icon's fifty." },
+      { prop: 'icon', kind: 'select', type: 'IconName', options: [...ICON_NAMES], default: 'x', notes: "With glyph icon: one of Icon's fifty-two." },
       { prop: 'brandMark', kind: 'select', type: 'BrandMarkName', options: ['github', 'figma'], default: 'github', notes: 'With glyph brandMark: GitHub or Figma. Figma is regular only.' },
     ],
     explain: {
