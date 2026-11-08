@@ -1515,7 +1515,7 @@ test('the Icon page sizes every glyph from the tokens and draws the stroke on th
   await page.goto('/#/components/icon')
   await expect(page.getByRole('heading', { level: 1, name: 'Icon' })).toBeVisible()
   const frame = page.locator('.pg-frame[data-theme="light"] .pg-frame-body')
-  await expect(frame.locator('.pg-icon__grid svg.vela-icon')).toHaveCount(50)
+  await expect(frame.locator('.pg-icon__grid svg.vela-icon')).toHaveCount(52)
   const lead = frame.locator('.pg-icon__lead svg')
   const box = async () => { const b = (await lead.boundingBox())!; return [Math.round(b.width), Math.round(b.height)] }
   expect(await box()).toEqual([16, 16])

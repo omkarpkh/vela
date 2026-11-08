@@ -19,7 +19,7 @@ import { Tooltip, type TooltipPlacement } from '../Tooltip'
 export type IconButtonSize = 'tiny' | 'regular'
 
 /**
- * Exactly one glyph, from a closed set: one of Icon's fifty, GitHub's or Figma's own mark, or the
+ * Exactly one glyph, from a closed set: one of Icon's fifty-two, GitHub's or Figma's own mark, or the
  * word "npm". Figma's mark is 20px only, so it has no `tiny` (whose glyph is 16px).
  */
 type Glyph =

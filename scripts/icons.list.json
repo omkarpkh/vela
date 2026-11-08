@@ -51,6 +51,8 @@
     "bell",
     "bot",
     "terminal",
-    "rotate-ccw-clock"
+    "rotate-ccw-clock",
+    "menu",
+    "contrast"
   ]
 }

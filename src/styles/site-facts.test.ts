@@ -3,7 +3,8 @@ import { readFileSync, readdirSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { rulesOf, proposalRulesOf, dependenciesFor, figmaSetFor, dateWords, builtLine } from '../../demo/playground/facts'
 import { statusOf } from '../../demo/playground/status'
-import { parseHash, href, sameRoute, isRouteHash } from '../../demo/router'
+import { parseHash, href, sameRoute, isRouteHash, canonicalHash, ALIASES } from '../../demo/router'
+import { FOUNDATIONS } from '../../demo/nav'
 
 // Playground slice 1 (playground spec, section 4): the contract facts grid reads only what the
 // repository already holds, and the page tabs have addresses that keep every old link working.
@@ -109,6 +110,20 @@ describe('page tab addresses', () => {
     expect(parseHash('#/settings/billing')).toEqual({ kind: 'notfound', path: 'settings/billing' })
     expect(href({ kind: 'notfound', path: 'settings/billing' })).toBe('#/settings/billing')
     expect([isRouteHash('#main'), isRouteHash('#/how'), isRouteHash('')]).toEqual([false, true, true])
+  })
+
+  // Slice 7, item 1: another spelling of an address is put right, keeping its query.
+  it('spells colour as the site does, keeps the query, and leaves every other address alone', () => {
+    expect(canonicalHash('#/foundations/colour')).toBe('#/foundations/color')
+    expect(canonicalHash('#/foundations/colour/')).toBe('#/foundations/color')
+    expect(canonicalHash('#/foundations/colour?section=roles')).toBe('#/foundations/color?section=roles')
+    expect([canonicalHash('#/foundations/color'), canonicalHash('#/'), canonicalHash(''), canonicalHash('#main')]).toEqual([null, null, null, null])
+    // Every alias leads to a page that exists, and is not itself a page's address.
+    for (const [from, to] of Object.entries(ALIASES)) {
+      const r = parseHash(`#/${to}`)
+      expect(r.kind === 'foundation' && FOUNDATIONS.some((f) => f.id === r.id), to).toBe(true)
+      expect(FOUNDATIONS.some((f) => `foundations/${f.id}` === from), from).toBe(false)
+    }
   })
 
   it('treats a component tab as the same page, so its nav link stays current', () => {
