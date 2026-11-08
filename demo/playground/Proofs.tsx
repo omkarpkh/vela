@@ -151,7 +151,7 @@ const compilerWords = (error: string) => error.split('\n').map((l) => l.replace(
 export interface RulesTabProps {
   name: string
   rules: SpecRule[]
-  /** The spec's own sections after the rules: States, Motion, Anti-patterns. */
+  /** The spec's own sections after the rules: Motion and Anti-patterns (States is on the Playground tab). */
   sections: { heading: string; body: string }[]
   proofs: ReturnType<typeof useProofs>
   commit: string

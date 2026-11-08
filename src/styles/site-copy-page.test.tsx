@@ -267,7 +267,9 @@ describe('the Copy page opening: question cards and the facts strip', () => {
     const facts = openingFacts(opening)!
     expect(facts.need).toBe('Copy Button. Copyable Value and CopyGroup. Both specified, neither built.')
     expect(facts.cant).toBe('See the clipboard or clear it, mark a copied secret as sensitive in clipboard history, or tell where the person pastes.')
-    expect(facts.status).toBe('Experimental: the lowest status of its parts.')
+    // Omkar, 8 Nov 2026: the word and "Not built", from the Status line; a line without "Not built" says the word alone.
+    expect(facts.status).toBe('Experimental. Not built yet.')
+    expect(openingFacts(opening.replace(' Not built.', ''))!.status).toBe('Experimental.')
     render(<CopyPattern />)
     const strip = document.querySelector('.copy-facts')!
     expect([...strip.querySelectorAll('dt')].map((d) => d.textContent)).toEqual(['You need', "The page can't", 'Status'])

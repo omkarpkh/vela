@@ -101,6 +101,20 @@
 .ov-thumb__caption { text-align: center; }
 .ov-thumb__cell.is-proved { background: var(--vela-border-action); }
 
+/* The phone form of the proposals (Overview.tsx, Proposals): wide, the disclosure and its rows are not
+   shown; at 520px and below the cards after the first three give way to them. A row is the same
+   card, laid out as a row: the small picture, then the name over its line. */
+.ov-more { display: none; }
+.ov-rows { display: flex; flex-direction: column; gap: var(--vela-space-10); }
+.ov-rows[hidden] { display: none; }
+.ov-row.shell-card { display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "pic title" "pic line"; align-items: start; gap: var(--vela-space-5) var(--vela-space-15); padding: var(--vela-space-10); }
+.ov-row .shell-card__thumb { grid-area: pic; aspect-ratio: auto; padding: 0; background: transparent; }
+.ov-row .shell-card__title { grid-area: title; }
+.ov-row .shell-card__line { grid-area: line; font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); }
+/* The small picture: the dashed plate, 80 by 40, the proposal's rules as one bar, proved filled. */
+.ov-thumb--mini { width: calc(4 * var(--vela-space-20)); height: var(--vela-space-40); padding: var(--vela-space-10); }
+.ov-thumb--mini .ov-thumb__split { width: 100%; }
+
 /* New in: the release and its highlights. */
 .ov .ov-highlights { display: flex; flex-direction: column; gap: var(--vela-space-5); max-width: 72ch; padding-left: var(--vela-space-20); list-style: disc; color: var(--vela-text-default); }
 
@@ -117,15 +131,47 @@
   .ov-fact:last-child { grid-column: 1 / -1; }
   .ov-ways, .ov-proposals { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .ov-wide .shell-card { display: flex; flex-direction: column; }
-  .ov-wide .shell-card__title { padding-top: 0; }
+  .ov-wide .shell-card__title { padding-top: 0; align-self: auto; }
   .ov-thumb--scales { flex-wrap: wrap; gap: var(--vela-space-15) var(--vela-space-30); }
 }
 @container (max-width: 520px) {
   .ov-ways, .ov-proposals { grid-template-columns: minmax(0, 1fr); }
+  /* Phones (slice 7 fixes, item 6): three proposals as cards, then "Show all" and the rest as rows. */
+  .ov-proposals__wide { display: none; }
+  .ov-more { display: flex; flex-direction: column; gap: var(--vela-space-10); }
+  /* Ways in, two to a row, each picture in a smaller frame. A picture is never scaled: the frame crops
+     it from its start, so its words stay 12px or more. Patterns and How it is made have no picture
+     here: cropped, the install line loses "Copied" and the token file loses the outputs it fans
+     into, so neither crop says what the picture says. */
+  .ov-ways { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--vela-space-10); }
+  .ov-ways .shell-card { gap: var(--vela-space-5); padding: var(--vela-space-10); }
+  .ov-ways .shell-card__thumb { aspect-ratio: auto; height: calc(7 * var(--vela-space-15)); padding: var(--vela-space-10); justify-content: flex-start; align-items: flex-start; }
+  /* A row of parts keeps its one line and runs off the frame's end, as a crop does; the Rules words wrap, as they do wide. */
+  .ov-ways .ov-thumb__row { flex-wrap: nowrap; }
+  .ov-ways .ov-thumb__row:not(.ov-thumb__words) > * { flex: none; }
+  .ov-ways .ov-thumb__words { flex-wrap: wrap; }
+  .ov-ways .ov-way--uncropped .shell-card__thumb { display: none; }
+  .ov-ways .shell-card__line { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); }
   /* Stacked: the mark above the panel, at 96px, on the phone still, and the console under it. (Set
      on the hero, not on .ov: a container query never styles its own container.) */
   .ov-hero { --ov-mark: calc(6 * var(--vela-icon-size)); grid-template-columns: minmax(0, 1fr); grid-template-areas: "mark" "panel" "console"; align-items: stretch; background-image: var(--ov-mood-narrow, none); }
   .ov-hero__panel { padding: var(--vela-space-20); }
+  /* Toward four and a half screens on a phone (slice 7 fixes, item 6): a proposal card's picture in a
+     frame of its own height, not 2:1, and the three scales side by side while each column's longest
+     word fits (a long label wraps in its column; at 320 a column still wraps to the next line). */
+  .ov-proposals .shell-card__thumb { aspect-ratio: auto; }
+  .ov-thumb--scales { gap: var(--vela-space-15); }
+  .ov-thumb--scales > .ov-thumb__col { flex: 1 1 min-content; }
+  /* Stacked, the mark lines up with the panel's text (slice 7 fixes, item 4): the drawn outer ring
+     starts 4.484 of the master's 32 units in from its box (brand/vela-hero-96plus*.svg), so the box
+     moves in by the panel's edge and padding less that inset, and the ring's left edge meets the
+     heading's. A browser test measures the two edges. */
+  .ov-hero__mark { margin-inline-start: calc(1px + var(--vela-space-20) - var(--ov-mark) * 4.484 / 32); }
+}
+/* The sections' spacing is the container's own gap, which its own query can't reach: on a phone (the
+   site's phone width, as the stage strip's) they are 40 apart (slice 7 fixes, item 6). */
+@media (max-width: 600px) {
+  .ov { gap: var(--vela-space-40); }
 }
 @media (forced-colors: active) {
   .ov-hero__panel, .ov-console { border-color: CanvasText; }

@@ -249,7 +249,7 @@ export function Motion() {
         <h1 className="vela-h2">Motion review</h1>
         <p className="vela-meta">
           A review aid for the motion pass, parts 1 and 2. The values here were approved on 31 October 2026 (decision 006); a
-          change to any of them is reviewed here again. Slow motion is for review only — it changes the playback rate of the page's running
+          change to any of them is reviewed here again. Slow motion is for review only: it changes the playback rate of the page's running
           animations, toasts and overlays included, and touches no component stylesheet.
         </p>
       </header>

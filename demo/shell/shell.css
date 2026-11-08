@@ -511,6 +511,12 @@
 .shell-stage__props { min-width: 0; overflow-wrap: anywhere; font-family: var(--vela-font-family-mono); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
 .shell-stage__tools { display: flex; flex-wrap: wrap; align-items: center; gap: var(--vela-space-10) var(--vela-space-15); margin-inline-start: auto; }
 .shell-stage__slab { min-width: 0; padding: var(--vela-space-20); border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4); background: var(--vela-bg-global); color: var(--vela-text-default); }
+/* On a phone every plate puts its word above its code (slice 7 fixes, item 4), as "The range" did
+   when its code was long: the code takes its own line, so the word and the code start at one edge
+   whichever props are on show. Wider, both sit side by side, which every plate already does. */
+@media (max-width: 600px) {
+  .shell-stage > .shell-stage__caption > .shell-stage__props { flex-basis: 100%; }
+}
 
 /* ----------------------------------------------------------------- cards -- */
 /* Card with thumbnail, and the Next card (demo/shell/Card.tsx). One link each. Rest: a subtle edge;

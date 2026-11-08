@@ -263,7 +263,7 @@ The table is generated from `tokens/vela.tokens.json` by `npm run tokens`:
 <!-- generated:motion (npm run tokens) -->
 | Token | Value | Description |
 |---|---|---|
-| `--vela-duration-instant` | `70ms` | A press landing. Below the ~85ms where a delay starts to read as lag, so contact and acknowledgement arrive together. Press-in only — the release settles at duration-base. |
+| `--vela-duration-instant` | `70ms` | A press landing. Below the ~85ms where a delay starts to read as lag, so contact and acknowledgement arrive together. Press-in only: the release settles at duration-base. |
 | `--vela-duration-fast` | `120ms` | Anything that answers a pointer: hover in, exits. |
 | `--vela-duration-base` | `180ms` | Anything that settles or enters: hover out, appearing. |
 | `--vela-duration-travel` | `240ms` | The one step above duration-base, still under 300ms, for a change that crosses a distance: the Tabs underline growing in place under the tab that was pressed, and the Tabs hover preview fading in. The spring curve is drawn over this duration, so the two are used together. |
