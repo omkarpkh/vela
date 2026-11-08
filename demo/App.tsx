@@ -73,19 +73,6 @@ function NavGroup({ title, level = 3, holdsCurrent, children }: { title: string;
 }
 
 /**
- * The menu button's glyph. The header's other glyph-only controls are Vela's Icon Button (slice 7,
- * item 7); this one is not yet, because Icon's closed set has no menu glyph, and a new glyph is a
- * spec change first (icon.md, Glyphs). Flagged, not invented.
- */
-function MenuIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
-      <path d="M2 4h12M2 8h12M2 12h12" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-/**
  * GitHub, npm and Figma on a wide screen: each its own mark, or npm's word, in an Icon Button link
  * named in words, with a label tooltip. Figma's mark keeps its 20px clear space (.topbar__marks).
  * The header's glyph-only controls are one TooltipProvider (App): once one label shows, the next
@@ -182,16 +169,17 @@ export function App() {
       {/* One tooltip group for the header row: Search and Appearance when they are icon-only, and the marks. */}
       <TooltipProvider>
         <header className="topbar">
-          <button
-            type="button"
+          {/* Every glyph-only control in the header is Vela's Icon Button (slice 7, item 7; Omkar, 8 Nov
+              2026): no frame, the hover fill, its name in a label tooltip. The name says what a press does. */}
+          <IconButton
             className="topbar__menu"
+            label={navOpen ? 'Hide navigation' : 'Show navigation'}
+            icon="menu"
             aria-expanded={navOpen}
             aria-controls="site-nav"
-            aria-label={navOpen ? 'Hide navigation' : 'Show navigation'}
+            tooltipPlacement="bottom"
             onClick={() => setNavOpen((o) => !o)}
-          >
-            <MenuIcon />
-          </button>
+          />
           {/* The logo (the logo states Omkar approved on 1 Nov 2026): the 24px mark and the name, one
               link to the Overview. The link is named by the name alone, "Vela Design System": the mark
               is aria-hidden. The version left the logo on 8 Nov 2026 (slice 7, item 2b): it ran under

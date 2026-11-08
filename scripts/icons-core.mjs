@@ -7,7 +7,7 @@
  * module per canonical icon at node_modules/lucide/dist/esm/icons/<kebab-name>.mjs. Each module's
  * default export is Lucide's IconNode — `[[tag, attrs], …]` on a 24×24 grid — the same data the
  * package's public `import { ShieldX } from 'lucide'` returns; reading the per-icon file avoids
- * importing all ~1,900 icons to use fifty. Aliases (`filter`, `trash-2`, `history`) have no module
+ * importing all ~1,900 icons to use fifty-two. Aliases (`filter`, `trash-2`, `history`) have no module
  * of their own and are listed in dist/esm/iconsAndAliases.mjs; the curated list must use the
  * canonical name, and a test of the list says which canonical name an alias resolves to.
  */

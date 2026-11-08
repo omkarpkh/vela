@@ -189,7 +189,6 @@
   font: inherit; font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height); cursor: pointer;
   transition: background-color var(--vela-duration-base) var(--vela-ease-standard);
 }
-.shell-appearance__button.is-compact { justify-content: center; padding: 0; }
 .shell-appearance__button svg { flex: none; color: var(--vela-icon-default); }
 .shell-appearance__button[aria-expanded="true"] { background: var(--vela-bg-selected); border-color: var(--vela-border-active); }
 @media (hover: hover) { .shell-appearance__button:hover { background: var(--vela-bg-hover); transition-duration: var(--vela-duration-fast); } }

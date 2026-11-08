@@ -191,3 +191,57 @@ test.describe('Appearance in the header', () => {
     await expect(button).toHaveAttribute('aria-expanded', 'false')
   })
 })
+
+// Item 7 (Omkar, 8 Nov 2026): every glyph-only control in the header is Vela's Icon Button, one look
+// at every width: no frame, the same box, a transparent rest, its name in a label tooltip. On a
+// phone that is the menu, Search and Appearance; at 620 the same three; at 800 Search has its words
+// again, so the menu and Appearance.
+test.describe('the header\'s glyph-only controls', () => {
+  for (const [width, names] of [[390, ['Show navigation', 'Search', 'Appearance']], [620, ['Show navigation', 'Search', 'Appearance']], [800, ['Show navigation', 'Appearance']]] as const) {
+    test(`at ${width}px ${names.join(', ')} are Icon Buttons with one look`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 800 })
+      await page.goto('/#/components/button')
+      await page.mouse.move(width / 2, 700)
+      const banner = page.getByRole('banner')
+      // Every button in the header that shows no words is one of these, and each is an Icon Button.
+      const glyphOnly = await banner.locator('button:visible').evaluateAll((bs) => bs.filter((b) => !(b as HTMLElement).innerText.trim()).map((b) => b.getAttribute('aria-label')))
+      expect(glyphOnly).toEqual([...names])
+      const looks: string[] = []
+      for (const name of names) {
+        const button = banner.getByRole('button', { name, exact: true })
+        await expect(button).toHaveClass(/vela-icon-button vela-icon-button--regular/)
+        looks.push(JSON.stringify(await button.evaluate((b) => {
+          const cs = getComputedStyle(b)
+          const r = b.getBoundingClientRect()
+          return { w: r.width, h: r.height, border: [cs.borderTopWidth, cs.borderTopColor], background: cs.backgroundColor, radius: cs.borderTopLeftRadius }
+        })))
+        // Its name, shown in a label tooltip on keyboard focus, and heard once.
+        await button.focus()
+        const tip = page.locator('.vela-tooltip:not([data-ending-style])', { hasText: name })
+        await expect(tip).toHaveText(name)
+        await expect(tip).toHaveAttribute('aria-hidden', 'true')
+        await expect(button).not.toHaveAttribute('aria-describedby')
+        await button.blur()
+      }
+      // One look: the same box, the Icon Button's 1px transparent edge, no fill at rest.
+      expect(new Set(looks).size, looks.join('\n')).toBe(1)
+      expect(JSON.parse(looks[0])).toEqual({ w: 35, h: 35, border: ['1px', 'rgba(0, 0, 0, 0)'], background: 'rgba(0, 0, 0, 0)', radius: expect.any(String) })
+    })
+  }
+
+  test('the menu Icon Button says what a press does, and opens and closes the navigation', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.goto('/#/components/button')
+    const banner = page.getByRole('banner')
+    const show = banner.getByRole('button', { name: 'Show navigation', exact: true })
+    await expect(show).toHaveAttribute('aria-expanded', 'false')
+    await expect(show).toHaveAttribute('aria-controls', 'site-nav')
+    await show.click()
+    const hide = banner.getByRole('button', { name: 'Hide navigation', exact: true })
+    await expect(hide).toHaveAttribute('aria-expanded', 'true')
+    await expect(page.getByRole('navigation', { name: 'Site' })).toBeVisible()
+    await hide.click()
+    await expect(show).toHaveAttribute('aria-expanded', 'false')
+    await expect(show).toBeFocused()
+  })
+})

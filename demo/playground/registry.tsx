@@ -551,9 +551,9 @@ ${TAB_EXAMPLE.filter((t) => !t.disabled).map((t) => `  <Tabs.Panel value="${t.va
   {
     ...catalogEntry('icon'),
     seed: { name: 'shield-x', label: '' },
-    // `name` is the IconName union — fifty literals the Props table names by type rather than
+    // `name` is the IconName union — fifty-two literals the Props table names by type rather than
     // spelling out — so its control is built here from ICON_NAMES, the same list the type is.
-    extra: [{ prop: 'name', kind: 'select', type: 'IconName', options: [...ICON_NAMES], default: 'shield-x', notes: 'One of the fifty curated glyphs.' }],
+    extra: [{ prop: 'name', kind: 'select', type: 'IconName', options: [...ICON_NAMES], default: 'shield-x', notes: 'One of the fifty-two curated glyphs.' }],
     // className is layout for the host page; it changes nothing on this stage.
     noControl: ['className'],
     highlight: (v) => (t) =>
@@ -872,7 +872,7 @@ toast.add({ ${opts} })`
     implementations: [{ id: 'headless', entry: '@omkarux/vela/headless' }],
     extra: [
       { prop: 'glyph', kind: 'select', type: '"icon" | "brandMark" | "word"', options: ['icon', 'brandMark', 'word'], default: 'icon', notes: 'Not a prop: which one of `icon`, `brandMark` or `word` is set. Exactly one is.' },
-      { prop: 'icon', kind: 'select', type: 'IconName', options: [...ICON_NAMES], default: 'x', notes: "With glyph icon: one of Icon's fifty." },
+      { prop: 'icon', kind: 'select', type: 'IconName', options: [...ICON_NAMES], default: 'x', notes: "With glyph icon: one of Icon's fifty-two." },
       { prop: 'brandMark', kind: 'select', type: 'BrandMarkName', options: ['github', 'figma'], default: 'github', notes: 'With glyph brandMark: GitHub or Figma. Figma is regular only.' },
     ],
     explain: {

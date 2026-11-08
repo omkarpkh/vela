@@ -1074,11 +1074,17 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   - **Appearance is its icon alone below 1000px**, named "Appearance" for a screen reader and in a
     label tooltip (Tooltip `kind="label"`, heard once).
   - The header's glyph-only controls and the marks are one `TooltipProvider`.
-- **Search's glyph-only form is Vela's Icon Button** (slice 7, item 7): no frame, the hover fill, its
-  name in a label tooltip, the same as the GitHub, npm and Figma marks beside it. The menu button
-  and Appearance's icon-only form are not Icon Buttons yet: Icon's closed set has no menu glyph and
-  no glyph for Appearance, and a new glyph is a spec change first (`icon.md`, Glyphs), so they are
-  flagged rather than invented.
+- **Every glyph-only control in the header is Vela's Icon Button** (slice 7, item 7; Omkar's
+  decision of 8 Nov 2026): the menu button at every width, Search when it is its icon alone, and
+  Appearance below 1000px. No frame (the menu and Appearance had a `border-subtle` one, under 3:1,
+  and Search a field's), the hover fill, the same 35px box, and the name in a label tooltip, as
+  the GitHub, npm and Figma marks beside them. Each keeps `aria-expanded` and `aria-controls`, and
+  focus returns to it. A browser test checks the one look at 390, 620 and 800px.
+- **Icon: two new glyphs, `menu` and `contrast`** (52, was 50), for the header's menu and
+  Appearance (`icon.md`, Glyphs; Omkar's decision of 8 Nov 2026). Lucide 1.63.0, ISC; neither is
+  derived from Feather, so `NOTICE` is unchanged. The Figma builder has both; the published Icon
+  set in the library does not yet (the Figma thread adds the two variants). The worded
+  Appearance button uses `contrast` too, in place of its own drawing.
 - **Not found speaks the kind that was asked for** (slice 7, item 2). The "Not in Vela" box says
   component, pattern, proposal, foundation or page, as the heading already did. The request link
   appears only for a component or a pattern (as "Component request" or "Pattern request"); a
@@ -1090,8 +1096,8 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   of other spellings (`ALIASES` in `demo/router.ts`); the British one is its first. The address
   quietly becomes `#/foundations/color`, the spelling of the code and the token names, by
   replacing the history entry, so Back goes to the page before and never bounces. A query is kept.
-  - 1918 checks (was 1907): 1449 unit and contract (was 1448), 352 browser behaviour (was 342).
-    Packed: 380.8 kB, 270 files (was 379.7 kB, 270).
+  - 1924 checks (was 1907): 1451 unit and contract (was 1448), 356 browser behaviour (was 342).
+    Packed: 381.4 kB, 274 files (was 379.7 kB, 270): the two glyphs add four files to dist.
 - **The component-request form was stale.** Its "Closest existing component" listed 6 of the 19
   components, and its "not yet specced" list named Checkbox, Radio, Dropdown List, Text Area,
   Tooltip and Icon Button, which are built. The closest options are now generated from

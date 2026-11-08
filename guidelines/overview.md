@@ -15,7 +15,7 @@ below, then open the per-component file for props, tokens, and anti-patterns.
 | Status Indicator | A health dot for one of five states | `components/status-indicator.md` |
 | Risk Pill | A read-only risk score (low/medium/high) on an object | `components/risk-pill.md` |
 | Tabs | Navigate between different content panels | `components/tabs.md` |
-| Icon | One of fifty curated glyphs beside text or in another component's icon slot — never a control, never a taxonomy mark | `components/icon.md` |
+| Icon | One of fifty-two curated glyphs beside text or in another component's icon slot — never a control, never a taxonomy mark | `components/icon.md` |
 | Brand Mark | GitHub's or Figma's own logo, unmodified, only to link to that company's service, inside a named control — never Vela's own mark, never an icon (Experimental) | `components/brand-mark.md` |
 | Checkbox | Recording intent until a Save — alone, or any-of-several in a Checkbox.Group (headless entry only) | `components/checkbox.md` |
 | Radio Group | Exactly one of two to five visible options, committed by a Save (headless entry only) | `components/radio-group.md` |
