@@ -53,7 +53,12 @@ function Install() {
   )
 }
 
-/** A screen from a security console, built from the kit as it ships. A picture: inert, its words in the caption. */
+/**
+ * A screen from a security console, built from the kit as it ships. A picture: inert, its words in the caption.
+ * The asset names are identifiers, so they break only before a separator ("vpn-edge" / "-east"). A picture
+ * cannot scroll, so its name column sets its own floor (overview.css, .ov-console__name): on a phone the
+ * table has 260px, and the kit's 160px floor plus Health and Risk needs 333px.
+ */
 const ROWS: { asset: string; status: Status; risk: Risk }[] = [
   { asset: 'vpn-edge-east', status: 'unhealthy', risk: 'high' },
   { asset: 'api-gateway', status: 'medium', risk: 'medium' },
@@ -77,7 +82,7 @@ function Console() {
           <Table.Body>
             {ROWS.map((r) => (
               <Table.Row key={r.asset}>
-                <Table.HeaderCell scope="row">{r.asset}</Table.HeaderCell>
+                <Table.HeaderCell scope="row" identifier className="ov-console__name">{r.asset}</Table.HeaderCell>
                 <Table.Cell><StatusIndicator status={r.status} label={STATUS_WORDS[r.status]} /></Table.Cell>
                 <Table.Cell><RiskPill risk={r.risk} size="small" /></Table.Cell>
               </Table.Row>

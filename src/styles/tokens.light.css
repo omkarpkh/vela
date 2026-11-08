@@ -336,6 +336,9 @@
   --vela-opacity-scrim: 0.5;
   --vela-layer-overlay: 1000;
 
+  /* ---- Identifiers: the narrowest an identifier's column gets ---- */
+  --vela-identifier-width-min: 160px;   /* see DESIGN.md, Identifiers, and table.md, Responsive behaviour */
+
   /* ---- Toast (headless) ---- */
   --vela-toast-width: 360px;
 

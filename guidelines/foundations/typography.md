@@ -5,8 +5,12 @@
 By default it is Open Sans too, so a big number and the words beside it are one family: the number
 gets its presence from size and weight, as H1 to H3 do, and always uses tabular figures. It is the
 one family a brand may change (see the section on brands below). Both have system fallbacks.
-**Monospace** (`--vela-font-family-mono`) for values that must align or be read character by
-character — identifiers, hashes, IP addresses, timestamps, counts — at Meta's size:
+**Monospace** (`--vela-font-family-mono`) for values people compare character by character: hashes,
+keys, fingerprints, IP addresses and opaque ids, at Meta's size. Names people read as names (a host
+name or an asset name heading a row) stay in the UI face; they break by the Identifiers rule in
+`DESIGN.md`, and mono would only make them wider. Counts and other changing numbers don't need mono:
+tabular figures (`font-variant-numeric: tabular-nums`) keep every digit the same width in whichever
+face they are in. The mono stack is
 `ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", Menlo, Consolas, monospace`. A
 system stack: no web font is downloaded. In Figma it is the text style `Mono/Meta`, drawn in
 Roboto Mono.

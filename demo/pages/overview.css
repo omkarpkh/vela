@@ -48,6 +48,10 @@
 .ov-console { grid-area: console; min-width: 0; align-self: stretch; display: flex; flex-direction: column; gap: var(--vela-space-10); box-sizing: border-box; padding: var(--vela-space-20); border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-8); background: var(--vela-bg-global); color: var(--vela-text-default); }
 .ov-console__screen { display: flex; flex-direction: column; gap: var(--vela-space-10); min-width: 0; pointer-events: none; }
 .ov-console__screen .vela-table-scroll, .ov-console__screen .vela-table-wrap { overflow: hidden; }
+/* The console is a picture and cannot scroll, so its name column gives up the kit's identifier floor
+   (--vela-identifier-width-min) rather than push Risk out of the frame on a phone; the names still
+   break only before their separators (DESIGN.md, Identifiers; table.md, Responsive behaviour). */
+.ov-console__screen .ov-console__name { min-inline-size: 0; }
 .ov-console__caption { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
 
 /* Check it yourself: lighter than before. The number at H3's size in the display face, with tabular figures, a short line, the link. */

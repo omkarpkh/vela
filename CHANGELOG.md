@@ -6,6 +6,45 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Unreleased]
 
 ### Added
+- **Identifiers break only before their separators** (Omkar's decision of 8 Nov 2026, item 5, part
+  A1). On a phone the Overview's console drew "vpn-edge-" then "east", "api-" then "gateway" and
+  "mail-" then "relay": browsers break after a hyphen, so one name read as two. Measured at 390px
+  with Open Sans, it now draws "vpn-edge" then "-east", "api" then "-gateway", "mail" then "-relay",
+  the punctuation starting the next line as a continuation (Chicago's rule for addresses).
+  - **DESIGN.md, "Identifiers"** (after Typography): host names, asset names, ids, paths and email
+    addresses break only before `.` `-` `_` `/`; inside a segment only when that segment alone is
+    wider than the line; no hyphen added, nothing inserted, nothing truncated. Until Copyable Value
+    ships (next phase), an opaque value (a hash, a key, a fingerprint) is shown in full.
+  - **`Table.Cell identifier`**, and **`identifier` on a row's `Table.HeaderCell`** (`scope="row"`,
+    where an asset's name usually sits; a column header is a label and cannot take it). Boolean,
+    default `false`. Its children are a `string`, so the copy promise holds; it is never `numeric`.
+    Seven new rules in `table.md`: three compiler (a string, never numeric, row headers only), one
+    runtime (the text is exactly the value), two browser (breaks only before separators; the column
+    floor) and one convention (in fixed layout the host gives the column its floor). 83 of 270 rules
+    are now compiler rules (was 80 of 263).
+  - **`--vela-identifier-width-min`**, 160px, Figma variable `identifier/width-min` (Sizing,
+    width and height scope): an identifier column is never narrower in auto layout, and below it the
+    table scrolls in its region. Named for the identifier rather than the Table because Copyable
+    Value states the same 160px minimum. Fixed layout takes widths from the header row and browsers
+    ignore a minimum on a cell there, so the host binds the token on that column's header; the Table
+    playground does so when you choose `fixed`. Flutter gains `VelaSizing.identifierWidthMin`; the
+    Material UI bridge carries no sizes and does not change.
+  - **One helper inside the kit** (`src/lib/identifier.tsx`, not exported) adds a `<wbr>` before
+    each run of separators and keeps the run with the next character in a no-wrap span, so the
+    browser's own break after the hyphen is gone. No zero-width space, no soft hyphen: the cell's
+    `textContent`, a selection and a copy give exactly the value.
+  - **The Overview's console** marks its names `identifier`. A picture cannot scroll, and on a phone
+    its table has 260px where the floor plus Health and Risk need over 330px, so its name column sets
+    its own floor through `className` (`min-inline-size: 0`), as `table.md` allows for a table that
+    cannot scroll; at 430px and wider the names sit on one line, as before. The Table playground's
+    names use it too: in its 656px stage at 1440 "db-primary-eu-west-1" drew on four lines
+    ("db-", "primary-", "eu-west-", "1") and now draws on two ("db-primary-eu-west", "-1").
+  - **Not in this change:** free text in a Toast, a Contextual Alert or a Dropdown List item's
+    label has no way to mark which words are a name, so the rule does not reach it; marking one
+    would be a new part, so it waits for Omkar's decision. The Filter Grammar's values and the
+    Table thumbnail (whose name fits on one line) are unchanged.
+  - 1924 checks (was 1907): 1461 unit and contract (was 1448), 346 playground browser checks (was 342).
+    Packed: 389.4 kB, 276 files (was 382.9 kB, 274 after the header and page fixes): the helper adds `dist/lib/identifier.js` and its `.d.ts`.
 - **One description per family of sizing and typography steps** (Omkar's decision of 7 Nov 2026).
   The 21 sizing and 39 typography tokens that had no `$description` now carry their family's, so
   DESIGN.md's scales table no longer reads "(none yet)" and every Figma variable in the Sizing and

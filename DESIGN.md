@@ -136,6 +136,36 @@ reaches them; wherever the display face does show a number, the figures are tabu
 display face without them (`display-tabular`). Which numbers are compared is a reviewer's check.
 The rule in full is in `foundations/typography.md`.
 
+## Identifiers
+
+Host names, asset names, ids, paths and email addresses are names, and a name broken in the wrong
+place reads as two. Browsers break a line after a hyphen or a slash, which leaves `vpn-edge-` on one
+line and `east` on the next. Vela follows the typesetting rule for addresses instead (Chicago): the
+punctuation starts the next line, so it reads as a continuation.
+
+- **Break only before a separator:** `.` `-` `_` `/`. `vpn-edge` then `-east`, never `vpn-edge-`
+  then `east`.
+- **Break inside a segment only when that one segment is wider than the whole line.** A segment is
+  a separator and the text up to the next one.
+- **Never add a hyphen, and never insert anything to make a break:** no soft hyphen, no zero-width
+  space, no swapped character. What a person selects or copies is exactly the value.
+- **Never truncate a name.** No ellipsis and no middle cut: a host name cut short is a different
+  host name.
+- **Names stay in the UI face.** Mono, at Meta's size, is for values compared character by
+  character (hashes, keys, IP addresses, opaque ids); see `guidelines/foundations/typography.md`.
+  Counts keep tabular figures in whichever face they are in.
+- **Opaque values are shown in full, for now.** A hash, a key or a fingerprint breaks where it must
+  and its row grows, but nothing is cut. Copyable Value, the Copy pattern's draft
+  (`guidelines/patterns/copy.md`), will give an opaque value a fixed short form with the full value
+  one action away and copied whole. It comes next phase; until it ships, there is no short form.
+
+Where it is built: `Table.Cell`, and the `Table.HeaderCell` that names a row, take `identifier`
+(`table.md`). Its column never gets narrower than `--vela-identifier-width-min`, and below that the
+table scrolls inside its region. The breaks come from one helper inside the kit, which adds break
+opportunities before each separator and nothing to the text. Free text that contains a name (a
+Toast, a Contextual Alert, a Dropdown List item's label) has no way yet to mark which words are a
+name, so the rule does not reach it: that is a known gap, because marking one would be a new part.
+
 ## The three taxonomies
 
 Vela deliberately separates **severity** (events), **risk** (scoring) and **status** (the health
@@ -435,6 +465,7 @@ Semantics and labels
 - Tabs for the same dataset in a different view → View Switcher; Tabs as page navigation → use real links; keeping hidden panels mounted to preserve form state → lift the state.
 - Using a Contextual Alert as a toast → it is inline and does not float; a dismissible critical alert with no other resolution path; an info alert with `role="alert"`.
 - A Toast as the only record of what happened, or the only place an Undo lives → the page carries both; a Toast that asks a question or offers two buttons → a Dialog; a `critical` or `major` toast, or a failure in a toast (will not compile for the severities) → a Contextual Alert where the work is.
+- A host name broken after its hyphen, or a soft hyphen or zero-width space added to make it break → `identifier` on the Table cell; an ellipsis or a middle cut on a hash → shown in full until Copyable Value ships.
 - A click handler, a hover state or a dismiss "×" on a Risk Pill → that is a Token Pill, not in this kit.
 - A Popover holding the only copy of something the task needs; a list of commands in a Popover → an Actions Dropdown, not in this kit.
 - A list of commands in a Dropdown List → an Actions Dropdown, not in this kit; a Dropdown List as a form field → a Select List, not in this kit; `meta="Critical"` or a dot in an item's meta → meta is words, never a taxonomy; an ellipsis on a long name → names wrap in full.

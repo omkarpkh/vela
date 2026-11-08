@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { cn } from '../../lib/cn'
 import { SortAscendingIcon, SortDescendingIcon, SortNoneIcon } from '../../lib/icons'
+import { breakIdentifier } from '../../lib/identifier'
 
 /**
  * Table primitives: a native <table> with Vela's density, scroll region and sort affordance.
@@ -135,18 +136,32 @@ interface HeaderCellBase {
 /**
  * `scope` is closed, and only a column header sorts: a row header with a `sort` does not compile.
  * A sortable header's label is a `string`, because the button's accessible name is built from it
- * ("Last seen, sort ascending") and has to come out the same in every browser.
+ * ("Last seen, sort ascending") and has to come out the same in every browser. `identifier` is for
+ * a row header, whose label is then a `string` too.
  */
 export type TableHeaderCellProps = HeaderCellBase &
   (
     | {
         /** Defaults to `col`. */ scope?: 'col'
         sort: TableSort
+        identifier?: never
         /** The column's label: visible in the button, and the start of its accessible name. */
         children: string
       }
-    | { scope?: 'col'; sort?: undefined; /** The column's label. */ children: React.ReactNode }
-    | { scope: 'row'; sort?: never; /** The row's label. */ children: React.ReactNode }
+    | { scope?: 'col'; sort?: undefined; identifier?: never; /** The column's label. */ children: React.ReactNode }
+    | { scope: 'row'; sort?: never; identifier?: false; /** The row's label. */ children: React.ReactNode }
+    | {
+        scope: 'row'
+        sort?: never
+        /**
+         * The row's name is an identifier (a host name, an asset name, an id, a path): it breaks
+         * only before `.` `-` `_` `/`, and its column is never narrower than
+         * `--vela-identifier-width-min`. Row headers only: a column header is a label.
+         */
+        identifier: true
+        /** The identifier, as a `string`: exactly what a reader selects and copies. */
+        children: string
+      }
   )
 
 const NEXT: Record<TableSortDirection, Exclude<TableSortDirection, 'none'>> = {
@@ -161,7 +176,7 @@ const SORT_ICON = {
   descending: SortDescendingIcon,
 } as const
 
-function TableHeaderCell({ children, align = 'start', scope = 'col', sort, className }: TableHeaderCellProps) {
+function TableHeaderCell({ children, align = 'start', scope = 'col', sort, identifier = false, className }: TableHeaderCellProps) {
   // aria-sort only where the column IS sorted (WAI-ARIA APG sortable table): a sortable column
   // that is not sorted carries no aria-sort, and an unsortable one never does. Sortability is
   // in the button's name.
@@ -176,6 +191,7 @@ function TableHeaderCell({ children, align = 'start', scope = 'col', sort, class
         'vela-table__header-cell',
         `vela-table__header-cell--${align}`,
         scope === 'row' && 'vela-table__header-cell--row',
+        identifier && 'vela-table__cell--identifier',
         className,
       )}
     >
@@ -192,6 +208,8 @@ function TableHeaderCell({ children, align = 'start', scope = 'col', sort, class
           <span className="vela-table__sort-label">{children}</span>
           <Icon className="vela-table__sort-icon" />
         </button>
+      ) : identifier && typeof children === 'string' ? (
+        breakIdentifier(children)
       ) : (
         children
       )}
@@ -206,25 +224,39 @@ interface CellBase {
 
 /**
  * `numeric` sets tabular numerals and end alignment together, so it takes no `align`: a
- * start-aligned number column does not compile.
+ * start-aligned number column does not compile. `identifier` marks the cell's text as one name, a
+ * `string`, and is never `numeric` too: a number is not a name, and a name is not end-aligned digits.
  */
 export type TableCellProps = CellBase &
   (
-    | { numeric?: false; align?: TableAlign }
-    | { /** Tabular numerals, end-aligned, never wrapped. */ numeric: true; align?: never }
+    | { numeric?: false; identifier?: false; align?: TableAlign }
+    | { /** Tabular numerals, end-aligned, never wrapped. */ numeric: true; identifier?: never; align?: never }
+    | {
+        numeric?: never
+        /**
+         * The cell's text is an identifier (a host name, an asset name, an id, a path, an email
+         * address): it breaks only before `.` `-` `_` `/`, never after, with no hyphen added and
+         * nothing cut, and its column is never narrower than `--vela-identifier-width-min`.
+         */
+        identifier: true
+        align?: TableAlign
+        /** The identifier, as a `string`: exactly what a reader selects and copies. */
+        children: string
+      }
   )
 
-function TableCell({ children, align = 'start', numeric = false, className }: TableCellProps) {
+function TableCell({ children, align = 'start', numeric = false, identifier = false, className }: TableCellProps) {
   return (
     <td
       className={cn(
         'vela-table__cell',
         `vela-table__cell--${numeric ? 'end' : align}`,
         numeric && 'vela-table__cell--numeric',
+        identifier && 'vela-table__cell--identifier',
         className,
       )}
     >
-      {children}
+      {identifier && typeof children === 'string' ? breakIdentifier(children) : children}
     </td>
   )
 }

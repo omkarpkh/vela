@@ -38,6 +38,11 @@
   border: 0;
 }
 
+/* Identifiers break only before their separators (DESIGN.md, "Identifiers"). The kit's identifier
+   helper wraps each run of separators with the character after it in this span, so the browser's
+   own break after a hyphen or a slash is gone and only the <wbr> before the run is left. */
+.vela-identifier-join { white-space: nowrap; }
+
 @media (prefers-reduced-motion: reduce) {
   .vela-root *,
   .vela-root *::before,

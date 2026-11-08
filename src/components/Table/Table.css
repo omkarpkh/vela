@@ -82,6 +82,19 @@
   white-space: nowrap;
 }
 
+/* Identifiers (DESIGN.md, "Identifiers"). The markup gives the line a break opportunity only before
+   each separator (the kit's identifier helper); break-word lets a segment wider than its whole line
+   break inside itself without lowering the column's minimum, as anywhere would. The column is never
+   narrower than the token: in auto layout this sets it, and below it the region scrolls. Fixed
+   layout takes its widths from the header row, so there the host binds the token on that column's
+   header (table.md, Responsive behaviour). */
+.vela-table__cell--identifier {
+  box-sizing: border-box;
+  min-inline-size: var(--vela-identifier-width-min);
+  white-space: normal;
+  overflow-wrap: break-word;
+}
+
 /* ---- sticky header ---- */
 .vela-table--sticky-header .vela-table__head .vela-table__header-cell {
   position: sticky;
