@@ -44,7 +44,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     would be a new part, so it waits for Omkar's decision. The Filter Grammar's values and the
     Table thumbnail (whose name fits on one line) are unchanged.
   - 1924 checks (was 1907): 1461 unit and contract (was 1448), 346 playground browser checks (was 342).
-    Packed: 386.1 kB, 272 files (was 379.7 kB, 270): the helper adds `dist/lib/identifier.js` and its `.d.ts`.
+    Packed: 389.3 kB, 276 files (was 382.9 kB, 274 after the header and page fixes): the helper adds `dist/lib/identifier.js` and its `.d.ts`.
 - **One description per family of sizing and typography steps** (Omkar's decision of 7 Nov 2026).
   The 21 sizing and 39 typography tokens that had no `$description` now carry their family's, so
   DESIGN.md's scales table no longer reads "(none yet)" and every Figma variable in the Sizing and
