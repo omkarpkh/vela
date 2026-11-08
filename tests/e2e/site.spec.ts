@@ -3108,8 +3108,10 @@ test.describe('slice 7 fixes · the pages', () => {
     await page.reload()
     const section = page.locator('section[aria-labelledby="section-proposals"]')
     await expect(section).toBeVisible()
-    // 7,229px (8.6 screens) on main; about 4.7 now, with the proposals closed.
-    expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBeLessThan(5 * 844)
+    // 7,229px (8.6 screens) on main; 4,018 (4.8) with the proposals closed; 3,753 (4.4) since the
+    // hero shows one asset and the section drops its picture of the scales (PR D). Omkar's target is
+    // about four and a half.
+    expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBeLessThan(4.5 * 844)
     const cards = section.locator('.ov-proposals > li')
     await expect(cards.filter({ visible: true })).toHaveCount(3)
     // A disclosure with the count from the data: a real button, collapsed, the rows hidden.
@@ -3200,5 +3202,131 @@ test.describe('slice 7 fixes · the pages', () => {
       for (const h of hits) found.push(`${route}: ${h}`)
     }
     expect(found).toEqual([])
+  })
+})
+
+// Slice 7 fixes, PR D (Omkar's answer of 8 Nov 2026, question 3, option D): where the hero's console
+// cannot hold its table at the identifier floor (a 160px name column, then Health and Risk: 333px of
+// plate, measured with Open Sans), the same figure shows one asset with its three scales, at real size.
+// A container query on the figure chooses (overview.css), so these read the plate's own width.
+test.describe('slice 7 fixes · one asset, three scales', () => {
+  /** The console's plate: the figure's content box, which its container query reads. */
+  const plate = (page: Page) => page.locator('.ov-console').evaluate((el) => { const cs = getComputedStyle(el); return el.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight) })
+  /** What the hero shows, and whether the table, when shown, fits whole with its name column at the floor. */
+  const hero = (page: Page) => page.evaluate(() => {
+    const shown = (s: string) => document.querySelector(s)!.checkVisibility()
+    const region = document.querySelector('.ov-console .vela-table__region') as HTMLElement
+    const tabs = document.querySelector('.ov-console [role="tablist"]') as HTMLElement
+    const names = [...document.querySelectorAll('.ov-console .vela-table__cell--identifier')].map((c) => c.getBoundingClientRect().width)
+    return {
+      console: shown('.ov-console__screen'),
+      asset: shown('.ov-asset'),
+      fits: region.scrollWidth <= region.clientWidth && tabs.scrollWidth <= tabs.clientWidth,
+      floor: Math.min(...names),
+      stacked: getComputedStyle(document.querySelector('.ov-hero')!).gridTemplateAreas === '"mark" "panel" "console"',
+      sectionPicture: shown('.ov-wide .shell-card__thumb'),
+    }
+  })
+
+  for (const width of [390, 320]) {
+    test(`at ${width} the hero shows one asset, each signal under its scale's word, and the section drops its picture of the scales`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 844 })
+      await page.goto('/#/')
+      const fig = page.locator('.ov-console')
+      const asset = fig.locator('.ov-asset')
+      await expect(asset).toBeVisible()
+      await expect(fig.locator('.ov-console__screen')).toBeHidden()
+      // The console's first row, the same data: the name, its health, its risk, and its latest event.
+      await expect(asset.locator('.ov-asset__name')).toHaveText('vpn-edge-east')
+      await expect(fig.locator('.ov-console__screen tbody th').first()).toHaveText('vpn-edge-east')
+      await expect(asset.locator('dt')).toHaveText(['Health', 'Risk', 'Latest event'])
+      const values = asset.locator('dd')
+      await expect(values.nth(0).locator('.vela-status')).toHaveText('Unhealthy')
+      await expect(values.nth(1).locator('.vela-risk')).toHaveText('High')
+      await expect(values.nth(2).locator('.vela-alert')).toHaveClass(/vela-alert--critical/)
+      await expect(values.nth(2).locator('.vela-alert')).toHaveText('Certificate expired')
+      // Every signal is on screen, inside the plate, and the plate inside the page.
+      const box = (await fig.boundingBox())!
+      for (const part of [asset.locator('.ov-asset__name'), ...[0, 1, 2].flatMap((i) => [asset.locator('dt').nth(i), values.nth(i)])]) {
+        const b = (await part.boundingBox())!
+        expect(b.x).toBeGreaterThanOrEqual(box.x)
+        expect(b.x + b.width).toBeLessThanOrEqual(box.x + box.width + 0.5)
+      }
+      // At real size: nothing in it scaled, every word 12px or more.
+      const drawn = await asset.evaluate((root) => {
+        const all = [root, ...root.querySelectorAll('*')]
+        const scaled = all.some((el) => { const cs = getComputedStyle(el); return cs.transform !== 'none' || cs.scale !== 'none' || cs.zoom !== '1' })
+        const small = all.filter((el) => [...el.childNodes].some((n) => n.nodeType === Node.TEXT_NODE && n.textContent!.trim())).some((el) => parseFloat(getComputedStyle(el).fontSize) < 12)
+        return { scaled, small }
+      })
+      expect(drawn).toEqual({ scaled: false, small: false })
+      // A picture, as the console is: inert and hidden; the figure is named by the caption of the view
+      // it shows, and only that one.
+      await expect(asset).toHaveAttribute('aria-hidden', 'true')
+      await expect(asset).toHaveAttribute('inert', '')
+      const main = page.getByRole('main')
+      await expect(main.getByRole('figure')).toHaveCount(1)
+      await expect(main.getByRole('figure', { name: /^One asset, three scales that never cross: / })).toBeVisible()
+      await expect(fig.locator('.ov-console__says-console')).toBeHidden()
+      await expect(main.getByRole('alert')).toHaveCount(0)
+      // Built for security products keeps its words and drops the picture the hero now shows.
+      const card = page.locator('.ov-wide .shell-card')
+      await expect(card.locator('.shell-card__title')).toBeVisible()
+      await expect(card.locator('.shell-card__line')).toBeVisible()
+      await expect(card.locator('.shell-card__thumb')).toBeHidden()
+      expect(await noSidewaysScroll(page)).toBe(true)
+    })
+  }
+
+  test('the plate chooses, from 320 to 1920: one asset below 340px of plate, else the whole console at the floor, and the section agrees on a phone', async ({ page }) => {
+    await page.goto('/#/')
+    await expect(page.locator('.ov-console')).toBeVisible()
+    const seen = { asset: 0, console: 0 }
+    for (let width = 320; width <= 1920; width += 20) {
+      await page.setViewportSize({ width, height: 900 })
+      const p = await plate(page)
+      const h = await hero(page)
+      const where = `${width}px window, ${p}px plate`
+      expect(h.asset, where).toBe(p < 340)
+      expect(h.console, where).toBe(!h.asset)
+      if (h.console) {
+        // Wherever the table shows it fits whole, Risk included, and the names keep the kit's floor.
+        expect(h.fits, where).toBe(true)
+        expect(h.floor, where).toBeGreaterThanOrEqual(160 - 0.5)
+        seen.console++
+      } else seen.asset++
+      // Stacked, the section drops its picture exactly where the hero shows the scales.
+      if (h.stacked) expect(h.sectionPicture, where).toBe(!h.asset)
+      else expect(h.sectionPicture, where).toBe(true)
+      expect(await noSidewaysScroll(page), where).toBe(true)
+    }
+    expect(seen.asset).toBeGreaterThan(0)
+    expect(seen.console).toBeGreaterThan(0)
+  })
+
+  test("the switch is the plate's width, not the window's: a 1440 window with a narrow Overview shows one asset", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 })
+    await page.goto('/#/')
+    await expect(page.locator('.ov-console__screen')).toBeVisible()
+    // Narrow the Overview itself; the window stays 1440, so no media query has changed. Stacked, the
+    // plate is the Overview less 90px: 430 gives 340 (the console), 429 gives 339 (one asset).
+    const narrow = async (w: number) => page.locator('.ov').evaluate((el: HTMLElement, w) => { el.style.maxWidth = `${w}px` }, w)
+    await narrow(430)
+    expect(await plate(page)).toBe(340)
+    expect(await hero(page)).toMatchObject({ console: true, asset: false, fits: true, sectionPicture: true })
+    await narrow(429)
+    expect(await plate(page)).toBe(339)
+    expect(await hero(page)).toMatchObject({ console: false, asset: true, sectionPicture: false })
+  })
+
+  test('at 1440 the hero is the console, as it was, and the section keeps its picture', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 })
+    await page.goto('/#/')
+    await expect(page.locator('.ov-console__screen')).toBeVisible()
+    await expect(page.locator('.ov-asset')).toBeHidden()
+    await expect(page.getByRole('main').getByRole('figure', { name: /^A console screen made of Vela/ })).toBeVisible()
+    await expect(page.locator('.ov-console__says-asset')).toBeHidden()
+    await expect(page.locator('.ov-wide .shell-card__thumb')).toBeVisible()
+    expect(await plate(page)).toBe(380)
   })
 })

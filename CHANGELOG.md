@@ -6,6 +6,31 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Unreleased]
 
 ### Added
+- **On a phone the Overview's hero shows one asset, three scales** (Omkar's decision of 8 Nov 2026,
+  question 3, option D). The hero's console is a picture and cannot scroll, and on a phone its plate
+  is 260px (190 at 320) where its table needs 333px at the identifier floor (a 160px name column,
+  then Health and Risk; measured with Open Sans). Where the plate is under 340px, the same figure now
+  shows the console's first asset at real size, each signal under its scale's word: `vpn-edge-east`
+  by the identifier rule, Health (Status Indicator, Unhealthy), Risk (Risk Pill, High) and Latest
+  event (Contextual Alert, critical, "Certificate expired", from the console's Alerts data, which
+  gains that one alert). From 340px the whole console shows, as before, its names at the floor.
+  - **The plate chooses, not the window.** The figure is a size container and a container query on
+    it swaps the views (`overview.css`). A container query cannot read a token, so 340px is a
+    waived literal with its reason: 333 measured, a little spare, and the three-up hero keeps the
+    console at 1366 (a 353px plate). The three-up hero's plate is under 340 only between about 1320
+    and 1340px; there it shows the one asset too.
+  - **One caption per view.** Both views are inert and hidden from assistive technology, so the
+    figure's name is its caption, and the caption of the view not shown is not displayed: "One asset,
+    three scales that never cross: …" or "A console screen made of Vela: …", never both.
+  - **Built for security products** keeps its title and words on a phone and drops its picture of
+    the three scales, which the hero now shows. It uses the Overview's width (under 430px, where
+    the stacked hero's plate is under 340); a browser test holds the two together. Desktop unchanged:
+    at 1440 the Overview is 3,271px tall, as before.
+  - **The phone Overview at 390 by 844, proposals closed: 3,753px, 4.4 screens** (was 4,018, 4.8):
+    the hero 800px (was 838) and Built for security products 171px (was 398). At 320: 3,996px (was 4,402).
+  - **`table.md`** no longer lets a table that cannot scroll lower its name column's floor: nothing
+    else used it. A picture of a table shows less where it would not fit, as the hero does. The
+    console's own override (`.ov-console__name`) is gone.
 - **Identifiers break only before their separators** (Omkar's decision of 8 Nov 2026, item 5, part
   A1). On a phone the Overview's console drew "vpn-edge-" then "east", "api-" then "gateway" and
   "mail-" then "relay": browsers break after a hyphen, so one name read as two. Measured at 390px
@@ -33,10 +58,8 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     each run of separators and keeps the run with the next character in a no-wrap span, so the
     browser's own break after the hyphen is gone. No zero-width space, no soft hyphen: the cell's
     `textContent`, a selection and a copy give exactly the value.
-  - **The Overview's console** marks its names `identifier`. A picture cannot scroll, and on a phone
-    its table has 260px where the floor plus Health and Risk need over 330px, so its name column sets
-    its own floor through `className` (`min-inline-size: 0`), as `table.md` allows for a table that
-    cannot scroll; at 430px and wider the names sit on one line, as before. The Table playground's
+  - **The Overview's console** marks its names `identifier`, and its name column keeps the floor.
+    Where its plate cannot hold the table at the floor, the hero shows one asset instead (below). The Table playground's
     names use it too: in its 656px stage at 1440 "db-primary-eu-west-1" drew on four lines
     ("db-", "primary-", "eu-west-", "1") and now draws on two ("db-primary-eu-west", "-1").
   - **Not in this change:** free text in a Toast, a Contextual Alert or a Dropdown List item's

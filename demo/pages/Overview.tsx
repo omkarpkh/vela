@@ -1,6 +1,7 @@
 import { useEffect, useId, useState, type CSSProperties, type ReactNode } from 'react'
-import { Button, Toggle, StatusIndicator, RiskPill, Tabs, Table, BrandMark, Icon } from '../../src'
-import type { Status, Risk } from '../../src'
+import { Button, Toggle, StatusIndicator, RiskPill, Tabs, Table, BrandMark, Icon, ContextualAlert } from '../../src'
+import type { Status, Risk, Severity } from '../../src'
+import { breakIdentifier } from '../../src/lib/identifier'
 import { PROPOSALS } from '../playground/proposals'
 import { figmaUrl } from '../links'
 import { href } from '../router'
@@ -55,15 +56,28 @@ function Install() {
 
 /**
  * A screen from a security console, built from the kit as it ships. A picture: inert, its words in the caption.
- * The asset names are identifiers, so they break only before a separator ("vpn-edge" / "-east"). A picture
- * cannot scroll, so its name column sets its own floor (overview.css, .ov-console__name): on a phone the
- * table has 260px, and the kit's 160px floor plus Health and Risk needs 333px.
+ * The asset names are identifiers, so they break only before a separator ("vpn-edge" / "-east"), and
+ * their column keeps the kit's floor (--vela-identifier-width-min).
+ *
+ * Where the console's own slot is too narrow for its table at that floor (a phone, and the three-up
+ * hero between about 1320 and 1340px), the same figure shows one asset instead: the console's first
+ * row, with its three scales labelled (Omkar's decision of 8 Nov 2026, question 3, option D). Both
+ * views are in the page and a container query on the figure shows the one that fits
+ * (overview.css), so nothing is measured in script and the table is never shown where it would not
+ * fit. Each view has its own caption; only the shown one is in the figure's name.
  */
 const ROWS: { asset: string; status: Status; risk: Risk }[] = [
   { asset: 'vpn-edge-east', status: 'unhealthy', risk: 'high' },
   { asset: 'api-gateway', status: 'medium', risk: 'medium' },
   { asset: 'mail-relay', status: 'healthy', risk: 'low' },
 ]
+/** The console's Alerts view: what has happened to an asset, on the severity scale. */
+const ALERTS: { asset: string; severity: Severity; message: string }[] = [
+  { asset: 'vpn-edge-east', severity: 'critical', message: 'Certificate expired' },
+]
+const FIRST = ROWS[0]
+const LATEST = ALERTS.find((a) => a.asset === FIRST.asset)
+
 function Console() {
   return (
     <figure className="ov-console" data-arrive="1">
@@ -82,7 +96,7 @@ function Console() {
           <Table.Body>
             {ROWS.map((r) => (
               <Table.Row key={r.asset}>
-                <Table.HeaderCell scope="row" identifier className="ov-console__name">{r.asset}</Table.HeaderCell>
+                <Table.HeaderCell scope="row" identifier>{r.asset}</Table.HeaderCell>
                 <Table.Cell><StatusIndicator status={r.status} label={STATUS_WORDS[r.status]} /></Table.Cell>
                 <Table.Cell><RiskPill risk={r.risk} size="small" /></Table.Cell>
               </Table.Row>
@@ -90,7 +104,26 @@ function Console() {
           </Table.Body>
         </Table>
       </div>
-      <figcaption className="ov-console__caption">A console screen made of Vela: Tabs, Table, Status Indicator and Risk Pill, as they ship.</figcaption>
+      {/* One asset, three scales: the name by the identifier rule, then each signal under its scale's word. */}
+      <div className="ov-asset" aria-hidden="true" inert>
+        <p className="vela-h5 ov-asset__name">{breakIdentifier(FIRST.asset)}</p>
+        <dl className="ov-asset__signals">
+          <dt>Health</dt>
+          <dd><StatusIndicator status={FIRST.status} label={STATUS_WORDS[FIRST.status]} /></dd>
+          <dt>Risk</dt>
+          <dd><RiskPill risk={FIRST.risk} size="small" /></dd>
+          {LATEST && (
+            <>
+              <dt className="ov-asset__event">Latest event</dt>
+              <dd className="ov-asset__event"><ContextualAlert severity={LATEST.severity}>{LATEST.message}</ContextualAlert></dd>
+            </>
+          )}
+        </dl>
+      </div>
+      <figcaption className="ov-console__caption">
+        <span className="ov-console__says-console">A console screen made of Vela: Tabs, Table, Status Indicator and Risk Pill, as they ship.</span>
+        <span className="ov-console__says-asset">One asset, three scales that never cross: its health, its risk and its latest event, in Vela's Status Indicator, Risk Pill and Contextual Alert.</span>
+      </figcaption>
     </figure>
   )
 }
