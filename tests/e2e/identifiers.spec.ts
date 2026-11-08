@@ -100,12 +100,14 @@ test.describe('identifiers', () => {
         await expectBreaksOnlyBeforeSeparators(body.locator('.vela-table__cell--identifier'), `${layout} ${width ?? 'stage'}px`)
       }
     }
-    // A segment wider than its whole column breaks inside itself and is never cut: an override of
-    // the host's width to 60px leaves "-primary" no room, and the text is still all there.
-    // The override goes in before the table turns fixed: Chromium keeps a fixed table's column widths
-    // when a header cell's width changes afterwards, so a later inline style would never be laid out.
+    // A segment wider than its whole column breaks inside itself and is never cut: with the floor
+    // token set to 60px on this stage, the column is 60px and "-primary" has no room, yet the text is
+    // still all there. The token is lowered rather than the header's width overridden, so the header
+    // and the cells' own minimum agree (on CI an override of the header alone lost to the cells'
+    // 160px minimum). It goes in before the table turns fixed: Chromium keeps a fixed table's column
+    // widths when a header cell's width changes afterwards.
     const body = await tableStage(page)
-    await page.addStyleTag({ content: '.pg-table-identifier-col { inline-size: 60px !important; }' })
+    await body.evaluate((el: HTMLElement) => el.style.setProperty('--vela-identifier-width-min', '60px'))
     await fixedLayout(page)
     await expect(body.locator('.vela-table')).toHaveClass(/vela-table--fixed/)
     expect(await body.locator('.pg-table-identifier-col').evaluate((el) => Math.round(el.getBoundingClientRect().width))).toBe(60)
