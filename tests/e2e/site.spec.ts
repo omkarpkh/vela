@@ -23,6 +23,9 @@ async function compareThemes(page: import('@playwright/test').Page) {
 
 const COMPONENTS = ['button', 'toggle', 'input', 'text-area', 'contextual-alert', 'status-indicator', 'risk-pill', 'tabs', 'icon', 'checkbox', 'radio-group', 'table', 'popover', 'tooltip', 'dialog', 'toast']
 
+/** The package and its version, as the site reads them from package.json: "@omkarux/vela 0.15.0". */
+const PACKAGE = (() => { const pkg = JSON.parse(readFileSync(resolve(process.cwd(), 'package.json'), 'utf8')); return `${pkg.name} ${pkg.version}` })()
+
 const noSidewaysScroll = (page: Page) =>
   page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)
 
@@ -746,7 +749,8 @@ test.describe('slice 5 · phone and Appearance', () => {
   // links in the menu on a phone.
   const MARKS = [
     { name: 'Vela on GitHub, opens in a new tab', href: 'https://github.com/omkarpkh/vela', glyph: '.vela-brand-mark' },
-    { name: 'Vela on npm, opens in a new tab', href: 'https://www.npmjs.com/package/@omkarux/vela', glyph: '.vela-icon-button__word' },
+    // The package's name and version live here since they left the logo (slice 7, item 2b).
+    { name: `${PACKAGE} on npm, opens in a new tab`, href: 'https://www.npmjs.com/package/@omkarux/vela', glyph: '.vela-icon-button__word' },
     { name: 'Vela in Figma, opens in a new tab', href: /^https:\/\/www\.figma\.com\/design\/XO2rmeCcgOjyKe4oipgF4j\/Vela-Design-System\?node-id=0-1$/, glyph: '.vela-brand-mark' },
   ]
   test('the header links are GitHub\'s and Figma\'s marks and npm\'s word, named in words, opening a new tab; on a phone they are written links in the menu', async ({ page }) => {
@@ -870,12 +874,14 @@ test.describe('slice 5 · phone and Appearance', () => {
     await page.goto('/#/components/icon-button')
     const set = page.locator('.pg-frame[data-theme="light"] .pg-icon-button__set')
     const link = (name: string) => set.getByRole('link', { name, exact: true })
+    // The page's own npm link keeps the plain name; only the header's names the version (slice 7).
+    const pageNpm = 'Vela on npm, opens in a new tab'
     await expect(link(figma)).toBeVisible()
     await page.mouse.move(0, 0)
     expect(await msToOpen(link(github), github)).toBeGreaterThanOrEqual(dwell * 0.95)
-    expect(await msToOpen(link(npm), npm)).toBeGreaterThanOrEqual(dwell * 0.95)
+    expect(await msToOpen(link(pageNpm), pageNpm)).toBeGreaterThanOrEqual(dwell * 0.95)
     // A rested-on tooltip outside a group grows in as usual: nothing marks it instant.
-    await expect(shown(npm)).not.toHaveAttribute('data-instant')
+    await expect(shown(pageNpm)).not.toHaveAttribute('data-instant')
     // And from the keyboard: at once, as in the group. (Base UI's marker on it can read "delay" here
     // too, because tooltips outside any provider share one default group record; the marker is not
     // part of the contract, and the open delay outside a provider is never touched by it.)
@@ -883,8 +889,8 @@ test.describe('slice 5 · phone and Appearance', () => {
     await link(github).focus()
     await expect(shown(github)).toBeVisible()
     await page.keyboard.press('Tab')
-    await expect(link(npm)).toBeFocused()
-    await expect(shown(npm)).toBeVisible()
+    await expect(link(pageNpm)).toBeFocused()
+    await expect(shown(pageNpm)).toBeVisible()
     await expect(page.locator('.vela-tooltip:not([data-ending-style])')).toHaveCount(1)
   })
 
@@ -1686,7 +1692,7 @@ test.describe('Product Mark: the Overview hero and its pulse', () => {
 test.describe('the header logo', () => {
   const logo = (page: Page) => page.getByRole('banner').getByRole('link', { name: 'Vela Design System', exact: true })
 
-  test('one link named "Vela Design System", the mark and the version hidden from it, current on the Overview only', async ({ page }) => {
+  test('one link named "Vela Design System", the mark hidden from it and no version in it, current on the Overview only', async ({ page }) => {
     await page.goto('/#/components/button')
     const link = logo(page)
     await expect(link).toBeVisible()
@@ -1694,8 +1700,10 @@ test.describe('the header logo', () => {
     await expect(link).not.toHaveAttribute('aria-current')
     await expect(link.locator('svg.pm')).toHaveAttribute('aria-hidden', 'true')
     await expect(link.locator('svg.pm')).toHaveClass(/pm--regular/)
-    await expect(link.locator('.brand__meta')).toHaveAttribute('aria-hidden', 'true')
-    await expect(link.locator('.brand__meta')).toBeVisible()
+    // The version left the logo, and the header, on 8 Nov 2026 (slice 7, item 2b): it is in npm's
+    // name and in the footer.
+    await expect(page.getByRole('banner')).not.toContainText(PACKAGE.split(' ')[1])
+    await expect(page.locator('.demo-footer')).toContainText(PACKAGE)
     await expect(link.getByRole('img')).toHaveCount(0)
     // A press goes home.
     await link.click()
@@ -1727,25 +1735,24 @@ test.describe('the header logo', () => {
     expect(Math.round(n!.x - (m!.x + m!.width))).toBe(5)
   })
 
-  test('hover underlines the name only; the mark and the version do not change', async ({ page }) => {
+  test('hover underlines the name only; the mark does not change', async ({ page }) => {
     await page.goto('/#/components/button')
     const link = logo(page)
     const look = () => link.evaluate((a) => {
       const cs = (s: string) => getComputedStyle(a.querySelector(s)!)
       return {
-        link: getComputedStyle(a).textDecorationLine, name: cs('.brand__name').textDecorationLine, meta: cs('.brand__meta').textDecorationLine,
-        mark: [cs('.pm').color, cs('.pm').transform, cs('.pm').opacity], metaColour: cs('.brand__meta').color,
+        link: getComputedStyle(a).textDecorationLine, name: cs('.brand__name').textDecorationLine,
+        mark: [cs('.pm').color, cs('.pm').transform, cs('.pm').opacity],
       }
     })
     await page.mouse.move(700, 600)
     const rest = await look()
-    expect([rest.link, rest.name, rest.meta]).toEqual(['none', 'none', 'none'])
+    expect([rest.link, rest.name]).toEqual(['none', 'none'])
     await link.locator('.pm').hover()
     await expect.poll(async () => (await look()).name).toBe('underline')
     const hover = await look()
-    expect([hover.link, hover.meta]).toEqual(['none', 'none'])
+    expect(hover.link).toBe('none')
     expect(hover.mark).toEqual(rest.mark)
-    expect(hover.metaColour).toBe(rest.metaColour)
   })
 
   test('the focus ring wraps the whole lockup: 2px, offset 2px, the focus ring colour', async ({ page }) => {
@@ -1765,7 +1772,7 @@ test.describe('the header logo', () => {
       const token = getComputedStyle(probe).color
       probe.remove()
       const r = a.getBoundingClientRect()
-      const inside = [...a.querySelectorAll('.pm, .brand__name, .brand__meta')].every((el) => {
+      const inside = [...a.querySelectorAll('.pm, .brand__name')].every((el) => {
         const b = el.getBoundingClientRect()
         return b.left >= r.left && b.right <= r.right && b.top >= r.top && b.bottom <= r.bottom
       })
@@ -1833,7 +1840,6 @@ test.describe('the header logo', () => {
     const mark = (await logo(page).locator('svg.pm').boundingBox())!
     expect(mark.x - (boxes[0].x + boxes[0].width)).toBeGreaterThanOrEqual(6)
     await expect(logo(page).locator('.brand__name')).toHaveText('Vela Design System')
-    await expect(logo(page).locator('.brand__meta')).toBeHidden()
     expect(Math.round((await logo(page).locator('.brand__name').boundingBox())!.width)).toBeLessThan(40)
     expect(await noSidewaysScroll(page)).toBe(true)
   })
@@ -2637,6 +2643,76 @@ test.describe('uplift slice 5 · doc pages', () => {
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('How it is made')
   })
 
+  // Slice 7, item 2 (Omkar, 8 Nov 2026): the "Not in Vela" box speaks the kind that was asked for, a
+  // request link only for a component or a pattern, and the cards lead to that kind's list.
+  const ways = (page: Page) => page.getByRole('main').locator('.nf__section:last-of-type a')
+  const gapBox = (page: Page) => page.getByRole('main').locator('.nf-gap--wide')
+
+  test('Not found, a foundation: says foundation, asks for nothing, and leads to every foundation', async ({ page }) => {
+    await page.goto('/#/foundations/elevation')
+    const main = page.getByRole('main')
+    await expect(main.getByRole('heading', { level: 1 })).toHaveText('There is no foundation called “elevation”')
+    await expect(gapBox(page)).toContainText('No foundation is called that')
+    await expect(gapBox(page)).not.toContainText(/component/i)
+    await expect(main.getByRole('link', { name: 'Ask for it on GitHub' })).toHaveCount(0)
+    await expect(main.getByRole('heading', { level: 2, name: 'Vela’s foundations' })).toBeVisible()
+    // One card for each foundation the menu lists, each to its page.
+    const listed = await page.getByRole('navigation', { name: 'Site' }).locator('a[href^="#/foundations/"]').evaluateAll((as) => as.map((a) => a.getAttribute('href')))
+    expect(await ways(page).evaluateAll((as) => as.map((a) => a.getAttribute('href')))).toEqual(listed)
+    await expect(main.getByRole('link', { name: /Component status/ })).toHaveCount(0)
+  })
+
+  test('Not found, a component: says component, asks for it, and leads to Component status and the proposals', async ({ page }) => {
+    await page.goto('/#/components/firewall-rule')
+    await expect(gapBox(page)).toContainText('No component is called that')
+    await expect(page.getByRole('main').getByRole('link', { name: 'Ask for it on GitHub' })).toHaveAttribute('href', /template=component-request\.yml&title=Component\+request%3A\+Firewall\+Rule$/)
+    expect(await ways(page).evaluateAll((as) => as.map((a) => a.getAttribute('href')))).toEqual(['#/status', '#/?section=proposals'])
+  })
+
+  test('Not found, a page: says page, asks for nothing, and leads to the Overview and Component status', async ({ page }) => {
+    await page.goto('/#/settings/billing')
+    await expect(gapBox(page)).toContainText('No page on this site is called that')
+    await expect(gapBox(page)).not.toContainText(/component/i)
+    await expect(page.getByRole('main').getByRole('link', { name: 'Ask for it on GitHub' })).toHaveCount(0)
+    expect(await ways(page).evaluateAll((as) => as.map((a) => a.getAttribute('href')))).toEqual(['#/', '#/status'])
+  })
+
+  test('Not found, a pattern and a proposal: a pattern is asked for and leads to the patterns; a proposal is not, and leads to the proposals', async ({ page }) => {
+    await page.goto('/#/patterns/bulk-edit')
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('There is no pattern called “bulk-edit”')
+    await expect(gapBox(page)).toContainText('No pattern is called that')
+    await expect(page.getByRole('main').getByRole('link', { name: 'Ask for it on GitHub' })).toHaveAttribute('href', /title=Pattern\+request%3A\+Bulk\+Edit$/)
+    expect(await ways(page).evaluateAll((as) => as.map((a) => a.getAttribute('href')))).toEqual(['#/patterns/copy', '#/?section=proposals'])
+    await page.goto('/#/proposals/zero-trust-map')
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('There is no proposal called “zero-trust-map”')
+    await expect(gapBox(page)).toContainText('No proposal is called that')
+    await expect(page.getByRole('main').getByRole('link', { name: 'Ask for it on GitHub' })).toHaveCount(0)
+    expect(await ways(page).evaluateAll((as) => as.map((a) => a.getAttribute('href')))).toEqual(['#/?section=proposals', '#/status'])
+  })
+
+  // Slice 7, item 1 (Omkar, 8 Nov 2026): the British spelling is an alias in the router.
+  test('#/foundations/colour opens the Colour page at the color address, and Back skips the alias', async ({ page }) => {
+    const h1 = page.getByRole('main').getByRole('heading', { level: 1 })
+    await page.goto('/#/how')
+    await expect(h1).toHaveText('How it is made')
+    // A link written the British way, followed from another page.
+    await page.evaluate(() => { window.location.hash = '#/foundations/colour' })
+    await expect(h1).toHaveText('Colour')
+    await expect(page).toHaveURL(/#\/foundations\/color$/)
+    await expect(page).toHaveTitle('Colour · Vela Design System')
+    // The alias was replaced, not added: one step back is the page before, one forward the Colour page.
+    await page.goBack()
+    await expect(page).toHaveURL(/#\/how$/)
+    await expect(h1).toHaveText('How it is made')
+    await page.goForward()
+    await expect(page).toHaveURL(/#\/foundations\/color$/)
+    await expect(h1).toHaveText('Colour')
+    // Opened directly, with a query: the query is kept.
+    await page.goto('/#/foundations/colour?section=x')
+    await expect(h1).toHaveText('Colour')
+    expect(new URL(page.url()).hash).toBe('#/foundations/color?section=x')
+  })
+
   test('project documents: no markdown mark reaches the page, long ones have a rail, the Roadmap leads with its phases', async ({ page }) => {
     for (const path of ['/#/changelog', '/#/roadmap', '/#/contributing', '/#/accessibility', '/#/foundations/filter-grammar']) {
       await page.goto(path)
@@ -2658,7 +2734,7 @@ test.describe('uplift slice 5 · doc pages', () => {
 
   test('the footer is in a reader\'s words', async ({ page }) => {
     await page.goto('/#/status')
-    await expect(page.locator('.demo-footer')).toHaveText('No runtime dependencies · Light and dark · Contrast checked to WCAG 2.1 AA on every change')
+    await expect(page.locator('.demo-footer')).toHaveText(`${PACKAGE} · No runtime dependencies · Light and dark · Contrast checked to WCAG 2.1 AA on every change`)
   })
 
   test('at 390 the doc pages fit, and How it is made reads top to bottom', async ({ page }) => {

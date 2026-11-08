@@ -44,10 +44,7 @@ body { margin: 0; background: var(--vela-bg-global); }
 }
 
 .topbar { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: var(--vela-space-15); height: var(--site-topbar-height); padding: 0 var(--vela-space-20); background: var(--vela-bg-global); border-bottom: 1px solid var(--vela-border-subtle); }
-.topbar__menu { display: inline-flex; align-items: center; justify-content: center; width: var(--vela-control-height-35); height: var(--vela-control-height-35); border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4); background: transparent; color: var(--vela-text-default); cursor: pointer; padding: 0; transition: background-color var(--vela-duration-base) var(--vela-ease-standard); }
-@media (hover: hover) { .topbar__menu:hover { background: var(--vela-bg-hover); transition-duration: var(--vela-duration-fast); } }
-/* Pressed (slice 1): every page control shows its press at pointer down, in instant; nothing moves. */
-.topbar__menu:active { background: var(--vela-bg-selected); border-color: var(--vela-border-active); transition-duration: var(--vela-duration-instant); }
+.topbar__menu { flex: none; }   /* Vela's Icon Button, regular (slice 7, item 7): it draws itself */
 /* GitHub, npm and Figma as Icon Button links (desktop). Figma's Brand Book asks for clear space equal
    to the mark's height, 20px, from any other element. Each 20px mark sits in a 35px box with no fill
    or border at rest or on hover, so 7.5px of its clear space is inside its own box; the space-15 gap
@@ -58,9 +55,9 @@ body { margin: 0; background: var(--vela-bg-global); }
    The gap is the mark's own (product-mark-clear-space; brand/README.md, rule 6): about 0.18 of the
    mark's width between the mark and the name, 4.3px at 24, so space-5. The space-15 gap of the bar
    keeps the quarter-width clear space (6px) from the menu button. Focus is Vela's ring, round the
-   whole link (base.css). Hover underlines the name only; the mark and the version never change. */
-.brand { display: flex; align-items: center; gap: var(--vela-space-5); min-width: 0; text-decoration: none; color: var(--vela-text-heading); }
-.brand__words { display: flex; align-items: baseline; gap: var(--vela-space-10); min-width: 0; }
+   whole link (base.css). Hover underlines the name only; the mark never changes. The name never
+   shrinks or wraps (flex: none): the Search slot beside it gives way instead (slice 7, item 2b). */
+.brand { display: flex; flex: none; align-items: center; gap: var(--vela-space-5); text-decoration: none; color: var(--vela-text-heading); }
 .brand__name { font-size: var(--vela-text-h4-size); line-height: var(--vela-text-h4-line-height); font-weight: var(--vela-font-weight-semibold); white-space: nowrap; }
 @media (hover: hover) { .brand:hover .brand__name { text-decoration-line: underline; } }
 /* No pressed state of its own: a press goes home (the logo states). */
@@ -69,14 +66,12 @@ body { margin: 0; background: var(--vela-bg-global); }
    title keeps the full name. */
 .brand__rest { font-weight: var(--vela-font-weight-regular); }
 @media (max-width: 600px) { .brand__rest { position: absolute; clip-path: inset(50%); overflow: hidden; white-space: nowrap; } }
-.brand__meta { color: var(--vela-text-de-emphasized); white-space: nowrap; }
 /* Forced colours: the name is LinkText, like any link, and so is the mark (an SVG keeps its own
    colour there unless told). The focus ring is an outline, which the system keeps. */
 @media (forced-colors: active) { .brand, .brand__name, .brand .pm { color: LinkText; } }
-.topbar__right { margin-left: auto; display: flex; align-items: center; gap: var(--vela-space-20); }
+.topbar__right { margin-left: auto; flex: none; display: flex; align-items: center; gap: var(--vela-space-20); }
 .topbar__link { color: var(--vela-text-default); text-decoration: none; }
 .topbar__link:hover { color: var(--vela-text-link); }
-@media (max-width: 600px) { .brand__meta { display: none; } }
 
 .shell__body { display: flex; flex: 1; align-items: flex-start; }
 .sitenav { width: var(--site-nav-width); flex: none; position: sticky; top: var(--site-topbar-height); height: calc(100vh - var(--site-topbar-height)); overflow-y: auto; box-sizing: border-box; display: flex; flex-direction: column; gap: var(--vela-space-20); padding: var(--vela-space-20) var(--vela-space-15); background: var(--vela-bg-container); border-right: 1px solid var(--vela-border-subtle); }

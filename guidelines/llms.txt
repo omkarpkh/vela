@@ -149,7 +149,7 @@ behaviour has no Figma expression at all.
 - [Status Indicator](components/status-indicator.md)
 - [Risk Pill](components/risk-pill.md)
 - [Tabs](components/tabs.md) — when the row is full both entries fade the edge where more tabs are and scroll a tab you open, click or focus wholly into view; the headless Tabs also puts the tabs that don't fit into "N more" (a Dropdown List of every tab) and keeps the open tab in view. The count is measured, never a prop; `unseen` (headless `Tabs.Trigger` only) adds "· 1 new"
-- [Icon](components/icon.md) — 50 curated Lucide glyphs (ISC, see NOTICE), compiled into the core entry; `ICON_NAMES` is the closed list; Experimental
+- [Icon](components/icon.md) — 52 curated Lucide glyphs (ISC, see NOTICE), compiled into the core entry; `ICON_NAMES` is the closed list; Experimental
 - [Brand Mark](components/brand-mark.md) — `@omkarux/vela`, Experimental: GitHub's and Figma's own marks, unmodified (see NOTICE), only to link to their services; `name` is `github` or `figma`, nothing else; no Figma set yet
 - [Checkbox](components/checkbox.md) — `@omkarux/vela/headless` only, Experimental
 - [Radio Group](components/radio-group.md) — `@omkarux/vela/headless` only, Experimental

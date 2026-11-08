@@ -54,6 +54,8 @@ import { Bell } from './Bell'
 import { Bot } from './Bot'
 import { Terminal } from './Terminal'
 import { RotateCcwClock } from './RotateCcwClock'
+import { Menu } from './Menu'
+import { Contrast } from './Contrast'
 
 export const GLYPHS: Readonly<Record<IconName, Glyph>> = {
   'shield-x': ShieldX,
@@ -106,4 +108,6 @@ export const GLYPHS: Readonly<Record<IconName, Glyph>> = {
   'bot': Bot,
   'terminal': Terminal,
   'rotate-ccw-clock': RotateCcwClock,
+  'menu': Menu,
+  'contrast': Contrast,
 }

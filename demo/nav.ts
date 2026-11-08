@@ -35,4 +35,5 @@ export const PROPOSALS = SPECS.map((p) => ({ id: p.id, title: p.name }))
 // Patterns (guidelines/patterns/): a pattern is listed only once its content is approved, by hand,
 // because the nav must not read the pattern's text (that would pull it into the first chunk). Copy
 // was approved by Omkar on 31 Oct 2026 (copy.md, Status). Each id has a page of its own.
-export const PATTERNS = [{ id: 'copy', title: 'Copy' }] as const
+// Its line, from the spec's first sentence, is what a card for it says (Not found's ways on).
+export const PATTERNS = [{ id: 'copy', title: 'Copy', line: 'Copying a value from a console into another app' }] as const

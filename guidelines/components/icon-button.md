@@ -36,7 +36,7 @@ Every glyph-only control in a console should be named, reachable, big enough to 
 | Prop | Type | Default | Notes |
 |---|---|---|---|
 | `label` | `string` | — | **Required.** The accessible name and the tooltip's words. |
-| `icon` | `IconName` | — | Exactly one of `icon`, `brandMark` or `word`. One of Icon's fifty. |
+| `icon` | `IconName` | — | Exactly one of `icon`, `brandMark` or `word`. One of Icon's fifty-two. |
 | `brandMark` | `BrandMarkName` | — | `"github"` or `"figma"`. Figma at `tiny` doesn't compile. |
 | `word` | `"npm"` | — | This one only. In `--vela-font-family-mono`. |
 | `size` | `"tiny" \| "regular"` | `"regular"` | 24px box with a 16px glyph, or 35px with a 20px glyph. |
