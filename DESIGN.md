@@ -151,6 +151,9 @@ punctuation starts the next line, so it reads as a continuation.
   space, no swapped character. What a person selects or copies is exactly the value.
 - **Never truncate a name.** No ellipsis and no middle cut: a host name cut short is a different
   host name.
+- **Names stay in the UI face.** Mono, at Meta's size, is for values compared character by
+  character (hashes, keys, IP addresses, opaque ids); see `guidelines/foundations/typography.md`.
+  Counts keep tabular figures in whichever face they are in.
 - **Opaque values are shown in full, for now.** A hash, a key or a fingerprint breaks where it must
   and its row grows, but nothing is cut. Copyable Value, the Copy pattern's draft
   (`guidelines/patterns/copy.md`), will give an opaque value a fixed short form with the full value
