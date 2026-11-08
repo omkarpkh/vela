@@ -37,6 +37,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     at the floor, never clipped, and the section agreeing on a phone), the switch at 429 and 430px of
     Overview in a 1440 window, and 1440 as it was. The console's identifier test now expects the
     one asset on phones and the floor wherever the table shows.
+    Packed: 390.3 kB, 276 files (was 389.4 kB, 276): this entry and the Table spec's sentence.
 - **Identifiers break only before their separators** (Omkar's decision of 8 Nov 2026, item 5, part
   A1). On a phone the Overview's console drew "vpn-edge-" then "east", "api-" then "gateway" and
   "mail-" then "relay": browsers break after a hyphen, so one name read as two. Measured at 390px
