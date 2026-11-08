@@ -31,6 +31,12 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   - **`table.md`** no longer lets a table that cannot scroll lower its name column's floor: nothing
     else used it. A picture of a table shows less where it would not fit, as the hero does. The
     console's own override (`.ov-console__name`) is gone.
+  - 1958 checks (was 1953): 373 playground browser checks (was 368). Five new: the one asset at 390
+    and at 320 (every signal labelled and inside the plate, at real size, one caption, the section's
+    picture gone), the plate deciding from 320 to 1920 (one asset below 340, else the whole console
+    at the floor, never clipped, and the section agreeing on a phone), the switch at 429 and 430px of
+    Overview in a 1440 window, and 1440 as it was. The console's identifier test now expects the
+    one asset on phones and the floor wherever the table shows.
 - **Identifiers break only before their separators** (Omkar's decision of 8 Nov 2026, item 5, part
   A1). On a phone the Overview's console drew "vpn-edge-" then "east", "api-" then "gateway" and
   "mail-" then "relay": browsers break after a hyphen, so one name read as two. Measured at 390px

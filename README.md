@@ -66,7 +66,7 @@ link to each, and the number of automated checks, written by the test runners ra
 | **Dependencies** | None in the core entry. `react` / `react-dom` are peers (18.3 or 19). The `/headless` entry needs one optional peer, `@base-ui/react` 1.9.x (MIT) |
 | **Icons** | 52 curated [Lucide](https://lucide.dev) 1.63.0 glyphs (ISC; a subset from Feather, MIT), compiled into the core entry at build time — no icon dependency, `lucide` is a devDependency only. The ISC notice ships in [`NOTICE`](NOTICE) |
 | **Format** | ESM, `preserveModules` for tree-shaking, full `.d.ts` |
-| **Tests** | 1953 automated checks — 1468 unit and contract (116 contrast pairs, each asserted in both themes), 482 browser (112 screenshots: 68 at four widths, 24 of the component tabs, 2 of the Tabs overflow stage, 6 of the proposal and pattern pages, 6 of the doc pages and 6 of the Overview and two foundations at 1440, 368 playground, 2 docs), 3 Flutter — counted by `npm run checks` |
+| **Tests** | 1958 automated checks — 1468 unit and contract (116 contrast pairs, each asserted in both themes), 487 browser (112 screenshots: 68 at four widths, 24 of the component tabs, 2 of the Tabs overflow stage, 6 of the proposal and pattern pages, 6 of the doc pages and 6 of the Overview and two foundations at 1440, 373 playground, 2 docs), 3 Flutter — counted by `npm run checks` |
 | **Packed size** | 389.4 kB, 276 files (the Filter Grammar's modules and their .d.ts are most of the growth since 0.15.0; Tabs overflow, its module and its longer spec, added 16.3 kB; `guidelines/components.json` about 17 kB; `DESIGN.md`, now shipped, and the agent report in `llms.txt` about 17 kB; `TooltipProvider`, its Groups section and changelog entry about 4 kB; decision 008's spec rules and changelog entry about 1.4 kB; the sizing and typography group descriptions, repeated on each step in the Dart file and once per family in DESIGN.md, about 4 kB; the slice 7 page fixes' changelog entry about 1.5 kB; the identifier rule, its helper module and .d.ts, the Table spec's seven rules and the changelog entry about 6 kB), as `npm run verify` measures it (README and CHANGELOG ship in the tarball, so this moves when they do) |
 
 ## The three ideas worth stealing
@@ -179,7 +179,7 @@ document.documentElement.removeAttribute('data-theme')        // follow the OS
 
 ```bash
 npm run dev        # demo showcase at localhost:5174
-npm test           # 1468 unit and contract tests, of 1953 checks in all — the numbers are generated into demo/checks.json
+npm test           # 1468 unit and contract tests, of 1958 checks in all — the numbers are generated into demo/checks.json
 npm run checks     # counts every automated check into demo/checks.json (diffed in verify)
 npm run contrast   # WCAG report for both themes
 npm run verify     # tokens:check + icons:check + rules:check + typecheck + tests + checks:check + build + pack-and-consume gate

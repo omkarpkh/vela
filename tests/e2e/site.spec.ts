@@ -3099,7 +3099,7 @@ test.describe('slice 7 fixes · the pages', () => {
     }
   })
 
-  test('item 6: on a phone the Overview is under five screens, three proposals lead, and "Show all" opens the rest in place', async ({ page }) => {
+  test('item 6: on a phone the Overview is under four and a half screens, three proposals lead, and "Show all" opens the rest in place', async ({ page }) => {
     // How many proposals there are, from the site's navigation (wide, where it is in the page).
     await page.goto('/#/')
     const listed = await page.getByRole('navigation', { name: 'Site' }).locator('a[href^="#/proposals/"]').count()
