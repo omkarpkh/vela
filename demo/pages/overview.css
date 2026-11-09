@@ -44,15 +44,32 @@
 .ov-install__code { min-width: 0; overflow-wrap: anywhere; font-family: var(--vela-font-family-mono); font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); letter-spacing: var(--vela-text-meta-tracking); color: var(--vela-text-default); }
 
 /* The console: the kit's own Tabs, Table, Status Indicator and Risk Pill, on a plate like the stage's,
-   inert. Its caption says what it is made of. */
-.ov-console { grid-area: console; min-width: 0; align-self: stretch; display: flex; flex-direction: column; gap: var(--vela-space-10); box-sizing: border-box; padding: var(--vela-space-20); border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-8); background: var(--vela-bg-global); color: var(--vela-text-default); }
+   inert. Its caption says what it is made of. The figure is a size container (named ov-console): its
+   own width, not the window's, chooses between the console and the one-asset view below. */
+.ov-console { grid-area: console; min-width: 0; align-self: stretch; display: flex; flex-direction: column; gap: var(--vela-space-10); box-sizing: border-box; padding: var(--vela-space-20); border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-8); background: var(--vela-bg-global); color: var(--vela-text-default); container: ov-console / inline-size; }
 .ov-console__screen { display: flex; flex-direction: column; gap: var(--vela-space-10); min-width: 0; pointer-events: none; }
 .ov-console__screen .vela-table-scroll, .ov-console__screen .vela-table-wrap { overflow: hidden; }
-/* The console is a picture and cannot scroll, so its name column gives up the kit's identifier floor
-   (--vela-identifier-width-min) rather than push Risk out of the frame on a phone; the names still
-   break only before their separators (DESIGN.md, Identifiers; table.md, Responsive behaviour). */
-.ov-console__screen .ov-console__name { min-inline-size: 0; }
 .ov-console__caption { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
+
+/* One asset, three scales (Omkar's decision of 8 Nov 2026, question 3, option D): one of the
+   console's rows, the one whose scales disagree (Overview.tsx), at real size, never scaled. The name, then each signal beside its scale's word; the latest event
+   under its word, as wide as the plate. Shown only where the console's table would not fit. */
+.ov-asset { display: none; flex-direction: column; gap: var(--vela-space-15); min-width: 0; pointer-events: none; }
+.ov-asset__name { overflow-wrap: break-word; }
+.ov-asset__signals { display: grid; grid-template-columns: max-content minmax(0, 1fr); align-items: center; gap: var(--vela-space-10) var(--vela-space-15); margin: 0; }
+.ov-asset__signals dt { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); font-weight: var(--vela-font-weight-semibold); color: var(--vela-text-default); }
+.ov-asset__signals dd { margin: 0; min-width: 0; display: flex; }
+.ov-asset__signals .ov-asset__event { grid-column: 1 / -1; }
+.ov-asset__signals dd.ov-asset__event { display: block; }
+.ov-console__says-asset { display: none; }
+/* The table needs 333px of the plate at the floor (Open Sans: a 160px name column, "Unhealthy" and
+   "Medium"; measured 8 Nov 2026); 340 leaves a little spare and keeps the three-up hero on the
+   console at 1366, the common laptop width (its plate is 353px there). */
+@container ov-console (width < 340px) {   /* vela-allow: the console table's own width at the identifier floor, and spare; a container query cannot read a token */
+  .ov-console__screen, .ov-console__says-console { display: none; }
+  .ov-asset { display: flex; }
+  .ov-console__says-asset { display: inline; }
+}
 
 /* Check it yourself: lighter than before. The number at H3's size in the display face, with tabular figures, a short line, the link. */
 .ov-facts { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--vela-space-20); }
@@ -171,6 +188,15 @@
      moves in by the panel's edge and padding less that inset, and the ring's left edge meets the
      heading's. A browser test measures the two edges. */
   .ov-hero__mark { margin-inline-start: calc(1px + var(--vela-space-20) - var(--ov-mark) * 4.484 / 32); }
+}
+/* Built for security products, on a phone: the hero already shows the three scales (the one-asset
+   view), so the card keeps its title and words and drops its picture of them. Stacked, the console's
+   plate is the Overview's width less 90px (the hero's 24px padding and the plate's 20px padding and
+   1px edge, each side), so the hero shows one asset below 430px here exactly when its own query
+   (340px) does; tests/e2e/site.spec.ts sweeps the widths to hold the two together. The three-up hero
+   can show one asset between about 1320 and 1340px; that is a desktop, and the card keeps its picture. */
+@container (width < 430px) {   /* vela-allow: the one-asset view's 340px plus the hero's and the plate's padding and edges; a container query cannot read a token */
+  .ov-wide .shell-card__thumb { display: none; }
 }
 /* The sections' spacing is the container's own gap, which its own query can't reach: on a phone (the
    site's phone width, as the stage strip's) they are 40 apart (slice 7 fixes, item 6). */

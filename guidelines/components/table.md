@@ -239,9 +239,9 @@ that floor). Above the minimum the table fills its container (`inline-size: 100%
 `fixed` layout the first row decides every width and the browser ignores a minimum on a cell, so the
 host gives the identifier column's header a width of `--vela-identifier-width-min` or more through
 `className`. Then the two layouts agree: below the sum of the floors the region scrolls, and above
-it a long name breaks before a separator. A table that cannot scroll at all, such as a picture of a
-console, may set its own floor on the cell through `className` (`min-inline-size: 0`); its names
-still break only before their separators.
+it a long name breaks before a separator. A picture of a table cannot scroll, and it does not lower
+the floor either: where it would not fit, show less, as the Overview's hero shows one asset in place
+of its console.
 
 **Below the minimum it scrolls, inside itself.** The wrapper is an inline-size container
 (`container-type: inline-size`), so its width is never taken from the table: a 1200px table in a

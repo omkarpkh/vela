@@ -70,22 +70,36 @@ async function fixedLayout(page: Page) {
 
 test.describe('identifiers', () => {
   // [[rule: table-identifier-breaks-before-separators]]
-  test('on the Overview a name in the console never ends a line with a separator, and the picture keeps every column', async ({ page }) => {
-    for (const width of [320, 360, 390, 430, 768, 1440]) {
+  test('on the Overview a name never ends a line with a separator: in the console, and in the one asset a phone shows', async ({ page }) => {
+    // Where the console's plate cannot hold its table at the floor, the hero shows its first asset
+    // instead (slice 7 fixes, PR D); wherever the table shows, it keeps the floor and fits whole.
+    for (const [width, view] of [[320, 'asset'], [360, 'asset'], [390, 'asset'], [430, 'asset'], [768, 'console'], [1440, 'console']] as const) {
       await page.setViewportSize({ width, height: 900 })
       await page.goto('/')
+      if (view === 'asset') {
+        await expect(page.locator('.ov-asset')).toBeVisible()
+        await expect(page.locator('.ov-console__screen')).toBeHidden()
+        await expectBreaksOnlyBeforeSeparators(page.locator('.ov-asset__name'), `${width}px`)
+        continue
+      }
       const cells = page.locator('.ov-console .vela-table__cell--identifier')
       await expect(cells).toHaveCount(3)
-      const drawn = await expectBreaksOnlyBeforeSeparators(cells, `${width}px`)
-      // The bug this replaces: at 390 "vpn-edge-east" drew as "vpn-" / "edge-" / "east".
-      if (width === 390) expect(drawn.map((d) => d.lines.length).some((n) => n > 1), 'names still wrap at 390').toBe(true)
+      await expectBreaksOnlyBeforeSeparators(cells, `${width}px`)
+      for (const w of await cells.evaluateAll((els) => els.map((e) => e.getBoundingClientRect().width))) expect(w).toBeGreaterThanOrEqual(160 - 0.5)
       // The console is a picture and cannot scroll: the whole table fits its frame, Risk included.
-      // Under 390 it cannot, names or not: Health and Risk alone need 173px of a 190px or 230px
-      // region. That was so before identifiers (250px of table at 320) and is the page's to answer.
-      if (width < 390) continue
       const fit = await page.locator('.ov-console .vela-table__region').evaluate((el) => ({ scroll: el.scrollWidth, client: el.clientWidth }))
       expect(fit.scroll, `${width}px: the console's table fits its frame`).toBeLessThanOrEqual(fit.client)
     }
+    // The one asset's name goes through the same helper: in a frame too narrow for it whole, it
+    // breaks before a separator, never after one. "mail-relay" is 67.5px wide at H5 (Open Sans), so a
+    // 50px frame forces one break, and "-relay" alone still fits: it must draw "mail" / "-relay".
+    await page.setViewportSize({ width: 390, height: 900 })
+    await page.goto('/')
+    const name = page.locator('.ov-asset__name')
+    await expect(name).toHaveText('mail-relay')
+    await name.evaluate((el: HTMLElement) => { el.style.width = '50px' })
+    const [drawn] = await expectBreaksOnlyBeforeSeparators(name, 'a 50px frame')
+    expect(drawn.lines).toEqual(['mail', '-relay'])
   })
 
   // [[rule: table-identifier-breaks-before-separators]]
