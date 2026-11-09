@@ -115,13 +115,14 @@ test.describe('identifiers', () => {
       }
     }
     // A segment wider than its whole column breaks inside itself and is never cut: with the floor
-    // token set to 60px on this stage, the column is 60px and "-primary" has no room, yet the text is
+    // token set to 60px on the stage, the column is 60px and "-primary" has no room, yet the text is
     // still all there. The token is lowered rather than the header's width overridden, so the header
-    // and the cells' own minimum agree (on CI an override of the header alone lost to the cells'
-    // 160px minimum). It goes in before the table turns fixed: Chromium keeps a fixed table's column
-    // widths when a header cell's width changes afterwards.
+    // and the cells' own minimum agree. It is set by a style sheet, not an inline style on the frame:
+    // choosing "fixed" can redraw the frame, which drops an inline style, and on CI the column then
+    // came back at 160px. It goes in before the table turns fixed: Chromium keeps a fixed table's
+    // column widths when a header cell's width changes afterwards.
     const body = await tableStage(page)
-    await body.evaluate((el: HTMLElement) => el.style.setProperty('--vela-identifier-width-min', '60px'))
+    await page.addStyleTag({ content: '.pg-frame-body { --vela-identifier-width-min: 60px !important; }' })
     await fixedLayout(page)
     await expect(body.locator('.vela-table')).toHaveClass(/vela-table--fixed/)
     expect(await body.locator('.pg-table-identifier-col').evaluate((el) => Math.round(el.getBoundingClientRect().width))).toBe(60)
