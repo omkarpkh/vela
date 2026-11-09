@@ -7,6 +7,7 @@ import { Overview } from '../../demo/pages/Overview'
 import { FACTS, RULES, RELEASED, TARGETS, FOUNDATIONS_LINE, SEVERITIES, STATUSES, RISKS, STATUS_WORDS } from '../../demo/pages/overview-facts'
 import { releaseFacts, siteFacts } from '../../scripts/vite-site-facts.mjs'
 import { PAIRS } from '../../scripts/contrast-core.mjs'
+import { CATALOG } from '../../demo/playground/catalog'
 
 // The site's Overview (#/), redesigned on 1 Nov 2026: every number on it comes from the build. These
 // tests hold each number to the file it is counted from, and fail if the page carries a digit that
@@ -116,5 +117,17 @@ describe('the Overview page', () => {
     expect(within(container).getByRole('link', { name: 'Browse components' })).toHaveAttribute('href', TARGETS.components)
     expect(within(container).getByRole('button', { name: 'Copy install command' })).toBeInTheDocument()
     expect(container.querySelector('.ov-install__code')).toHaveTextContent(/^npm install @omkarux\/vela$/)
+  })
+
+  it("the console's captions link each part they name to its page, by the kit's own name (Omkar, 9 Nov 2026)", () => {
+    const { container } = render(<Overview theme="light" />)
+    const linksIn = (sel: string) => [...container.querySelectorAll(`${sel} a`)].map((a) => [a.textContent, a.getAttribute('href')])
+    const page = (id: string) => { const c = CATALOG.find((e) => e.id === id)!; return [c.name, `#/components/${id}`] }
+    expect(linksIn('.ov-console__says-console')).toEqual(['tabs', 'table', 'status-indicator', 'risk-pill'].map(page))
+    expect(linksIn('.ov-console__says-asset')).toEqual(['status-indicator', 'risk-pill', 'contextual-alert'].map(page))
+    // Only the caption carries links: the picture stays a picture.
+    expect(container.querySelectorAll('.ov-console__screen a, .ov-asset a')).toHaveLength(0)
+    // Link text on the console's plate is a checked pair.
+    expect(PAIRS.some(([fg, bg]) => fg === '--vela-text-link' && bg === '--vela-bg-global')).toBe(true)
   })
 })

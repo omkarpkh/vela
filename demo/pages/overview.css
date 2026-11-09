@@ -50,6 +50,10 @@
 .ov-console__screen { display: flex; flex-direction: column; gap: var(--vela-space-10); min-width: 0; pointer-events: none; }
 .ov-console__screen .vela-table-scroll, .ov-console__screen .vela-table-wrap { overflow: hidden; }
 .ov-console__caption { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
+/* The parts the caption names link to their pages: links inside a sentence, so underlined and at the
+   sentence's weight, never the bolder ov-link, and quieter than the one primary action. text-link on
+   bg-global is in PAIRS. */
+.ov-console__part { color: var(--vela-text-link); text-decoration: underline; }
 
 /* One asset, three scales (Omkar's decision of 8 Nov 2026, question 3, option D): one of the
    console's rows, the one whose scales disagree (Overview.tsx), at real size, never scaled. The name, then each signal beside its scale's word; the latest event
