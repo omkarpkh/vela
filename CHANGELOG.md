@@ -5,6 +5,14 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.16.0] — 2026-11-09
+
+**Highlights:**
+
+- Three new parts: Brand Mark, Icon Button, and Tabs that fold extra tabs into a list.
+- The Filter Grammar: one filter, read the same as chips, as text and as a sentence.
+- Built for agents: a components list, DESIGN.md in the package and an agent skill.
+
 ### Added
 - **On a phone the Overview's hero shows one asset, three scales** (Omkar's decision of 8 Nov 2026,
   question 3, option D). The hero's console is a picture and cannot scroll, and on a phone its plate

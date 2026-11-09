@@ -16,8 +16,8 @@ needs a record; `TEMPLATE.md` is the shape.
 | 004 | [Icon strokes may draw](004-icon-strokes-draw/README.md) | 30 Oct 2026 | Shipped in 0.14.0: the rule 1 exception and its checks. No component uses it yet; frame cost outside Chromium is open. |
 | 005 | [Tabs hover preview: the Seed](005-tabs-hover-seed/README.md) | 30 Oct 2026 | Shipped in 0.14.0, with the press growing in place. The near/far hybrid and a real Windows contrast theme are open. |
 | 006 | [The motion values are approved](006-motion-values-approved/README.md) | 31 Oct 2026 | Shipped in 0.15.0. Judged from Chromium recordings; Safari, Firefox, swipe and Dialog not seen. |
-| 007 | [The display face is Open Sans](007-display-face-open-sans/README.md) | 6 Nov 2026 | Unreleased, held until the end of the refinement stage. A stat-number setting a brand cannot reach waits for a stat component (roadmap, Phase 2b); the brand theme itself is open. |
-| 008 | [Dropdown List moves on the overlay motion, like Popover](008-dropdown-list-overlay-motion/README.md) | Decided 7 Nov 2026 | Decided by Omkar after judging the clip. Extends decision 006. |
+| 007 | [The display face is Open Sans](007-display-face-open-sans/README.md) | 6 Nov 2026 | Shipped in 0.16.0. A stat-number setting a brand cannot reach waits for a stat component (roadmap, Phase 2b); the brand theme itself is open. |
+| 008 | [Dropdown List moves on the overlay motion, like Popover](008-dropdown-list-overlay-motion/README.md) | 7 Nov 2026 | Shipped in 0.16.0. Extends decision 006. |
 
 ## Numbering
 
