@@ -5,6 +5,14 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.16.0] — 2026-11-09
+
+**Highlights:**
+
+- Three new parts: Brand Mark for service logos, Icon Button for glyph-only actions, and Tabs that tuck extra tabs into a "more" list.
+- The Filter Grammar, Vela's first contract: a filter written once, read the same as chips, as text and as a sentence.
+- Built for agents: a components list, DESIGN.md in the package and an agent skill, so an agent can build with Vela and report what it used.
+
 ### Added
 - **On a phone the Overview's hero shows one asset, three scales** (Omkar's decision of 8 Nov 2026,
   question 3, option D). The hero's console is a picture and cannot scroll, and on a phone its plate

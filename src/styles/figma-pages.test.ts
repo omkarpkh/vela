@@ -140,7 +140,7 @@ describe('the Changelog page', () => {
       expect([link.chars, link.style]).toEqual(['Full entry: CHANGELOG.md', 'Body/Link'])
       expect(link.link).toMatch(/^https:\/\/github\.com\/omkarpkh\/vela\/blob\/main\/CHANGELOG\.md#\d+--\d{4}-\d{2}-\d{2}$/)
     }
-    expect(cards[0].ch!.at(-1)!.link).toBe('https://github.com/omkarpkh/vela/blob/main/CHANGELOG.md#0150--2026-10-31')
+    expect(cards[0].ch!.at(-1)!.link).toBe('https://github.com/omkarpkh/vela/blob/main/CHANGELOG.md#0160--2026-11-09')
   })
 
   it('says where "on npm" came from: the committed published.json, which lists every release but 0.1.0', () => {
@@ -219,14 +219,14 @@ describe('the Status page', () => {
     const [, dset, dexp, dsince, dspec] = cells('Dropdown List')
     expect([dset.chars, dexp.chars, dsince.chars]).toEqual(['Dropdown List item · page Dropdown List', 'DropdownList · @omkarux/vela/headless', '0.14.0'])
     expect(dspec.chars).toBe(onMain('guidelines/components/dropdown-list.md') ? 'dropdown-list.md' : 'dropdown-list.md (branch)')
-    // Brand Mark (1 Nov 2026) has no set yet; its builder is written. It is core, not yet released,
-    // and its spec reads "(branch)" until it is on main.
+    // Brand Mark (1 Nov 2026) has no set yet; its builder is written. It is core, first released in
+    // 0.16.0, and its spec reads "(branch)" until it is on main.
     const [, mset, mexp, msince, mspec] = cells('Brand Mark')
-    expect([mset.chars, mexp.chars, msince.chars]).toEqual(['None yet — the builder is ready (brand-mark.figma.js)', 'BrandMark · @omkarux/vela', 'Unreleased'])
+    expect([mset.chars, mexp.chars, msince.chars]).toEqual(['None yet — the builder is ready (brand-mark.figma.js)', 'BrandMark · @omkarux/vela', '0.16.0'])
     expect(mspec.chars).toBe(onMain('guidelines/components/brand-mark.md') ? 'brand-mark.md' : 'brand-mark.md (branch)')
-    // Icon Button (1 Nov 2026), the same: no set yet, headless, unreleased, "(branch)" until it is on main.
+    // Icon Button (1 Nov 2026), the same: no set yet, headless, first released in 0.16.0, "(branch)" until it is on main.
     const [, bbset, bbexp, bbsince, bbspec] = cells('Icon Button')
-    expect([bbset.chars, bbexp.chars, bbsince.chars]).toEqual(['None yet — the builder is ready (icon-button.figma.js)', 'IconButton · @omkarux/vela/headless', 'Unreleased'])
+    expect([bbset.chars, bbexp.chars, bbsince.chars]).toEqual(['None yet — the builder is ready (icon-button.figma.js)', 'IconButton · @omkarux/vela/headless', '0.16.0'])
     expect(bbspec.chars).toBe(onMain('guidelines/components/icon-button.md') ? 'icon-button.md' : 'icon-button.md (branch)')
     // No set is left built-but-unpublished.
     for (const r of rows) expect(cells(r.n)[1].chars, r.n).not.toBe('Built, not published')

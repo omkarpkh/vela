@@ -5,7 +5,7 @@ from the default. `--vela-font-family-display` is now `"Open Sans", -apple-syste
 it stays a brand setting a white-label theme may re-point, under one rule: a brand may choose a
 display face for headlines and brand moments, never for numbers people compare. Wherever the
 display face shows a number, the figures are tabular, and a CSS check holds the kit and the site to
-it. Unreleased; it will ship in the next minor.**
+it. Shipped in 0.16.0.**
 
 The screenshots in `media/` were taken by `shots.mjs`, beside this file; its header says how to run
 it. The full set of 32 (four places, two widths, two themes, before and after) was taken for the

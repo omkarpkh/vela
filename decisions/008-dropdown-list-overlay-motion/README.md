@@ -4,7 +4,7 @@
 travelling a `--vela-space-5` step from its trigger and moves on Popover's overlay motion instead.
 It grows from 96% out of the button as it fades in, on `--vela-ease-out` over
 `--vela-duration-base`, and leaves on a fade. This extends the values decision 006 approved for
-Popover and Tooltip to one more overlay; it changes none of them. Unreleased.**
+Popover and Tooltip to one more overlay; it changes none of them. Shipped in 0.16.0.**
 
 The clip he judges is `media/dropdown-list.mp4` (20 s). `record.mjs`, beside this file, makes it
 again; its header says how. It is made the way decision 006's `overlays.mp4` was.
