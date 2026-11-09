@@ -91,14 +91,15 @@ test.describe('identifiers', () => {
       expect(fit.scroll, `${width}px: the console's table fits its frame`).toBeLessThanOrEqual(fit.client)
     }
     // The one asset's name goes through the same helper: in a frame too narrow for it whole, it
-    // breaks before a separator ("vpn-edge" / "-east"), never after one.
+    // breaks before a separator, never after one. "mail-relay" is 67.5px wide at H5 (Open Sans), so a
+    // 50px frame forces one break, and "-relay" alone still fits: it must draw "mail" / "-relay".
     await page.setViewportSize({ width: 390, height: 900 })
     await page.goto('/')
     const name = page.locator('.ov-asset__name')
-    await expect(name).toBeVisible()
-    await name.evaluate((el: HTMLElement) => { el.style.width = '80px' })
-    const [drawn] = await expectBreaksOnlyBeforeSeparators(name, 'an 80px frame')
-    expect(drawn.lines.length).toBeGreaterThan(1)
+    await expect(name).toHaveText('mail-relay')
+    await name.evaluate((el: HTMLElement) => { el.style.width = '50px' })
+    const [drawn] = await expectBreaksOnlyBeforeSeparators(name, 'a 50px frame')
+    expect(drawn.lines).toEqual(['mail', '-relay'])
   })
 
   // [[rule: table-identifier-breaks-before-separators]]

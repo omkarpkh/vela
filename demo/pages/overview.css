@@ -51,8 +51,8 @@
 .ov-console__screen .vela-table-scroll, .ov-console__screen .vela-table-wrap { overflow: hidden; }
 .ov-console__caption { font-size: var(--vela-text-meta-size); line-height: var(--vela-text-meta-line-height); color: var(--vela-text-default); }
 
-/* One asset, three scales (Omkar's decision of 8 Nov 2026, question 3, option D): the console's first
-   row at real size, never scaled. The name, then each signal beside its scale's word; the latest event
+/* One asset, three scales (Omkar's decision of 8 Nov 2026, question 3, option D): one of the
+   console's rows, the one whose scales disagree (Overview.tsx), at real size, never scaled. The name, then each signal beside its scale's word; the latest event
    under its word, as wide as the plate. Shown only where the console's table would not fit. */
 .ov-asset { display: none; flex-direction: column; gap: var(--vela-space-15); min-width: 0; pointer-events: none; }
 .ov-asset__name { overflow-wrap: break-word; }

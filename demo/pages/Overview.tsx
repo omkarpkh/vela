@@ -60,8 +60,9 @@ function Install() {
  * their column keeps the kit's floor (--vela-identifier-width-min).
  *
  * Where the console's own slot is too narrow for its table at that floor (a phone, and the three-up
- * hero between about 1320 and 1340px), the same figure shows one asset instead: the console's first
- * row, with its three scales labelled (Omkar's decision of 8 Nov 2026, question 3, option D). Both
+ * hero between about 1320 and 1340px), the same figure shows one of its assets instead, the one whose
+ * scales disagree (mail-relay), with its three scales labelled (Omkar's decision of 8 Nov 2026,
+ * question 3, option D; the asset, 9 Nov). Both
  * views are in the page and a container query on the figure shows the one that fits
  * (overview.css), so nothing is measured in script and the table is never shown where it would not
  * fit. Each view has its own caption; only the shown one is in the figure's name.
@@ -71,12 +72,16 @@ const ROWS: { asset: string; status: Status; risk: Risk }[] = [
   { asset: 'api-gateway', status: 'medium', risk: 'medium' },
   { asset: 'mail-relay', status: 'healthy', risk: 'low' },
 ]
-/** The console's Alerts view: what has happened to an asset, on the severity scale. */
+/** The console's Alerts view: what has happened to an asset, on the severity scale. Read only by the
+ * one-asset view below, so it holds only that asset's latest event. */
 const ALERTS: { asset: string; severity: Severity; message: string }[] = [
-  { asset: 'vpn-edge-east', severity: 'critical', message: 'Certificate expired' },
+  { asset: 'mail-relay', severity: 'critical', message: 'Outbound spam spike' },
 ]
-const FIRST = ROWS[0]
-const LATEST = ALERTS.find((a) => a.asset === FIRST.asset)
+// The one-asset view shows the asset whose three scales disagree: healthy, low risk, and still a
+// critical event. Three reds (vpn-edge-east) would read as one scale saying "bad" three times
+// (Omkar's review of 9 Nov 2026, option A). Chosen by name, so reordering the rows cannot change it.
+const SHOWN = ROWS.find((r) => r.asset === 'mail-relay')!
+const LATEST = ALERTS.find((a) => a.asset === SHOWN.asset)
 
 function Console() {
   return (
@@ -106,12 +111,12 @@ function Console() {
       </div>
       {/* One asset, three scales: the name by the identifier rule, then each signal under its scale's word. */}
       <div className="ov-asset" aria-hidden="true" inert>
-        <p className="vela-h5 ov-asset__name">{breakIdentifier(FIRST.asset)}</p>
+        <p className="vela-h5 ov-asset__name">{breakIdentifier(SHOWN.asset)}</p>
         <dl className="ov-asset__signals">
           <dt>Health</dt>
-          <dd><StatusIndicator status={FIRST.status} label={STATUS_WORDS[FIRST.status]} /></dd>
+          <dd><StatusIndicator status={SHOWN.status} label={STATUS_WORDS[SHOWN.status]} /></dd>
           <dt>Risk</dt>
-          <dd><RiskPill risk={FIRST.risk} size="small" /></dd>
+          <dd><RiskPill risk={SHOWN.risk} size="small" /></dd>
           {LATEST && (
             <>
               <dt className="ov-asset__event">Latest event</dt>
@@ -122,7 +127,7 @@ function Console() {
       </div>
       <figcaption className="ov-console__caption">
         <span className="ov-console__says-console">A console screen made of Vela: Tabs, Table, Status Indicator and Risk Pill, as they ship.</span>
-        <span className="ov-console__says-asset">One asset, three scales that never cross: its health, its risk and its latest event, in Vela's Status Indicator, Risk Pill and Contextual Alert.</span>
+        <span className="ov-console__says-asset">Healthy, low risk, and still a critical event. One asset, three scales that never cross: its health, its risk and its latest event, in Vela's Status Indicator, Risk Pill and Contextual Alert.</span>
       </figcaption>
     </figure>
   )

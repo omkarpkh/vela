@@ -3236,15 +3236,16 @@ test.describe('slice 7 fixes · one asset, three scales', () => {
       const asset = fig.locator('.ov-asset')
       await expect(asset).toBeVisible()
       await expect(fig.locator('.ov-console__screen')).toBeHidden()
-      // The console's first row, the same data: the name, its health, its risk, and its latest event.
-      await expect(asset.locator('.ov-asset__name')).toHaveText('vpn-edge-east')
-      await expect(fig.locator('.ov-console__screen tbody th').first()).toHaveText('vpn-edge-east')
+      // One of the console's own rows, the same data: the asset whose scales disagree (9 Nov 2026),
+      // its name, its health, its risk, and its latest event.
+      await expect(asset.locator('.ov-asset__name')).toHaveText('mail-relay')
+      await expect(fig.locator('.ov-console__screen tbody th').filter({ hasText: /^mail-relay$/ })).toHaveCount(1)
       await expect(asset.locator('dt')).toHaveText(['Health', 'Risk', 'Latest event'])
       const values = asset.locator('dd')
-      await expect(values.nth(0).locator('.vela-status')).toHaveText('Unhealthy')
-      await expect(values.nth(1).locator('.vela-risk')).toHaveText('High')
+      await expect(values.nth(0).locator('.vela-status')).toHaveText('Healthy')
+      await expect(values.nth(1).locator('.vela-risk')).toHaveText('Low')
       await expect(values.nth(2).locator('.vela-alert')).toHaveClass(/vela-alert--critical/)
-      await expect(values.nth(2).locator('.vela-alert')).toHaveText('Certificate expired')
+      await expect(values.nth(2).locator('.vela-alert')).toHaveText('Outbound spam spike')
       // Every signal is on screen, inside the plate, and the plate inside the page.
       const box = (await fig.boundingBox())!
       for (const part of [asset.locator('.ov-asset__name'), ...[0, 1, 2].flatMap((i) => [asset.locator('dt').nth(i), values.nth(i)])]) {
@@ -3266,7 +3267,7 @@ test.describe('slice 7 fixes · one asset, three scales', () => {
       await expect(asset).toHaveAttribute('inert', '')
       const main = page.getByRole('main')
       await expect(main.getByRole('figure')).toHaveCount(1)
-      await expect(main.getByRole('figure', { name: /^One asset, three scales that never cross: / })).toBeVisible()
+      await expect(main.getByRole('figure', { name: /^Healthy, low risk, and still a critical event\. One asset, three scales that never cross: / })).toBeVisible()
       await expect(fig.locator('.ov-console__says-console')).toBeHidden()
       await expect(main.getByRole('alert')).toHaveCount(0)
       // Built for security products keeps its words and drops the picture the hero now shows.
@@ -3277,6 +3278,33 @@ test.describe('slice 7 fixes · one asset, three scales', () => {
       expect(await noSidewaysScroll(page)).toBe(true)
     })
   }
+
+  test('the three signals disagree: healthy, low risk and a critical event, drawn in more than one hue', async ({ page }) => {
+    // Three reds would read as one scale saying "bad" three times (Omkar's review of 9 Nov 2026).
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.goto('/#/')
+    const asset = page.locator('.ov-asset')
+    await expect(asset).toBeVisible()
+    await expect(asset.locator('.vela-status')).toHaveClass(/vela-status--healthy/)
+    await expect(asset.locator('.vela-risk')).toHaveClass(/vela-risk--low/)
+    await expect(asset.locator('.vela-alert')).toHaveClass(/vela-alert--critical/)
+    // Each signal's own colour: the status dot's fill, the pill's edge, the alert's mark.
+    const hue = (rgb: string) => {
+      const [r, g, b] = rgb.match(/[\d.]+/g)!.slice(0, 3).map((n) => Number(n) / 255)
+      const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min
+      if (d === 0) return 0
+      const h = max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4
+      return Math.round(((h * 60) + 360) % 360)
+    }
+    const colours = await asset.evaluate((root) => {
+      const cs = (s: string) => getComputedStyle(root.querySelector(s)!)
+      return [cs('.vela-status__dot').backgroundColor, cs('.vela-risk').borderTopColor, cs('.vela-alert__icon').color]
+    })
+    const hues = colours.map(hue)
+    // Two hues count as one family within 30 degrees of each other; at least two families appear.
+    const families = hues.filter((h, i) => hues.slice(0, i).every((k) => Math.min(Math.abs(h - k), 360 - Math.abs(h - k)) > 30))
+    expect(families.length, `${colours.join(', ')} (hues ${hues.join(', ')})`).toBeGreaterThanOrEqual(2)
+  })
 
   test('the plate chooses, from 320 to 1920: one asset below 340px of plate, else the whole console at the floor, and the section agrees on a phone', async ({ page }) => {
     await page.goto('/#/')
@@ -3311,12 +3339,13 @@ test.describe('slice 7 fixes · one asset, three scales', () => {
     // Narrow the Overview itself; the window stays 1440, so no media query has changed. Stacked, the
     // plate is the Overview less 90px: 430 gives 340 (the console), 429 gives 339 (one asset).
     const narrow = async (w: number) => page.locator('.ov').evaluate((el: HTMLElement, w) => { el.style.maxWidth = `${w}px` }, w)
+    // Polled: a style set from script is laid out at the next frame, container queries included.
     await narrow(430)
-    expect(await plate(page)).toBe(340)
-    expect(await hero(page)).toMatchObject({ console: true, asset: false, fits: true, sectionPicture: true })
+    await expect.poll(() => plate(page)).toBe(340)
+    await expect.poll(() => hero(page)).toMatchObject({ console: true, asset: false, fits: true, sectionPicture: true })
     await narrow(429)
-    expect(await plate(page)).toBe(339)
-    expect(await hero(page)).toMatchObject({ console: false, asset: true, sectionPicture: false })
+    await expect.poll(() => plate(page)).toBe(339)
+    await expect.poll(() => hero(page)).toMatchObject({ console: false, asset: true, sectionPicture: false })
   })
 
   test('at 1440 the hero is the console, as it was, and the section keeps its picture', async ({ page }) => {
