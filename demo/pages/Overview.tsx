@@ -3,6 +3,7 @@ import { Button, Toggle, StatusIndicator, RiskPill, Tabs, Table, BrandMark, Icon
 import type { Status, Risk, Severity } from '../../src'
 import { breakIdentifier } from '../../src/lib/identifier'
 import { PROPOSALS } from '../playground/proposals'
+import { CATALOG } from '../playground/catalog'
 import { figmaUrl } from '../links'
 import { href } from '../router'
 import { CopyButton, CopyStatus, useCopy } from '../shell/Copy'
@@ -65,7 +66,8 @@ function Install() {
  * question 3, option D; the asset, 9 Nov). Both
  * views are in the page and a container query on the figure shows the one that fits
  * (overview.css), so nothing is measured in script and the table is never shown where it would not
- * fit. Each view has its own caption; only the shown one is in the figure's name.
+ * fit. Each view has its own caption; only the shown one is in the figure's name, and only its links
+ * can be reached (the hidden caption is display: none).
  */
 const ROWS: { asset: string; status: Status; risk: Risk }[] = [
   { asset: 'vpn-edge-east', status: 'unhealthy', risk: 'high' },
@@ -82,6 +84,19 @@ const ALERTS: { asset: string; severity: Severity; message: string }[] = [
 // (Omkar's review of 9 Nov 2026, option A). Chosen by name, so reordering the rows cannot change it.
 const SHOWN = ROWS.find((r) => r.asset === 'mail-relay')!
 const LATEST = ALERTS.find((a) => a.asset === SHOWN.asset)
+
+/**
+ * A part the console is made of, named by the kit's own catalogue and linked to its page, so the
+ * caption's claim ("made of Vela, as they ship") can be checked in one step (Omkar, 9 Nov 2026). The
+ * links live in the caption, never on the picture: the picture looks like a working console and stays
+ * inert. A part the kit does not have throws, so a renamed or removed component fails the tests
+ * rather than leaving a dead link (src/styles/site-overview.test.tsx).
+ */
+function Part({ id }: { id: string }) {
+  const part = CATALOG.find((c) => c.id === id)
+  if (!part) throw new Error(`The Overview's console names a part the kit does not have: ${id}`)
+  return <a className="ov-console__part" href={href({ kind: 'component', id: part.id })}>{part.name}</a>
+}
 
 function Console() {
   return (
@@ -126,8 +141,8 @@ function Console() {
         </dl>
       </div>
       <figcaption className="ov-console__caption">
-        <span className="ov-console__says-console">A console screen made of Vela: Tabs, Table, Status Indicator and Risk Pill, as they ship.</span>
-        <span className="ov-console__says-asset">Healthy, low risk, and still a critical event. One asset, three scales that never cross: its health, its risk and its latest event, in Vela's Status Indicator, Risk Pill and Contextual Alert.</span>
+        <span className="ov-console__says-console">A console screen made of Vela: <Part id="tabs" />, <Part id="table" />, <Part id="status-indicator" /> and <Part id="risk-pill" />, as they ship.</span>
+        <span className="ov-console__says-asset">Healthy, low risk, and still a critical event. One asset, three scales that never cross: its health, its risk and its latest event, in Vela's <Part id="status-indicator" />, <Part id="risk-pill" /> and <Part id="contextual-alert" />.</span>
       </figcaption>
     </figure>
   )

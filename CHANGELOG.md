@@ -45,6 +45,19 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     one asset on phones and the floor wherever the table shows, and draws "mail" / "-relay" in a
     50px frame.
     Packed: 390.6 kB, 276 files (was 389.4 kB, 276): this entry and the Table spec's sentence.
+- **The hero's caption links each part it names to its page** (Omkar, 9 Nov 2026). The caption
+  says the console is made of Vela "as they ship"; each part it names is now a link to that
+  component's page, so the claim can be checked in one step: Tabs, Table, Status Indicator and Risk
+  Pill under the console, and Status Indicator, Risk Pill and Contextual Alert under the one asset.
+  The links are in the caption, never on the picture, which looks like a working console and stays
+  inert. Names and addresses come from the kit's own catalogue, so a renamed or removed component
+  fails the tests rather than leaving a dead link. They are links inside a sentence (text-link,
+  underlined, the sentence's weight), quieter than the one primary action; only the shown caption's
+  links can be reached.
+  - 1962 checks (was 1959): 1469 unit (was 1468), 376 playground browser checks (was 374). One unit test (each caption's links, by the catalogue's names, none on
+    the picture) and two browser tests (at 1440 and 390: the shown caption's links in order, the
+    hidden caption's out of reach, and the first opens its page).
+    Packed: 391.0 kB, 276 files (was 390.6 kB, 276): this entry.
 - **Identifiers break only before their separators** (Omkar's decision of 8 Nov 2026, item 5, part
   A1). On a phone the Overview's console drew "vpn-edge-" then "east", "api-" then "gateway" and
   "mail-" then "relay": browsers break after a hyphen, so one name read as two. Measured at 390px

@@ -3358,4 +3358,33 @@ test.describe('slice 7 fixes · one asset, three scales', () => {
     await expect(page.locator('.ov-wide .shell-card__thumb')).toBeVisible()
     expect(await plate(page)).toBe(380)
   })
+
+  // The caption links each part it names to its page (Omkar, 9 Nov 2026): only the shown caption's
+  // links can be reached, in reading order, and each opens its page.
+  for (const [width, names] of [
+    [1440, ['Tabs', 'Table', 'Status Indicator', 'Risk Pill']],
+    [390, ['Status Indicator', 'Risk Pill', 'Contextual Alert']],
+  ] as const) {
+    test(`at ${width} the caption's parts are links to their pages, and only the shown caption's`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 })
+      await page.goto('/#/')
+      const fig = page.getByRole('main').getByRole('figure')
+      await expect(fig).toBeVisible()
+      await expect(fig.getByRole('link')).toHaveText([...names])
+      // The hidden caption's links are out of reach: none of them can take focus.
+      const reachable = await page.locator('.ov-console a').evaluateAll((as) => as.filter((a) => (a as HTMLElement).offsetParent !== null).map((a) => a.textContent))
+      expect(reachable).toEqual([...names])
+      // Keyboard: from the last link, Shift+Tab walks back through the others in order.
+      const links = fig.getByRole('link')
+      await links.last().focus()
+      for (let i = names.length - 2; i >= 0; i--) {
+        await page.keyboard.press('Shift+Tab')
+        await expect(links.nth(i)).toBeFocused()
+      }
+      // Each opens its component's page.
+      await links.first().click()
+      await expect(page).toHaveURL(new RegExp(`#/components/${names[0].toLowerCase().replace(/ /g, '-')}$`))
+      await expect(page.getByRole('heading', { level: 1, name: names[0] })).toBeVisible()
+    })
+  }
 })
