@@ -52,6 +52,15 @@ for (const theme of ['light', 'dark'] as const) {
       }),
     )
     expect(columns).toHaveLength(2)
+    // The Vela side's Alert paints Vela's own alert colours (0.16.1): the bridge's style variants
+    // reach the screen, not Material's derivation from palette.warning.light.
+    const tokens = await page.evaluate(() => {
+      const css = getComputedStyle(document.documentElement)
+      return { fg: css.getPropertyValue('--vela-text-severity-warning').trim(), bg: css.getPropertyValue('--vela-bg-severity-warning').trim() }
+    })
+    const velaAlert = await page.locator('.adopt-col').nth(1).locator('.MuiAlert-root').first().evaluate((el) => ({ fg: getComputedStyle(el).color, bg: getComputedStyle(el).backgroundColor }))
+    expect(rgba(velaAlert.fg).hex, 'Vela alert text is text-severity-warning').toBe(tokens.fg.toLowerCase())
+    expect(rgba(velaAlert.bg).hex, 'Vela alert fill is bg-severity-warning').toBe(tokens.bg.toLowerCase())
     const [stock, vela] = columns
     for (const [side, notes] of [['stock', stock], ['vela', vela]] as const) {
       // An alert, the error text button and the four status chips.

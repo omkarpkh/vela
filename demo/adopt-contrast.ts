@@ -54,16 +54,20 @@ export type SeverityColour = 'success' | 'warning' | 'info' | 'error'
  *
  * - a filled Chip: `palette[c].contrastText` on `palette[c].main`
  * - a text Button: `palette[c].main` on the Paper it sits on, `palette.background.paper`
- * - a standard Alert: Material derives both colours from `palette[c].light`, darkened 60% for the
- *   text and lightened 90% for the fill in light mode, the other way round in dark. The bridge's
- *   MuiAlert style overrides use slot names (`standardWarning`) that Material UI 9 no longer
- *   reads, so on the Vela side too the alert is Material's derivation from the severity border
- *   colour. The browser test holds this to what is painted, so if Material's code changes, it fails.
+ * - a standard Alert: when the theme gives it a style variant for that severity (the Vela bridge
+ *   does since 0.16.1, with Vela's alert tokens), its `color` on its `backgroundColor`; otherwise
+ *   Material derives both from `palette[c].light`, darkened 60% for the text and lightened 90% for
+ *   the fill in light mode, the other way round in dark (stock Material UI). The browser test holds
+ *   this to what is painted, so if Material's code changes, it fails.
  */
 export const measure = {
   chip: (t: Theme, c: SeverityColour) => ratioOf(t.palette[c].contrastText, t.palette[c].main),
   textButton: (t: Theme, c: SeverityColour) => ratioOf(t.palette[c].main, t.palette.background.paper),
   alert: (t: Theme, c: SeverityColour) => {
+    type Variant = { props?: { variant?: string; severity?: string }; style?: { color?: string; backgroundColor?: string } }
+    const variants = ((t.components?.MuiAlert?.styleOverrides?.root as { variants?: Variant[] } | undefined)?.variants ?? [])
+    const own = variants.find((v) => v.props?.severity === c && (v.props?.variant ?? 'standard') === 'standard')?.style
+    if (own?.color && own.backgroundColor) return ratioOf(own.color, own.backgroundColor)
     const light = t.palette.mode === 'light'
     const fg = (light ? t.darken : t.lighten)(t.palette[c].light, 0.6)
     const bg = (light ? t.lighten : t.darken)(t.palette[c].light, 0.9)

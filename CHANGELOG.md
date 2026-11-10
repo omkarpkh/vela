@@ -15,8 +15,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   severity border, and `contrastText` is the page colour for all four. The fill and its label are
   now 7.45, 8.03, 5.83 and 6.57:1 in light and 7.67, 9.14, 12.57 and 7.87:1 in dark; as text on
   Paper, 5.87:1 or more in dark. Error's `contrastText` was white in both themes, 2.30:1 on the new
-  dark fill. Twelve pairs, `MUI bridge: …`, now assert all of it. The bridge has 41 colour roles
-  (was 38).
+  dark fill. Twelve pairs, `MUI bridge: …`, now assert all of it.
 - **The Adopt page labels both sides with measured contrast.** Beside each severity colour shown
   with text (the four status chips, the warning alert and the error text button) is its contrast,
   measured from the colours that side's theme paints with the function the contrast suite uses:
@@ -28,6 +27,14 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   resting border itself, so Input, Text Area, Checkbox and Radio did not change on hover. It is
   grey-600 in light (4.90:1 on white, against 3.47:1 at rest); dark keeps grey-500. Asserted as
   "Input border, hovered".
+- **Material UI Alerts use Vela's alert colours.** The bridge set them through
+  `styleOverrides.standardSuccess` and its siblings, keys Material UI 9 no longer reads, so an
+  Alert painted Material's own derived colours (warning text rgb(98,84,52), not Vela's #7a6224)
+  while setup.md said "Alert surfaces included". They are now style variants matched on severity,
+  the form Material UI 9 reads: background, text, border and icon from the same severity tokens
+  Contextual Alert draws, so a Material UI Alert and a Vela one look alike. `$alertSources` names
+  them; the colour roles in `$sources` are 33. A browser test reads the colours the Adopt page's
+  Alert actually paints.
 - **The Flutter theme's error label passes in dark.** `ColorScheme.onError` was white
   (`text-on-brand`) on `text-error`: 6.57:1 in light, but 2.30:1 on the pale dark-mode error
   colour, so an error button or badge was unreadable in dark. It is now the page colour, as in the
