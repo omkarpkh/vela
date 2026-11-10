@@ -5,6 +5,43 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+### Fixed
+- **The Material UI bridge's severity colours pass contrast.** Material draws a severity's `main`
+  as a fill under `contrastText` (a contained Button, a filled Chip, a Badge) and as text on the
+  page (outlined and text variants). The bridge mapped `main` to the signal colours, which are
+  graphics: on white, info was 4.03:1, error 4.08:1, success 2.97:1 and warning 1.69:1, and the
+  Adopt page showed "In consult" white on #3d7fd6 at 4.03:1. Now, for info, success, warning and
+  error, `main` and `dark` are the severity text colour (error is major), `light` stays the
+  severity border, and `contrastText` is the page colour for all four. The fill and its label are
+  now 7.45, 8.03, 5.83 and 6.57:1 in light and 7.67, 9.14, 12.57 and 7.87:1 in dark; as text on
+  Paper, 5.87:1 or more in dark. Error's `contrastText` was white in both themes, 2.30:1 on the new
+  dark fill. Twelve pairs, `MUI bridge: …`, now assert all of it. The bridge has 41 colour roles
+  (was 38).
+- **The Adopt page labels both sides with measured contrast.** Beside each severity colour shown
+  with text (the four status chips, the warning alert and the error text button) is its contrast,
+  measured from the colours that side's theme paints with the function the contrast suite uses:
+  the ratio when it passes, and "below 4.5:1" in words when it does not. Stock Material UI shows
+  3.85:1 and 3.11:1 on its info and warning chips in light; the Vela side passes everywhere, 5.83:1
+  at its lowest. The maths moved to `scripts/contrast-math.mjs`, which the site can import;
+  `scripts/contrast-core.mjs` re-exports it.
+- **Hovering an input shows something in light.** `--vela-control-border-hover` was grey-500, the
+  resting border itself, so Input, Text Area, Checkbox and Radio did not change on hover. It is
+  grey-600 in light (4.90:1 on white, against 3.47:1 at rest); dark keeps grey-500. Asserted as
+  "Input border, hovered".
+- **The Toggle's off track is visible against the page.** `--vela-toggle-off-bg` was 2.27:1 on the
+  page in light and 2.35:1 in dark, under the 3:1 a control's edge needs. It now takes the input
+  border's greys, grey-500 in light and grey-600 in dark: 3.47:1 and 3.69:1 on the page, with the
+  white knob at 3.47:1 and 4.90:1 on it. The disabled track stays clearly apart (2.67:1 and 2.82:1
+  against the off track). Asserted as "Toggle off track on page" and "Toggle knob on off track".
+
+### Added
+- **A guard for unbound colour tokens.** `src/styles/token-bindings.test.ts` fails when a semantic
+  colour token is drawn by nothing (no component, site page, bridge or Flutter theme), naming it.
+  Four are reserved for components that are coming: `bg-inactive`, `icon-on-brand`,
+  `icon-selected` and `primary-active-bg`; the test also fails when one of them starts to be bound,
+  naming the file, so it leaves the list. The Severity and Risk grids pass as a whole when any of
+  their cells is bound. `guidelines/tokens.md` says so in a short section.
+
 ## [0.16.0] — 2026-11-09
 
 **Highlights:**
