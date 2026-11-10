@@ -51,6 +51,11 @@ Track off `--vela-toggle-off-bg`; on `--vela-toggle-on-bg`; knob `--vela-toggle-
 disabled track `--vela-border-inactive`. Track radius is `--vela-radius-full` — one of only
 two components allowed to use it.
 
+The off track is the switch's only edge against the page, so it takes the input border's greys
+and is held to 3:1 there, and the white knob to 3:1 on it, in both themes (`PAIRS` in
+`scripts/contrast-core.mjs`). The disabled track is a much lighter grey than the off track in
+light and a darker one in dark, and the disabled label is dimmed, so the two never read as one.
+
 ## Responsive behaviour
 
 The track and knob are fixed geometry (`regular` and `tiny`) and never scale with the viewport;

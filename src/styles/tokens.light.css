@@ -146,12 +146,12 @@
   /* ---- Semantic: form control ---- */
   --vela-control-bg: var(--vela-white);
   --vela-control-border: var(--vela-grey-500);
-  --vela-control-border-hover: var(--vela-grey-500);
+  --vela-control-border-hover: var(--vela-grey-600);
   --vela-control-border-active: var(--vela-primary-500);
   --vela-control-border-error: var(--vela-red-500);
   --vela-control-bg-disabled: var(--vela-grey-100);
   --vela-control-placeholder: var(--vela-grey-600);
-  --vela-toggle-off-bg: var(--vela-grey-400);
+  --vela-toggle-off-bg: var(--vela-grey-500);
   --vela-toggle-on-bg: var(--vela-primary-500);
   --vela-toggle-knob: var(--vela-white);
   --vela-control-check-bg-checked: var(--vela-primary-500);

@@ -123,6 +123,9 @@
     "control-border": {
       "$value": "{primitives.grey-600}"
     },
+    "control-border-hover": {
+      "$value": "{primitives.grey-500}"
+    },
     "control-border-active": {
       "$value": "{primitives.primary-400}"
     },
@@ -133,7 +136,7 @@
       "$value": "{primitives.grey-500}"
     },
     "toggle-off-bg": {
-      "$value": "{primitives.grey-700}"
+      "$value": "{primitives.grey-600}"
     },
     "control-check-bg-checked": {
       "$value": "{primitives.primary-450}"

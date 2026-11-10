@@ -48,19 +48,29 @@ export function generateMui(set, version) {
     'palette.secondary.main': 'btn-standard-bg',
     'palette.secondary.dark': 'btn-standard-hover-bg',
     'palette.secondary.contrastText': 'btn-standard-text',
-    'palette.error.main': 'signal-severity-major',
+    // Severity roles. Material draws `main` in two ways: as a fill under `contrastText` (a contained
+    // Button, a filled Chip, a Badge) and as text on the page (outlined and text variants). The
+    // signal colours are graphics, not text: on white, info was 4.03:1, error 4.08:1, success
+    // 2.97:1 and warning 1.69:1. The severity text colour passes both ways, with the page colour as
+    // the fill's label: bg-global on text-severity-* is 5.8:1 or more in light and about 7.6:1 or
+    // more in dark (PAIRS, scripts/contrast-core.mjs). `dark` (hover) is the same colour, since no
+    // darker severity text exists; `light` stays the severity border. Error is Vela's major.
+    'palette.error.main': 'text-severity-major',
     'palette.error.light': 'border-severity-major',
-    'palette.error.dark': 'btn-destructive-bg',
-    'palette.error.contrastText': 'btn-destructive-text',
-    'palette.warning.main': 'signal-severity-warning',
+    'palette.error.dark': 'text-severity-major',
+    'palette.error.contrastText': 'bg-global',
+    'palette.warning.main': 'text-severity-warning',
     'palette.warning.light': 'border-severity-warning',
-    'palette.warning.dark': 'icon-severity-warning',
-    'palette.info.main': 'signal-severity-info',
+    'palette.warning.dark': 'text-severity-warning',
+    'palette.warning.contrastText': 'bg-global',
+    'palette.info.main': 'text-severity-info',
     'palette.info.light': 'border-severity-info',
-    'palette.info.dark': 'icon-severity-info',
-    'palette.success.main': 'signal-severity-success',
+    'palette.info.dark': 'text-severity-info',
+    'palette.info.contrastText': 'bg-global',
+    'palette.success.main': 'text-severity-success',
     'palette.success.light': 'border-severity-success',
-    'palette.success.dark': 'icon-severity-success',
+    'palette.success.dark': 'text-severity-success',
+    'palette.success.contrastText': 'bg-global',
     'palette.background.default': 'bg-global',
     'palette.background.paper': 'bg-raised',
     'palette.text.primary': 'text-default',

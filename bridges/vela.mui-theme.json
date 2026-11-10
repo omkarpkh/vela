@@ -8,19 +8,22 @@
     "palette.secondary.main": "btn-standard-bg",
     "palette.secondary.dark": "btn-standard-hover-bg",
     "palette.secondary.contrastText": "btn-standard-text",
-    "palette.error.main": "signal-severity-major",
+    "palette.error.main": "text-severity-major",
     "palette.error.light": "border-severity-major",
-    "palette.error.dark": "btn-destructive-bg",
-    "palette.error.contrastText": "btn-destructive-text",
-    "palette.warning.main": "signal-severity-warning",
+    "palette.error.dark": "text-severity-major",
+    "palette.error.contrastText": "bg-global",
+    "palette.warning.main": "text-severity-warning",
     "palette.warning.light": "border-severity-warning",
-    "palette.warning.dark": "icon-severity-warning",
-    "palette.info.main": "signal-severity-info",
+    "palette.warning.dark": "text-severity-warning",
+    "palette.warning.contrastText": "bg-global",
+    "palette.info.main": "text-severity-info",
     "palette.info.light": "border-severity-info",
-    "palette.info.dark": "icon-severity-info",
-    "palette.success.main": "signal-severity-success",
+    "palette.info.dark": "text-severity-info",
+    "palette.info.contrastText": "bg-global",
+    "palette.success.main": "text-severity-success",
     "palette.success.light": "border-severity-success",
-    "palette.success.dark": "icon-severity-success",
+    "palette.success.dark": "text-severity-success",
+    "palette.success.contrastText": "bg-global",
     "palette.background.default": "bg-global",
     "palette.background.paper": "bg-raised",
     "palette.text.primary": "text-default",
@@ -70,25 +73,28 @@
         "contrastText": "#49555a"
       },
       "error": {
-        "main": "#dd4b3e",
+        "main": "#ab3125",
         "light": "#f0918c",
         "dark": "#ab3125",
         "contrastText": "#ffffff"
       },
       "warning": {
-        "main": "#f0c14e",
+        "main": "#7a6224",
         "light": "#f7d382",
-        "dark": "#7a6224"
+        "dark": "#7a6224",
+        "contrastText": "#ffffff"
       },
       "info": {
-        "main": "#3d7fd6",
+        "main": "#35558a",
         "light": "#85aae8",
-        "dark": "#35558a"
+        "dark": "#35558a",
+        "contrastText": "#ffffff"
       },
       "success": {
-        "main": "#4aa863",
+        "main": "#175c33",
         "light": "#86c795",
-        "dark": "#175c33"
+        "dark": "#175c33",
+        "contrastText": "#ffffff"
       },
       "background": {
         "default": "#ffffff",
@@ -252,25 +258,28 @@
         "contrastText": "#c8d0d2"
       },
       "error": {
-        "main": "#dd4b3e",
+        "main": "#f0918c",
         "light": "#ab3125",
-        "dark": "#ab3125",
-        "contrastText": "#ffffff"
+        "dark": "#f0918c",
+        "contrastText": "#11171a"
       },
       "warning": {
-        "main": "#f0c14e",
+        "main": "#f7d382",
         "light": "#9a7a0c",
-        "dark": "#f7d382"
+        "dark": "#f7d382",
+        "contrastText": "#11171a"
       },
       "info": {
-        "main": "#3d7fd6",
+        "main": "#85aae8",
         "light": "#35558a",
-        "dark": "#85aae8"
+        "dark": "#85aae8",
+        "contrastText": "#11171a"
       },
       "success": {
-        "main": "#4aa863",
+        "main": "#86c795",
         "light": "#1f7340",
-        "dark": "#86c795"
+        "dark": "#86c795",
+        "contrastText": "#11171a"
       },
       "background": {
         "default": "#11171a",

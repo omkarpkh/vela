@@ -1506,7 +1506,7 @@
     },
     "control-border-hover": {
       "$type": "color",
-      "$value": "{primitives.grey-500}",
+      "$value": "{primitives.grey-600}",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "control/border-hover"
@@ -1551,7 +1551,7 @@
     },
     "toggle-off-bg": {
       "$type": "color",
-      "$value": "{primitives.grey-400}",
+      "$value": "{primitives.grey-500}",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "control/toggle-off-bg"
