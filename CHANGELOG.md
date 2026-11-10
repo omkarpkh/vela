@@ -35,6 +35,11 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   against the off track). Asserted as "Toggle off track on page" and "Toggle knob on off track".
 
 ### Added
+- **Every colour token has a description.** The 54 colour tokens that had none now say what each
+  colour is for and where it is used, in plain words, in `tokens/vela.tokens.json`. Agents read
+  them in the token file, and Figma shows them on the variables after the next `npm run
+  tokens:figma`. The four reserved tokens say "Reserved for an upcoming component; don't bind it
+  yet." Approved by Omkar, 10 Nov 2026.
 - **A guard for unbound colour tokens.** `src/styles/token-bindings.test.ts` fails when a semantic
   colour token is drawn by nothing (no component, site page, bridge or Flutter theme), naming it.
   Four are reserved for components that are coming: `bg-inactive`, `icon-on-brand`,

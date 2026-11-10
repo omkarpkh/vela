@@ -1033,6 +1033,7 @@
     "bg-global": {
       "$type": "color",
       "$value": "{primitives.white}",
+      "$description": "The page itself, behind everything else. Text on it is text-default or text-heading.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "surface/global"
@@ -1042,6 +1043,7 @@
     "bg-container": {
       "$type": "color",
       "$value": "{primitives.grey-100}",
+      "$description": "A panel set into the page, such as a code block or a group of controls. In light it is the same grey as bg-hover, so a hover fill on it shows nothing; de-emphasized text on it is 4.35:1 in light, under 4.5:1.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "surface/container"
@@ -1051,6 +1053,7 @@
     "bg-raised": {
       "$type": "color",
       "$value": "{primitives.white}",
+      "$description": "A surface lifted above the page: dialogs, menus, popovers and toasts. In light it is the same white as the page, so its border and shadow carry the lift.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "surface/raised"
@@ -1070,6 +1073,7 @@
     "bg-hover": {
       "$type": "color",
       "$value": "{primitives.grey-100}",
+      "$description": "The fill under a pointer on a quiet control, only where hover exists. Never the only sign of state.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "surface/hover"
@@ -1079,6 +1083,7 @@
     "bg-tooltip": {
       "$type": "color",
       "$value": "{primitives.grey-800}",
+      "$description": "A tooltip's fill. Dark in both themes, so tooltip text is always light.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "surface/tooltip"
@@ -1098,6 +1103,7 @@
     "bg-inactive": {
       "$type": "color",
       "$value": "{primitives.grey-100}",
+      "$description": "Reserved for an upcoming component; don't bind it yet.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "surface/inactive"
@@ -1107,6 +1113,7 @@
     "bg-selected": {
       "$type": "color",
       "$value": "{primitives.blue-100}",
+      "$description": "The current choice in a set, such as a segmented value. Always paired with a second cue, an edge or a heavier weight. For a table row, use bg-row-selected.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "surface/selected"
@@ -1136,6 +1143,7 @@
     "primary-tint": {
       "$type": "color",
       "$value": "{primitives.blue-100}",
+      "$description": "A pale wash of the primary colour, behind a hollow primary Button on hover. Text on it is text-on-tint.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "surface/primary-tint"
@@ -1145,6 +1153,7 @@
     "primary-active-bg": {
       "$type": "color",
       "$value": "{primitives.primary-500}",
+      "$description": "Reserved for an upcoming component; don't bind it yet.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "surface/primary-active"
@@ -1154,6 +1163,7 @@
     "border-default": {
       "$type": "color",
       "$value": "{primitives.grey-500}",
+      "$description": "The edge of anything a person must find: tables, menus, popovers, toasts. 3:1 or more against the page in both themes.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "border/default"
@@ -1163,6 +1173,7 @@
     "border-subtle": {
       "$type": "color",
       "$value": "{primitives.grey-200}",
+      "$description": "A divider inside something already bounded, such as table rows or a tab list. Under 3:1, so never the only edge of something a person must find.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "border/subtle"
@@ -1172,6 +1183,7 @@
     "border-active": {
       "$type": "color",
       "$value": "{primitives.primary-500}",
+      "$description": "Marks the current part: the selected tab, a selected row's marker.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "border/active"
@@ -1181,6 +1193,7 @@
     "border-inactive": {
       "$type": "color",
       "$value": "{primitives.grey-200}",
+      "$description": "The edge of a control that can't be used right now, and a disabled Toggle's track.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "border/inactive"
@@ -1190,6 +1203,7 @@
     "border-action": {
       "$type": "color",
       "$value": "{primitives.grey-700}",
+      "$description": "A strong edge for something a person acts on that isn't a form field. Used by the site; no component binds it yet.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "border/action"
@@ -1199,6 +1213,7 @@
     "text-default": {
       "$type": "color",
       "$value": "{primitives.grey-700}",
+      "$description": "Body text and labels. The default for anything a person reads.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "text/default"
@@ -1208,6 +1223,7 @@
     "text-heading": {
       "$type": "color",
       "$value": "{primitives.black}",
+      "$description": "Headings and the figures that matter most. The strongest text colour.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "text/heading"
@@ -1217,6 +1233,7 @@
     "text-de-emphasized": {
       "$type": "color",
       "$value": "{primitives.grey-600}",
+      "$description": "Secondary text: hints, metadata, notes under a value. 4.5:1 or more on the page, but not on bg-container in light.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "text/de-emphasized"
@@ -1226,6 +1243,7 @@
     "text-inactive": {
       "$type": "color",
       "$value": "{primitives.grey-400}",
+      "$description": "Text of a control that can't be used. Exempt from contrast, so never use it for text a person needs.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "text/inactive"
@@ -1235,6 +1253,7 @@
     "text-link": {
       "$type": "color",
       "$value": "{primitives.primary-500}",
+      "$description": "Links and text-link Buttons. Colour carries the link.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "text/link"
@@ -1244,6 +1263,7 @@
     "text-on-brand": {
       "$type": "color",
       "$value": "{primitives.white}",
+      "$description": "Text on a filled brand colour, such as a primary or destructive fill. White in both themes.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "text/on-brand"
@@ -1253,6 +1273,7 @@
     "text-on-tint": {
       "$type": "color",
       "$value": "{primitives.grey-700}",
+      "$description": "Text on primary-tint.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "text/on-tint"
@@ -1262,6 +1283,7 @@
     "text-error": {
       "$type": "color",
       "$value": "{primitives.red-700}",
+      "$description": "An error message under a field. Always with the error border and an icon, never colour alone.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "text/error"
@@ -1281,6 +1303,7 @@
     "icon-default": {
       "$type": "color",
       "$value": "{primitives.grey-500}",
+      "$description": "A supporting icon beside text. Not for an icon that is a control's only label; use icon-strong.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "icon/default"
@@ -1290,6 +1313,7 @@
     "icon-strong": {
       "$type": "color",
       "$value": "{primitives.grey-700}",
+      "$description": "An icon that carries meaning on its own, such as an Icon Button's glyph. 3:1 or more on the page, containers and raised surfaces.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "icon/strong"
@@ -1299,6 +1323,7 @@
     "icon-selected": {
       "$type": "color",
       "$value": "{primitives.primary-500}",
+      "$description": "Reserved for an upcoming component; don't bind it yet.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "icon/selected"
@@ -1308,6 +1333,7 @@
     "icon-disabled": {
       "$type": "color",
       "$value": "{primitives.grey-300}",
+      "$description": "The glyph of a control that can't be used.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "icon/disabled"
@@ -1317,6 +1343,7 @@
     "icon-on-brand": {
       "$type": "color",
       "$value": "{primitives.white}",
+      "$description": "Reserved for an upcoming component; don't bind it yet.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "icon/on-brand"
@@ -1336,6 +1363,7 @@
     "btn-primary-bg": {
       "$type": "color",
       "$value": "{primitives.primary-500}",
+      "$description": "Fill of the one primary filled Button on a page.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "button/primary-bg"
@@ -1345,6 +1373,7 @@
     "btn-primary-hover-bg": {
       "$type": "color",
       "$value": "{primitives.primary-600}",
+      "$description": "A primary filled Button under a pointer: darker in light, lighter in dark.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "button/primary-hover-bg"
@@ -1354,6 +1383,7 @@
     "btn-primary-border": {
       "$type": "color",
       "$value": "{primitives.primary-500}",
+      "$description": "Edge of a primary filled Button. Matches its fill.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "button/primary-border"
@@ -1363,6 +1393,7 @@
     "btn-primary-text": {
       "$type": "color",
       "$value": "{primitives.white}",
+      "$description": "Label on a primary filled Button.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "button/primary-text"
@@ -1372,6 +1403,7 @@
     "btn-standard-bg": {
       "$type": "color",
       "$value": "{primitives.grey-100}",
+      "$description": "Fill of a standard filled Button.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "button/standard-bg"
@@ -1381,6 +1413,7 @@
     "btn-standard-hover-bg": {
       "$type": "color",
       "$value": "{primitives.grey-200}",
+      "$description": "A standard Button under a pointer. Also the hover fill of Icon Button and of a dialog's or toast's close button.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "button/standard-hover-bg"
@@ -1390,6 +1423,7 @@
     "btn-standard-text": {
       "$type": "color",
       "$value": "{primitives.grey-700}",
+      "$description": "Label on a standard Button.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "button/standard-text"
@@ -1399,6 +1433,7 @@
     "btn-hollow-primary-text": {
       "$type": "color",
       "$value": "{primitives.primary-500}",
+      "$description": "Label of a hollow primary Button.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "button/hollow-primary-text"
@@ -1408,6 +1443,7 @@
     "btn-hollow-primary-border": {
       "$type": "color",
       "$value": "{primitives.primary-500}",
+      "$description": "Edge of a hollow primary Button.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "button/hollow-primary-border"
@@ -1417,6 +1453,7 @@
     "btn-disabled-bg": {
       "$type": "color",
       "$value": "{primitives.grey-200}",
+      "$description": "Fill of a disabled Button.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "button/disabled-bg"
@@ -1426,6 +1463,7 @@
     "btn-disabled-text": {
       "$type": "color",
       "$value": "{color.text-inactive}",
+      "$description": "Label of a disabled Button. Exempt from contrast, like all disabled text.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "button/disabled-text"
@@ -1435,6 +1473,7 @@
     "btn-destructive-bg": {
       "$type": "color",
       "$value": "{primitives.red-700}",
+      "$description": "Fill of a destructive Button, for an action that deletes something or can't be undone.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "button/destructive-bg"
@@ -1444,6 +1483,7 @@
     "btn-destructive-hover-bg": {
       "$type": "color",
       "$value": "{primitives.critical-500}",
+      "$description": "A destructive filled Button under a pointer.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "button/destructive-hover-bg"
@@ -1453,6 +1493,7 @@
     "btn-destructive-text": {
       "$type": "color",
       "$value": "{primitives.white}",
+      "$description": "Label on a destructive filled Button.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "button/destructive-text"
@@ -1462,6 +1503,7 @@
     "btn-destructive-hollow-text": {
       "$type": "color",
       "$value": "{primitives.red-700}",
+      "$description": "Label and edge of a hollow destructive Button.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "button/destructive-hollow-text"
@@ -1471,6 +1513,7 @@
     "btn-standard-border": {
       "$type": "color",
       "$value": "{primitives.grey-600}",
+      "$description": "Edge of a standard Button.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "button/standard-border"
@@ -1480,6 +1523,7 @@
     "btn-hollow-hover-bg": {
       "$type": "color",
       "$value": "{color.primary-tint}",
+      "$description": "A hollow primary Button under a pointer: a pale primary wash.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "button/hollow-hover-bg"
@@ -1489,6 +1533,7 @@
     "control-bg": {
       "$type": "color",
       "$value": "{primitives.white}",
+      "$description": "Inside of a form field: an input, a text area, a checkbox's box, a radio's circle.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "control/bg"
@@ -1498,6 +1543,7 @@
     "control-border": {
       "$type": "color",
       "$value": "{primitives.grey-500}",
+      "$description": "Edge of a form field at rest. 3:1 or more, so the field can be found.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "control/border"
@@ -1507,6 +1553,7 @@
     "control-border-hover": {
       "$type": "color",
       "$value": "{primitives.grey-600}",
+      "$description": "Edge of a form field under a pointer: one step stronger than at rest, in both themes.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "control/border-hover"
@@ -1516,6 +1563,7 @@
     "control-border-active": {
       "$type": "color",
       "$value": "{primitives.primary-500}",
+      "$description": "Edge of a form field that has focus.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "control/border-active"
@@ -1525,6 +1573,7 @@
     "control-border-error": {
       "$type": "color",
       "$value": "{primitives.red-500}",
+      "$description": "Edge of a field whose value is wrong. Always with text-error and an icon.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "control/border-error"
@@ -1534,6 +1583,7 @@
     "control-bg-disabled": {
       "$type": "color",
       "$value": "{primitives.grey-100}",
+      "$description": "Inside of a form field that can't be used.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "control/bg-disabled"
@@ -1543,6 +1593,7 @@
     "control-placeholder": {
       "$type": "color",
       "$value": "{primitives.grey-600}",
+      "$description": "Placeholder text in an empty field. Never the field's only label.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "control/placeholder"
@@ -1552,6 +1603,7 @@
     "toggle-off-bg": {
       "$type": "color",
       "$value": "{primitives.grey-500}",
+      "$description": "Track of a Toggle that is off. The same grey as a form field's edge, so it holds 3:1 against the page and the white knob holds 3:1 on it.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "control/toggle-off-bg"
@@ -1561,6 +1613,7 @@
     "toggle-on-bg": {
       "$type": "color",
       "$value": "{primitives.primary-500}",
+      "$description": "Track of a Toggle that is on.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "control/toggle-on-bg"
@@ -1570,6 +1623,7 @@
     "toggle-knob": {
       "$type": "color",
       "$value": "{primitives.white}",
+      "$description": "A Toggle's knob, on and off.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "control/toggle-knob"
