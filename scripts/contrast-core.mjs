@@ -2,6 +2,9 @@
 import { readFileSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { contrast } from './contrast-math.mjs'
+// The maths is in its own module so the site's bundle can use it too; re-exported for Node callers.
+export { luminance, contrast, composite } from './contrast-math.mjs'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 
@@ -37,27 +40,6 @@ export function resolve(map, name, seen = new Set()) {
     throw new Error(`Token ${name} is not a resolvable color: "${raw}"`)
   }
   return raw
-}
-
-function toRgb(hex) {
-  let h = hex.slice(1)
-  if (h.length === 3) h = h.split('').map((c) => c + c).join('')
-  return [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16))
-}
-
-export function luminance(hex) {
-  const [r, g, b] = toRgb(hex).map((v) => {
-    const c = v / 255
-    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)
-  })
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b
-}
-
-export function contrast(fgHex, bgHex) {
-  const a = luminance(fgHex)
-  const b = luminance(bgHex)
-  const [hi, lo] = a > b ? [a, b] : [b, a]
-  return (hi + 0.05) / (lo + 0.05)
 }
 
 /**
@@ -104,6 +86,15 @@ export const PAIRS = [
   ]),
 
   ['--vela-control-border',     '--vela-control-bg',      'Input border',           'ui'],
+  // Hover on Input, Text Area, Checkbox and Radio. Until 0.16.1 the light hover was grey-500, the
+  // resting border itself, so hovering showed nothing; it is grey-600 now (4.90:1 on white, rest
+  // 3.47:1). Dark keeps grey-500 over the grey-600 rest.
+  ['--vela-control-border-hover', '--vela-control-bg',  'Input border, hovered',  'ui'],
+  // Toggle. The off track is the switch's only boundary against the page, so it is held to 3:1 like
+  // the input border, whose greys it now shares (grey-500 light, grey-600 dark; it was 2.27:1 and
+  // 2.35:1). The white knob is the mark that says where the switch is, on that track.
+  ['--vela-toggle-off-bg',      '--vela-bg-global',       'Toggle off track on page', 'ui'],
+  ['--vela-toggle-knob',        '--vela-toggle-off-bg',   'Toggle knob on off track', 'ui'],
   // Checkbox and Radio Group (Phase 1, headless). The box and the circle rest on control-bg with
   // the input border; checked, they fill with control-check-bg-checked and the mark, the dash and
   // the dot are drawn on that fill in control-check-mark. Dark re-points the fill to primary-450,
@@ -192,6 +183,23 @@ export const PAIRS = [
   }),
   ['--vela-icon-default', '--vela-bg-global', 'Table sort glyph, unsorted column', 'ui'],
 
+  // The Material UI bridge (scripts/build-tokens-mui.mjs, bridges/vela.mui-theme.json). Material
+  // draws a severity's `main` two ways: as a fill under `contrastText` (a contained Button, a filled
+  // Chip, a Badge), and as text on the page and on Paper (outlined and text variants). Since 0.16.1
+  // `main` is the severity text colour and `contrastText` the page colour (error is major), so the
+  // bridge relies on these three per severity. The fill and the page pairs are the same two colours
+  // the other way round, and measure the same; both are listed because both uses ship.
+  ...['success', 'info', 'warning', 'major'].flatMap((s) => [
+    ['--vela-bg-global', `--vela-text-severity-${s}`, `MUI bridge: ${s} fill label (contrastText on main)`, 'text'],
+    [`--vela-text-severity-${s}`, '--vela-bg-global', `MUI bridge: ${s} main as text on page`, 'text'],
+    [`--vela-text-severity-${s}`, '--vela-bg-raised', `MUI bridge: ${s} main as text on paper`, 'text'],
+  ]),
+
+  // The Flutter theme (scripts/build-tokens-dart.mjs): ColorScheme.error is text-error and, since
+  // 0.16.1, onError is the page colour, the same rule as the Material UI bridge. It was white
+  // (text-on-brand), 2.30:1 on the pale dark-mode error colour.
+  ['--vela-bg-global', '--vela-text-error', 'Flutter: error fill label (onError on error)', 'text'],
+
   // The site (demo/), which follows DESIGN.md like the kit. A tag (the Status page's lifecycle
   // labels, the Proposal tag) is neutral and outlined: text-default, the default border, no fill,
   // never a severity colour. It sits on the page (body text on page, above) or on a container. A
@@ -276,16 +284,6 @@ export const PAIRS = [
   // token), and touch and keyboard users, who never see the Seed, lose nothing. Reaching 3:1 would
   // take a strength of 0.64 to 0.70 depending on theme and surface; the decided strength is 0.55.
 ]
-
-/**
- * `fg` drawn at `alpha` over `bg`, composited per channel in sRGB the way a browser paints it, and
- * rounded to the 8-bit colour that reaches the screen. For a graphic drawn at an opacity, such as
- * the hero logo's outer ring.
- */
-export function composite(fgHex, bgHex, alpha) {
-  const [f, b] = [toRgb(fgHex), toRgb(bgHex)]
-  return '#' + f.map((c, i) => Math.round(alpha * c + (1 - alpha) * b[i]).toString(16).padStart(2, '0')).join('')
-}
 
 export const THRESHOLD = { text: 4.5, ui: 3.0 }
 

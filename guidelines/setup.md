@@ -150,9 +150,9 @@ const theme = createTheme(vela.light)   // or vela.dark — pick by your own mod
 <ThemeProvider theme={theme}>{/* the existing app, unchanged */}</ThemeProvider>
 ```
 
-Thirty-eight colour roles (Alert surfaces included), thirteen type variants mapped by usage —
+Thirty-three colour roles, the standard Alert's four severities in Vela's own alert colours (background, text, border and icon, the ones Contextual Alert draws), thirteen type variants mapped by usage —
 Material's `h4`–`h6` titles become Vela's `h1`–`h3`, so an acquired product's titles keep their
-size — and the radius are mapped; `$sources` in the JSON names the
+size — and the radius are mapped; `$sources` and `$alertSources` in the JSON name the
 token behind every colour. Motion timing travels too: the two
 durations and the one curve are mapped onto Material's `transitions`. The limit is honest: Material has
 one colour vocabulary, so a status chip and a severity alert share `success`/`warning`/`error`, and the

@@ -8,19 +8,22 @@
     "palette.secondary.main": "btn-standard-bg",
     "palette.secondary.dark": "btn-standard-hover-bg",
     "palette.secondary.contrastText": "btn-standard-text",
-    "palette.error.main": "signal-severity-major",
+    "palette.error.main": "text-severity-major",
     "palette.error.light": "border-severity-major",
-    "palette.error.dark": "btn-destructive-bg",
-    "palette.error.contrastText": "btn-destructive-text",
-    "palette.warning.main": "signal-severity-warning",
+    "palette.error.dark": "text-severity-major",
+    "palette.error.contrastText": "bg-global",
+    "palette.warning.main": "text-severity-warning",
     "palette.warning.light": "border-severity-warning",
-    "palette.warning.dark": "icon-severity-warning",
-    "palette.info.main": "signal-severity-info",
+    "palette.warning.dark": "text-severity-warning",
+    "palette.warning.contrastText": "bg-global",
+    "palette.info.main": "text-severity-info",
     "palette.info.light": "border-severity-info",
-    "palette.info.dark": "icon-severity-info",
-    "palette.success.main": "signal-severity-success",
+    "palette.info.dark": "text-severity-info",
+    "palette.info.contrastText": "bg-global",
+    "palette.success.main": "text-severity-success",
     "palette.success.light": "border-severity-success",
-    "palette.success.dark": "icon-severity-success",
+    "palette.success.dark": "text-severity-success",
+    "palette.success.contrastText": "bg-global",
     "palette.background.default": "bg-global",
     "palette.background.paper": "bg-raised",
     "palette.text.primary": "text-default",
@@ -30,15 +33,7 @@
     "palette.action.hover": "bg-hover",
     "palette.action.selected": "bg-selected",
     "palette.action.disabled": "btn-disabled-text",
-    "palette.action.disabledBackground": "btn-disabled-bg",
-    "components.MuiAlert.styleOverrides.standardSuccess.backgroundColor": "bg-severity-success",
-    "components.MuiAlert.styleOverrides.standardSuccess.color": "text-severity-success",
-    "components.MuiAlert.styleOverrides.standardInfo.backgroundColor": "bg-severity-info",
-    "components.MuiAlert.styleOverrides.standardInfo.color": "text-severity-info",
-    "components.MuiAlert.styleOverrides.standardWarning.backgroundColor": "bg-severity-warning",
-    "components.MuiAlert.styleOverrides.standardWarning.color": "text-severity-warning",
-    "components.MuiAlert.styleOverrides.standardError.backgroundColor": "bg-severity-major",
-    "components.MuiAlert.styleOverrides.standardError.color": "text-severity-major"
+    "palette.action.disabledBackground": "btn-disabled-bg"
   },
   "$typeSources": {
     "h1": "h1",
@@ -55,6 +50,32 @@
     "overline": "meta",
     "button": "button-regular"
   },
+  "$alertSources": {
+    "success": [
+      "bg-severity-success",
+      "text-severity-success",
+      "border-severity-success",
+      "icon-severity-success"
+    ],
+    "info": [
+      "bg-severity-info",
+      "text-severity-info",
+      "border-severity-info",
+      "icon-severity-info"
+    ],
+    "warning": [
+      "bg-severity-warning",
+      "text-severity-warning",
+      "border-severity-warning",
+      "icon-severity-warning"
+    ],
+    "error": [
+      "bg-severity-major",
+      "text-severity-major",
+      "border-severity-major",
+      "icon-severity-major"
+    ]
+  },
   "light": {
     "palette": {
       "mode": "light",
@@ -70,25 +91,28 @@
         "contrastText": "#49555a"
       },
       "error": {
-        "main": "#dd4b3e",
+        "main": "#ab3125",
         "light": "#f0918c",
         "dark": "#ab3125",
         "contrastText": "#ffffff"
       },
       "warning": {
-        "main": "#f0c14e",
+        "main": "#7a6224",
         "light": "#f7d382",
-        "dark": "#7a6224"
+        "dark": "#7a6224",
+        "contrastText": "#ffffff"
       },
       "info": {
-        "main": "#3d7fd6",
+        "main": "#35558a",
         "light": "#85aae8",
-        "dark": "#35558a"
+        "dark": "#35558a",
+        "contrastText": "#ffffff"
       },
       "success": {
-        "main": "#4aa863",
+        "main": "#175c33",
         "light": "#86c795",
-        "dark": "#175c33"
+        "dark": "#175c33",
+        "contrastText": "#ffffff"
       },
       "background": {
         "default": "#ffffff",
@@ -108,26 +132,6 @@
       }
     },
     "components": {
-      "MuiAlert": {
-        "styleOverrides": {
-          "standardSuccess": {
-            "backgroundColor": "#dcefe0",
-            "color": "#175c33"
-          },
-          "standardInfo": {
-            "backgroundColor": "#e6eefb",
-            "color": "#35558a"
-          },
-          "standardWarning": {
-            "backgroundColor": "#fdf1d3",
-            "color": "#7a6224"
-          },
-          "standardError": {
-            "backgroundColor": "#fce8e6",
-            "color": "#ab3125"
-          }
-        }
-      },
       "MuiButton": {
         "defaultProps": {
           "disableElevation": true
@@ -137,6 +141,70 @@
         "styleOverrides": {
           "root": {
             "backgroundImage": "none"
+          }
+        }
+      },
+      "MuiAlert": {
+        "styleOverrides": {
+          "root": {
+            "variants": [
+              {
+                "props": {
+                  "variant": "standard",
+                  "severity": "success"
+                },
+                "style": {
+                  "backgroundColor": "#dcefe0",
+                  "color": "#175c33",
+                  "border": "1px solid #86c795",
+                  "& .MuiAlert-icon": {
+                    "color": "#175c33"
+                  }
+                }
+              },
+              {
+                "props": {
+                  "variant": "standard",
+                  "severity": "info"
+                },
+                "style": {
+                  "backgroundColor": "#e6eefb",
+                  "color": "#35558a",
+                  "border": "1px solid #85aae8",
+                  "& .MuiAlert-icon": {
+                    "color": "#35558a"
+                  }
+                }
+              },
+              {
+                "props": {
+                  "variant": "standard",
+                  "severity": "warning"
+                },
+                "style": {
+                  "backgroundColor": "#fdf1d3",
+                  "color": "#7a6224",
+                  "border": "1px solid #f7d382",
+                  "& .MuiAlert-icon": {
+                    "color": "#7a6224"
+                  }
+                }
+              },
+              {
+                "props": {
+                  "variant": "standard",
+                  "severity": "error"
+                },
+                "style": {
+                  "backgroundColor": "#fce8e6",
+                  "color": "#ab3125",
+                  "border": "1px solid #f0918c",
+                  "& .MuiAlert-icon": {
+                    "color": "#ab3125"
+                  }
+                }
+              }
+            ]
           }
         }
       }
@@ -252,25 +320,28 @@
         "contrastText": "#c8d0d2"
       },
       "error": {
-        "main": "#dd4b3e",
+        "main": "#f0918c",
         "light": "#ab3125",
-        "dark": "#ab3125",
-        "contrastText": "#ffffff"
+        "dark": "#f0918c",
+        "contrastText": "#11171a"
       },
       "warning": {
-        "main": "#f0c14e",
+        "main": "#f7d382",
         "light": "#9a7a0c",
-        "dark": "#f7d382"
+        "dark": "#f7d382",
+        "contrastText": "#11171a"
       },
       "info": {
-        "main": "#3d7fd6",
+        "main": "#85aae8",
         "light": "#35558a",
-        "dark": "#85aae8"
+        "dark": "#85aae8",
+        "contrastText": "#11171a"
       },
       "success": {
-        "main": "#4aa863",
+        "main": "#86c795",
         "light": "#1f7340",
-        "dark": "#86c795"
+        "dark": "#86c795",
+        "contrastText": "#11171a"
       },
       "background": {
         "default": "#11171a",
@@ -290,26 +361,6 @@
       }
     },
     "components": {
-      "MuiAlert": {
-        "styleOverrides": {
-          "standardSuccess": {
-            "backgroundColor": "#0d2318",
-            "color": "#86c795"
-          },
-          "standardInfo": {
-            "backgroundColor": "#0e1a2e",
-            "color": "#85aae8"
-          },
-          "standardWarning": {
-            "backgroundColor": "#26200e",
-            "color": "#f7d382"
-          },
-          "standardError": {
-            "backgroundColor": "#2a1310",
-            "color": "#f0918c"
-          }
-        }
-      },
       "MuiButton": {
         "defaultProps": {
           "disableElevation": true
@@ -319,6 +370,70 @@
         "styleOverrides": {
           "root": {
             "backgroundImage": "none"
+          }
+        }
+      },
+      "MuiAlert": {
+        "styleOverrides": {
+          "root": {
+            "variants": [
+              {
+                "props": {
+                  "variant": "standard",
+                  "severity": "success"
+                },
+                "style": {
+                  "backgroundColor": "#0d2318",
+                  "color": "#86c795",
+                  "border": "1px solid #1f7340",
+                  "& .MuiAlert-icon": {
+                    "color": "#86c795"
+                  }
+                }
+              },
+              {
+                "props": {
+                  "variant": "standard",
+                  "severity": "info"
+                },
+                "style": {
+                  "backgroundColor": "#0e1a2e",
+                  "color": "#85aae8",
+                  "border": "1px solid #35558a",
+                  "& .MuiAlert-icon": {
+                    "color": "#85aae8"
+                  }
+                }
+              },
+              {
+                "props": {
+                  "variant": "standard",
+                  "severity": "warning"
+                },
+                "style": {
+                  "backgroundColor": "#26200e",
+                  "color": "#f7d382",
+                  "border": "1px solid #9a7a0c",
+                  "& .MuiAlert-icon": {
+                    "color": "#f7d382"
+                  }
+                }
+              },
+              {
+                "props": {
+                  "variant": "standard",
+                  "severity": "error"
+                },
+                "style": {
+                  "backgroundColor": "#2a1310",
+                  "color": "#f0918c",
+                  "border": "1px solid #ab3125",
+                  "& .MuiAlert-icon": {
+                    "color": "#f0918c"
+                  }
+                }
+              }
+            ]
           }
         }
       }

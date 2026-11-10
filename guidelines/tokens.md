@@ -52,6 +52,17 @@ padding: calc(var(--vela-space-10) * 1px);  /* ❌ produces "10px * 1px" */
 Applies to `--vela-space-*`, `--vela-icon-*`, `--vela-control-height-*`, `--vela-radius-*`
 and every typography size / line-height.
 
+## Reserved colour tokens
+
+Every semantic colour token is drawn by something: a component, a site page, the Material UI
+bridge or the Flutter theme. Five are kept for components that are coming and drawn by nothing
+yet: `--vela-bg-inactive`, `--vela-icon-on-brand`, `--vela-icon-selected`,
+`--vela-primary-active-bg` and `--vela-text-on-brand` (freed in 0.16.1, when the Flutter theme's
+error label moved to the page colour). They are listed in `RESERVED` in `src/styles/token-bindings.test.ts`,
+which fails when a new colour token is bound by nothing, and again when a reserved one starts to
+be bound, so it leaves the list. The Severity and Risk grids count as bound as a whole, because
+every level keeps every role even where no component draws that cell yet.
+
 ## Correct and incorrect
 
 ```css

@@ -200,24 +200,31 @@ class VelaColors extends ThemeExtension<VelaColors> {
   });
 
   /// `--vela-bg-global` · Figma `surface/global`
+  /// The page itself, behind everything else. Text on it is text-default or text-heading.
   final Color bgGlobal;
   /// `--vela-bg-container` · Figma `surface/container`
+  /// A panel set into the page, such as a code block or a group of controls. In light it is the same grey as bg-hover, so a hover fill on it shows nothing; de-emphasized text on it is 4.35:1 in light, under 4.5:1.
   final Color bgContainer;
   /// `--vela-bg-raised` · Figma `surface/raised`
+  /// A surface lifted above the page: dialogs, menus, popovers and toasts. In light it is the same white as the page, so its border and shadow carry the lift.
   final Color bgRaised;
   /// `--vela-bg-raised-hover` · Figma `surface/raised-hover`
   /// A highlighted row on a raised surface — a Dropdown List item under the pointer or keyboard focus. Not bg-hover: in dark that IS the raised surface (grey-850), so a highlight on it would show nothing (1.00:1).
   final Color bgRaisedHover;
   /// `--vela-bg-hover` · Figma `surface/hover`
+  /// The fill under a pointer on a quiet control, only where hover exists. Never the only sign of state.
   final Color bgHover;
   /// `--vela-bg-tooltip` · Figma `surface/tooltip`
+  /// A tooltip's fill. Dark in both themes, so tooltip text is always light.
   final Color bgTooltip;
   /// `--vela-bg-scrim` · Figma `surface/scrim`
   /// The modal backdrop behind a Dialog. Always drawn at opacity-scrim, never opaque: the page under it stays readable as context, and inert.
   final Color bgScrim;
   /// `--vela-bg-inactive` · Figma `surface/inactive`
+  /// Reserved for an upcoming component; don't bind it yet.
   final Color bgInactive;
   /// `--vela-bg-selected` · Figma `surface/selected`
+  /// The current choice in a set, such as a segmented value. Always paired with a second cue, an edge or a heavier weight. For a table row, use bg-row-selected.
   final Color bgSelected;
   /// `--vela-bg-row-hover` · Figma `surface/row-hover`
   /// A hovered table row (pointer only). Lighter than bg-hover in light mode and darker than it in dark, so every status dot, de-emphasized text and links still pass on it: grey-100 / grey-850 drop de-emphasized text under 4.5:1 and, in dark, links to 4.35:1.
@@ -226,104 +233,151 @@ class VelaColors extends ThemeExtension<VelaColors> {
   /// A selected table row. Not bg-selected: on blue-100 the unknown status dot is 2.97:1 and de-emphasized text 4.20:1, both under AA. Never the only signal: the row also carries aria-selected and a border-active marker.
   final Color bgRowSelected;
   /// `--vela-primary-tint` · Figma `surface/primary-tint`
+  /// A pale wash of the primary colour, behind a hollow primary Button on hover. Text on it is text-on-tint.
   final Color primaryTint;
   /// `--vela-primary-active-bg` · Figma `surface/primary-active`
+  /// Reserved for an upcoming component; don't bind it yet.
   final Color primaryActiveBg;
   /// `--vela-border-default` · Figma `border/default`
+  /// The edge of anything a person must find: tables, menus, popovers, toasts. 3:1 or more against the page in both themes.
   final Color borderDefault;
   /// `--vela-border-subtle` · Figma `border/subtle`
+  /// A divider inside something already bounded, such as table rows or a tab list. Under 3:1, so never the only edge of something a person must find.
   final Color borderSubtle;
   /// `--vela-border-active` · Figma `border/active`
+  /// Marks the current part: the selected tab, a selected row's marker.
   final Color borderActive;
   /// `--vela-border-inactive` · Figma `border/inactive`
+  /// The edge of a control that can't be used right now, and a disabled Toggle's track.
   final Color borderInactive;
   /// `--vela-border-action` · Figma `border/action`
+  /// A strong edge for something a person acts on that isn't a form field. Used by the site; no component binds it yet.
   final Color borderAction;
   /// `--vela-text-default` · Figma `text/default`
+  /// Body text and labels. The default for anything a person reads.
   final Color textDefault;
   /// `--vela-text-heading` · Figma `text/heading`
+  /// Headings and the figures that matter most. The strongest text colour.
   final Color textHeading;
   /// `--vela-text-de-emphasized` · Figma `text/de-emphasized`
+  /// Secondary text: hints, metadata, notes under a value. 4.5:1 or more on the page, but not on bg-container in light.
   final Color textDeEmphasized;
   /// `--vela-text-inactive` · Figma `text/inactive`
+  /// Text of a control that can't be used. Exempt from contrast, so never use it for text a person needs.
   final Color textInactive;
   /// `--vela-text-link` · Figma `text/link`
+  /// Links and text-link Buttons. Colour carries the link.
   final Color textLink;
   /// `--vela-text-on-brand` · Figma `text/on-brand`
+  /// Reserved for an upcoming component; don't bind it yet. Text on a filled brand colour, white in both themes.
   final Color textOnBrand;
   /// `--vela-text-on-tint` · Figma `text/on-tint`
+  /// Text on primary-tint.
   final Color textOnTint;
   /// `--vela-text-error` · Figma `text/error`
+  /// An error message under a field. Always with the error border and an icon, never colour alone.
   final Color textError;
   /// `--vela-text-tooltip` · Figma `text/tooltip`
   /// Tooltip text, on bg-tooltip. White on grey-800 (light) and grey-700 (dark); asserted in PAIRS at 4.5:1 in both themes.
   final Color textTooltip;
   /// `--vela-icon-default` · Figma `icon/default`
+  /// A supporting icon beside text. Not for an icon that is a control's only label; use icon-strong.
   final Color iconDefault;
   /// `--vela-icon-strong` · Figma `icon/strong`
+  /// An icon that carries meaning on its own, such as an Icon Button's glyph. 3:1 or more on the page, containers and raised surfaces.
   final Color iconStrong;
   /// `--vela-icon-selected` · Figma `icon/selected`
+  /// Reserved for an upcoming component; don't bind it yet.
   final Color iconSelected;
   /// `--vela-icon-disabled` · Figma `icon/disabled`
+  /// The glyph of a control that can't be used.
   final Color iconDisabled;
   /// `--vela-icon-on-brand` · Figma `icon/on-brand`
+  /// Reserved for an upcoming component; don't bind it yet.
   final Color iconOnBrand;
   /// `--vela-brand-mark` · Figma `brand-mark/fill`
   /// Brand Mark's fill: the same grey as --vela-icon-strong in both themes, so another company's mark sits as quietly as the interface's own icons (guidelines/components/brand-mark.md). GitHub allows its mark in grey; Figma's reply on grey is pending, and if it declines this points back at --vela-black-pure (light) and white (dark). The svg fills with currentColor and .vela-brand-mark sets color to this, so forced colours still win. Never a status colour or an owner's brand colour, and bound by Brand Mark and Icon Button's word only.
   final Color brandMark;
   /// `--vela-btn-primary-bg` · Figma `button/primary-bg`
+  /// Fill of the one primary filled Button on a page.
   final Color btnPrimaryBg;
   /// `--vela-btn-primary-hover-bg` · Figma `button/primary-hover-bg`
+  /// A primary filled Button under a pointer: darker in light, lighter in dark.
   final Color btnPrimaryHoverBg;
   /// `--vela-btn-primary-border` · Figma `button/primary-border`
+  /// Edge of a primary filled Button. Matches its fill.
   final Color btnPrimaryBorder;
   /// `--vela-btn-primary-text` · Figma `button/primary-text`
+  /// Label on a primary filled Button.
   final Color btnPrimaryText;
   /// `--vela-btn-standard-bg` · Figma `button/standard-bg`
+  /// Fill of a standard filled Button.
   final Color btnStandardBg;
   /// `--vela-btn-standard-hover-bg` · Figma `button/standard-hover-bg`
+  /// A standard Button under a pointer. Also the hover fill of Icon Button and of a dialog's or toast's close button.
   final Color btnStandardHoverBg;
   /// `--vela-btn-standard-text` · Figma `button/standard-text`
+  /// Label on a standard Button.
   final Color btnStandardText;
   /// `--vela-btn-hollow-primary-text` · Figma `button/hollow-primary-text`
+  /// Label of a hollow primary Button.
   final Color btnHollowPrimaryText;
   /// `--vela-btn-hollow-primary-border` · Figma `button/hollow-primary-border`
+  /// Edge of a hollow primary Button.
   final Color btnHollowPrimaryBorder;
   /// `--vela-btn-disabled-bg` · Figma `button/disabled-bg`
+  /// Fill of a disabled Button.
   final Color btnDisabledBg;
   /// `--vela-btn-disabled-text` · Figma `button/disabled-text`
+  /// Label of a disabled Button. Exempt from contrast, like all disabled text.
   final Color btnDisabledText;
   /// `--vela-btn-destructive-bg` · Figma `button/destructive-bg`
+  /// Fill of a destructive Button, for an action that deletes something or can't be undone.
   final Color btnDestructiveBg;
   /// `--vela-btn-destructive-hover-bg` · Figma `button/destructive-hover-bg`
+  /// A destructive filled Button under a pointer.
   final Color btnDestructiveHoverBg;
   /// `--vela-btn-destructive-text` · Figma `button/destructive-text`
+  /// Label on a destructive filled Button.
   final Color btnDestructiveText;
   /// `--vela-btn-destructive-hollow-text` · Figma `button/destructive-hollow-text`
+  /// Label and edge of a hollow destructive Button.
   final Color btnDestructiveHollowText;
   /// `--vela-btn-standard-border` · Figma `button/standard-border`
+  /// Edge of a standard Button.
   final Color btnStandardBorder;
   /// `--vela-btn-hollow-hover-bg` · Figma `button/hollow-hover-bg`
+  /// A hollow primary Button under a pointer: a pale primary wash.
   final Color btnHollowHoverBg;
   /// `--vela-control-bg` · Figma `control/bg`
+  /// Inside of a form field: an input, a text area, a checkbox's box, a radio's circle.
   final Color controlBg;
   /// `--vela-control-border` · Figma `control/border`
+  /// Edge of a form field at rest. 3:1 or more, so the field can be found.
   final Color controlBorder;
   /// `--vela-control-border-hover` · Figma `control/border-hover`
+  /// Edge of a form field under a pointer: one step stronger than at rest, in both themes.
   final Color controlBorderHover;
   /// `--vela-control-border-active` · Figma `control/border-active`
+  /// Edge of a form field that has focus.
   final Color controlBorderActive;
   /// `--vela-control-border-error` · Figma `control/border-error`
+  /// Edge of a field whose value is wrong. Always with text-error and an icon.
   final Color controlBorderError;
   /// `--vela-control-bg-disabled` · Figma `control/bg-disabled`
+  /// Inside of a form field that can't be used.
   final Color controlBgDisabled;
   /// `--vela-control-placeholder` · Figma `control/placeholder`
+  /// Placeholder text in an empty field. Never the field's only label.
   final Color controlPlaceholder;
   /// `--vela-toggle-off-bg` · Figma `control/toggle-off-bg`
+  /// Track of a Toggle that is off. The same grey as a form field's edge, so it holds 3:1 against the page and the white knob holds 3:1 on it.
   final Color toggleOffBg;
   /// `--vela-toggle-on-bg` · Figma `control/toggle-on-bg`
+  /// Track of a Toggle that is on.
   final Color toggleOnBg;
   /// `--vela-toggle-knob` · Figma `control/toggle-knob`
+  /// A Toggle's knob, on and off.
   final Color toggleKnob;
   /// `--vela-control-check-bg-checked` · Figma `control/check/bg-checked`
   /// The filled box of a checked Checkbox and the filled circle of a selected Radio. Shared by both so the two controls read as one family; the check mark and the radio dot sit on it in control-check-mark.
@@ -566,12 +620,12 @@ class VelaColors extends ThemeExtension<VelaColors> {
     btnHollowHoverBg: VelaPrimitives.blue100,
     controlBg: VelaPrimitives.white,
     controlBorder: VelaPrimitives.grey500,
-    controlBorderHover: VelaPrimitives.grey500,
+    controlBorderHover: VelaPrimitives.grey600,
     controlBorderActive: VelaPrimitives.primary500,
     controlBorderError: VelaPrimitives.red500,
     controlBgDisabled: VelaPrimitives.grey100,
     controlPlaceholder: VelaPrimitives.grey600,
-    toggleOffBg: VelaPrimitives.grey400,
+    toggleOffBg: VelaPrimitives.grey500,
     toggleOnBg: VelaPrimitives.primary500,
     toggleKnob: VelaPrimitives.white,
     controlCheckBgChecked: VelaPrimitives.primary500,
@@ -697,7 +751,7 @@ class VelaColors extends ThemeExtension<VelaColors> {
     controlBorderError: VelaPrimitives.red500,
     controlBgDisabled: VelaPrimitives.grey900,
     controlPlaceholder: VelaPrimitives.grey500,
-    toggleOffBg: VelaPrimitives.grey700,
+    toggleOffBg: VelaPrimitives.grey600,
     toggleOnBg: VelaPrimitives.primary500,
     toggleKnob: VelaPrimitives.white,
     controlCheckBgChecked: VelaPrimitives.primary450,
@@ -1518,7 +1572,7 @@ ThemeData velaThemeData(Brightness brightness) {
       secondary: c.primaryTint,
       onSecondary: c.textOnTint,
       error: c.textError,
-      onError: c.textOnBrand,
+      onError: c.bgGlobal,
       surface: c.bgGlobal,
       onSurface: c.textDefault,
     ),

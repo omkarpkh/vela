@@ -48,19 +48,29 @@ export function generateMui(set, version) {
     'palette.secondary.main': 'btn-standard-bg',
     'palette.secondary.dark': 'btn-standard-hover-bg',
     'palette.secondary.contrastText': 'btn-standard-text',
-    'palette.error.main': 'signal-severity-major',
+    // Severity roles. Material draws `main` in two ways: as a fill under `contrastText` (a contained
+    // Button, a filled Chip, a Badge) and as text on the page (outlined and text variants). The
+    // signal colours are graphics, not text: on white, info was 4.03:1, error 4.08:1, success
+    // 2.97:1 and warning 1.69:1. The severity text colour passes both ways, with the page colour as
+    // the fill's label: bg-global on text-severity-* is 5.8:1 or more in light and about 7.6:1 or
+    // more in dark (PAIRS, scripts/contrast-core.mjs). `dark` (hover) is the same colour, since no
+    // darker severity text exists; `light` stays the severity border. Error is Vela's major.
+    'palette.error.main': 'text-severity-major',
     'palette.error.light': 'border-severity-major',
-    'palette.error.dark': 'btn-destructive-bg',
-    'palette.error.contrastText': 'btn-destructive-text',
-    'palette.warning.main': 'signal-severity-warning',
+    'palette.error.dark': 'text-severity-major',
+    'palette.error.contrastText': 'bg-global',
+    'palette.warning.main': 'text-severity-warning',
     'palette.warning.light': 'border-severity-warning',
-    'palette.warning.dark': 'icon-severity-warning',
-    'palette.info.main': 'signal-severity-info',
+    'palette.warning.dark': 'text-severity-warning',
+    'palette.warning.contrastText': 'bg-global',
+    'palette.info.main': 'text-severity-info',
     'palette.info.light': 'border-severity-info',
-    'palette.info.dark': 'icon-severity-info',
-    'palette.success.main': 'signal-severity-success',
+    'palette.info.dark': 'text-severity-info',
+    'palette.info.contrastText': 'bg-global',
+    'palette.success.main': 'text-severity-success',
     'palette.success.light': 'border-severity-success',
-    'palette.success.dark': 'icon-severity-success',
+    'palette.success.dark': 'text-severity-success',
+    'palette.success.contrastText': 'bg-global',
     'palette.background.default': 'bg-global',
     'palette.background.paper': 'bg-raised',
     'palette.text.primary': 'text-default',
@@ -71,16 +81,26 @@ export function generateMui(set, version) {
     'palette.action.selected': 'bg-selected',
     'palette.action.disabled': 'btn-disabled-text',
     'palette.action.disabledBackground': 'btn-disabled-bg',
-    // Alert (standard variant): Material darkens/lightens its guess; Vela has explicit tokens.
-    'components.MuiAlert.styleOverrides.standardSuccess.backgroundColor': 'bg-severity-success',
-    'components.MuiAlert.styleOverrides.standardSuccess.color': 'text-severity-success',
-    'components.MuiAlert.styleOverrides.standardInfo.backgroundColor': 'bg-severity-info',
-    'components.MuiAlert.styleOverrides.standardInfo.color': 'text-severity-info',
-    'components.MuiAlert.styleOverrides.standardWarning.backgroundColor': 'bg-severity-warning',
-    'components.MuiAlert.styleOverrides.standardWarning.color': 'text-severity-warning',
-    'components.MuiAlert.styleOverrides.standardError.backgroundColor': 'bg-severity-major',
-    'components.MuiAlert.styleOverrides.standardError.color': 'text-severity-major',
   }
+
+  // ---------- Alert (standard variant): Vela's own alert colours ----------
+  // Material darkens or lightens its guess from palette.*.light; Vela has explicit tokens, the ones
+  // its Contextual Alert draws. Material UI 9 no longer reads the old per-severity slot keys
+  // (styleOverrides.standardSuccess and the rest), which this bridge used until 0.16.1, so an Alert
+  // silently fell back to Material's colours. Style variants matched on severity are the form it
+  // reads; tests/e2e/adopt.spec.ts checks the colours an Alert actually paints.
+  const ALERT = {
+    success: 'success', info: 'info', warning: 'warning', error: 'major',
+  }
+  const alertVariants = (mode) => Object.entries(ALERT).map(([severity, sev]) => ({
+    props: { variant: 'standard', severity },
+    style: {
+      backgroundColor: hex(`bg-severity-${sev}`, mode),
+      color: hex(`text-severity-${sev}`, mode),
+      border: `1px solid ${hex(`border-severity-${sev}`, mode)}`,
+      '& .MuiAlert-icon': { color: hex(`icon-severity-${sev}`, mode) },
+    },
+  }))
 
   // ---------- type ramp: MUI variant → Vela text style, mapped by USAGE not by name ----------
   // Material's h1–h3 are display sizes (96–48px) that product screens do not use; its h4–h6 are
@@ -158,6 +178,7 @@ export function generateMui(set, version) {
       MuiButton: { defaultProps: { disableElevation: true } },
       // Material lightens dark-mode Paper with an elevation overlay; surfaces are tokens here.
       MuiPaper: { styleOverrides: { root: { backgroundImage: 'none' } } },
+      MuiAlert: { styleOverrides: { root: { variants: alertVariants(mode) } } },
     }
     return t
   }
@@ -166,6 +187,7 @@ export function generateMui(set, version) {
     $description: `Material UI ThemeOptions generated from tokens/vela.tokens.json by scripts/build-tokens-mui.mjs — do not edit. @omkarux/vela ${version}. Pass \`light\` or \`dark\` to createTheme().`,
     $sources: COLOR,
     $typeSources: TYPE,
+    $alertSources: Object.fromEntries(Object.entries(ALERT).map(([severity, sev]) => [severity, ['bg', 'text', 'border', 'icon'].map((k) => `${k}-severity-${sev}`)])),
     light: theme('light'),
     dark: theme('dark'),
   }

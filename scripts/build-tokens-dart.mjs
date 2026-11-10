@@ -256,7 +256,7 @@ export function generateDart(set, version) {
   w(`      secondary: c.${need('primary-tint')},`)
   w(`      onSecondary: c.${need('text-on-tint')},`)
   w(`      error: c.${need('text-error')},`)
-  w(`      onError: c.${need('text-on-brand')},`)
+  w(`      onError: c.${need('bg-global')},`)
   w(`      surface: c.${need('bg-global')},`)
   w(`      onSurface: c.${need('text-default')},`)
   w(`    ),`)
