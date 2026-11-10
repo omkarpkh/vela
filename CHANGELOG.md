@@ -5,6 +5,14 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.16.1] — 2026-11-10
+
+**Highlights:**
+
+- Severity colours in the Material UI and Flutter themes now pass contrast.
+- An off Toggle and a hovered field are visible in light.
+- Every colour token says what it is for.
+
 ### Fixed
 - **The Material UI bridge's severity colours pass contrast.** Material draws a severity's `main`
   as a fill under `contrastText` (a contained Button, a filled Chip, a Badge) and as text on the
