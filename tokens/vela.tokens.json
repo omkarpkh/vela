@@ -1263,7 +1263,7 @@
     "text-on-brand": {
       "$type": "color",
       "$value": "{primitives.white}",
-      "$description": "Text on a filled brand colour, such as a primary or destructive fill. White in both themes.",
+      "$description": "Reserved for an upcoming component; don't bind it yet. Text on a filled brand colour, white in both themes.",
       "$extensions": {
         "com.omkarux.vela": {
           "figma": "text/on-brand"

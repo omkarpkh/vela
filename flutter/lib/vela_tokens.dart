@@ -269,7 +269,7 @@ class VelaColors extends ThemeExtension<VelaColors> {
   /// Links and text-link Buttons. Colour carries the link.
   final Color textLink;
   /// `--vela-text-on-brand` · Figma `text/on-brand`
-  /// Text on a filled brand colour, such as a primary or destructive fill. White in both themes.
+  /// Reserved for an upcoming component; don't bind it yet. Text on a filled brand colour, white in both themes.
   final Color textOnBrand;
   /// `--vela-text-on-tint` · Figma `text/on-tint`
   /// Text on primary-tint.
@@ -1572,7 +1572,7 @@ ThemeData velaThemeData(Brightness brightness) {
       secondary: c.primaryTint,
       onSecondary: c.textOnTint,
       error: c.textError,
-      onError: c.textOnBrand,
+      onError: c.bgGlobal,
       surface: c.bgGlobal,
       onSurface: c.textDefault,
     ),

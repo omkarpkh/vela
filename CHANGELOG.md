@@ -28,6 +28,10 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   resting border itself, so Input, Text Area, Checkbox and Radio did not change on hover. It is
   grey-600 in light (4.90:1 on white, against 3.47:1 at rest); dark keeps grey-500. Asserted as
   "Input border, hovered".
+- **The Flutter theme's error label passes in dark.** `ColorScheme.onError` was white
+  (`text-on-brand`) on `text-error`: 6.57:1 in light, but 2.30:1 on the pale dark-mode error
+  colour, so an error button or badge was unreadable in dark. It is now the page colour, as in the
+  Material UI fix: 6.57:1 in light, 7.87:1 in dark. Asserted as "Flutter: error fill label".
 - **The Toggle's off track is visible against the page.** `--vela-toggle-off-bg` was 2.27:1 on the
   page in light and 2.35:1 in dark, under the 3:1 a control's edge needs. It now takes the input
   border's greys, grey-500 in light and grey-600 in dark: 3.47:1 and 3.69:1 on the page, with the
@@ -42,8 +46,9 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   yet." Approved by Omkar, 10 Nov 2026.
 - **A guard for unbound colour tokens.** `src/styles/token-bindings.test.ts` fails when a semantic
   colour token is drawn by nothing (no component, site page, bridge or Flutter theme), naming it.
-  Four are reserved for components that are coming: `bg-inactive`, `icon-on-brand`,
-  `icon-selected` and `primary-active-bg`; the test also fails when one of them starts to be bound,
+  Five are reserved for components that are coming: `bg-inactive`, `icon-on-brand`,
+  `icon-selected`, `primary-active-bg` and `text-on-brand` (freed by the Flutter fix above); the
+  test also fails when one of them starts to be bound,
   naming the file, so it leaves the list. The Severity and Risk grids pass as a whole when any of
   their cells is bound. `guidelines/tokens.md` says so in a short section.
 

@@ -24,6 +24,7 @@ const RESERVED: Record<string, string> = {
   'icon-on-brand': 'kept for components that are coming (decided 10 Nov 2026)',
   'icon-selected': 'kept for components that are coming (decided 10 Nov 2026)',
   'primary-active-bg': 'kept for components that are coming (decided 10 Nov 2026)',
+  'text-on-brand': 'freed when the Flutter theme\'s onError moved to the page colour in 0.16.1; kept for components that are coming (10 Nov 2026)',
 }
 const GRIDS = [
   { name: 'Severity', member: /^[a-z]+-severity-/ },

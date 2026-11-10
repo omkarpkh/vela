@@ -195,6 +195,11 @@ export const PAIRS = [
     [`--vela-text-severity-${s}`, '--vela-bg-raised', `MUI bridge: ${s} main as text on paper`, 'text'],
   ]),
 
+  // The Flutter theme (scripts/build-tokens-dart.mjs): ColorScheme.error is text-error and, since
+  // 0.16.1, onError is the page colour, the same rule as the Material UI bridge. It was white
+  // (text-on-brand), 2.30:1 on the pale dark-mode error colour.
+  ['--vela-bg-global', '--vela-text-error', 'Flutter: error fill label (onError on error)', 'text'],
+
   // The site (demo/), which follows DESIGN.md like the kit. A tag (the Status page's lifecycle
   // labels, the Proposal tag) is neutral and outlined: text-default, the default border, no fill,
   // never a severity colour. It sits on the page (body text on page, above) or on a container. A
