@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { createTheme, ThemeProvider, type Theme, type ThemeOptions } from '@mui/material/styles'
+import { createTheme, ThemeProvider, useTheme, type Theme, type ThemeOptions } from '@mui/material/styles'
 import useMediaQuery from '@mui/material/useMediaQuery'
 import ScopedCssBaseline from '@mui/material/ScopedCssBaseline'
 import AppBar from '@mui/material/AppBar'
@@ -21,6 +21,7 @@ import TableRow from '@mui/material/TableRow'
 import Alert from '@mui/material/Alert'
 import Box from '@mui/material/Box'
 import bridge from '../bridges/vela.mui-theme.json'
+import { measure, ratioLabel } from './adopt-contrast'
 
 type Mode = 'light' | 'dark'
 type Visit = { id: string; department: string; waited: string; status: 'Checked in' | 'Waiting' | 'In consult' }
@@ -34,9 +35,32 @@ const QUEUE: Visit[] = [
 ]
 const CHIP: Record<Visit['status'], 'success' | 'warning' | 'info'> = { 'Checked in': 'success', Waiting: 'warning', 'In consult': 'info' }
 
+// The site's note beside a severity colour: its text contrast, measured from the theme this copy
+// renders with (demo/adopt-contrast.ts), never typed. Small and plain: the ratio when it passes, the
+// failure in words when it does not. Body text colour, not the de-emphasized one, which is 3.99:1 on
+// Vela's dark Paper. Beside an Alert it sits in the alert's own action slot and takes the alert's
+// colours, so the label is drawn in the very pair it measures.
+function Ratio({ of, value, inherit }: { of: string; value: number; inherit?: boolean }) {
+  return (
+    <Typography
+      component="span"
+      variant="caption"
+      className="adopt-ratio"
+      data-adopt-ratio={of}
+      data-ratio={value.toFixed(4)}
+      sx={{ color: inherit ? 'inherit' : 'text.primary' }}
+    >
+      <span className="vela-sr-only">Contrast </span>
+      {ratioLabel(value)}
+    </Typography>
+  )
+}
+
 // The acquired product as it ships: a front-desk screen built on stock Material UI.
-// Nothing in here knows about Vela. That is the point of the demo.
+// Nothing in here knows about Vela. That is the point of the demo. The Ratio notes are the site's,
+// identical on both sides, and read only the theme in context.
 function FrontDesk() {
+  const theme = useTheme()
   return (
     <Box>
       <AppBar position="static" elevation={0}>
@@ -46,7 +70,9 @@ function FrontDesk() {
         </Toolbar>
       </AppBar>
       <Stack spacing={2} sx={{ p: 2 }}>
-        <Alert severity="warning">3 lab results are waiting for review.</Alert>
+        <Alert severity="warning" action={<Ratio of="alert:warning" value={measure.alert(theme, 'warning')} inherit />}>
+          3 lab results are waiting for review.
+        </Alert>
         <Paper variant="outlined" sx={{ p: 2 }}>
           <Typography variant="h6" gutterBottom>New appointment</Typography>
           <Stack spacing={2}>
@@ -55,10 +81,11 @@ function FrontDesk() {
               {['General', 'Paediatrics', 'Physiotherapy'].map((d) => <MenuItem key={d} value={d}>{d}</MenuItem>)}
             </TextField>
             <FormControlLabel control={<Switch defaultChecked />} label="Send SMS reminder" />
-            <Stack direction="row" spacing={1}>
+            <Stack direction="row" spacing={1} useFlexGap sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
               <Button variant="contained">Save</Button>
               <Button variant="outlined">Cancel</Button>
               <Button color="error">Cancel visit</Button>
+              <Ratio of="text-button:error" value={measure.textButton(theme, 'error')} />
             </Stack>
           </Stack>
         </Paper>
@@ -75,7 +102,12 @@ function FrontDesk() {
                   <TableCell>{v.id}</TableCell>
                   <TableCell>{v.department}</TableCell>
                   <TableCell>{v.waited}</TableCell>
-                  <TableCell><Chip size="small" label={v.status} color={CHIP[v.status]} /></TableCell>
+                  <TableCell>
+                    <Stack direction="row" spacing={1} useFlexGap sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
+                      <Chip size="small" label={v.status} color={CHIP[v.status]} />
+                      <Ratio of={`chip:${CHIP[v.status]}`} value={measure.chip(theme, CHIP[v.status])} />
+                    </Stack>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -114,7 +146,8 @@ export function Adopt({ mode }: { mode: 'system' | Mode }) {
       </header>
       <p className="vela-meta demo-note" style={{ marginTop: 'var(--vela-space-20)' }}>
         An acquired product built on Material UI, rendered twice from identical component code. The right-hand
-        copy receives one extra thing: a theme object generated from tokens/vela.tokens.json.
+        copy receives one extra thing: a theme object generated from tokens/vela.tokens.json. Beside each
+        severity colour is its text contrast, measured from the colours that copy's theme paints.
       </p>
       <div className="adopt-grid">
         <Column caption="Before: as it ships today. Stock Material UI, default theme." theme={stock} />

@@ -2,6 +2,9 @@
 import { readFileSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { contrast } from './contrast-math.mjs'
+// The maths is in its own module so the site's bundle can use it too; re-exported for Node callers.
+export { luminance, contrast, composite } from './contrast-math.mjs'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 
@@ -37,27 +40,6 @@ export function resolve(map, name, seen = new Set()) {
     throw new Error(`Token ${name} is not a resolvable color: "${raw}"`)
   }
   return raw
-}
-
-function toRgb(hex) {
-  let h = hex.slice(1)
-  if (h.length === 3) h = h.split('').map((c) => c + c).join('')
-  return [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16))
-}
-
-export function luminance(hex) {
-  const [r, g, b] = toRgb(hex).map((v) => {
-    const c = v / 255
-    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)
-  })
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b
-}
-
-export function contrast(fgHex, bgHex) {
-  const a = luminance(fgHex)
-  const b = luminance(bgHex)
-  const [hi, lo] = a > b ? [a, b] : [b, a]
-  return (hi + 0.05) / (lo + 0.05)
 }
 
 /**
@@ -297,16 +279,6 @@ export const PAIRS = [
   // token), and touch and keyboard users, who never see the Seed, lose nothing. Reaching 3:1 would
   // take a strength of 0.64 to 0.70 depending on theme and surface; the decided strength is 0.55.
 ]
-
-/**
- * `fg` drawn at `alpha` over `bg`, composited per channel in sRGB the way a browser paints it, and
- * rounded to the 8-bit colour that reaches the screen. For a graphic drawn at an opacity, such as
- * the hero logo's outer ring.
- */
-export function composite(fgHex, bgHex, alpha) {
-  const [f, b] = [toRgb(fgHex), toRgb(bgHex)]
-  return '#' + f.map((c, i) => Math.round(alpha * c + (1 - alpha) * b[i]).toString(16).padStart(2, '0')).join('')
-}
 
 export const THRESHOLD = { text: 4.5, ui: 3.0 }
 
