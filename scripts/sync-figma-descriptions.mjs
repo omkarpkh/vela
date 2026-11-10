@@ -54,11 +54,11 @@ export const SETS = {
   // scripts/figma/components/tabs-overflow-control.figma.js, is written and has not been run (1 Nov 2026).
   'tabs.md': {
     set: 'Tab', src: 'Tabs', state: 'published', node: '11:20', export: 'Tabs.Trigger',
-    also: [{ set: 'Tabs overflow control', kind: 'part', state: 'none', node: null, part: 'drawn by Tabs (headless) when tabs overflow' }],
+    also: [{ set: 'Tabs overflow control', kind: 'part', state: 'built', node: '226:62', part: 'drawn by Tabs (headless) when tabs overflow' }],
   },
   'icon.md': { set: 'Icon', src: 'Icon', state: 'published', node: '131:324', export: 'Icon' },
-  // No set yet (1 Nov 2026): scripts/figma/components/brand-mark.figma.js is written and has not been run.
-  'brand-mark.md': { set: 'Brand Mark', src: 'BrandMark', state: 'none', node: null, export: 'BrandMark' },
+  // Built by the repo thread's 0.16.1 Figma pass (10 Nov 2026) on its own page; not yet published.
+  'brand-mark.md': { set: 'Brand Mark', src: 'BrandMark', state: 'built', node: '224:59', export: 'BrandMark' },
   'checkbox.md': { set: 'Checkbox', src: 'Checkbox', entry: 'headless', state: 'published', node: '128:50', export: 'Checkbox' },
   'radio-group.md': { set: 'Radio', src: 'RadioGroup', entry: 'headless', state: 'published', node: '128:64', export: 'RadioGroup.Radio' },
   // A component built from several sets (scripts/figma/components/table.figma.js declares three)
@@ -71,8 +71,8 @@ export const SETS = {
   },
   'popover.md': { set: 'Popover', src: 'Popover', entry: 'headless', state: 'published', node: '127:109', export: 'Popover' },
   'tooltip.md': { set: 'Tooltip', src: 'Tooltip', entry: 'headless', state: 'published', node: '127:114', export: 'Tooltip' },
-  // No set yet (1 Nov 2026): scripts/figma/components/icon-button.figma.js is written and has not been run.
-  'icon-button.md': { set: 'Icon Button', src: 'IconButton', entry: 'headless', state: 'none', node: null, export: 'IconButton' },
+  // Built by the repo thread's 0.16.1 Figma pass (10 Nov 2026) on its own page; not yet published.
+  'icon-button.md': { set: 'Icon Button', src: 'IconButton', entry: 'headless', state: 'built', node: '225:68', export: 'IconButton' },
   'dialog.md': { set: 'Dialog', src: 'Dialog', entry: 'headless', state: 'published', node: '129:54', export: 'Dialog' },
   // A toast is raised with `toast.add(...)` from `useToast()`, inside the app's one ToastProvider.
   'toast.md': { set: 'Toast', src: 'Toast', entry: 'headless', state: 'published', node: '129:94', export: 'useToast', imports: ['ToastProvider', 'useToast'] },
