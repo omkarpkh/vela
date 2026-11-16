@@ -294,3 +294,27 @@ export const deprecationNote = (t) => (t.deprecated === true ? 'deprecated' : ty
  */
 export const isFigmaPercent = (t, figmaName) => t.$type === 'number' && figmaName.split('/')[0] === 'opacity'
 export const toFigmaPercent = (v) => Math.round(v * 100 * 1e6) / 1e6
+
+/**
+ * The description a token's Figma variable carries: its deprecation note (if any), its
+ * $description, a spring's physics and an opacity's percent note. One function, so the sync that
+ * writes it (sync-figma.mjs) and the drift check that reads it back (figma-drift.mjs) agree.
+ */
+export function figmaDescription(set, css) {
+  const t = set.all[css]
+  const figma = set.vendor(t).figma
+  const note = deprecationNote(t)
+  const s = springOf(set, css)
+  const spring = s ? ` Spring: stiffness ${s.stiffness}, damping ${s.damping}, mass ${s.mass}, over ${set.vendor(s.durationToken).figma} (${s.durationMs}ms). Figma holds the fallback curve.` : ''
+  const percent = isFigmaPercent(t, figma)
+  const v = set.valueOf(css, 'light')
+  const percentNote = !percent ? '' : ' Opacity: percent in Figma, a fraction in CSS' + (typeof v === 'number' ? ` (${toFigmaPercent(v)} here, ${v} in CSS).` : '.')
+  return (note ? `${note[0].toUpperCase()}${note.slice(1)}.${t.$description ? ' ' + t.$description : ''}` : (t.$description ?? '')) + spring + percentNote
+}
+
+/**
+ * Figma's Plugin API stores a description with `&`, `'`, `"`, `<` and `>` as HTML entities
+ * (setting "it's" reads back "it&#39;s"; measured 10 Nov 2026), while the published library shows
+ * the plain characters. A read-back decodes them before comparing.
+ */
+export const decodeFigmaText = (s) => s.replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&')
