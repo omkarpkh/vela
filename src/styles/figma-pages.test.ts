@@ -285,7 +285,7 @@ describe('the mock models instances as Figma does', () => {
     const i = a.createInstance()
     expect([i.type, i.paddingTop, (await i.getMainComponentAsync()).name]).toEqual(['INSTANCE', 5, 'On=false'])
     i.setProperties({ On: 'true', [text]: 'Bye', [flag]: true })
-    expect([i.paddingTop, i.mainComponent.name]).toEqual([10, 'On=true'])
+    expect([i.paddingTop, i._main.name]).toEqual([10, 'On=true'])
     expect(Object.fromEntries(Object.entries(i.componentProperties).map(([k, v]: any) => [k.replace(/#.*$/, ''), v.value]))).toEqual({ On: 'true', Label: 'Bye', Extra: true })
     expect(() => i.setProperties({ On: 'maybe' })).toThrow(/On=maybe is not a variant/)
     expect(() => i.setProperties({ Size: 'big' })).toThrow(/no property "Size"/)

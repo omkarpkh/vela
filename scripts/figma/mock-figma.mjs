@@ -47,6 +47,7 @@ const hexToRgb = (v) => {
 }
 const DEFAULT_NAME = { FRAME: 'Frame', COMPONENT: 'Component', COMPONENT_SET: 'Component', TEXT: 'Text', RECTANGLE: 'Rectangle', ELLIPSE: 'Ellipse', POLYGON: 'Polygon', BOOLEAN_OPERATION: 'Union', VECTOR: 'Vector' }
 
+const SIDED = new Set(['FRAME', 'COMPONENT', 'COMPONENT_SET', 'INSTANCE', 'RECTANGLE'])
 class SceneNode {
   constructor(type, figma) {
     Object.defineProperty(this, '_figma', { value: figma, enumerable: false })
@@ -79,10 +80,13 @@ class SceneNode {
   _bindText() { throw new Error(`componentPropertyReferences.characters on "${this.name}": only a text layer has characters`) }
   get strokeWeight() { const s = this._sw; return s.top === s.right && s.top === s.bottom && s.top === s.left ? s.top : MIXED }
   set strokeWeight(v) { this._sw = { top: v, right: v, bottom: v, left: v } }
-  get strokeTopWeight() { return this._sw.top } set strokeTopWeight(v) { this._sw.top = v }
-  get strokeRightWeight() { return this._sw.right } set strokeRightWeight(v) { this._sw.right = v }
-  get strokeBottomWeight() { return this._sw.bottom } set strokeBottomWeight(v) { this._sw.bottom = v }
-  get strokeLeftWeight() { return this._sw.left } set strokeLeftWeight(v) { this._sw.left = v }
+  // Per-side stroke weights exist only on the nodes with Figma's individual-strokes mixin (frames,
+  // components and their sets, instances, rectangles). A vector, an ellipse or a text layer reads
+  // them as undefined in the real file (measured on the Icon set, 10 Nov 2026), so the mock does too.
+  get strokeTopWeight() { return SIDED.has(this.type) ? this._sw.top : undefined } set strokeTopWeight(v) { this._sw.top = v }
+  get strokeRightWeight() { return SIDED.has(this.type) ? this._sw.right : undefined } set strokeRightWeight(v) { this._sw.right = v }
+  get strokeBottomWeight() { return SIDED.has(this.type) ? this._sw.bottom : undefined } set strokeBottomWeight(v) { this._sw.bottom = v }
+  get strokeLeftWeight() { return SIDED.has(this.type) ? this._sw.left : undefined } set strokeLeftWeight(v) { this._sw.left = v }
   _defaultLs() { return 'FIXED' }
   get layoutSizingHorizontal() { return this._ls.h ?? this._defaultLs('h') }
   set layoutSizingHorizontal(v) { this._ls.h = v; this._applySizing() }
@@ -158,7 +162,9 @@ class InstanceNode extends FrameNode {
     if (this._ls.h == null) this._ls = { ...main._ls }
     this._applySizing()
   }
-  get mainComponent() { return this._main }
+  // The library file runs in dynamic-page mode, where reading `mainComponent` synchronously is refused:
+  // a builder must await getMainComponentAsync() (found running icon-button.figma.js, 10 Nov 2026).
+  get mainComponent() { throw new Error(`instance "${this.name}": read mainComponent with await getMainComponentAsync(); the synchronous getter is refused in dynamic-page mode`) }
   async getMainComponentAsync() { return this._main }
   _set() { return this._main.parent && this._main.parent.type === 'COMPONENT_SET' ? this._main.parent : null }
   _defs() { const set = this._set(); return set ? set.componentPropertyDefinitions : (this._main.componentPropertyDefinitions || {}) }

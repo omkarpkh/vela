@@ -619,7 +619,7 @@ describe('Dropdown List, as the builder draws it', () => {
 const { figma } = await build('dropdown-list')
 const page = figma.root.children.find((p) => p.name === 'Dropdown List')
 const u = page.children.find((n) => n.name === 'Usage / Locked')
-console.log(JSON.stringify({ order: page.children.map((n) => n.name), type: u.type, kids: u.children.map((n) => ({ type: n.type, main: n.mainComponent && n.mainComponent.name, chars: n.characters, props: n.componentProperties && Object.fromEntries(Object.entries(n.componentProperties).map(([k, p]) => [k.replace(/#.*$/, ''), p.value])) })) }))`)
+console.log(JSON.stringify({ order: page.children.map((n) => n.name), type: u.type, kids: u.children.map((n) => ({ type: n.type, main: n._main && n._main.name, chars: n.characters, props: n.componentProperties && Object.fromEntries(Object.entries(n.componentProperties).map(([k, p]) => [k.replace(/#.*$/, ''), p.value])) })) }))`)
     expect(u.order).toEqual(['Dropdown List item', 'Dropdown List', 'Usage / Locked'])
     expect(u.type).toBe('FRAME')
     expect(u.kids[0].props).toMatchObject({ Label: 'Archive', Meta: true, 'Meta text': 'Needs retention on', Locked: 'true' })
