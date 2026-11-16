@@ -15,7 +15,8 @@ Figma library, so one token edit lands in all three.
 
 The styles name Open Sans (300/400/600); bundle it as an asset or load it with `google_fonts` —
 Flutter falls back to the platform font silently otherwise. `flutter test` runs the package's own
-checks; CI runs `flutter analyze` and `flutter test` on every push.
+checks; CI runs `flutter analyze` (notes print but don't fail; errors and warnings do) and
+`flutter test` on every push.
 
 Use it as a path dependency (`vela_tokens: { path: ../vela/flutter }`) or vendor the one file.
 Widgets are not generated: build them against `../guidelines/`, which is implementation-independent.

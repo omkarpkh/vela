@@ -45,6 +45,11 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   links compared in any order), and builders read an instance's main component with
   `getMainComponentAsync()`, which the library file requires; the mock now refuses the synchronous
   read.
+- **CI: Flutter's analyzer notes no longer fail the build** (`flutter analyze --no-fatal-infos`).
+  Flutter 3.50 marks `package:flutter/material.dart`, which the Dart theme imports, as deprecated in
+  favour of `package:material_ui`. That package needs Flutter 3.50 or later and the theme supports
+  3.22 or later, so moving is a breaking change for Flutter users and waits for its own decision.
+  Errors and warnings still fail, and the note still prints.
 - **RELEASING.md, step 4:** a new minor's brand stills move the Overview baselines in the release
   PR itself; the stale "68 screenshots" is gone.
 
