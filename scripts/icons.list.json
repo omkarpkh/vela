@@ -54,5 +54,19 @@
     "rotate-ccw-clock",
     "menu",
     "contrast"
-  ]
+  ],
+  "figma": {
+    "$comment": "The Figma Icon set is published, so a glyph added after its first publish cannot come from the builder: the builder makes the first `published` glyphs of `icons` (a published set is never rebuilt, or every instance would detach), and each later batch is an extension, scripts/figma/components/icon.<id>.extend.figma.js, which `npm run icons:build` generates and `--extend` runs against the file. Create mode runs the builder and then every extension, so a fresh build has all the glyphs, in list order. A new glyph goes at the end of `icons` and into a new batch here; icons:build fails if a glyph is in neither.",
+    "published": 50,
+    "extensions": [
+      {
+        "id": "menu-contrast",
+        "added": "0.16.0",
+        "glyphs": [
+          "menu",
+          "contrast"
+        ]
+      }
+    ]
+  }
 }

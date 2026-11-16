@@ -20,7 +20,7 @@ const dump = (name: string, set?: string) => JSON.parse(set ? cli('--dump', name
 const styles: any[] = JSON.parse(execFileSync('node', ['scripts/figma/text-styles.mjs', '--json'], { cwd: root, encoding: 'utf8' }))
 const BUILDERS = ['brand-mark', 'button', 'checkbox', 'contextual-alert', 'dialog', 'dropdown-list', 'icon', 'icon-button', 'input', 'popover', 'radio-group', 'risk-pill', 'status-indicator', 'table', 'tabs', 'tabs-overflow-control', 'text-area', 'toast', 'toggle', 'tooltip']
 // Extensions (<builder>.<id>.extend.figma.js) are reported under `<builder>.<id>`.
-const EXTENSIONS = ['dropdown-list.usage-locked', 'tabs.seed-hover']
+const EXTENSIONS = ['dropdown-list.usage-locked', 'icon.menu-contrast', 'tabs.seed-hover']
 const tmp = () => mkdtempSync(join(tmpdir(), 'vela-figma-'))
 const fixture = (name: string, body: string) => { const file = join(tmp(), name); writeFileSync(file, body); return file }
 // Runs an ES module in the repo and returns the JSON it prints last.
@@ -114,7 +114,9 @@ return { created: SET };
     const waiving = Object.entries(lintReport).filter(([, r]) => r.allow.length).map(([n]) => n).sort()
     // tabs.seed-hover (R33): the Seed is a third of its tab, measured, which no variable can hold.
     // brand-mark (1 Nov 2026): the same two waivers as icon, for the owners' drawn geometry in a token-bound box.
-    expect(waiving).toEqual(['brand-mark', 'icon', 'status-indicator', 'tabs.seed-hover', 'toggle'])
+    // icon.menu-contrast (16 Nov 2026): the glyphs added to the published Icon set, drawn as the builder draws them.
+    expect(waiving).toEqual(['brand-mark', 'icon', 'icon.menu-contrast', 'status-indicator', 'tabs.seed-hover', 'toggle'])
+    expect(lintReport['icon.menu-contrast'].allow.map((a) => a.rule).sort()).toEqual(['absolute-children', 'raw-size'])
     expect(lintReport['tabs.seed-hover'].allow.map((a) => a.rule)).toEqual(['raw-size'])
     expect(lintReport['tabs.seed-hover'].problems.map((p) => p.node).sort()).toEqual(['Seed', 'Seed', 'Soft ends', 'Soft ends'].map((n, i) => `State=hover, Size=${i % 2 ? 'large' : 'default'} › ${n}`).sort())
     expect(lintReport.tabs.allow).toEqual([])
