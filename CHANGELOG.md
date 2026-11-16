@@ -5,6 +5,49 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+### Fixed
+- **A visually hidden text can no longer widen a page.** `.vela-sr-only` (a Text Area's count
+  announcement, a Table's hidden caption, the headless Tabs' overflow news) was positioned against
+  the nearest positioned ancestor, often the body, so a sideways-scrolling region could not clip it
+  and it widened the page: the Text Area's Figma tab was 516px wide at a 400px viewport. It is now
+  pinned to the start edge of its containing block (`inset-inline-start: 0`), still read and still
+  invisible.
+- **Site: no page scrolls sideways on a 400px phone.** Adopt was 420px wide (its two columns had a
+  bare 400px minimum; they now stack below 400px a column), and the Tabs Figma tab 851px (the live
+  part beside the code line now scrolls in its own box). A new test opens every route the
+  navigation lists, each component's other tabs, Not found and All states at 400 by 800, and fails
+  on any page wider than the screen.
+- **Two flaky tests, fixed at the cause.** The tall Dialog test measured the title while the dialog
+  was still rising in (45, then 40 once settled); it now waits for the motion to finish. The
+  Dropdown List's "lands on the current item" waited a fixed 30ms, racing the frame in which focus
+  moves into the menu; `settle()` (`src/test-settle.ts`, test-only) now adds two animation frames,
+  and the Dropdown List, Dialog, Popover and Tabs overflow tests share it.
+
+### Changed
+- **Screenshots allow a fixed 100 differing pixels, not 1% of the image.** 1% of a full page at
+  1440 is thousands of pixels, enough to hide a whole recoloured control: 0.16.1 recoloured the
+  Toggle's off track and no baseline moved. Every baseline is redrawn on the Linux runner with this
+  change.
+- **Figma: Brand Mark, Icon Button and the Tabs overflow control are published** (10 Nov 2026), so
+  `guidelines/figma-map.json` gives each its node and link, and all 22 sets are published.
+- **Figma: the variable drift check compares descriptions.** It compared values and code syntax
+  only, and 137 descriptions had drifted unseen before the 0.16.1 pass. It now reads each
+  description back, decodes the HTML entities Figma's Plugin API stores (an apostrophe reads back as
+  `&#39;`), and compares it with the one the sync writes, from one shared function. The read comes
+  in slices (`--read 0:150`, `--read 150:`), because with descriptions it is larger than one Figma
+  MCP call returns.
+- **Figma: glyphs added to the published Icon set come from an extension.** `scripts/icons.list.json`
+  records that the set was first published with 50 glyphs, and each later batch; `icons:build`
+  writes the builder from those 50 and one `icon.<id>.extend.figma.js` per batch (`menu` and
+  `contrast` today), so `--extend` adds new glyphs in place. It fails if a glyph is in neither.
+- **Figma: the component check matches the real file on three points** (per-side stroke weights only
+  on frames, components, instances and rectangles; no sizing recorded for a hidden layer; property
+  links compared in any order), and builders read an instance's main component with
+  `getMainComponentAsync()`, which the library file requires; the mock now refuses the synchronous
+  read.
+- **RELEASING.md, step 4:** a new minor's brand stills move the Overview baselines in the release
+  PR itself; the stale "68 screenshots" is gone.
+
 ## [0.16.1] — 2026-11-10
 
 **Highlights:**
