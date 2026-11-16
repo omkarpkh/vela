@@ -1,13 +1,14 @@
-import { act, render, screen } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, it, expect, vi } from 'vitest'
 import { Dialog } from './Dialog'
 import { Button } from '../../components/Button'
+import { settle as settleFor } from '../../test-settle'
 
 // The spec is guidelines/components/dialog.md. Dialog ships from `@omkarux/vela/headless` only, on
 // Base UI 1.9 (`Dialog`, and `AlertDialog` for variant="alert"); these tests are the spec's.
 // Base UI's focus guards hand focus on in a task after the Tab lands, so a Tab is followed by a settle.
-const settle = () => act(() => new Promise((r) => setTimeout(r, 30)))
+const settle = () => settleFor(30)
 
 function EditPolicy(props: { body?: boolean; footer?: boolean; description?: string; onOpenChange?: (o: boolean) => void }) {
   const { body = true, footer = true, description = 'Changes apply on save.', onOpenChange } = props

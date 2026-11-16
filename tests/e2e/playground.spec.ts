@@ -973,6 +973,12 @@ test('a tall dialog scrolls its body and keeps its header and footer on screen',
   expect(metrics.scroll).toBeGreaterThan(metrics.client)
   const title = dialog.getByRole('heading', { name: 'Edit policy' })
   const save = dialog.getByRole('button', { name: 'Save Changes' })
+  // The dialog enters with a step of rise (duration-base). Measured mid-rise, the title read 45 and
+  // then 40 once settled, which failed the run now and then (CI, 7 and 8 Nov 2026). Wait for every
+  // animation and transition in it to finish before the first measure.
+  // Every finite one on the page: the rise may sit on a wrapper outside the dialog node, and a
+  // spinner elsewhere never finishes.
+  await page.evaluate(() => Promise.all(document.getAnimations().filter((a) => a.effect?.getTiming().iterations !== Infinity).map((a) => a.finished)))
   const before = { title: (await title.boundingBox())!.y, save: (await save.boundingBox())!.y }
   await body.evaluate((el) => { el.scrollTop = el.scrollHeight })
   expect((await title.boundingBox())!.y).toBe(before.title)
