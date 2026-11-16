@@ -1,11 +1,12 @@
-import { act, render, screen } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, it, expect, vi } from 'vitest'
 import { DropdownList, type DropdownListProps } from './DropdownList'
+import { settle as settleFor } from '../../test-settle'
 
 // The spec is guidelines/components/dropdown-list.md. Dropdown List ships from
 // `@omkarux/vela/headless` only, on Base UI 1.9's Menu; these tests are the spec's, not Base UI's.
-const settle = () => act(() => new Promise((r) => setTimeout(r, 30)))
+const settle = () => settleFor(30)
 
 const ITEMS = [
   { value: 'alerts', label: 'Alerts' },

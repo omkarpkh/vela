@@ -82,8 +82,9 @@ describe('the Tokens tab', () => {
 
 describe('the Figma tab', () => {
   it('says "Its builder is written" only where a builder is, for every set with no node yet', () => {
+    // Since the 10 Nov 2026 publish every set has a node, so this holds vacuously until the next
+    // component is specced; the rule stays for that one.
     const none = (figmaMap.sets as { spec: string; state: string }[]).filter((s) => s.state === 'none')
-    expect(none.length).toBeGreaterThan(0)
     for (const s of none) {
       const name = s.spec.replace(/^guidelines\/components\//, '').replace(/\.md$/, '')
       expect(existsSync(resolve(root, `scripts/figma/components/${name}.figma.js`)), name).toBe(true)

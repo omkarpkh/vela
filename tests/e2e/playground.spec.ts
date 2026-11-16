@@ -973,6 +973,12 @@ test('a tall dialog scrolls its body and keeps its header and footer on screen',
   expect(metrics.scroll).toBeGreaterThan(metrics.client)
   const title = dialog.getByRole('heading', { name: 'Edit policy' })
   const save = dialog.getByRole('button', { name: 'Save Changes' })
+  // The dialog enters with a step of rise (duration-base). Measured mid-rise, the title read 45 and
+  // then 40 once settled, which failed the run now and then (CI, 7 and 8 Nov 2026). Wait for every
+  // animation and transition in it to finish before the first measure.
+  // Every finite one on the page: the rise may sit on a wrapper outside the dialog node, and a
+  // spinner elsewhere never finishes.
+  await page.evaluate(() => Promise.all(document.getAnimations().filter((a) => a.effect?.getTiming().iterations !== Infinity).map((a) => a.finished)))
   const before = { title: (await title.boundingBox())!.y, save: (await save.boundingBox())!.y }
   await body.evaluate((el) => { el.scrollTop = el.scrollHeight })
   expect((await title.boundingBox())!.y).toBe(before.title)
@@ -2593,16 +2599,16 @@ test.describe('slice 2 · the tabs', () => {
     await expect(page.getByRole('complementary', { name: 'Controls' }).getByRole('group', { name: 'size', exact: true }).locator('[aria-current="true"]')).toHaveText('large')
   })
 
-  test('Figma: a component with no set says so, shows the code to use, and draws no set', async ({ page }) => {
-    for (const [id, name] of [['icon-button', 'Icon Button'], ['brand-mark', 'Brand Mark']]) {
+  // Every component has a set since Brand Mark and Icon Button were published on 10 Nov 2026, so the
+  // "no set yet" panel has no live case to show. These two were its last; they now point at the set.
+  test('Figma: Brand Mark and Icon Button, the last two to get a set, point at it', async ({ page }) => {
+    for (const [id, name, node] of [['icon-button', 'Icon Button', '225-68'], ['brand-mark', 'Brand Mark', '224-59']]) {
       await page.goto(`/#/components/${id}/figma`)
       await expect(page.getByRole('tab', { name: 'Figma' })).toHaveAttribute('aria-selected', 'true')
-      await expect(page.getByText(`${name} has no Figma set yet.`)).toBeVisible()
-      await expect(page.getByText('Until then, use it in code')).toBeVisible()
-      await expect(page.locator('.pg-figma__set')).toHaveCount(0)
-      await expect(page.getByRole('link', { name: 'Ask for the set on GitHub' })).toHaveAttribute('href', /github\.com\/omkarpkh\/vela\/issues\/new/)
-      // The header names no Figma link for a set that does not exist.
-      await expect(page.locator('.pg-head__links').getByRole('link', { name: 'Figma' })).toHaveCount(0)
+      await expect(page.getByRole('heading', { name: 'Find it in the library' })).toBeVisible()
+      await expect(page.getByText(`${name} has no Figma set yet.`)).toHaveCount(0)
+      await expect(page.getByRole('link', { name: 'Ask for the set on GitHub' })).toHaveCount(0)
+      await expect(page.locator('.pg-head__links').getByRole('link', { name: 'Figma' })).toHaveAttribute('href', new RegExp(`node-id=${node}`))
     }
   })
 })

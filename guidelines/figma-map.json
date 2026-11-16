@@ -5,9 +5,9 @@
     {
       "set": "Brand Mark",
       "page": "Brand Mark",
-      "state": "none",
-      "node": null,
-      "url": null,
+      "state": "published",
+      "node": "224:59",
+      "url": "https://www.figma.com/design/XO2rmeCcgOjyKe4oipgF4j/Vela-Design-System?node-id=224-59",
       "import": "import { BrandMark } from '@omkarux/vela'",
       "write": "BrandMark",
       "figmaToProp": [
@@ -163,9 +163,9 @@
     {
       "set": "Icon Button",
       "page": "Icon Button",
-      "state": "none",
-      "node": null,
-      "url": null,
+      "state": "published",
+      "node": "225:68",
+      "url": "https://www.figma.com/design/XO2rmeCcgOjyKe4oipgF4j/Vela-Design-System?node-id=225-68",
       "import": "import { IconButton } from '@omkarux/vela/headless'",
       "write": "IconButton",
       "figmaToProp": [
@@ -450,9 +450,9 @@
         {
           "set": "Tabs overflow control",
           "kind": "part",
-          "state": "none",
-          "node": null,
-          "url": null,
+          "state": "published",
+          "node": "226:62",
+          "url": "https://www.figma.com/design/XO2rmeCcgOjyKe4oipgF4j/Vela-Design-System?node-id=226-62",
           "import": null,
           "write": null,
           "part": "drawn by Tabs (headless) when tabs overflow"

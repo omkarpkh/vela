@@ -1,12 +1,13 @@
-import { act, render, screen } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, it, expect, vi } from 'vitest'
 import { Popover } from './Popover'
 import { Button } from '../../components/Button'
+import { settle as settleFor } from '../../test-settle'
 
 // The spec is guidelines/components/popover.md. Popover ships from `@omkarux/vela/headless` only,
 // on Base UI 1.9; these tests are the spec's, not Base UI's.
-const settle = () => act(() => new Promise((r) => setTimeout(r, 20)))
+const settle = () => settleFor(20)
 
 function Filters(props: Partial<React.ComponentProps<typeof Popover>> & { withControl?: boolean }) {
   const { withControl = true, ...rest } = props

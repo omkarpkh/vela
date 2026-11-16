@@ -88,7 +88,9 @@ async function dump(n, depth) {
   // A bound opacity is its variable (Figma reads a percent variable back as a fraction); an unbound one, its value.
   if ('opacity' in n) { const b = await bv(n, 'opacity'); if (b || n.opacity !== 1) o.opa = b ?? Math.round(n.opacity * 100) / 100; }
   if ('minWidth' in n && n.minWidth != null) o.minw = [n.minWidth, await bv(n, 'minWidth')];
-  if ('layoutSizingHorizontal' in n && n.parent && 'layoutMode' in n.parent && n.parent.layoutMode !== 'NONE') o.ls = [n.layoutSizingHorizontal, n.layoutSizingVertical].join('/');
+  // A hidden layer takes no space, and the real file reports its sizing as FIXED whatever it was set
+  // to (Icon Button's Label, the overflow control's News, 10 Nov 2026), so it is not recorded.
+  if (n.visible !== false && 'layoutSizingHorizontal' in n && n.parent && 'layoutMode' in n.parent && n.parent.layoutMode !== 'NONE') o.ls = [n.layoutSizingHorizontal, n.layoutSizingVertical].join('/');
   if ('width' in n) { const w = await bv(n, 'width'), h = await bv(n, 'height'); o.wh = [Math.round(n.width * 10) / 10, Math.round(n.height * 10) / 10, w, h]; }
   if ('fills' in n && n.fills !== figma.mixed) o.fill = await paintName(n.fills);${colours ? `
   if ('fills' in n && Array.isArray(n.fills) && n.fills.length) o.rgb = n.fills.map(p => p.type === 'SOLID' && p.color ? '#' + ['r', 'g', 'b'].map(k => Math.round(p.color[k] * 255).toString(16).padStart(2, '0')).join('') : null);` : ''}
@@ -271,7 +273,7 @@ export function lint(set, allow = [], { docPage = false, skip = new Set() } = {}
     if (n.type !== 'COMPONENT_SET') {
       if (/placeholder/i.test(n.name) || DEFAULT_NAMES.test(n.name)) hit('bad-name', n, `"${n.name}"`)
       // An instance must say which variant it is; the main component's own tree is linted on the set.
-      if (n.type === 'INSTANCE' && !(n.mainComponent && n.mainComponent.parent)) hit('bad-name', n, 'an instance with no main component')
+      if (n.type === 'INSTANCE' && !(n._main && n._main.parent)) hit('bad-name', n, 'an instance with no main component')
       for (const p of [...(n.fills || []), ...(n.strokes || [])]) if (!(p.boundVariables && p.boundVariables.color) && !alphaMask(n, p)) hit('raw-colour', n, p.type)
       if (!inBool && 'topLeftRadius' in n) for (const f of ['topLeftRadius', 'topRightRadius', 'bottomLeftRadius', 'bottomRightRadius']) if (n[f] && !bound(f)) hit('raw-radius', n, `${f}=${n[f]}`)
       if ('layoutMode' in n && n.layoutMode !== 'NONE') {
@@ -328,7 +330,9 @@ export function diff(expected, live) {
       if (fixedH && !root && ew[0] !== lw[0]) out.push(`${path}: width expected ${ew[0]}, live ${lw[0]}`)
       if (fixedV && !root && ew[1] !== lw[1]) out.push(`${path}: height expected ${ew[1]}, live ${lw[1]}`)
     }
-    const er = Object.fromEntries(Object.entries(e.ref || {}).map(([k, v]) => [k, base(v)])), lr = Object.fromEntries(Object.entries(l.ref || {}).map(([k, v]) => [k, base(v)]))
+    // Property links are compared by content: the real file returns them in its own key order.
+    const refs = (r) => Object.fromEntries(Object.entries(r || {}).map(([k, v]) => [k, base(v)]).sort(([a], [b]) => a.localeCompare(b)))
+    const er = refs(e.ref), lr = refs(l.ref)
     if (JSON.stringify(er) !== JSON.stringify(lr)) out.push(`${path}: property references expected ${JSON.stringify(er)}, live ${JSON.stringify(lr)}`)
     const ec = e.ch || [], lc = l.ch || []
     if (ec.length !== lc.length) out.push(`${path}: ${ec.length} children expected, live ${lc.length} (${lc.map((c) => c.n).join(', ')})`)

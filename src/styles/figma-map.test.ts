@@ -66,7 +66,7 @@ describe('Figma → code map', () => {
   it('claims no import for a part: its import and write are null, it says what draws it, and has its own state', () => {
     const parts = map.sets.flatMap((s: any) => (s.also ?? []).filter((a: any) => a.kind === 'part').map((a: any) => ({ ...a, of: s.set })))
     expect(parts.map((p: any) => [p.set, p.of, p.state, p.node, p.url, p.import, p.write, p.part])).toEqual([
-      ['Tabs overflow control', 'Tab', 'none', null, null, null, null, 'drawn by Tabs (headless) when tabs overflow'],
+      ['Tabs overflow control', 'Tab', 'published', '226:62', 'https://www.figma.com/design/XO2rmeCcgOjyKe4oipgF4j/Vela-Design-System?node-id=226-62', null, null, 'drawn by Tabs (headless) when tabs overflow'],
     ])
     const entries: { sets: { name: string; description: string }[] }[] = JSON.parse(execFileSync('node', [resolve(root, 'scripts/sync-figma-descriptions.mjs'), '--json'], { encoding: 'utf8' }))
     const d = entries.flatMap((e) => e.sets).find((e) => e.name === 'Tabs overflow control')!.description.split('\n')
@@ -105,17 +105,19 @@ describe('Figma → code map', () => {
     }
     // The library was published on 29 Oct 2026 (the second publish carried the 0.13.0 state): all
     // 18 sets — 16 entries, Table's two `also` sets among them — are published, each with its node.
-    // Brand Mark and Icon Button (1 Nov 2026) have none yet: their builders are written and not run.
-    // Nor does the Tabs overflow control, a part of Tabs, whose builder is written too (1 Nov 2026).
+    // Brand Mark, Icon Button and the Tabs overflow control (a part of Tabs) were built by the repo
+    // thread's 0.16.1 Figma pass and published with the library on 10 Nov 2026: all 22 are published.
     const all = map.sets.flatMap((s: any) => [s, ...(s.also ?? [])])
     expect(all).toHaveLength(22)
     const pub = all.filter((s: any) => s.state === 'published').map((s: any) => s.set).sort()
-    expect(pub).toEqual(['Button', 'Checkbox', 'Contextual Alert', 'Dialog', 'Dropdown List item', 'Icon', 'Input', 'Popover', 'Radio', 'Risk Pill', 'Status Indicator', 'Tab', 'Table Cell', 'Table Header Cell', 'Table Row', 'Text Area', 'Toast', 'Toggle', 'Tooltip'])
+    expect(pub).toEqual(['Brand Mark', 'Button', 'Checkbox', 'Contextual Alert', 'Dialog', 'Dropdown List item', 'Icon', 'Icon Button', 'Input', 'Popover', 'Radio', 'Risk Pill', 'Status Indicator', 'Tab', 'Table Cell', 'Table Header Cell', 'Table Row', 'Tabs overflow control', 'Text Area', 'Toast', 'Toggle', 'Tooltip'])
     expect(map.sets.find((s: any) => s.set === 'Risk Pill')).toMatchObject({ state: 'published', node: '127:14' })
     // Dropdown List, built for 0.14.0 (R20), was published on 31 Oct 2026 (R21): no set is built-only.
     expect(map.sets.find((s: any) => s.set === 'Dropdown List item')).toMatchObject({ state: 'published', node: '164:85' })
     expect(all.filter((s: any) => s.state === 'built')).toEqual([])
-    expect(all.filter((s: any) => s.state === 'none').map((s: any) => [s.set, s.node, s.url])).toEqual([['Brand Mark', null, null], ['Icon Button', null, null], ['Tabs overflow control', null, null]])
+    expect(map.sets.find((s: any) => s.set === 'Brand Mark')).toMatchObject({ state: 'published', node: '224:59' })
+    expect(map.sets.find((s: any) => s.set === 'Icon Button')).toMatchObject({ state: 'published', node: '225:68' })
+    expect(all.filter((s: any) => s.state === 'none')).toEqual([])
   })
 
   it('maps the Tab set to Tabs.Trigger, because the set is one trigger', () => {

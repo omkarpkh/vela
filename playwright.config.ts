@@ -62,7 +62,11 @@ export default defineConfig({
     reducedMotion: 'reduce',
   },
   expect: {
-    toHaveScreenshot: { animations: 'disabled', caret: 'hide', maxDiffPixelRatio: 0.01 },
+    // A fixed budget of 100 pixels, not a share of the image (decided 9 Nov 2026). The old 1% of a
+    // full page at 1440 is thousands of pixels: 0.16.1 recoloured the Toggle's off track (a 34 by 20
+    // track, about 600 pixels) and no baseline moved. Baselines are written on the same Linux runner
+    // by the "Visual baselines" workflow, so a real run differs from them by far fewer than 100.
+    toHaveScreenshot: { animations: 'disabled', caret: 'hide', maxDiffPixels: 100 },
   },
   projects: [
     { name: 'desktop', use: { viewport: widths.desktop } },

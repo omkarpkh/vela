@@ -50,7 +50,8 @@ grid(set, p => [STATES.indexOf(p.State), p.Size === 'Tiny' ? 0 : 1], 64, 64, 32)
 set.resize(32 * 2 + 64 * 4, 32 * 2 + 64 * 2);
 
 const labelProp = set.addComponentProperty('Label', 'TEXT', 'Close');
-const iconMain = set.children[0].findOne(n => n.name === 'Icon').mainComponent;
+// Async: the file runs in dynamic-page mode, where the synchronous `mainComponent` read is refused.
+const iconMain = await set.children[0].findOne(n => n.name === 'Icon').getMainComponentAsync();
 const iconProp = set.addComponentProperty('Icon', 'INSTANCE_SWAP', iconMain.id);
 for (const v of set.children) {
   v.findOne(n => n.name === 'Label').componentPropertyReferences = { characters: labelProp };

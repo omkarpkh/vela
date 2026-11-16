@@ -55,11 +55,17 @@ and its "Check it landed" line confirms the registry agrees.
 
 ```bash
 npm run verify     # tokens:check + rules:check + typecheck + tests + checks:check + build + pack-and-consume gate
-npm run test:e2e   # 68 screenshots at four widths against the Linux baselines, plus the playground behaviour tests
+npm run test:e2e   # every screenshot at four widths against the Linux baselines, plus the behaviour tests
 ```
 
-Both green, with no baseline updated in this step. If a baseline must move, that happened in a
-reviewed PR before the release, with its reason in the changelog.
+Both green. A patch release moves no baseline: if one must move, that happened in a reviewed PR
+before the release, with its reason in the changelog.
+
+A new minor or major is the one exception. Its brand stills (step 2) change the Overview's hero, so
+the Overview baselines (`page-overview-light` and `page-overview-dark`) move in the
+release PR itself: run the "Visual baselines" workflow on the release branch and check that only
+those files changed before asking for the merge. Each screenshot allows a fixed 100 differing
+pixels (`playwright.config.ts`), so a new seed always shows up there.
 
 ## 5. Decisions
 

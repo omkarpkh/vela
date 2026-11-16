@@ -219,14 +219,13 @@ describe('the Status page', () => {
     const [, dset, dexp, dsince, dspec] = cells('Dropdown List')
     expect([dset.chars, dexp.chars, dsince.chars]).toEqual(['Dropdown List item · page Dropdown List', 'DropdownList · @omkarux/vela/headless', '0.14.0'])
     expect(dspec.chars).toBe(onMain('guidelines/components/dropdown-list.md') ? 'dropdown-list.md' : 'dropdown-list.md (branch)')
-    // Brand Mark (1 Nov 2026) has no set yet; its builder is written. It is core, first released in
-    // 0.16.0, and its spec reads "(branch)" until it is on main.
+    // Brand Mark: core, first released in 0.16.0; its set was built and published on 10 Nov 2026.
     const [, mset, mexp, msince, mspec] = cells('Brand Mark')
-    expect([mset.chars, mexp.chars, msince.chars]).toEqual(['None yet — the builder is ready (brand-mark.figma.js)', 'BrandMark · @omkarux/vela', '0.16.0'])
+    expect([mset.chars, mexp.chars, msince.chars]).toEqual(['Brand Mark · page Brand Mark', 'BrandMark · @omkarux/vela', '0.16.0'])
     expect(mspec.chars).toBe(onMain('guidelines/components/brand-mark.md') ? 'brand-mark.md' : 'brand-mark.md (branch)')
-    // Icon Button (1 Nov 2026), the same: no set yet, headless, first released in 0.16.0, "(branch)" until it is on main.
+    // Icon Button: headless, first released in 0.16.0; its set was built and published on 10 Nov 2026.
     const [, bbset, bbexp, bbsince, bbspec] = cells('Icon Button')
-    expect([bbset.chars, bbexp.chars, bbsince.chars]).toEqual(['None yet — the builder is ready (icon-button.figma.js)', 'IconButton · @omkarux/vela/headless', '0.16.0'])
+    expect([bbset.chars, bbexp.chars, bbsince.chars]).toEqual(['Icon Button · page Icon Button', 'IconButton · @omkarux/vela/headless', '0.16.0'])
     expect(bbspec.chars).toBe(onMain('guidelines/components/icon-button.md') ? 'icon-button.md' : 'icon-button.md (branch)')
     // No set is left built-but-unpublished.
     for (const r of rows) expect(cells(r.n)[1].chars, r.n).not.toBe('Built, not published')
@@ -286,7 +285,7 @@ describe('the mock models instances as Figma does', () => {
     const i = a.createInstance()
     expect([i.type, i.paddingTop, (await i.getMainComponentAsync()).name]).toEqual(['INSTANCE', 5, 'On=false'])
     i.setProperties({ On: 'true', [text]: 'Bye', [flag]: true })
-    expect([i.paddingTop, i.mainComponent.name]).toEqual([10, 'On=true'])
+    expect([i.paddingTop, i._main.name]).toEqual([10, 'On=true'])
     expect(Object.fromEntries(Object.entries(i.componentProperties).map(([k, v]: any) => [k.replace(/#.*$/, ''), v.value]))).toEqual({ On: 'true', Label: 'Bye', Extra: true })
     expect(() => i.setProperties({ On: 'maybe' })).toThrow(/On=maybe is not a variant/)
     expect(() => i.setProperties({ Size: 'big' })).toThrow(/no property "Size"/)

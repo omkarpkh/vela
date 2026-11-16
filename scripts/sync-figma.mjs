@@ -21,7 +21,7 @@
  */
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { loadTokenSet, isAlias, aliasPath, hexOf, alphaOf, pxOf, msOf, cubicBezierOf, deprecationNote, springOf, isFigmaPercent, toFigmaPercent } from './tokens-core.mjs'
+import { loadTokenSet, isAlias, aliasPath, hexOf, alphaOf, pxOf, msOf, cubicBezierOf, isFigmaPercent, toFigmaPercent, figmaDescription } from './tokens-core.mjs'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const set = loadTokenSet(root)
@@ -73,11 +73,6 @@ const scopesFor = (group, figmaName, cssName, type) => {
 }
 
 const collectionOf = { primitives: 'Primitives', color: 'Color', sizing: 'Sizing', typography: 'Typography', motion: 'Motion' }
-const springNote = (css) => {
-  const s = springOf(set, css)
-  return s ? ` Spring: stiffness ${s.stiffness}, damping ${s.damping}, mass ${s.mass}, over ${set.vendor(s.durationToken).figma} (${s.durationMs}ms). Figma holds the fallback curve.` : ''
-}
-const percentNote = (percent, v) => (!percent ? '' : ' Opacity: percent in Figma, a fraction in CSS' + (typeof v === 'number' ? ` (${toFigmaPercent(v)} here, ${v} in CSS).` : '.'))
 // `--only <Collection>` limits the printed script to one collection (the MCP script cap is 50 KB).
 const only = process.argv.includes('--only') ? process.argv[process.argv.indexOf('--only') + 1] : null
 const entries = []
@@ -118,14 +113,13 @@ for (const [group, tokens] of Object.entries(set.base)) {
     const scopes = scopesFor(group, figma, css, type)
     const percent = isFigmaPercent(t, figma)
     if (percent && !(scopes || []).includes('OPACITY')) throw new Error(`sync-figma: ${css} is written as a percent but is not OPACITY-scoped`)
-    const note = deprecationNote(t)
     entries.push({
       collection: collectionOf[group], name: figma, css,
       type,
       light: value(set.valueOf(css, 'light')),
       dark: t.$type === 'color' ? value(set.valueOf(css, 'dark')) : undefined,
       scopes,
-      description: (note ? `${note[0].toUpperCase()}${note.slice(1)}.${t.$description ? ' ' + t.$description : ''}` : (t.$description ?? '')) + springNote(css) + percentNote(percent, set.valueOf(css, 'light')),
+      description: figmaDescription(set, css),
     })
   }
 }

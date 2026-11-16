@@ -51,7 +51,10 @@ jobs:
           cache: true
       - run: flutter --version
       - run: flutter pub get
-      - run: flutter analyze
+      # Infos print but don't fail (decided 16 Nov 2026). Flutter 3.50 marks package:flutter/material.dart
+      # as deprecated in favour of package:material_ui, which needs Flutter 3.50 or later; the theme
+      # promises 3.22 or later, so moving is a breaking change of its own. Errors and warnings still fail.
+      - run: flutter analyze --no-fatal-infos
       - run: flutter test
 
   # Browser tests: visual regression (every component section and both "adopt without rewrite"

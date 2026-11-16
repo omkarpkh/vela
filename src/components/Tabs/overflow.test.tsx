@@ -1,10 +1,11 @@
-import { act, render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, it, expect } from 'vitest'
 import { Tabs as CoreTabs } from './Tabs'
 import { Tabs as HeadlessTabs } from '../../headless/Tabs'
 import { moreName } from '../../headless/Tabs/Tabs'
 import { measureRow, revealScroll, inViewWithRing, type RowInput, type RowTab } from './overflow'
+import { settle as settleFor } from '../../test-settle'
 
 // Tabs overflow (guidelines/components/tabs.md, Overflow). The arithmetic is pure and tested here
 // directly; the headless control is rendered with a laid-out row stubbed in, because jsdom lays
@@ -164,7 +165,7 @@ function Row({ unseen = [] as string[], value }: { unseen?: string[]; value?: st
   )
 }
 const control = () => screen.queryByRole('button', { name: /Show all tabs$/ })
-const settle = () => act(() => new Promise((r) => setTimeout(r, 40)))
+const settle = () => settleFor(40)
 
 describe('Tabs overflow: the headless control', () => {
   beforeEach(() => layOut(250))
