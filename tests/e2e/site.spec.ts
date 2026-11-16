@@ -3388,3 +3388,29 @@ test.describe('slice 7 fixes · one asset, three scales', () => {
     })
   }
 })
+
+// No page scrolls sideways on a 400px phone. The checks above held one page each; the Adopt page was
+// never among them and was 420px wide at 400 (16 Nov 2026: its two columns had a bare 400px minimum).
+// Every route the site's navigation lists, each component's other tabs, Not found and All states.
+test.describe('Every page at 400px', () => {
+  test.use({ viewport: { width: 400, height: 800 } })
+  test('no page is wider than a 400px screen', async ({ page }) => {
+    test.setTimeout(300_000)
+    await page.goto('/#/')
+    // The navigation is behind the menu at this width; its links are in the DOM all the same.
+    const nav = await page.getByRole('navigation', { name: 'Site', includeHidden: true }).locator('a[href^="#/"]').evaluateAll((as) => [...new Set(as.map((a) => a.getAttribute('href')!))])
+    const routes = new Set(['#/', '#/states', '#/no-such-page', '#/components/no-such-part', ...nav])
+    for (const h of nav) if (/^#\/components\/[^/]+$/.test(h)) for (const tab of ['rules', 'tokens', 'figma']) routes.add(`${h}/${tab}`)
+    for (const must of ['#/adopt', '#/how', '#/status', '#/motion', '#/patterns/copy', '#/components/table'])
+      expect([...routes], must).toContain(must)
+    const wide: string[] = []
+    for (const route of routes) {
+      await page.goto('about:blank')
+      await page.goto(`/${route}`)
+      await expect(page.getByRole('heading', { level: 1 }), route).toBeVisible()
+      const w = await page.evaluate(() => document.documentElement.scrollWidth)
+      if (w > 400) wide.push(`${route} is ${w}px wide`)
+    }
+    expect(wide).toEqual([])
+  })
+})

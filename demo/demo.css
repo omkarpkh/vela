@@ -124,7 +124,9 @@ body { margin: 0; background: var(--vela-bg-global); }
 .doc__body .pg-table { font-size: var(--vela-text-body-size); line-height: var(--vela-text-body-line-height); }
 
 /* ---------------------------------------------------------------- adopt -- */
-.adopt-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));   /* vela-allow: the two adopt columns' minimum; literal until a layout token exists */
+/* min(400px, 100%): side by side from 400px a column, one full-width column below that. A bare
+   400px minimum made the page 420px wide at a 400px viewport (16 Nov 2026). */
+.adopt-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(400px, 100%), 1fr));   /* vela-allow: the two adopt columns' minimum; literal until a layout token exists */
   gap: var(--vela-space-20); margin-top: var(--vela-space-20); }
 .adopt-caption { margin: 0 0 var(--vela-space-10); }
 .adopt-frame { border: 1px solid var(--vela-border-subtle); border-radius: var(--vela-radius-4); overflow: hidden; }

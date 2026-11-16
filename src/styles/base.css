@@ -25,9 +25,13 @@
   outline-offset: var(--vela-focus-ring-offset);
 }
 
-/* Visually hidden, still read by screen readers. */
+/* Visually hidden, still read by screen readers. Pinned to the start edge of its containing block:
+   left at its static place, it can sit far to the right inside a horizontally scrolled region, and
+   when its containing block is outside that region (no positioned ancestor) nothing clips it, so it
+   widened the page (a Text Area's count announcement, 516px at a 400px viewport, 16 Nov 2026). */
 .vela-sr-only {
   position: absolute;
+  inset-inline-start: 0;
   width: 1px;
   height: 1px;
   padding: 0;
